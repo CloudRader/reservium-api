@@ -1,0 +1,8 @@
+ [MASTER]
+# Add directory to python path for correct importing analysis by pylint
+init-hook='import sys; sys.path.append("app")'
+# Fix problem with pydantic imports, caused by pylint, not pydantic
+extension-pkg-whitelist=pydantic
+# Good variable names which should always be accepted
+good-names=i, j, df, db
+disable=logging-fstring-interpolation
