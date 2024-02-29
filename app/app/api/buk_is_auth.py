@@ -1,4 +1,8 @@
-from fastapi import FastAPI, Depends, APIRouter, Query
+"""
+API controllers for authorisation in IS - Information System of the Buben club.
+"""
+from api import utils
+from fastapi import FastAPI, APIRouter, Query
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.responses import RedirectResponse
 
@@ -7,7 +11,8 @@ import httpx
 app = FastAPI()
 
 router = APIRouter(
-    prefix='/auth_is'
+    prefix='/auth_is',
+    tags=[utils.fastapi_docs.AUTHORISATION_TAG["name"]]
 )
 
 client_id = "e36219f8fdd7619dfa80754aa17c47e38c04e4407d37c26e48058531c82b18c1"
@@ -34,17 +39,8 @@ async def login():
     return RedirectResponse(url=authorization_url)
 
 
-@router.get("/")
-async def read_root():
-    return {"message": "Hello, OAuth 2.0!"}
-
-
-async def get_code(code: str = Query(..., description="OAuth2 authorization code")):
-    return code
-
-
 @router.get("/login/callback")
-async def callback(code: str = Depends(get_code)):
+async def callback(code: str = Query(..., description="OAuth2 authorization code")):
     await exchange_code_for_token(code)
 
     return {"message": "Authorization successful!"}
