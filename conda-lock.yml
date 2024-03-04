@@ -1006,7 +1006,7 @@ package:
     md5: 3d385ad19987badc21279c2db0be9bc0
     sha256: 9186b0ec1ade74d9b67f2da53d91c98686c8d094fb6d3eb0d1324cf6fff45046
   manager: conda
-  name: aws-c-event-stream
+  name: aws-c-event.py-stream
   optional: false
   platform: linux-64
   url: https://conda.anaconda.org/conda-forge/linux-64/aws-c-event-stream-0.2.20-h69ce273_6.conda
@@ -3565,7 +3565,7 @@ package:
     md5: 3a85cb3bbafc0ec228374328322ca747
     sha256: 62121f5526428ee103e488224311dd75ba6938648ef0df5a18b67065d3d71c9b
   manager: conda
-  name: aws-c-event-stream
+  name: aws-c-event.py-stream
   optional: false
   platform: osx-arm64
   url: https://conda.anaconda.org/conda-forge/osx-arm64/aws-c-event-stream-0.3.2-h88fe898_1.conda
@@ -6951,7 +6951,7 @@ package:
     md5: 907ebe3826a7bfbdd6fd0feac38b22c7
     sha256: 741a0867e0b957d62388791bfbfc2ee926430e5ba3f1e2f56e7819e527159751
   manager: conda
-  name: aws-c-event-stream
+  name: aws-c-event.py-stream
   optional: false
   platform: win-64
   url: https://conda.anaconda.org/conda-forge/win-64/aws-c-event-stream-0.2.20-h03f8742_6.conda
