@@ -44,8 +44,8 @@ class EventService(AbstractEventService):
         calendar = self.type_of_reservation(event_input.reservation_type)
 
         check_collision = self.__get_events(service,
-                                            self.__parse_datetime(event_input.start_datetime),
-                                            self.__parse_datetime(event_input.end_datetime))
+                                            event_input.start_datetime,
+                                            event_input.end_datetime)
 
         if len(check_collision) > 0:
             return {"message": "There's already a reservation for that time"}
@@ -61,11 +61,11 @@ class EventService(AbstractEventService):
             "summary": calendar["event_name"],
             "description": description,
             "start": {
-                "dateTime": self.__parse_datetime(event_input.start_datetime),
+                "dateTime": event_input.start_datetime,
                 "timeZone": "Europe/Vienna"
             },
             "end": {
-                "dateTime": self.__parse_datetime(event_input.end_datetime),
+                "dateTime": event_input.end_datetime,
                 "timeZone": "Europe/Vienna"
             },
         }
@@ -87,12 +87,6 @@ class EventService(AbstractEventService):
             orderBy='startTime'
         ).execute()
         return events_result.get('items', [])
-
-    @staticmethod
-    def __parse_datetime(user_input):
-        # Parse user-friendly datetime input in the format dd/mm/yyyy-hh/mm and convert to the required format
-        parsed_dt = dt.datetime.strptime(user_input, '%d/%m/%Y-%H:%M')
-        return parsed_dt.strftime('%Y-%m-%dT%H:%M:%S')
 
     def type_of_reservation(self, type: str) -> dict:
         result = {
