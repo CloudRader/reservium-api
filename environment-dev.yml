@@ -18,8 +18,11 @@ dependencies:
   - python-multipart=0.0.6
   - duckdb-engine=0.7.0
   - mypy=1.2.0
+  - httpx=0.24.0
   - conda-pack=0.7.0
   - conda-lock=1.4.0
+  - pytest-cov=4.0.0
+  - lxml=4.9.2
 platforms:
   - linux-64
   - win-64
