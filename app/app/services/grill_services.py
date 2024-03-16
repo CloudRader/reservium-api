@@ -7,6 +7,7 @@ import pytz
 from abc import ABC, abstractmethod
 from googleapiclient.discovery import build
 from typing import Any
+from services.utils import type_of_reservation, get_events, check_membership
 
 from schemas import EventInput, User, Room
 
@@ -34,7 +35,9 @@ class GrillService(AbstractGrillService):
 
         service = build("calendar", "v3", credentials=creds)
 
-        message = self.control_conditions_and_permissions(services, event_input, service)
+        calendar = type_of_reservation(event_input.reservation_type)
+
+        message = self.control_conditions_and_permissions(services, event_input, service, calendar)
 
         if message != "Access":
             return message
@@ -58,23 +61,15 @@ class GrillService(AbstractGrillService):
             },
         }
 
-        calendar = "c_6cab3396f3e0d400d07904b08f427ff9c66b90b809488cfe6401a87891ab1cfd@group.calendar.google.com"
-
-        event = service.events().insert(calendarId=calendar, body=event).execute()
+        event = service.events().insert(calendarId=calendar["calendar_id"], body=event).execute()
 
         print(f"Event created {event.get('htmlLink')}")
 
         return event
 
-    def control_conditions_and_permissions(self, services, event_input, service):
+    def control_conditions_and_permissions(self, services, event_input, service, calendar):
         # Check of the membership
-        found = False
-        for item in services:
-            if "service" in item and "name" in item["service"] and item["service"]["name"] == "Základní členství":
-                found = True
-                break
-
-        if not found:
+        if not check_membership(services):
             return {"message": "You are not member of the club!"}
 
         start_datetime = dt.datetime.strptime(event_input.start_datetime, '%Y-%m-%dT%H:%M:%S')
@@ -89,9 +84,9 @@ class GrillService(AbstractGrillService):
             return {"message": "You can't reserve in this gap!"}
 
         # Check collision with other reservation
-        check_collision = self.__get_events(service,
-                                            event_input.start_datetime,
-                                            event_input.end_datetime)
+        check_collision = get_events(service,
+                                     event_input.start_datetime,
+                                     event_input.end_datetime, calendar)
 
         if not self.__check_collision_time(check_collision, start_datetime, end_datetime):
             return {"message": "There's already a reservation for that time."}
@@ -108,9 +103,11 @@ class GrillService(AbstractGrillService):
 
     @staticmethod
     def __dif_days_res(start_datetime, end_datetime):
-        if start_datetime.year != end_datetime.year\
-                or start_datetime.month != end_datetime.month\
-                or start_datetime.day != end_datetime.year:
+        print(start_datetime.year)
+        print(end_datetime.year)
+        if start_datetime.year != end_datetime.year \
+                or start_datetime.month != end_datetime.month \
+                or start_datetime.day != end_datetime.day:
             return False
         return True
 
@@ -132,7 +129,7 @@ class GrillService(AbstractGrillService):
         start_res_time = dt.datetime.strptime('08:00:00', '%H:%M:%S').time()
         end_res_time = dt.datetime.strptime('22:00:00', '%H:%M:%S').time()
 
-        if start_time < start_res_time or end_time < start_res_time\
+        if start_time < start_res_time or end_time < start_res_time \
                 or end_time > end_res_time:
             return False
         return True
@@ -148,21 +145,9 @@ class GrillService(AbstractGrillService):
             start_date_event = dt.datetime.fromisoformat(str(check_collision[0]['start']['dateTime']))
             end_date_event = dt.datetime.fromisoformat(str(check_collision[0]['end']['dateTime']))
 
-            if end_date_event == start_date.astimezone(pytz.timezone('Europe/Vienna'))\
+            if end_date_event == start_date.astimezone(pytz.timezone('Europe/Vienna')) \
                     or start_date_event == end_date.astimezone(pytz.timezone('Europe/Vienna')):
                 return True
             else:
                 return False
         return True
-
-    @staticmethod
-    def __get_events(service, start_time, end_time):
-        # Call the Calendar API
-        events_result = service.events().list(
-            calendarId="c_6cab3396f3e0d400d07904b08f427ff9c66b90b809488cfe6401a87891ab1cfd@group.calendar.google.com",
-            timeMin=start_time + 'Z',
-            timeMax=end_time + 'Z',
-            singleEvents=True,
-            orderBy='startTime'
-        ).execute()
-        return events_result.get('items', [])
