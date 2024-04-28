@@ -41,7 +41,7 @@ class Settings(BaseSettings):
             password=values.get("POSTGRES_PASSWORD"),
             host=values.get("POSTGRES_SERVER"),
             port=values.get("POSTGRES_PORT"),
-            path=f'/{values.get("POSTGRES_DB")}'
+            path=f'{values.get("POSTGRES_DB")}'
         )
 
     # pylint: enable=no-self-argument
