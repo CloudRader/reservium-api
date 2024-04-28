@@ -6,9 +6,9 @@ import datetime as dt
 from abc import ABC, abstractmethod
 from googleapiclient.discovery import build
 from typing import Any
-from services.utils import type_of_reservation, get_events, check_membership
+from services.utils import type_of_reservation, get_events, check_membership, ready_event
 
-from schemas import EventInput, User, Room
+from schemas import EventInput, UserIS, Room
 
 
 class AbstractEventService(ABC):
@@ -17,7 +17,7 @@ class AbstractEventService(ABC):
     """
 
     @abstractmethod
-    def post_event(self, event_input: EventInput, user: User, room: Room, creds, services) -> Any:
+    def post_event(self, event_input: EventInput, user: UserIS, room: Room, creds, services) -> Any:
         """
         Post document in google calendar.
         :param event_input: EventThat me need to post.
@@ -30,7 +30,7 @@ class AbstractEventService(ABC):
 
 class EventService(AbstractEventService):
 
-    def post_event(self, event_input: EventInput, user: User, room: Room, creds, services) -> Any:
+    def post_event(self, event_input: EventInput, user: UserIS, room: Room, creds, services) -> Any:
         # Check of the membership
         if not check_membership(services):
             return {"message": "You are not member of the club!"}
@@ -46,25 +46,7 @@ class EventService(AbstractEventService):
         if len(check_collision) > 0:
             return {"message": "There's already a reservation for that time"}
 
-        description = (
-            f"Jméno/Name: {user.first_name} {user.surname}\n"
-            f"Pokoj/Room: {room.door_number}\n"
-            f"Číslo osob/Participants: {event_input.guests}\n"
-            f"Účel/Purpose: {event_input.purpose}\n"
-        )
-
-        event = {
-            "summary": calendar["event_name"],
-            "description": description,
-            "start": {
-                "dateTime": event_input.start_datetime,
-                "timeZone": "Europe/Vienna"
-            },
-            "end": {
-                "dateTime": event_input.end_datetime,
-                "timeZone": "Europe/Vienna"
-            },
-        }
+        event = ready_event(calendar, event_input, user, room)
 
         event = service.events().insert(calendarId=calendar["calendar_id"], body=event).execute()
 

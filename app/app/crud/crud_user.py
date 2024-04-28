@@ -26,6 +26,15 @@ class AbstractCRUDUser(CRUDBase[
     for querying and manipulating User instances.
     """
 
+    @abstractmethod
+    def get_by_username(self, username: str) -> models.User | None:
+        """
+        Retrieves a User instance by its username.
+
+        :param username: The username of the User.
+        :return: The User instance if found, None otherwise.
+        """
+
 
 class CRUDUser(AbstractCRUDUser):
     """
@@ -36,3 +45,8 @@ class CRUDUser(AbstractCRUDUser):
 
     def __init__(self, db: Session):
         super().__init__(models.User, db)
+
+    def get_by_username(self, username: str) -> models.User | None:
+        return self.db.query(self.model) \
+            .filter(self.model.username == username) \
+            .first()

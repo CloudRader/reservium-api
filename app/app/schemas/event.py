@@ -11,3 +11,4 @@ class EventInput(BaseModel):
     purpose: str
     guests: int
     reservation_type: str
+    username: str
