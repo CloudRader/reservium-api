@@ -9,20 +9,21 @@ class UserBase(BaseModel):
     """Shared properties of User."""
     username: str | None = None
     user_token: str | None = None
-    role: str | None = None
+    active_member: bool | None = None
+    roles: list[str] | None = None
 
 
 class UserCreate(UserBase):
     """Properties to receive via API on creation."""
     username: str
     user_token: str
-    role: str
+    active_member: bool
 
 
 class UserUpdate(UserBase):
     """Properties to receive via API on update."""
     user_token: str | None = None
-    role: str | None = None
+    active_member: bool | None = None
 
 
 class UserInDBBase(UserBase):
@@ -30,7 +31,8 @@ class UserInDBBase(UserBase):
     uuid: UUID
     username: str
     user_token: str
-    role: str
+    active_member: bool
+    roles: list[str]
 
     # pylint: disable=too-few-public-methods
     # reason: Config class only needs to set orm_mode to True.

@@ -3,22 +3,19 @@ This module defines the CRUD operations for the User model, including an
 abstract base class (AbstractCRUDUser) and a concrete implementation (CRUDUser)
 using SQLAlchemy.
 """
-from datetime import datetime
 from abc import ABC, abstractmethod
-from typing import List, Type
 
 from sqlalchemy.orm import Session
-
-import models
-import schemas
+from models import UserModel
+from schemas import UserCreate, UserUpdate
 
 from crud import CRUDBase
 
 
 class AbstractCRUDUser(CRUDBase[
-                           models.User,
-                           schemas.UserCreate,
-                           schemas.UserUpdate
+                           UserModel,
+                           UserCreate,
+                           UserUpdate
                        ], ABC):
     """
     Abstract class for CRUD operations specific to the User model.
@@ -27,7 +24,7 @@ class AbstractCRUDUser(CRUDBase[
     """
 
     @abstractmethod
-    def get_by_username(self, username: str) -> models.User | None:
+    def get_by_username(self, username: str) -> UserModel | None:
         """
         Retrieves a User instance by its username.
 
@@ -44,9 +41,9 @@ class CRUDUser(AbstractCRUDUser):
     """
 
     def __init__(self, db: Session):
-        super().__init__(models.User, db)
+        super().__init__(UserModel, db)
 
-    def get_by_username(self, username: str) -> models.User | None:
+    def get_by_username(self, username: str) -> UserModel | None:
         return self.db.query(self.model) \
             .filter(self.model.username == username) \
             .first()
