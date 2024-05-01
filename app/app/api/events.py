@@ -7,8 +7,8 @@ from typing import Any, Annotated
 from fastapi import APIRouter, FastAPI, Depends
 from schemas import EventInput, Room, UserIS
 from services import EventService, UserService
-from api.google_auth import auth_google
-from api.grills import get_request
+from api import get_request, auth_google
+from schemas.user_is import RoleList, Role
 
 app = FastAPI()
 
@@ -24,9 +24,10 @@ async def create_event(event_service: Annotated[EventService, Depends(EventServi
     creds = auth_google(None)
     token = user_service.get_by_username(event_input.username).user_token
 
-    user = UserIS.model_validate(await get_request(token, "/users/me"))
-    services = await get_request(token, "/services/mine")
-    room = Room.model_validate(await get_request(token, "/rooms/mine"))
+    user = UserIS.model_validate(await get_request(token, "/users/me", user_service))
+    services = await get_request(token, "/services/mine", user_service)
+    room = Room.model_validate(await get_request(token, "/rooms/mine", user_service))
+    roles = RoleList(roles=await get_request(token, "/user_roles/mine", user_service))
 
     try:
         return event_service.post_event(event_input, user, room, creds, services)
