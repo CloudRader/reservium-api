@@ -7,9 +7,10 @@ from db import get_db
 from abc import ABC, abstractmethod
 from crud import CRUDUser
 from services import CrudServiceBase
-from models import User
-from schemas import UserCreate, UserUpdate
+from models import UserModel
+from schemas import UserCreate, UserUpdate, User
 from sqlalchemy.orm import Session
+from schemas.user_is import UserIS, Role
 
 
 class AbstractUserService(CrudServiceBase[
@@ -24,7 +25,18 @@ class AbstractUserService(CrudServiceBase[
     """
 
     @abstractmethod
-    def get_by_username(self, username: str) -> list[Type[User]]:
+    def create_user(self, user_data: UserIS, roles: list[Role], token) -> UserModel:
+        """
+        Create a User in the database.
+
+        :param user_data: Received data from IS.
+        :param roles: List of user roles in IS.
+        :param token: Token of a user.
+        :return: the created User.
+        """
+
+    @abstractmethod
+    def get_by_username(self, username: str) -> UserModel:
         """
         Retrieves a User instance by its username.
 
@@ -41,5 +53,36 @@ class UserService(AbstractUserService):
     def __init__(self, db: Annotated[Session, Depends(get_db)]):
         super().__init__(CRUDUser(db))
 
-    def get_by_username(self, username: str) -> User:
+    def create_user(self, user_data: UserIS, roles: list[Role], token) -> UserModel:
+        user = self.get_by_username(user_data.username)
+
+        user_roles = []
+
+        for role in roles:
+            if role.role == "service_admin":
+                for manager in role.limit_objects:
+                    if manager.alias == "klub" or manager.alias == "grill" or manager.alias == "stud":
+                        user_roles.append(manager.alias)
+
+        if user:
+            user_update = UserUpdate(
+                user_token=token,
+                roles=user_roles,
+            )
+            return self.update(user.uuid, user_update)
+        else:
+            active_member: bool
+            if len(user_roles) > 0:
+                active_member = True
+            else:
+                active_member = False
+            user_create = UserCreate(
+                username=user_data.username,
+                user_token=token,
+                active_member=active_member,
+                roles=user_roles,
+            )
+            return self.crud.create(user_create)
+
+    def get_by_username(self, username: str) -> UserModel:
         return self.crud.get_by_username(username)

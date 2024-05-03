@@ -1,0 +1,63 @@
+"""DTO schemes for Calendar entity."""
+from uuid import UUID
+from pydantic import BaseModel
+
+
+class Rules(BaseModel):
+    night_time: bool
+    reservation_more_24_hours: bool
+    in_advance_hours: int
+    in_advance_minutes: int
+    in_advance_day: int
+
+
+class CalendarBase(BaseModel):
+    """Shared properties of Calendar."""
+    collision_with_calendar: list[str] | None = None
+    club_member_rules: Rules | None = None
+    active_member_rules: Rules | None = None
+    manager_rules: Rules | None = None
+
+
+class CalendarCreate(CalendarBase):
+    calendar_id: str
+    service_name: str
+    reservation_type: str
+    event_name: str
+    max_people: int
+
+
+class CalendarUpdate(CalendarBase):
+    calendar_id: str | None = None
+    service_name: str | None = None
+    reservation_type: str | None = None
+    event_name: str | None = None
+    max_people: int | None = None
+    collision_with_calendar: list[str] | None = None
+    club_member_rules: Rules | None = None
+    active_member_rules: Rules | None = None
+    manager_rules: Rules | None = None
+
+
+class CalendarInDBBase(CalendarBase):
+    """Base model for user in database."""
+    uuid: UUID
+    calendar_id: str
+    service_name: str
+    reservation_type: str
+    event_name: str
+    max_people: int
+
+    # pylint: disable=too-few-public-methods
+    # reason: Config class only needs to set orm_mode to True.
+    class Config:
+        """Config class for database user model."""
+        orm_mode = True
+
+
+class Calendar(CalendarInDBBase):
+    """Additional properties of calendar to return via API."""
+
+
+class CalendarInDB(CalendarInDBBase):
+    """Additional properties stored in DB"""
