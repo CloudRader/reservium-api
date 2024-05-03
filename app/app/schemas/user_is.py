@@ -2,7 +2,7 @@
 DTO schemes for User from IS entity.
 Test variation
 """
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 
 
@@ -30,3 +30,22 @@ class UserIS(BaseModel):
     ui_skin: str
     username: str
     usertype: str
+
+
+class LimitObject(BaseModel):
+    id: int
+    name: str
+    alias: str
+    note: str
+
+
+class Role(BaseModel):
+    role: str
+    name: str
+    description: str
+    limit: str
+    limit_objects: list[LimitObject]
+
+
+class RoleList(BaseModel):
+    roles: list[Role]
