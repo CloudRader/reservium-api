@@ -40,7 +40,7 @@ class AbstractCRUDService(ABC, Generic[Model, Crud, CreateSchema, UpdateSchema])
         """
 
     @abstractmethod
-    def get_all(self) -> list[Row[Model]]:
+    def get_all(self) -> list[Row[Model]] | None:
         """
         Retrieve all objects from the database.
         :returns List[T]: A list of all objects in the database.
@@ -86,20 +86,23 @@ class CrudServiceBase(AbstractCRUDService[Model, Crud, CreateSchema, UpdateSchem
     def __init__(self, crud: Crud):
         self.crud: Crud = crud
 
-    def get(self, uuid: UUID) -> Model | None:
+    def get(self, uuid: UUID | str) -> Model | None:
         return self.crud.get(uuid)
 
-    def get_all(self) -> list[Row[Model]]:
-        return self.crud.get_all()
+    def get_all(self) -> list[Row[Model]] | None:
+        all_objects = self.crud.get_all()
+        if len(all_objects) == 0:
+            return None
+        return all_objects
 
     def create(self, obj_in: CreateSchema) -> Model | None:
         return self.crud.create(obj_in)
 
-    def update(self, uuid: UUID, obj_in: UpdateSchema) -> Model | None:
+    def update(self, uuid: UUID | str, obj_in: UpdateSchema) -> Model | None:
         obj_to_update = self.get(uuid)
         if obj_to_update is None:
             return None
         return self.crud.update(db_obj=obj_to_update, obj_in=obj_in)
 
-    def remove(self, uuid: UUID | None) -> Model | None:
+    def remove(self, uuid: UUID | str | None) -> Model | None:
         return self.crud.remove(uuid)

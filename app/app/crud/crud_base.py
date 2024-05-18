@@ -70,7 +70,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         self.model: Type[Model] = model
         self.db: Session = db
 
-    def get(self, uuid: UUID) -> Model | None:
+    def get(self, uuid: UUID | str) -> Model | None:
         if uuid is None:
             return None
         return self.db.get(self.model, uuid)

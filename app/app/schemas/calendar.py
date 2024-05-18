@@ -1,5 +1,4 @@
 """DTO schemes for Calendar entity."""
-from uuid import UUID
 from pydantic import BaseModel
 
 
@@ -13,6 +12,7 @@ class Rules(BaseModel):
 
 class CalendarBase(BaseModel):
     """Shared properties of Calendar."""
+    collision_with_itself: bool | None = None
     collision_with_calendar: list[str] | None = None
     club_member_rules: Rules | None = None
     active_member_rules: Rules | None = None
@@ -28,11 +28,11 @@ class CalendarCreate(CalendarBase):
 
 
 class CalendarUpdate(CalendarBase):
-    calendar_id: str | None = None
     service_name: str | None = None
     reservation_type: str | None = None
     event_name: str | None = None
     max_people: int | None = None
+    collision_with_itself: bool | None = None
     collision_with_calendar: list[str] | None = None
     club_member_rules: Rules | None = None
     active_member_rules: Rules | None = None
@@ -41,7 +41,6 @@ class CalendarUpdate(CalendarBase):
 
 class CalendarInDBBase(CalendarBase):
     """Base model for user in database."""
-    uuid: UUID
     calendar_id: str
     service_name: str
     reservation_type: str

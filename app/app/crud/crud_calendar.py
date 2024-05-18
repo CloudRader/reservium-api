@@ -42,6 +42,15 @@ class AbstractCRUDCalendar(CRUDBase[
         :return: The Calendar instance if found, None otherwise.
         """
 
+    @abstractmethod
+    def get_by_calendar_id(self, calendar_id: str) -> CalendarModel | None:
+        """
+        Retrieves a Calendar instance by its calendar id.
+
+        :param calendar_id: The calendar id of the Calendar.
+        :return: The Calendar instance if found, None otherwise.
+        """
+
 
 class CRUDCalendar(AbstractCRUDCalendar):
     """
@@ -62,3 +71,8 @@ class CRUDCalendar(AbstractCRUDCalendar):
         return self.db.query(self.model) \
             .filter(self.model.service_name == service_name) \
             .all()
+
+    def get_by_calendar_id(self, calendar_id: str) -> CalendarModel | None:
+        return self.db.query(self.model) \
+            .filter(self.model.calendar_id == calendar_id) \
+            .first()
