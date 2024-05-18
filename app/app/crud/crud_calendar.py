@@ -34,11 +34,11 @@ class AbstractCRUDCalendar(CRUDBase[
         """
 
     @abstractmethod
-    def get_by_service_name(self, service_name: str) -> list[Type[CalendarModel]]:
+    def get_by_service_alias(self, service_alias: str) -> list[Type[CalendarModel]]:
         """
-        Retrieves a Calendar instance by its service name.
+        Retrieves a Calendar instance by its service alias.
 
-        :param service_name: The service name of the Calendar.
+        :param service_alias: The service alias of the Calendar.
         :return: The Calendar instance if found, None otherwise.
         """
 
@@ -67,9 +67,9 @@ class CRUDCalendar(AbstractCRUDCalendar):
             .filter(self.model.reservation_type == reservation_type) \
             .first()
 
-    def get_by_service_name(self, service_name: str) -> list[Type[CalendarModel]]:
+    def get_by_service_alias(self, service_alias: str) -> list[Type[CalendarModel]]:
         return self.db.query(self.model) \
-            .filter(self.model.service_name == service_name) \
+            .filter(self.model.service_alias == service_alias) \
             .all()
 
     def get_by_calendar_id(self, calendar_id: str) -> CalendarModel | None:

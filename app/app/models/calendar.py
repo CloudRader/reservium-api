@@ -11,7 +11,7 @@ class Calendar(Base):
     Calendar model to create and manipulate user entity in the database.
     """
     calendar_id = Column(String, primary_key=True, unique=True, nullable=False)
-    service_name = Column(String, unique=False, nullable=False)
+    service_alias = Column(String, unique=False, nullable=False)
     reservation_type = Column(String, unique=True, nullable=False)
     event_name = Column(String, nullable=False)
     max_people = Column(Integer, default=0)

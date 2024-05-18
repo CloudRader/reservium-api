@@ -21,14 +21,14 @@ class CalendarBase(BaseModel):
 
 class CalendarCreate(CalendarBase):
     calendar_id: str
-    service_name: str
+    service_alias: str
     reservation_type: str
     event_name: str
     max_people: int
 
 
 class CalendarUpdate(CalendarBase):
-    service_name: str | None = None
+    service_alias: str | None = None
     reservation_type: str | None = None
     event_name: str | None = None
     max_people: int | None = None
@@ -42,7 +42,7 @@ class CalendarUpdate(CalendarBase):
 class CalendarInDBBase(CalendarBase):
     """Base model for user in database."""
     calendar_id: str
-    service_name: str
+    service_alias: str
     reservation_type: str
     event_name: str
     max_people: int

@@ -3,7 +3,6 @@ This module defines an abstract base class AbstractCalendarService that work wit
 """
 from typing import Annotated, Type, List
 from fastapi import Depends
-from uuid import UUID
 from db import get_db
 from abc import ABC, abstractmethod
 from crud import CRUDCalendar
@@ -52,11 +51,11 @@ class AbstractCalendarService(CrudServiceBase[
         """
 
     @abstractmethod
-    def get_by_service_name(self, service_name: str) -> list[Type[CalendarModel]] | None:
+    def get_by_service_alias(self, service_alias: str) -> list[Type[CalendarModel]] | None:
         """
-        Retrieves a Calendar instance by its reservation_type.
+        Retrieves a Calendar instance by its service_alias.
 
-        :param service_name: The service name of the Calendar.
+        :param service_alias: The service alias of the Calendar.
         :return: The Calendar instance if found, None otherwise.
         """
 
@@ -86,7 +85,7 @@ class CalendarService(AbstractCalendarService):
         if calendar_create.collision_with_itself:
             calendar_create.collision_with_calendar.append(calendar_create.calendar_id)
 
-        calendars_collision = self.get_by_service_name(calendar_create.service_name)
+        calendars_collision = self.get_by_service_alias(calendar_create.service_alias)
 
         for collision in calendars_collision:
             calendar_create.collision_with_calendar.append(str(collision.calendar_id))
@@ -108,8 +107,8 @@ class CalendarService(AbstractCalendarService):
     def get_by_reservation_type(self, reservation_type: str) -> CalendarModel | None:
         return self.crud.get_by_reservation_type(reservation_type)
 
-    def get_by_service_name(self, service_name: str) -> List[Type[CalendarModel]] | None:
-        return self.crud.get_by_service_name(service_name)
+    def get_by_service_alias(self, service_alias: str) -> List[Type[CalendarModel]] | None:
+        return self.crud.get_by_service_alias(service_alias)
 
     def get_by_calendar_id(self, calendar_id: str) -> CalendarModel | None:
         return self.crud.get_by_calendar_id(calendar_id)
