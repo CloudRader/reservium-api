@@ -2,8 +2,11 @@
 Utils for API.
 """
 import httpx
-from fastapi.responses import RedirectResponse
-from fastapi import Depends, Query
+from enum import Enum
+from uuid import UUID
+from fastapi import Depends, Query, status, Request
+from fastapi.responses import RedirectResponse, Response, JSONResponse
+from pydantic import BaseModel
 from schemas import UserIS, UserUpdate, UserCreate
 from services import UserService
 from typing import Annotated
@@ -58,6 +61,118 @@ async def exchange_code_for_token(user_service: Annotated[UserService, Depends(U
     user_service.create_user(user_data, roles, token)
 
     return response_data.get("access_token", "")
+
+
+class Message(BaseModel):
+    """Model for response message."""
+    message: str
+
+
+class Entity(Enum):
+    """Enum for entity names."""
+    USER = "User"
+    CALENDAR = "Calendar"
+    EVENT = "Event"
+
+
+# pylint: disable=unused-argument
+# reason: Exception handlers require request and exception parameter.
+
+def get_exception_response_detail(status_code: int, desc: str) -> dict:
+    """Get exception response detail for openAPI documentation.
+
+    :param status_code: Status code of the exception.
+    :param desc: Description of the exception.
+
+    :return dict: Exception response detail.
+    """
+    return {
+        status_code: {
+            "model": Message,
+            "description": desc
+        }
+    }
+
+
+class MethodNotAllowedException(Exception):
+    """Exception for not allowed methods."""
+    STATUS_CODE = status.HTTP_405_METHOD_NOT_ALLOWED
+    DESCRIPTION = "Method not allowed."
+    RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
+
+    def __init__(self, entity: Entity):
+        self.entity = entity
+
+
+def method_not_allowed_exception_handler(
+        request: Request, exc: MethodNotAllowedException
+) -> JSONResponse:
+    """Exception handler for MethodNotAllowedException.
+
+    :param request: Request that caused the exception.
+    :param exc: The exception.
+    """
+    return JSONResponse(
+        status_code=exc.STATUS_CODE,
+        content={
+            "message": f"Method {request.method} is not allowed for entity {exc.entity.value}"
+        },
+    )
+
+
+class EntityNotFoundException(Exception):
+    """
+    Exception for when entity is not found in database.
+    """
+    STATUS_CODE = status.HTTP_404_NOT_FOUND
+    DESCRIPTION = "Entity not found."
+    RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
+
+    def __init__(self, entity: Entity, entity_id: UUID | str):
+        self.entity = entity
+        self.entity_uuid = entity_id
+
+
+def entity_not_found_exception_handler(
+        request: Request, exc: EntityNotFoundException
+) -> JSONResponse:
+    """Exception handler for EntityNotFoundException.
+
+    :param request: Request that caused the exception.
+    :param exc: The exception.
+    """
+    return JSONResponse(
+        status_code=exc.STATUS_CODE,
+        content={
+            "message": f"Entity {exc.entity.value} with uuid {exc.entity_uuid} was not found."
+        },
+    )
+
+
+class NotImplementedException(Exception):
+    """Exception for when a functionality is not yet implemented."""
+    STATUS_CODE = status.HTTP_501_NOT_IMPLEMENTED
+    DESCRIPTION = "Method not implemented."
+    RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
+
+
+def not_implemented_exception_handler(
+        request: Request, exc: NotImplementedException
+) -> JSONResponse:
+    """Exception handler for NotImplementedException.
+
+    :param request: Request that caused the exception.
+    :param exc: The exception.
+    """
+    return JSONResponse(
+        status_code=exc.STATUS_CODE,
+        content={
+            "message": exc.DESCRIPTION
+        },
+    )
+
+
+# pylint: enable=unused-argument
 
 
 class FastApiDocs:
