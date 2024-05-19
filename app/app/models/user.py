@@ -3,7 +3,7 @@ User ORM model and its dependencies.
 """
 from uuid import uuid4
 from sqlalchemy import Column, String, Boolean
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from db.base_class import Base
 
 
@@ -15,4 +15,4 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     user_token = Column(String, unique=True, nullable=False)
     active_member = Column(Boolean, unique=False, nullable=False)
-    roles = Column(String, unique=False, nullable=True)
+    roles = Column(ARRAY(String), unique=False, nullable=True)

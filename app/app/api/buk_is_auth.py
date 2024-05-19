@@ -43,5 +43,5 @@ async def callback(user_service: Annotated[UserService, Depends(UserService)],
                    code: str = Query(..., description="OAuth2 authorization code")):
     print("Control!")
     await exchange_code_for_token(user_service, code)
-
+    # TODO return name and surname to frontend
     return {"message": "Authorization successful!"}

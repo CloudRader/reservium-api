@@ -1,11 +1,14 @@
 import datetime as dt
 import pytz
 
+from models import CalendarModel
+from schemas import Rules
 
-def control_conditions_and_permissions(services, event_input, service, calendar):
+
+def control_conditions_and_permissions(user, services, event_input, google_calendar_service, calendar: CalendarModel):
     # Check of the membership
-    if not service_availability_check(services, calendar["service_name"]):
-        return {"message": f"You don't have {calendar['service_name']} service!"}
+    if not service_availability_check(services, calendar.service_alias):
+        return {"message": f"You don't have {calendar.service_alias} service!"}
 
     start_datetime = dt.datetime.strptime(event_input.start_datetime, '%Y-%m-%dT%H:%M:%S')
     end_datetime = dt.datetime.strptime(event_input.end_datetime, '%Y-%m-%dT%H:%M:%S')
@@ -14,46 +17,73 @@ def control_conditions_and_permissions(services, event_input, service, calendar)
     if start_datetime < dt.datetime.now():
         return {"message": "You can't make a reservation before the present time!"}
 
+    # Choose user rules
+    user_rules: Rules = choose_user_rules(calendar, user)
+
     # Check available reservation time
-    if not control_available_reservation_time(start_datetime, end_datetime):
-        return {"message": "You can't reserve in this gap!"}
+    if not user_rules.night_time:
+        if not control_available_reservation_time(start_datetime, end_datetime):
+            return {"message": "You can't reserve in this gap!"}
 
     # Check collision with other reservation
-    check_collision = get_events(service,
-                                 event_input.start_datetime,
-                                 event_input.end_datetime, calendar)
+    check_collision: list = []
+    for calendar_id in calendar.collision_with_calendar:
+        check_collision.extend(get_events(google_calendar_service,
+                                          event_input.start_datetime,
+                                          event_input.end_datetime, calendar_id))
 
     if not check_collision_time(check_collision, start_datetime, end_datetime):
         return {"message": "There's already a reservation for that time."}
 
     # Reservation no more than 24 hours
-    if not dif_days_res(start_datetime, end_datetime):
+    if not dif_days_res(start_datetime, end_datetime, user_rules):
         return {"message": "You can reserve on different day."}
 
     # Reservation in advance
-    if not control_res_in_advance(start_datetime):
-        return {"message": "You have to make reservations 24 hours in advance!"}
+    if not control_res_in_advance(start_datetime, user_rules, True):
+        return {"message": f"You have to make reservations {user_rules.in_advance_day} day,"
+                           f"{user_rules.in_advance_hours} hours and"
+                           f"{user_rules.in_advance_minutes} minutes in advance!"}
+
+    # Reservation prior than
+    if not control_res_in_advance(start_datetime, user_rules, False):
+        return {"message": f"You can't make reservations earlier than {user_rules.in_advance_day} days "
+                           f"in advance!"}
 
     return "Access"
 
 
-def dif_days_res(start_datetime, end_datetime):
-    print(start_datetime.year)
-    print(end_datetime.year)
+def choose_user_rules(calendar, user) -> Rules:
+    if not user.active_member:
+        return Rules(**calendar.club_member_rules)
+    if calendar.service_alias in user.roles:
+        return Rules(**calendar.manager_rules)
+    return Rules(**calendar.active_member_rules)
+
+
+def dif_days_res(start_datetime, end_datetime, user_rules: Rules):
     if start_datetime.year != end_datetime.year \
-            or start_datetime.month != end_datetime.month \
-            or start_datetime.day != end_datetime.day:
+            or start_datetime.month != end_datetime.month:
         return False
+    if not user_rules.reservation_more_24_hours:
+        time_difference = abs(end_datetime - start_datetime)
+        if time_difference > dt.timedelta(hours=24):
+            return False
     return True
 
 
-def control_res_in_advance(start_time):
+def control_res_in_advance(start_time, user_rules: Rules, in_advance: bool):
     current_time = dt.datetime.now()
 
     time_difference = abs(start_time - current_time)
 
-    if time_difference < dt.timedelta(hours=24):
-        return False
+    if in_advance:
+        if time_difference < dt.timedelta(minutes=user_rules.in_advance_minutes,
+                                          hours=user_rules.in_advance_hours):
+            return False
+    else:
+        if time_difference > dt.timedelta(days=user_rules.in_advance_day):
+            return False
     return True
 
 
@@ -88,10 +118,10 @@ def check_collision_time(check_collision, start_datetime, end_datetime):
     return True
 
 
-def get_events(service, start_time, end_time, calendar):
+def get_events(service, start_time, end_time, calendar_id):
     # Call the Calendar API
     events_result = service.events().list(
-        calendarId=calendar["calendar_id"],
+        calendarId=calendar_id,
         timeMin=start_time + 'Z',
         timeMax=end_time + 'Z',
         singleEvents=True,
@@ -100,19 +130,19 @@ def get_events(service, start_time, end_time, calendar):
     return events_result.get('items', [])
 
 
-def description_of_event(user, room, event_input):
+def description_of_event(user_is, room, event_input):
     return (
-        f"Jméno/Name: {user.first_name} {user.surname}\n"
+        f"Jméno/Name: {user_is.first_name} {user_is.surname}\n"
         f"Pokoj/Room: {room.door_number}\n"
         f"Číslo osob/Participants: {event_input.guests}\n"
         f"Účel/Purpose: {event_input.purpose}\n"
     )
 
 
-def ready_event(calendar, event_input, user, room):
+def ready_event(calendar: CalendarModel, event_input, user_is, room):
     return {
-        "summary": calendar["event_name"],
-        "description": description_of_event(user, room, event_input),
+        "summary": calendar.event_name,
+        "description": description_of_event(user_is, room, event_input),
         "start": {
             "dateTime": event_input.start_datetime,
             "timeZone": "Europe/Vienna"
@@ -126,61 +156,6 @@ def ready_event(calendar, event_input, user, room):
 
 def service_availability_check(services, service_name):
     for item in services:
-        if "service" in item and "name" in item["service"] and item["service"]["name"] == service_name:
+        if "service" in item and "name" in item["service"] and item["service"]["alias"] == service_name:
             return True
     return False
-
-
-def type_of_reservation(type_res: str) -> dict:
-    result = {
-        "Entire Space": lambda: {
-            "calendar_id": "c_19586a3da50ca06566ef62012d6829ebf4e3026108212e9f9d0cc2fc6bc7c44a@group.calendar.google.com",
-            "event_name": "Celý Prostor/Entire Space",
-            "service_name": "Klubovna"
-        },
-
-        "Table Soccer": lambda: {
-            "calendar_id": "c_f8a87bad9df63841a343835e6c559643835aa3c908302680324807b61dcb7e49@group.calendar.google.com",
-            "event_name": "Stolní Fotbal/Table Soccer",
-            "service_name": "Klubovna"
-        },
-
-        "Poker": lambda: {
-            "calendar_id": "c_90c053583d4d2ae156551c6ecd311f87dad610a3272545c363879645f6968cef@group.calendar.google.com",
-            "event_name": "Poker",
-            "service_name": "Klubovna"
-        },
-
-        "Projector ": lambda: {
-            "calendar_id": "c_4f3ccb9b25e3e37bc1dcea8784a8a11442d39e700809a12bee21bbeeb67af765@group.calendar.google.com",
-            "event_name": "Projector",
-            "service_name": "Klubovna"
-        },
-
-        "Pool": lambda: {
-            "calendar_id": "c_8fc8c6760f7e32ed57785cf4739dc63e406b4a802aeec65ca0b1a3f56696263d@group.calendar.google.com",
-            "event_name": "Kulečník/Pool",
-            "service_name": "Klubovna"
-        },
-
-        "Study Room": lambda: {
-            "calendar_id": "c_8f07a054dc4cd02f848491ffee9adb0302611811e711ffe921e4025d18d42ef2@group.calendar.google.com",
-            "event_name": "Studovna/Study Room",
-            "service_name": "Studovna"
-        },
-
-        "Study Desk": lambda: {
-            "calendar_id": "c_609bc4fdefe310e30dec02d90753f434d82cd738818dec679ad018d12731f97f@group.calendar.google.com",
-            "event_name": "Studijní Stůl/Study Desk",
-            "service_name": "Studovna"
-        },
-
-        "Grill": lambda: {
-            "calendar_id": "c_6cab3396f3e0d400d07904b08f427ff9c66b90b809488cfe6401a87891ab1cfd@group.calendar.google.com",
-            "event_name": "Grill",
-            "service_name": "Grillcentrum"
-        },
-
-    }.get(type_res, lambda: "primary")()
-
-    return result

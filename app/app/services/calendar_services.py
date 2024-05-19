@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from crud import CRUDCalendar
 from services import CrudServiceBase
 from models import CalendarModel
-from schemas import CalendarCreate, CalendarUpdate
+from schemas import CalendarCreate, CalendarUpdate, Rules
 from sqlalchemy.orm import Session
 
 
@@ -78,23 +78,20 @@ class CalendarService(AbstractCalendarService):
         super().__init__(CRUDCalendar(db))
 
     def create_calendar(self, calendar_create: CalendarCreate) -> CalendarModel | None:
-        if self.get_by_calendar_id(calendar_create.calendar_id) or \
+        if self.get(calendar_create.calendar_id) or \
                 self.get_by_reservation_type(calendar_create.reservation_type):
             return None
 
+        for collision in calendar_create.collision_with_calendar:
+            collision_calendar_to_update = set(self.get(collision).collision_with_calendar)
+            collision_calendar_to_update.add(calendar_create.calendar_id)
+            update_exist_calendar = CalendarUpdate(
+                collision_with_calendar=list(collision_calendar_to_update)
+            )
+            self.update(collision, update_exist_calendar)
+
         if calendar_create.collision_with_itself:
             calendar_create.collision_with_calendar.append(calendar_create.calendar_id)
-
-        calendars_collision = self.get_by_service_alias(calendar_create.service_alias)
-
-        for collision in calendars_collision:
-            calendar_create.collision_with_calendar.append(str(collision.calendar_id))
-            collision_with_calendar_exist = list(collision.collision_with_calendar)
-            collision_with_calendar_exist.append(calendar_create.calendar_id)
-            update_exist_calendar = CalendarUpdate(
-                collision_with_calendar=collision_with_calendar_exist
-            )
-            self.update(str(collision.calendar_id), update_exist_calendar)
 
         return self.create(calendar_create)
 

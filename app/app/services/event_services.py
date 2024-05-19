@@ -4,11 +4,15 @@ Test variant
 """
 from abc import ABC, abstractmethod
 from googleapiclient.discovery import build
-from typing import Any
-from services.utils import type_of_reservation, control_conditions_and_permissions, \
+from typing import Any, Annotated
+from services.utils import control_conditions_and_permissions, \
     ready_event
+from fastapi import Depends
 
-from schemas import EventInput, UserIS, Room
+from schemas import EventInput, UserIS, Room, User
+from db import get_db
+from crud import CRUDCalendar
+from sqlalchemy.orm import Session
 
 
 class AbstractEventService(ABC):
@@ -17,10 +21,12 @@ class AbstractEventService(ABC):
     """
 
     @abstractmethod
-    def post_event(self, event_input: EventInput, user: UserIS, room: Room, creds, services) -> Any:
+    def post_event(self, event_input: EventInput, user_is: UserIS, user: User,
+                   room: Room, creds, services) -> Any:
         """
         Post document in google calendar.
         :param event_input: EventThat me need to post.
+        :param user_is:
         :param user:
         :param room:
         :param creds:
@@ -29,20 +35,27 @@ class AbstractEventService(ABC):
 
 
 class EventService(AbstractEventService):
+    """
+    Class EventService represent service that work with Event
+    """
 
-    def post_event(self, event_input: EventInput, user: UserIS, room: Room, creds, services) -> Any:
-        service = build("calendar", "v3", credentials=creds)
+    def __init__(self, db: Annotated[Session, Depends(get_db)]):
+        self.calendar_crud = CRUDCalendar(db)
 
-        calendar = type_of_reservation(event_input.reservation_type)
+    def post_event(self, event_input: EventInput, user_is: UserIS, user: User,
+                   room: Room, creds, services) -> Any:
+        google_calendar_service = build("calendar", "v3", credentials=creds)
 
-        message = control_conditions_and_permissions(services, event_input, service, calendar)
+        calendar = self.calendar_crud.get_by_reservation_type(event_input.reservation_type)
+
+        message = control_conditions_and_permissions(user, services, event_input, google_calendar_service, calendar)
 
         if message != "Access":
             return message
 
-        event = ready_event(calendar, event_input, user, room)
+        event = ready_event(calendar, event_input, user_is, room)
 
-        event = service.events().insert(calendarId=calendar["calendar_id"], body=event).execute()
+        event = google_calendar_service.events().insert(calendarId=calendar.calendar_id, body=event).execute()
 
         print(f"Event created {event.get('htmlLink')}")
 
