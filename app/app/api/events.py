@@ -7,13 +7,13 @@ from typing import Any, Annotated
 from fastapi import APIRouter, FastAPI, Depends
 from schemas import EventInput, Room, UserIS
 from services import EventService, UserService
-from api import get_request, auth_google
-from schemas.user_is import RoleList, Role
+from api import get_request, auth_google, fastapi_docs
 
 app = FastAPI()
 
 router = APIRouter(
-    prefix='/events'
+    prefix='/events',
+    tags=[fastapi_docs.EVENT_TAG["name"]]
 )
 
 

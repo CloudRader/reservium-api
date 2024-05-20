@@ -11,4 +11,5 @@ class EventInput(BaseModel):
     purpose: str
     guests: int
     reservation_type: str
+    additional_services: list[str] | None = None
     username: str

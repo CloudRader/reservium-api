@@ -99,6 +99,19 @@ class CalendarService(AbstractCalendarService):
         calendar = self.get_by_calendar_id(calendar_id)
         if calendar is None:
             return None
+
+        calendars = self.get_by_service_alias(calendar.service_alias)
+
+        for calendar_to_update in calendars:
+            if calendar_to_update.collision_with_calendar and\
+                    calendar.calendar_id in calendar_to_update.collision_with_calendar:
+                collision_to_update = calendar_to_update.collision_with_calendar.copy()
+                collision_to_update.remove(calendar.calendar_id)
+                update_exist_calendar = CalendarUpdate(
+                    collision_with_calendar=collision_to_update
+                )
+                self.update(calendar_to_update.calendar_id, update_exist_calendar)
+
         return self.crud.remove(calendar_id)
 
     def get_by_reservation_type(self, reservation_type: str) -> CalendarModel | None:

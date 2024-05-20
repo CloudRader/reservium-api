@@ -17,6 +17,7 @@ class CalendarBase(BaseModel):
     club_member_rules: Rules | None = None
     active_member_rules: Rules | None = None
     manager_rules: Rules | None = None
+    mini_services: list[str] | None = None
 
 
 class CalendarCreate(CalendarBase):
@@ -37,6 +38,7 @@ class CalendarUpdate(CalendarBase):
     club_member_rules: Rules | None = None
     active_member_rules: Rules | None = None
     manager_rules: Rules | None = None
+    mini_services: list[str] | None = None
 
 
 class CalendarInDBBase(CalendarBase):
@@ -51,7 +53,7 @@ class CalendarInDBBase(CalendarBase):
     # reason: Config class only needs to set orm_mode to True.
     class Config:
         """Config class for database user model."""
-        orm_mode = True
+        from_attributes = True
 
 
 class Calendar(CalendarInDBBase):

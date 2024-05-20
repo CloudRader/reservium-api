@@ -16,7 +16,11 @@ class Calendar(Base):
     event_name = Column(String, nullable=False)
     max_people = Column(Integer, default=0)
     collision_with_itself = Column(Boolean, nullable=False)
-    collision_with_calendar = Column(ARRAY(String), nullable=False)
+    collision_with_calendar = Column(ARRAY(String), nullable=True)
     club_member_rules = Column(JSON, nullable=True)
     active_member_rules = Column(JSON, nullable=False)
     manager_rules = Column(JSON, nullable=False)
+
+    mini_services = Column(ARRAY(String), nullable=True)
+
+# pylint: enable=too-few-public-methods

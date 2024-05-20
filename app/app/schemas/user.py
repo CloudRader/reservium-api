@@ -38,7 +38,7 @@ class UserInDBBase(UserBase):
     # reason: Config class only needs to set orm_mode to True.
     class Config:
         """Config class for database user model."""
-        orm_mode = True
+        from_attributes = True
 
 
 class User(UserInDBBase):

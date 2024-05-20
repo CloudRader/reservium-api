@@ -2,17 +2,16 @@
 API controllers for calendars.
 """
 from typing import Any, Annotated, List
-from fastapi import APIRouter, FastAPI, Depends, Path, status, Body
+from fastapi import APIRouter, Depends, Path, status, Body
 from fastapi.responses import JSONResponse
 
-from api import EntityNotFoundException, Entity, Message
+from api import EntityNotFoundException, Entity, Message, fastapi_docs
 from schemas import CalendarCreate, Calendar, CalendarUpdate
 from services import CalendarService
 
-app = FastAPI()
-
 router = APIRouter(
-    prefix='/calendars'
+    prefix='/calendars',
+    tags=[fastapi_docs.CALENDAR_TAG["name"]]
 )
 
 

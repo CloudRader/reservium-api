@@ -9,8 +9,6 @@ from fastapi.responses import RedirectResponse
 from services import UserService
 from api import exchange_code_for_token, client_id, redirect_uri
 
-import httpx
-
 app = FastAPI()
 
 router = APIRouter(
@@ -20,7 +18,8 @@ router = APIRouter(
 
 # OAuth 2.0 Authorization Code flow configuration
 oauth2_scheme = OAuth2AuthorizationCodeBearer(
-    authorizationUrl=f"https://is.buk.cvut.cz/oauth/authorize?client_id={client_id}&response_type=code&redirect_uri={redirect_uri}",
+    authorizationUrl=f"https://is.buk.cvut.cz/oauth/authorize?client_id={client_id}"
+                     f"&response_type=code&redirect_uri={redirect_uri}",
     tokenUrl="https://is.buk.cvut.cz/oauth/token",
     auto_error=False,
 )

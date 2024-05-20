@@ -6,8 +6,8 @@ import uvicorn
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
-from api import buk_is_auth, events, calendars, \
-    MethodNotAllowedException, EntityNotFoundException, NotImplementedException, \
+from api import buk_is_auth, events, calendars, mini_services, \
+    MethodNotAllowedException, EntityNotFoundException, NotImplementedException, fastapi_docs, \
     method_not_allowed_exception_handler, entity_not_found_exception_handler, not_implemented_exception_handler
 from core import settings
 from db import init_db
@@ -28,11 +28,17 @@ async def startup_event(fast_api_app: FastAPI):
 # pylint: enable=unused-argument
 
 
-app = FastAPI(lifespan=startup_event)
-
+app = FastAPI(
+    title=fastapi_docs.NAME,
+    description=fastapi_docs.DESCRIPTION,
+    version=fastapi_docs.VERSION,
+    openapi_tags=fastapi_docs.get_tags_metadata(),
+    lifespan=startup_event
+)
 app.include_router(buk_is_auth.router)
 app.include_router(events.router)
 app.include_router(calendars.router)
+app.include_router(mini_services.router)
 
 app.add_exception_handler(
     MethodNotAllowedException, method_not_allowed_exception_handler
@@ -48,7 +54,7 @@ if __name__ == "__main__":
     uvicorn.run("main:app",
                 host=settings.APP_SERVER_HOST,
                 port=settings.APP_SERVER_PORT,
-                reload=settings.APP_SERVER_USE_RELOAD,
-                proxy_headers=settings.APP_SERVER_USE_PROXY_HEADERS,
+                # reload=settings.APP_SERVER_USE_RELOAD,
+                # proxy_headers=settings.APP_SERVER_USE_PROXY_HEADERS,
                 ssl_keyfile="certification/key.pem",
                 ssl_certfile="certification/cert.pem")
