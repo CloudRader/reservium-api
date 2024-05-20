@@ -45,5 +45,10 @@ app.add_exception_handler(
 )
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="10.0.52.106", port=8000,
-                ssl_keyfile="certification/key.pem", ssl_certfile="certification/cert.pem")
+    uvicorn.run("main:app",
+                host=settings.APP_SERVER_HOST,
+                port=settings.APP_SERVER_PORT,
+                reload=settings.APP_SERVER_USE_RELOAD,
+                proxy_headers=settings.APP_SERVER_USE_PROXY_HEADERS,
+                ssl_keyfile="certification/key.pem",
+                ssl_certfile="certification/cert.pem")

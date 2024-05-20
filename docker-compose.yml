@@ -16,7 +16,7 @@ services:
     container_name: buk-reservation-backendls
     build:
       context: .
-      dockerfile: app/app.dockerfile
+      dockerfile: dockerfile
     environment:
       - POSTGRES_SERVER=db
     depends_on:

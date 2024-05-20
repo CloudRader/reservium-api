@@ -3,9 +3,9 @@
 # which will be used in the runtime image without conda memory overhead.
 FROM docker.io/condaforge/mambaforge:latest AS build-stage
 
-ARG CONDA_ENV_NAME=ds-review
+ARG CONDA_ENV_NAME=buk-reservation
 
-COPY ../conda-lock.yml ./
+COPY conda-lock.yml ./
 RUN mamba install conda-pack conda-lock
 
 RUN conda-lock install -n $CONDA_ENV_NAME conda-lock.yml && \
@@ -22,7 +22,7 @@ WORKDIR /app
 # Copy exported virtual environment from last build stage to this runtime image.
 COPY --from=build-stage /venv /venv
 
-COPY app/ ./app/
+COPY app/app ./app/
 
 
 SHELL ["/bin/bash", "-c"]
