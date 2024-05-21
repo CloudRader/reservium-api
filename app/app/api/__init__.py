@@ -13,5 +13,6 @@ __all_ = [
     "EntityNotFoundException", "NotImplementedException", "MethodNotAllowedException", "Entity", "Message"
     "method_not_allowed_exception_handler", "entity_not_found_exception_handler", "not_implemented_exception_handler",
     "fastapi_docs",
-    "auth_google"
+    "auth_google",
+    "get_current_user"
 ]

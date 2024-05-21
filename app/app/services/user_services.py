@@ -32,6 +32,7 @@ class AbstractUserService(CrudServiceBase[
         :param user_data: Received data from IS.
         :param roles: List of user roles in IS.
         :param token: Token of a user.
+
         :return: the created User.
         """
 
@@ -41,6 +42,17 @@ class AbstractUserService(CrudServiceBase[
         Retrieves a User instance by its username.
 
         :param username: The username of the User.
+
+        :return: The User instance if found, None otherwise.
+        """
+
+    @abstractmethod
+    def get_by_token(self, token: str) -> UserModel:
+        """
+        Retrieves a User instance by its token.
+
+        :param token: The token of the User.
+
         :return: The User instance if found, None otherwise.
         """
 
@@ -86,3 +98,6 @@ class UserService(AbstractUserService):
 
     def get_by_username(self, username: str) -> UserModel:
         return self.crud.get_by_username(username)
+
+    def get_by_token(self, token: str) -> UserModel:
+        return self.crud.get_by_token(token)

@@ -29,6 +29,17 @@ class AbstractCRUDUser(CRUDBase[
         Retrieves a User instance by its username.
 
         :param username: The username of the User.
+
+        :return: The User instance if found, None otherwise.
+        """
+
+    @abstractmethod
+    def get_by_token(self, token: str) -> UserModel | None:
+        """
+        Retrieves a User instance by its token.
+
+        :param token: The token of the User.
+
         :return: The User instance if found, None otherwise.
         """
 
@@ -46,4 +57,9 @@ class CRUDUser(AbstractCRUDUser):
     def get_by_username(self, username: str) -> UserModel | None:
         return self.db.query(self.model) \
             .filter(self.model.username == username) \
+            .first()
+
+    def get_by_token(self, token: str) -> UserModel | None:
+        return self.db.query(self.model) \
+            .filter(self.model.token == token) \
             .first()

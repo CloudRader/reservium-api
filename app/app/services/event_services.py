@@ -9,7 +9,7 @@ from services.utils import control_conditions_and_permissions, \
     ready_event
 from fastapi import Depends
 
-from schemas import EventInput, UserIS, Room, User
+from schemas import EventCreate, UserIS, Room, User
 from db import get_db
 from crud import CRUDCalendar
 from sqlalchemy.orm import Session
@@ -21,7 +21,7 @@ class AbstractEventService(ABC):
     """
 
     @abstractmethod
-    def post_event(self, event_input: EventInput, user_is: UserIS, user: User,
+    def post_event(self, event_input: EventCreate, user_is: UserIS, user: User,
                    room: Room, creds, services) -> Any:
         """
         Post document in google calendar.
@@ -31,6 +31,8 @@ class AbstractEventService(ABC):
         :param room:
         :param creds:
         :param services:
+
+        :returns Event json object: the created event or exception otherwise.
         """
 
 
@@ -42,7 +44,7 @@ class EventService(AbstractEventService):
     def __init__(self, db: Annotated[Session, Depends(get_db)]):
         self.calendar_crud = CRUDCalendar(db)
 
-    def post_event(self, event_input: EventInput, user_is: UserIS, user: User,
+    def post_event(self, event_input: EventCreate, user_is: UserIS, user: User,
                    room: Room, creds, services) -> Any:
         google_calendar_service = build("calendar", "v3", credentials=creds)
 

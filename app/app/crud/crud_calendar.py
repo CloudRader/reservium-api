@@ -30,6 +30,7 @@ class AbstractCRUDCalendar(CRUDBase[
         Retrieves a Calendar instance by its reservation type.
 
         :param reservation_type: The reservation type of the Calendar.
+
         :return: The Calendar instance if found, None otherwise.
         """
 
@@ -39,6 +40,7 @@ class AbstractCRUDCalendar(CRUDBase[
         Retrieves a Calendar instance by its service alias.
 
         :param service_alias: The service alias of the Calendar.
+
         :return: The Calendar instance if found, None otherwise.
         """
 
@@ -48,6 +50,7 @@ class AbstractCRUDCalendar(CRUDBase[
         Retrieves a Calendar instance by its calendar id.
 
         :param calendar_id: The calendar id of the Calendar.
+
         :return: The Calendar instance if found, None otherwise.
         """
 

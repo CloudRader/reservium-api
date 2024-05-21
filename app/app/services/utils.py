@@ -2,7 +2,7 @@ import datetime as dt
 import pytz
 
 from models import CalendarModel
-from schemas import Rules, EventInput
+from schemas import Rules, EventCreate
 
 
 def control_conditions_and_permissions(user, services, event_input, google_calendar_service, calendar: CalendarModel):
@@ -130,7 +130,7 @@ def get_events(service, start_time, end_time, calendar_id):
     return events_result.get('items', [])
 
 
-def description_of_event(user_is, room, event_input: EventInput):
+def description_of_event(user_is, room, event_input: EventCreate):
     formatted_services: str = "-"
     if event_input.additional_services:
         formatted_services = ", ".join(event_input.additional_services)

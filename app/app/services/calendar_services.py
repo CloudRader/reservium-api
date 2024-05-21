@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from crud import CRUDCalendar
 from services import CrudServiceBase
 from models import CalendarModel
-from schemas import CalendarCreate, CalendarUpdate, Rules
+from schemas import CalendarCreate, CalendarUpdate, User
 from sqlalchemy.orm import Session
 
 
@@ -19,25 +19,43 @@ class AbstractCalendarService(CrudServiceBase[
                                   CalendarUpdate,
                               ], ABC):
     """
-    This abstract class defines the interface for a user service
-    that provides CRUD operations for a specific UserModel.
+    This abstract class defines the interface for a calendar service
+    that provides CRUD operations for a specific CalendarModel.
     """
 
     @abstractmethod
-    def create_calendar(self, calendar_create) -> CalendarModel | None:
+    def create_calendar(self, calendar_create,
+                        user: User) -> CalendarModel | None:
         """
-        Create a User in the database.
+        Create a Calendar in the database.
 
         :param calendar_create: CalendarCreate Schema for create.
+        :param user: the UserSchema for control permissions of the calendar.
+
         :return: the created Calendar.
         """
 
     @abstractmethod
-    def delete_calendar(self, reservation_type) -> CalendarModel | None:
+    def update_calendar(self, calendar_id, calendar_update,
+                        user: User) -> CalendarModel | None:
         """
-        Create a User in the database.
+        Update a Calendar in the database.
 
-        :param reservation_type: The reservation type of the Calendar.
+        :param calendar_id: The calendar id of the Calendar.
+        :param calendar_update: CalendarUpdate Schema for update.
+        :param user: the UserSchema for control permissions of the calendar.
+
+        :return: the updated Calendar.
+        """
+
+    @abstractmethod
+    def delete_calendar(self, calendar_id, user: User) -> CalendarModel | None:
+        """
+        Delete a Calendar in the database.
+
+        :param calendar_id: The calendar id of the Calendar.
+        :param user: the UserSchema for control permissions of the calendar.
+
         :return: the deleted Calendar.
         """
 
@@ -47,6 +65,7 @@ class AbstractCalendarService(CrudServiceBase[
         Retrieves a Calendar instance by its reservation_type.
 
         :param reservation_type: The reservation type of the Calendar.
+
         :return: The Calendar instance if found, None otherwise.
         """
 
@@ -56,6 +75,7 @@ class AbstractCalendarService(CrudServiceBase[
         Retrieves a Calendar instance by its service_alias.
 
         :param service_alias: The service alias of the Calendar.
+
         :return: The Calendar instance if found, None otherwise.
         """
 
@@ -65,21 +85,26 @@ class AbstractCalendarService(CrudServiceBase[
         Retrieves a Calendar instance by its calendar id.
 
         :param calendar_id: The calendar id of the Calendar.
+
         :return: The Calendar instance if found, None otherwise.
         """
 
 
 class CalendarService(AbstractCalendarService):
     """
-    Class UserService represent service that work with User
+    Class CalendarService represent service that work with Calendar
     """
 
     def __init__(self, db: Annotated[Session, Depends(get_db)]):
         super().__init__(CRUDCalendar(db))
 
-    def create_calendar(self, calendar_create: CalendarCreate) -> CalendarModel | None:
+    def create_calendar(self, calendar_create: CalendarCreate,
+                        user: User) -> CalendarModel | None:
         if self.get(calendar_create.calendar_id) or \
                 self.get_by_reservation_type(calendar_create.reservation_type):
+            return None
+
+        if user is None or calendar_create.service_alias not in user.roles:
             return None
 
         for collision in calendar_create.collision_with_calendar:
@@ -95,15 +120,27 @@ class CalendarService(AbstractCalendarService):
 
         return self.create(calendar_create)
 
-    def delete_calendar(self, calendar_id) -> CalendarModel | None:
+    def update_calendar(self, calendar_id, calendar_update,
+                        user: User) -> CalendarModel | None:
+        calendar_to_update = self.get_by_calendar_id(calendar_id)
+
+        if user is None or calendar_to_update.service_alias not in user.roles:
+            return None
+
+        return self.update(calendar_id, calendar_update)
+
+    def delete_calendar(self, calendar_id, user: User) -> CalendarModel | None:
         calendar = self.get_by_calendar_id(calendar_id)
         if calendar is None:
+            return None
+
+        if user is None or calendar.service_alias not in user.roles:
             return None
 
         calendars = self.get_by_service_alias(calendar.service_alias)
 
         for calendar_to_update in calendars:
-            if calendar_to_update.collision_with_calendar and\
+            if calendar_to_update.collision_with_calendar and \
                     calendar.calendar_id in calendar_to_update.collision_with_calendar:
                 collision_to_update = calendar_to_update.collision_with_calendar.copy()
                 collision_to_update.remove(calendar.calendar_id)

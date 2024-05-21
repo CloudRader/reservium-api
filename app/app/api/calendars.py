@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 
 from api import EntityNotFoundException, Entity, Message, fastapi_docs
 from schemas import CalendarCreate, Calendar, CalendarUpdate
-from services import CalendarService
+from services import CalendarService, UserService
 
 router = APIRouter(
     prefix='/calendars',
@@ -23,19 +23,27 @@ router = APIRouter(
              },
              status_code=status.HTTP_201_CREATED)
 async def create_calendar(service: Annotated[CalendarService, Depends(CalendarService)],
-                          calendar_create: CalendarCreate) -> Any:
+                          user_service: Annotated[UserService, Depends(UserService)],
+                          calendar_create: CalendarCreate,
+                          username: str) -> Any:
     """
-    Create calendar.
+    Create calendar, only users with special roles can create calendar.
 
-    :param service: Document service.
+    :param service: Calendar service.
+    :param user_service: User service.
     :param calendar_create: Calendar Create schema.
+    :param username: Username of the user who will make this request.
+
+    :returns CalendarModel: the created calendar.
     """
-    calendar = service.create_calendar(calendar_create)
+    user = user_service.get_by_username(username)
+    calendar = service.create_calendar(calendar_create, user)
     if not calendar:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={
-                "message": "Could not create calendar."
+                "message": "Could not create calendar, because bad request or "
+                           "you don't have permission for that."
             }
         )
     return calendar
@@ -94,16 +102,24 @@ async def get_all_calendars(service: Annotated[CalendarService, Depends(Calendar
             },
             status_code=status.HTTP_200_OK)
 async def update_calendar(service: Annotated[CalendarService, Depends(CalendarService)],
+                          user_service: Annotated[UserService, Depends(UserService)],
                           calendar_id: Annotated[str, Path()],
-                          calendar_update: Annotated[CalendarUpdate, Body()]) -> Any:
+                          calendar_update: Annotated[CalendarUpdate, Body()],
+                          username: str) -> Any:
     """
-    Update calendar with id equal to calendar_id.
+    Update calendar with id equal to calendar_id,
+    only users with special roles can update calendar.
 
     :param service: Calendar service.
+    :param user_service: User service.
     :param calendar_id: uuid of the calendar.
     :param calendar_update: CalendarUpdate schema.
+    :param username: Username of the user who will make this request.
+
+    :returns CalendarModel: the updated calendar.
     """
-    calendar = service.update(calendar_id, calendar_update)
+    user = user_service.get_by_username(username)
+    calendar = service.update_calendar(calendar_id, calendar_update, user)
     if not calendar:
         raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
     return calendar
@@ -116,13 +132,22 @@ async def update_calendar(service: Annotated[CalendarService, Depends(CalendarSe
                },
                status_code=status.HTTP_200_OK)
 async def delete_calendar(service: Annotated[CalendarService, Depends(CalendarService)],
-                          calendar_id: Annotated[str, Path()]) -> Any:
-    """Delete calendar with id equal to calendar_id.
-
-    :param service: Document service.
-    :param calendar_id: uuid of the document.
+                          user_service: Annotated[UserService, Depends(UserService)],
+                          calendar_id: Annotated[str, Path()],
+                          username: str) -> Any:
     """
-    calendar = service.delete_calendar(calendar_id)
+    Delete calendar with id equal to calendar_id,
+    only users with special roles can delete calendar.
+
+    :param service: Calendar service.
+    :param user_service: User service.
+    :param calendar_id: uuid of the document.
+    :param username: Username of the user who will make this request.
+
+    :returns CalendarModel: the deleted calendar.
+    """
+    user = user_service.get_by_username(username)
+    calendar = service.delete_calendar(calendar_id, user)
     if not calendar:
         raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
     return calendar

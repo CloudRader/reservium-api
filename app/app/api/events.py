@@ -1,15 +1,13 @@
 """
 API controllers for events.
 """
-from googleapiclient.errors import HttpError
 from typing import Any, Annotated
 
-from fastapi import APIRouter, FastAPI, Depends
-from schemas import EventInput, Room, UserIS
+from fastapi import APIRouter, Depends, status
+from fastapi.responses import JSONResponse
+from schemas import EventCreate, Room, UserIS, User
 from services import EventService, UserService
-from api import get_request, auth_google, fastapi_docs
-
-app = FastAPI()
+from api import get_request, auth_google, fastapi_docs, Message
 
 router = APIRouter(
     prefix='/events',
@@ -17,19 +15,39 @@ router = APIRouter(
 )
 
 
-@router.post("/create_event")
-async def create_event(event_service: Annotated[EventService, Depends(EventService)],
-                       user_service: Annotated[UserService, Depends(UserService)],
-                       event_input: EventInput) -> Any:
+@router.post("/post",
+             responses={
+                 400: {"model": Message, "description": "Couldn't create event."}
+             },
+             status_code=status.HTTP_201_CREATED,
+             )
+async def post_event(service: Annotated[EventService, Depends(EventService)],
+                     user_service: Annotated[UserService, Depends(UserService)],
+                     event_create: EventCreate) -> Any:
+    """
+    Post event to google calendar.
+
+    :param service: Event service.
+    :param user_service: User service.
+    :param event_create: EventCreate schema.
+
+    :returns Event json object: the created event or exception otherwise.
+    """
     creds = auth_google(None)
-    user = user_service.get_by_username(event_input.username)
+    user = user_service.get_by_username(event_create.username)
 
     user_is = UserIS.model_validate(await get_request(user.user_token, "/users/me", user_service))
     services = await get_request(user.user_token, "/services/mine", user_service)
     room = Room.model_validate(await get_request(user.user_token, "/rooms/mine", user_service))
 
-    try:
-        return event_service.post_event(event_input, user_is, user, room, creds, services)
-
-    except HttpError as error:
-        print("An error occurred:", error)
+    event = service.post_event(event_create, user_is, user, room, creds, services)
+    if not event or (len(event) == 1 and 'message' in event):
+        if event:
+            message = event
+        else:
+            message = {"message": "Could not create calendar."}
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=message
+        )
+    return event

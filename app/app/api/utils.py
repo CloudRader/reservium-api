@@ -4,7 +4,7 @@ Utils for API.
 import httpx
 from enum import Enum
 from uuid import UUID
-from fastapi import Depends, Query, status, Request
+from fastapi import Depends, Query, status, Request, HTTPException
 from fastapi.responses import RedirectResponse, Response, JSONResponse
 from pydantic import BaseModel
 from schemas import UserIS, UserUpdate, UserCreate
@@ -49,6 +49,12 @@ async def exchange_code_for_token(user_service: Annotated[UserService, Depends(U
 
     async with httpx.AsyncClient() as client:
         response = await client.post(token_endpoint, data=client_credentials)
+        if response.status_code == 401:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="There's some kind of authorization problem",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         response_data = response.json()
 
         token = response_data.get("access_token", "")
@@ -60,7 +66,7 @@ async def exchange_code_for_token(user_service: Annotated[UserService, Depends(U
     roles = RoleList(roles=await get_request(token, "/user_roles/mine", user_service)).roles
     user_service.create_user(user_data, roles, token)
 
-    return response_data.get("access_token", "")
+    return user_data
 
 
 class Message(BaseModel):
@@ -145,7 +151,8 @@ def entity_not_found_exception_handler(
     return JSONResponse(
         status_code=exc.STATUS_CODE,
         content={
-            "message": f"Entity {exc.entity.value} with uuid {exc.entity_uuid} was not found."
+            "message": f"Entity {exc.entity.value} with id {exc.entity_uuid} was not found or you don't "
+                       f"have permission to do operation with that entity."
         },
     )
 
