@@ -81,7 +81,12 @@ async def exchange_code_for_token(user_service: Annotated[UserService, Depends(U
 
     user_data = UserIS(**response_data_user)
     roles = RoleList(roles=await get_request(token, "/user_roles/mine")).roles
-    return user_service.create_user(user_data, roles, token)
+    user_service.create_user(user_data, roles, token)
+    return {
+        "username": user_data.username,
+        "name": user_data.first_name,
+        "surname": user_data.surname
+    }
 
 
 class Message(BaseModel):

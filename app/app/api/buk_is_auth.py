@@ -7,7 +7,6 @@ from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.responses import RedirectResponse
 from services import UserService
 from api import exchange_code_for_token, CLIENT_ID, REDIRECT_URI, utils
-from schemas import UserIS
 
 app = FastAPI()
 
@@ -40,9 +39,7 @@ async def login():
     return RedirectResponse(url=authorization_url)
 
 
-@router.get("/login/callback",
-            response_model=UserIS
-            )
+@router.get("/login/callback")
 async def callback(user_service: Annotated[UserService, Depends(UserService)],
                    code: str = Query(..., description="OAuth2 authorization code")) -> Any:
     """
