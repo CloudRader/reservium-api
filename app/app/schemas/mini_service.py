@@ -1,6 +1,6 @@
 """DTO schemes for MiniService entity."""
-from pydantic import BaseModel
 from uuid import UUID
+from pydantic import BaseModel
 
 
 class MiniServiceBase(BaseModel):
@@ -10,11 +10,13 @@ class MiniServiceBase(BaseModel):
 
 
 class MiniServiceCreate(MiniServiceBase):
+    """Properties to receive via API on creation."""
     name: str
     service_alias: str
 
 
 class MiniServiceUpdate(MiniServiceBase):
+    """Properties to receive via API on update."""
     name: str | None = None
     service_alias: str | None = None
 

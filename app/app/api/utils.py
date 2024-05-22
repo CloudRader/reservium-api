@@ -1,33 +1,42 @@
 """
 Utils for API.
 """
-import httpx
+from typing import Annotated
 from enum import Enum
 from uuid import UUID
-from fastapi import Depends, Query, status, Request, HTTPException
-from fastapi.responses import RedirectResponse, Response, JSONResponse
+from fastapi import Depends, status, Request, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from schemas import UserIS, UserUpdate, UserCreate
+from schemas import UserIS, RoleList
 from services import UserService
-from typing import Annotated
-from schemas.user_is import RoleList
 
-client_id = "e36219f8fdd7619dfa80754aa17c47e38c04e4407d37c26e48058531c82b18c1"
-client_secret = "44218c6184e21ee1e679586bcbe8d5b1727d6a771c6619a46aa821fe1eff4e98"
-redirect_uri = "https://10.0.52.106:8000/auth_is/login/callback"
+import httpx
+
+CLIENT_ID = "e36219f8fdd7619dfa80754aa17c47e38c04e4407d37c26e48058531c82b18c1"
+CLIENT_SECRET = "44218c6184e21ee1e679586bcbe8d5b1727d6a771c6619a46aa821fe1eff4e98"
+REDIRECT_URI = "https://10.0.52.106:8000/auth_is/login/callback"
 
 
-async def get_request(token: str, request: str, user_service: Annotated[UserService, Depends(UserService)]):
+async def get_request(token: str, request: str):
+    """
+    Make an authenticated GET request to the IS.
+
+    :param token: The authorization token.
+    :param request: The API endpoint to request data.
+
+    :return: The JSON response from the API.
+    """
     info_endpoint = "https://api.is.buk.cvut.cz/v1/" + request
 
     async with httpx.AsyncClient() as client:
         response = await client.get(info_endpoint, headers={"Authorization": f"Bearer {token}"})
 
         if response.status_code == 401:
-            # code: str = Query(..., description="OAuth2 authorization code")
-            # data = exchange_code_for_token(user_service, code)
-
-            return RedirectResponse(url="https://10.0.52.106:8000/auth_is/login")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="There's some kind of authorization problem",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
         response.raise_for_status()
 
@@ -38,12 +47,20 @@ async def get_request(token: str, request: str, user_service: Annotated[UserServ
 
 async def exchange_code_for_token(user_service: Annotated[UserService, Depends(UserService)],
                                   code: str):
+    """
+    Exchange an authorization code for an access token and create a user.
+
+    :param user_service: User service.
+    :param code: The authorization code to exchange for an access token.
+
+    :return: The created user with the retrieved roles and token.
+    """
     token_endpoint = "https://is.buk.cvut.cz/oauth/token"
     client_credentials = {
-        "client_id": client_id,
-        "client_secret": client_secret,
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
         "code": code,
-        "redirect_uri": redirect_uri,
+        "redirect_uri": REDIRECT_URI,
         "grant_type": "authorization_code",
     }
 
@@ -63,10 +80,8 @@ async def exchange_code_for_token(user_service: Annotated[UserService, Depends(U
         response_data_user = response_user.json()
 
     user_data = UserIS(**response_data_user)
-    roles = RoleList(roles=await get_request(token, "/user_roles/mine", user_service)).roles
-    user_service.create_user(user_data, roles, token)
-
-    return user_data
+    roles = RoleList(roles=await get_request(token, "/user_roles/mine")).roles
+    return user_service.create_user(user_data, roles, token)
 
 
 class Message(BaseModel):
@@ -151,7 +166,8 @@ def entity_not_found_exception_handler(
     return JSONResponse(
         status_code=exc.STATUS_CODE,
         content={
-            "message": f"Entity {exc.entity.value} with id {exc.entity_uuid} was not found or you don't "
+            "message": f"Entity {exc.entity.value} with id {exc.entity_uuid} "
+                       f"was not found or you don't "
                        f"have permission to do operation with that entity."
         },
     )
@@ -180,13 +196,14 @@ def not_implemented_exception_handler(
     )
 
 
-# pylint: enable=unused-argument
-
-
+# pylint: disable=too-few-public-methods
+# reason: no more public methods needed.
 class FastApiDocs:
     """Information for fastapi documentation."""
     NAME = "Reservation System of the Buben Club"
-    DESCRIPTION = """Reservation System of the Buben Club API is a **REST API** that offers you an access to
+    DESCRIPTION = """
+    Reservation System of the Buben Club API is a 
+    **REST API** that offers you an access to
     our application!"""
     VERSION = "1.0.0"
     AUTHORISATION_TAG = {

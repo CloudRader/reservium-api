@@ -2,11 +2,11 @@
 This module defines an abstract base class AbstractMiniServiceService that work with Mini Service
 """
 from typing import Annotated, Type
-from fastapi import Depends
+from abc import ABC, abstractmethod
 from uuid import UUID
 
 from db import get_db
-from abc import ABC, abstractmethod
+from fastapi import Depends
 from crud import CRUDMiniService, CRUDCalendar
 from services import CrudServiceBase
 from models import MiniServiceModel

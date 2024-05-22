@@ -2,17 +2,20 @@
 Module to run FastAPI application, where API routers are connecting application to API modules.
 In other words it is an entry point of the application.
 """
-import uvicorn
 from contextlib import asynccontextmanager
+import uvicorn
 from fastapi import FastAPI
 
 from api import buk_is_auth, events, calendars, mini_services, \
-    MethodNotAllowedException, EntityNotFoundException, NotImplementedException, fastapi_docs, \
-    method_not_allowed_exception_handler, entity_not_found_exception_handler, not_implemented_exception_handler
+    MethodNotAllowedException, EntityNotFoundException, NotImplementedException, \
+    fastapi_docs, method_not_allowed_exception_handler, \
+    entity_not_found_exception_handler, not_implemented_exception_handler
 from core import settings
 from db import init_db
 
 
+# pylint: disable=unused-argument
+# reason: Startup_event require FastAPI.
 @asynccontextmanager
 async def startup_event(fast_api_app: FastAPI):
     """

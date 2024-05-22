@@ -2,9 +2,9 @@
 This module defines an abstract base class AbstractCalendarService that work with Calendar
 """
 from typing import Annotated, Type, List
+from abc import ABC, abstractmethod
 from fastapi import Depends
 from db import get_db
-from abc import ABC, abstractmethod
 from crud import CRUDCalendar
 from services import CrudServiceBase
 from models import CalendarModel
@@ -77,6 +77,17 @@ class AbstractCalendarService(CrudServiceBase[
         :param service_alias: The service alias of the Calendar.
 
         :return: The Calendar instance if found, None otherwise.
+        """
+
+    @abstractmethod
+    def get_reservation_type_by_service_alias(self, service_alias: str
+                                              ) -> list[str] | None:
+        """
+        Retrieves a list reservation types instance by its service_alias.
+
+        :param service_alias: The service alias of the Calendar.
+
+        :return: The str of reservation types if found, None otherwise.
         """
 
     @abstractmethod
@@ -156,6 +167,19 @@ class CalendarService(AbstractCalendarService):
 
     def get_by_service_alias(self, service_alias: str) -> List[Type[CalendarModel]] | None:
         return self.crud.get_by_service_alias(service_alias)
+
+    def get_reservation_type_by_service_alias(self, service_alias: str
+                                              ) -> list[str] | None:
+        calendars = self.get_by_service_alias(service_alias)
+
+        reservation_types: list[str] = []
+        for calendar in calendars:
+            reservation_types.append(calendar.reservation_type)
+
+        if len(reservation_types) == 0:
+            return None
+
+        return reservation_types
 
     def get_by_calendar_id(self, calendar_id: str) -> CalendarModel | None:
         return self.crud.get_by_calendar_id(calendar_id)

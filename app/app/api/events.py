@@ -3,11 +3,11 @@ API controllers for events.
 """
 from typing import Any, Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.responses import JSONResponse
-from schemas import EventCreate, Room, UserIS, User
+from schemas import EventCreate, Room, UserIS, InformationFromIS
 from services import EventService, UserService
-from api import get_request, auth_google, fastapi_docs, Message
+from api import get_request, auth_google, fastapi_docs
 
 router = APIRouter(
     prefix='/events',
@@ -16,9 +16,6 @@ router = APIRouter(
 
 
 @router.post("/post",
-             responses={
-                 400: {"model": Message, "description": "Couldn't create event."}
-             },
              status_code=status.HTTP_201_CREATED,
              )
 async def post_event(service: Annotated[EventService, Depends(EventService)],
@@ -36,18 +33,25 @@ async def post_event(service: Annotated[EventService, Depends(EventService)],
     creds = auth_google(None)
     user = user_service.get_by_username(event_create.username)
 
-    user_is = UserIS.model_validate(await get_request(user.user_token, "/users/me", user_service))
-    services = await get_request(user.user_token, "/services/mine", user_service)
-    room = Room.model_validate(await get_request(user.user_token, "/rooms/mine", user_service))
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not exist."
+        )
 
-    event = service.post_event(event_create, user_is, user, room, creds, services)
+    user_is = UserIS.model_validate(await get_request(user.user_token, "/users/me"))
+    services = await get_request(user.user_token, "/services/mine")
+    room = Room.model_validate(await get_request(user.user_token, "/rooms/mine"))
+    is_buk = InformationFromIS(user=user_is, room=room)
+
+    event = service.post_event(event_create, is_buk, user, creds, services)
     if not event or (len(event) == 1 and 'message' in event):
         if event:
             message = event
         else:
-            message = {"message": "Could not create calendar."}
+            message = {"message": "Could not create event."}
         return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_200_OK,
             content=message
         )
     return event

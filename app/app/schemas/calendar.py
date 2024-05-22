@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 
 class Rules(BaseModel):
+    """Represents rules of user."""
     night_time: bool
     reservation_more_24_hours: bool
     in_advance_hours: int
@@ -21,6 +22,7 @@ class CalendarBase(BaseModel):
 
 
 class CalendarCreate(CalendarBase):
+    """Properties to receive via API on creation."""
     calendar_id: str
     service_alias: str
     reservation_type: str
@@ -29,6 +31,7 @@ class CalendarCreate(CalendarBase):
 
 
 class CalendarUpdate(CalendarBase):
+    """Properties to receive via API on update."""
     service_alias: str | None = None
     reservation_type: str | None = None
     event_name: str | None = None

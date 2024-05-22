@@ -8,8 +8,8 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from core import settings
 
-database_uri = str(settings.POSTGRES_DATABASE_URI)
-engine = create_engine(database_uri, pool_pre_ping=True)
+DATABASE_URI = str(settings.POSTGRES_DATABASE_URI)
+engine = create_engine(DATABASE_URI, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 

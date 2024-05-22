@@ -6,6 +6,8 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from db.base_class import Base
 
 
+# pylint: disable=too-few-public-methods
+# reason: ORM model does not require to have any public methods
 class Calendar(Base):
     """
     Calendar model to create and manipulate user entity in the database.

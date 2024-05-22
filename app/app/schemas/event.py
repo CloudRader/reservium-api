@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 
 class EventCreate(BaseModel):
+    """Schema for creating an event."""
     start_datetime: str
     end_datetime: str
     purpose: str

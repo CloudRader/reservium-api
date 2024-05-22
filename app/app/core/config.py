@@ -1,8 +1,8 @@
 """Config."""
 from typing import Dict, Any
-from pydantic import validator, PostgresDsn, HttpUrl
-from .utils import get_env_file_path
+from pydantic import validator, PostgresDsn
 from pydantic_settings import BaseSettings
+from .utils import get_env_file_path
 
 
 class Settings(BaseSettings):
@@ -35,7 +35,7 @@ class Settings(BaseSettings):
         """
         if isinstance(value, str):
             return value
-        return PostgresDsn.build(
+        return PostgresDsn.build(  # pylint: disable=no-member
             scheme=values.get("SQLALCHEMY_SCHEME"),
             username=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),

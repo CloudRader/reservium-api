@@ -151,3 +151,26 @@ async def delete_calendar(service: Annotated[CalendarService, Depends(CalendarSe
     if not calendar:
         raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
     return calendar
+
+
+@router.get("/alias/{service_alias}",
+            responses={
+                **EntityNotFoundException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def get_reservation_types_by_alias(service: Annotated[CalendarService,
+                                         Depends(CalendarService)],
+                                         service_alias: Annotated[str, Path()]) -> Any:
+    """
+    Get reservation types by its service alias.
+
+    :param service: Calendar service.
+    :param service_alias: service alias of the calendar.
+
+    :return: List reservation types with uuid equal to service alias
+             or None if no such calendars exists.
+    """
+    reservation_types = service.get_reservation_type_by_service_alias(service_alias)
+    if not reservation_types:
+        raise EntityNotFoundException(Entity.CALENDAR, service_alias)
+    return reservation_types

@@ -4,7 +4,7 @@ abstract base class (AbstractCRUDCalendar) and a concrete implementation (CRUDCa
 using SQLAlchemy.
 """
 from abc import ABC, abstractmethod
-from typing import Type, List
+from typing import Type
 
 from sqlalchemy.orm import Session
 from models import CalendarModel

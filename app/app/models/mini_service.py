@@ -2,11 +2,15 @@
 Mini service ORM model and its dependencies.
 """
 from uuid import uuid4
+
 from sqlalchemy import Column, String
-from db.base_class import Base
 from sqlalchemy.dialects.postgresql import UUID
 
+from db.base_class import Base
 
+
+# pylint: disable=too-few-public-methods
+# reason: ORM model does not require to have any public methods
 class MiniService(Base):
     """
     Mini service model to create and manipulate mini service entity in the database.

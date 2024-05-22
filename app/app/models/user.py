@@ -7,6 +7,8 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from db.base_class import Base
 
 
+# pylint: disable=too-few-public-methods
+# reason: ORM model does not require to have any public methods
 class User(Base):
     """
     User model to create and manipulate user entity in the database.
@@ -16,3 +18,5 @@ class User(Base):
     user_token = Column(String, unique=True, nullable=False)
     active_member = Column(Boolean, unique=False, nullable=False)
     roles = Column(ARRAY(String), unique=False, nullable=True)
+
+# pylint: enable=too-few-public-methods

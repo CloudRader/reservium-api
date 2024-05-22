@@ -1,12 +1,12 @@
 """
-DTO schemes for Zone entity.
-Test variation
+DTO schemes for Room entity.
 """
 from typing import Optional
 from pydantic import BaseModel
 
 
 class Zone(BaseModel):
+    """Represents a zone."""
     alias: Optional[str]
     id: int
     name: str
@@ -14,6 +14,7 @@ class Zone(BaseModel):
 
 
 class Room(BaseModel):
+    """Represents a room in the IS."""
     door_number: str
     floor: int
     id: int

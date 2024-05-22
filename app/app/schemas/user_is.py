@@ -1,17 +1,19 @@
 """
 DTO schemes for User from IS entity.
-Test variation
 """
-from typing import Optional, List
+from typing import Optional
 from pydantic import BaseModel
+from .zone import Room
 
 
 class Organization(BaseModel):
+    """Represents an organization."""
     name: Optional[str]
     note: Optional[str]
 
 
 class UserIS(BaseModel):
+    """Represents a user in the IS."""
     country: str
     created_at: str
     email: str
@@ -32,7 +34,31 @@ class UserIS(BaseModel):
     usertype: str
 
 
+class Service(BaseModel):
+    """Represents a service."""
+    alias: str
+    name: str
+    note: Optional[str]
+    servicetype: str
+    web: str
+
+
+class ServiceValidity(BaseModel):
+    """Represents a service validity."""
+    from_date: Optional[str]
+    to_date: Optional[str]
+    note: Optional[str]
+    service: Service
+    usetype: str
+
+
+class ServiceList(BaseModel):
+    """Represents a list user services."""
+    services: list[ServiceValidity]
+
+
 class LimitObject(BaseModel):
+    """Represents a limit object."""
     id: int
     name: str
     alias: str
@@ -40,6 +66,7 @@ class LimitObject(BaseModel):
 
 
 class Role(BaseModel):
+    """Represents a role."""
     role: str
     name: str
     description: str
@@ -48,4 +75,12 @@ class Role(BaseModel):
 
 
 class RoleList(BaseModel):
+    """Represents a list user roles."""
     roles: list[Role]
+
+
+class InformationFromIS(BaseModel):
+    """Represents all information about user from IS."""
+    user: UserIS
+    room: Room
+    services: dict

@@ -2,9 +2,9 @@
 API controllers for mini services.
 """
 from typing import Any, Annotated, List
+from uuid import UUID
 from fastapi import APIRouter, Depends, Path, status, Body
 from fastapi.responses import JSONResponse
-from uuid import UUID
 
 from api import EntityNotFoundException, Entity, Message, fastapi_docs
 from schemas import MiniServiceCreate, MiniServiceUpdate, MiniService
@@ -159,7 +159,8 @@ async def delete_mini_service(service: Annotated[MiniServiceService, Depends(Min
                 **EntityNotFoundException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
-async def get_mini_services_by_alias(service: Annotated[MiniServiceService, Depends(MiniServiceService)],
+async def get_mini_services_by_alias(service: Annotated[MiniServiceService,
+                                     Depends(MiniServiceService)],
                                      service_alias: Annotated[str, Path()]) -> Any:
     """
     Get mini services by its service alias.

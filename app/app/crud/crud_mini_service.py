@@ -4,11 +4,11 @@ abstract base class (AbstractCRUDMiniService) and a concrete implementation (CRU
 using SQLAlchemy.
 """
 from abc import ABC, abstractmethod
+from typing import Type
 
 from sqlalchemy.orm import Session
 from models import MiniServiceModel
 from schemas import MiniServiceCreate, MiniServiceUpdate
-from typing import Type
 
 from crud import CRUDBase
 

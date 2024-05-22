@@ -1,16 +1,16 @@
 """
 This module defines an abstract base class AbstractUserService that work with User
 """
-from typing import Annotated, Type
+from typing import Annotated
+from abc import ABC, abstractmethod
+
 from fastapi import Depends
 from db import get_db
-from abc import ABC, abstractmethod
 from crud import CRUDUser
 from services import CrudServiceBase
 from models import UserModel
-from schemas import UserCreate, UserUpdate, User
+from schemas import UserCreate, UserUpdate, User, UserIS, Role
 from sqlalchemy.orm import Session
-from schemas.user_is import UserIS, Role
 
 
 class AbstractUserService(CrudServiceBase[
@@ -73,7 +73,7 @@ class UserService(AbstractUserService):
         for role in roles:
             if role.role == "service_admin":
                 for manager in role.limit_objects:
-                    if manager.alias == "klub" or manager.alias == "grill" or manager.alias == "stud":
+                    if manager.alias in ("klub", "grill", "stud"):
                         user_roles.append(manager.alias)
 
         if user:
@@ -82,19 +82,15 @@ class UserService(AbstractUserService):
                 roles=user_roles,
             )
             return self.update(user.uuid, user_update)
-        else:
-            active_member: bool
-            if len(user_roles) > 0:
-                active_member = True
-            else:
-                active_member = False
-            user_create = UserCreate(
-                username=user_data.username,
-                user_token=token,
-                active_member=active_member,
-                roles=user_roles,
-            )
-            return self.crud.create(user_create)
+
+        active_member = bool(user_roles)
+        user_create = UserCreate(
+            username=user_data.username,
+            user_token=token,
+            active_member=active_member,
+            roles=user_roles,
+        )
+        return self.crud.create(user_create)
 
     def get_by_username(self, username: str) -> UserModel:
         return self.crud.get_by_username(username)

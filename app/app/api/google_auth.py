@@ -14,6 +14,16 @@ CLIENT_SECRET = "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"
 
 
 def auth_google(creds):
+    """
+    Authenticate and return Google credentials.
+    This function handles the authentication for Google APIs. It checks for existing
+    credentials in 'token.json'. If they are not present or invalid, it initiates the
+    OAuth2 flow to obtain new credentials.
+
+    :param creds: Initial credentials.
+
+    :return: Authenticated Google credentials.
+    """
     if os.path.exists("token.json"):
         creds = Credentials.from_authorized_user_file("token.json")
 
@@ -34,7 +44,7 @@ def auth_google(creds):
             }, SCOPES)
             creds = flow.run_local_server(port=0)
 
-        with open("token.json", "w") as token:
+        with open("token.json", "w", encoding="utf-8") as token:
             token.write(creds.to_json())
 
     return creds
