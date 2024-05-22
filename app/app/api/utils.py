@@ -14,7 +14,7 @@ import httpx
 
 CLIENT_ID = "e36219f8fdd7619dfa80754aa17c47e38c04e4407d37c26e48058531c82b18c1"
 CLIENT_SECRET = "44218c6184e21ee1e679586bcbe8d5b1727d6a771c6619a46aa821fe1eff4e98"
-REDIRECT_URI = "https://10.0.52.106:8000/auth_is/login/callback"
+REDIRECT_URI = "https://rezervace.buk.cvut.cz:8000/auth_is/login/callback"
 
 
 async def get_request(token: str, request: str):
