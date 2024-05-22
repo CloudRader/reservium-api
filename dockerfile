@@ -15,7 +15,7 @@ RUN conda-lock install -n $CONDA_ENV_NAME conda-lock.yml && \
     rm /tmp/env.tar
 
 # Runtime image, much more smaller than conda image
-FROM docker.io/debian:buster AS runtime-stage
+FROM do AS runtime-stage
 
 WORKDIR /app
 
