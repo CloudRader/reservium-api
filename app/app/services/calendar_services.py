@@ -91,6 +91,17 @@ class AbstractCalendarService(CrudServiceBase[
         """
 
     @abstractmethod
+    def get_mini_services_by_reservation_type(self, reservation_type: str
+                                              ) -> list[str] | None:
+        """
+        Retrieves a list mini services instance by its reservation_type.
+
+        :param reservation_type: The reservation type of the Calendar.
+
+        :return: The str of mini services if found, None otherwise.
+        """
+
+    @abstractmethod
     def get_by_calendar_id(self, calendar_id: str) -> CalendarModel | None:
         """
         Retrieves a Calendar instance by its calendar id.
@@ -180,6 +191,14 @@ class CalendarService(AbstractCalendarService):
             return None
 
         return reservation_types
+
+    def get_mini_services_by_reservation_type(self, reservation_type: str
+                                              ) -> list[str] | None:
+        calendar = self.get_by_reservation_type(reservation_type)
+
+        if len(calendar.mini_services) == 0:
+            return None
+        return calendar.mini_services
 
     def get_by_calendar_id(self, calendar_id: str) -> CalendarModel | None:
         return self.crud.get_by_calendar_id(calendar_id)

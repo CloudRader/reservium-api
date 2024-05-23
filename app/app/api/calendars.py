@@ -158,19 +158,44 @@ async def delete_calendar(service: Annotated[CalendarService, Depends(CalendarSe
                 **EntityNotFoundException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
-async def get_reservation_types_by_alias(service: Annotated[CalendarService,
-                                         Depends(CalendarService)],
-                                         service_alias: Annotated[str, Path()]) -> Any:
+async def get_reservation_types_by_alias(
+        service: Annotated[CalendarService, Depends(CalendarService)],
+        service_alias: Annotated[str, Path()]
+) -> Any:
     """
     Get reservation types by its service alias.
 
     :param service: Calendar service.
     :param service_alias: service alias of the calendar.
 
-    :return: List reservation types with uuid equal to service alias
+    :return: List reservation types with alias equal to service alias
              or None if no such calendars exists.
     """
     reservation_types = service.get_reservation_type_by_service_alias(service_alias)
     if not reservation_types:
         raise EntityNotFoundException(Entity.CALENDAR, service_alias)
     return reservation_types
+
+
+@router.get("/type/{reservation_type}",
+            responses={
+                **EntityNotFoundException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def get_mini_services_by_reservation_type(
+        service: Annotated[CalendarService, Depends(CalendarService)],
+        reservation_type: Annotated[str, Path()]
+) -> Any:
+    """
+    Get mini services by its reservation type.
+
+    :param service: Calendar service.
+    :param reservation_type: reservation type of the calendar.
+
+    :return: List mini services with type equal to service type
+             or None if no such calendars exists.
+    """
+    mini_services = service.get_mini_services_by_reservation_type(reservation_type)
+    if not mini_services:
+        raise EntityNotFoundException(Entity.CALENDAR, reservation_type)
+    return mini_services
