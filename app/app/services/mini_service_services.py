@@ -73,6 +73,16 @@ class AbstractMiniServiceService(CrudServiceBase[
         :return: The Mini Services instance if found, None otherwise.
         """
 
+    @abstractmethod
+    def get_by_name(self, name: str) -> MiniServiceModel | None:
+        """
+        Retrieves a Calendar instance by its name.
+
+        :param name: The name of the Mini Service.
+
+        :return: The Mini Service instance if found, None otherwise.
+        """
+
 
 class MiniServiceService(AbstractMiniServiceService):
     """
@@ -128,3 +138,6 @@ class MiniServiceService(AbstractMiniServiceService):
         if len(mini_services) == 0:
             return None
         return mini_services
+
+    def get_by_name(self, name: str) -> MiniServiceModel | None:
+        return self.crud.get_by_name(name)

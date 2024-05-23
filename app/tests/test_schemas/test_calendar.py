@@ -48,7 +48,7 @@ def test_conversion_to_dict(calendar_schema):
 
     :param calendar_schema: Calendar schema.
     """
-    res_dict = calendar_schema.dict()
+    res_dict = calendar_schema.model_dump()
 
     assert res_dict["calendar_id"] == calendar_schema.calendar_id
     assert res_dict["service_alias"] == calendar_schema.service_alias

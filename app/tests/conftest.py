@@ -2,6 +2,7 @@
 This module provides fixtures for setting up and tearing down an in-memory database
 used for testing CRUD operations on the models. It defines fixtures and functions
 to ensure proper handling of the database and UUIDs during the testing process.
+Except that other fixture that use in all tests modules
 """
 from typing import Generator, Dict, Any
 
@@ -11,6 +12,10 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from core import settings
 from db import Base
+from schemas import CalendarCreate, CalendarUpdate, \
+    UserCreate, UserUpdate, UserIS, Role, LimitObject, \
+    MiniServiceCreate, MiniServiceUpdate
+from services import UserService
 
 
 # Using fixtures as variables is a standard for pytest
@@ -63,3 +68,163 @@ def db_session(db_session_maker) -> Generator[Session, None, None]:
     """
     with db_session_maker() as db:
         yield db
+
+
+# Schemas
+
+
+@pytest.fixture()
+def mini_service_create() -> MiniServiceCreate:
+    """
+    Return new MiniServiceCreate schema.
+    """
+    return MiniServiceCreate(
+        name="Board games",
+        service_alias="stud",
+    )
+
+
+@pytest.fixture()
+def mini_service_update() -> MiniServiceUpdate:
+    """
+    Return new MiniServiceUpdate schema.
+    """
+    return MiniServiceUpdate(
+        service_alias="klub",
+    )
+
+
+@pytest.fixture(scope="module")
+def rules_json_club_member() -> dict:
+    """
+    Return rules json object.
+    """
+    return {
+        "night_time": False,
+        "reservation_more_24_hours": False,
+        "in_advance_hours": 24,
+        "in_advance_minutes": 30,
+        "in_advance_day": 14
+    }
+
+
+@pytest.fixture()
+def calendar_create(rules_json_club_member) -> CalendarCreate:
+    """
+    Return new calendar.
+    """
+    return CalendarCreate(
+        calendar_id="c_f8a87bad9df63841a343835e6c55964349",
+        service_alias="stud",
+        reservation_type="Study Room",
+        event_name="Studovna/Study Room",
+        max_people=15,
+        collision_with_itself=False,
+        club_member_rules=rules_json_club_member,
+        active_member_rules=rules_json_club_member,
+        manager_rules=rules_json_club_member,
+        mini_services=["Bar", "Consoles", "Games"]
+    )
+
+
+@pytest.fixture()
+def calendar_update() -> CalendarUpdate:
+    """
+    Return new CalendarUpdate schema.
+    """
+    return CalendarUpdate(
+        max_people=10,
+    )
+
+
+@pytest.fixture()
+def user_create() -> UserCreate:
+    """
+    Return new UserCreate schema.
+    """
+    return UserCreate(
+        username="buk_ashi",
+        user_token="fh327ygf3yfvs",
+        active_member=False,
+    )
+
+
+@pytest.fixture()
+def user_update() -> UserUpdate:
+    """
+    Return new UserUpdate schema.
+    """
+    return UserUpdate(
+        active_member=True,
+    )
+
+
+@pytest.fixture()
+def user_data_from_is() -> UserIS:
+    """
+    Return new UserCreate schema.
+    """
+    return UserIS(
+        country="Czech Republic",
+        created_at="2024-6-12",
+        email="raina@buk.cvut.cz",
+        first_name="Kanya",
+        id=1111,
+        im=None,
+        note="active",
+        organization=None,
+        phone="+420",
+        phone_vpn="+420-haa",
+        photo_file="fhwa7owfyagof",
+        photo_file_small="fwafwafafw",
+        state="active",
+        surname="Garin",
+        ui_language="cz",
+        ui_skin="Dark",
+        username="kanya_garin",
+        usertype="individual",
+    )
+
+
+@pytest.fixture(scope="module")
+def limit_data_from_is() -> LimitObject:
+    """
+    Return new UserCreate schema.
+    """
+    return LimitObject(
+        id=1,
+        name="Studovna",
+        alias="stud",
+        note="Spravuje studovnu",
+    )
+
+
+@pytest.fixture(scope="module")
+def role_data_from_is(limit_data_from_is) -> Role:
+    """
+    Return new UserCreate schema.
+    """
+    return Role(
+        role="service_admin",
+        name="Service admin",
+        description="neco",
+        limit="Grillcentrum, Klubovna, Studovna",
+        limit_objects=[limit_data_from_is],
+    )
+
+
+@pytest.fixture()
+def roles_data_from_is(role_data_from_is) -> list[Role]:
+    """
+    Return new UserCreate schema.
+    """
+    return [role_data_from_is]
+
+
+# Services
+@pytest.fixture()
+def service_user(db_session) -> UserService:
+    """
+    Return UserService.
+    """
+    return UserService(db=db_session)

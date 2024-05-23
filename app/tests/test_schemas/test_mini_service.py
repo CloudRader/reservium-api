@@ -29,7 +29,7 @@ def test_conversion_to_dict(mini_service_schema):
 
     :param mini_service_schema: Mini Service schema.
     """
-    res_dict = mini_service_schema.dict()
+    res_dict = mini_service_schema.model_dump()
 
     assert res_dict["uuid"] == mini_service_schema.uuid
     assert res_dict["name"] == mini_service_schema.name

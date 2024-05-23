@@ -61,5 +61,5 @@ class CRUDUser(AbstractCRUDUser):
 
     def get_by_token(self, token: str) -> UserModel | None:
         return self.db.query(self.model) \
-            .filter(self.model.token == token) \
+            .filter(self.model.user_token == token) \
             .first()

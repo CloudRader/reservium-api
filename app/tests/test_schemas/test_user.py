@@ -31,7 +31,7 @@ def test_conversion_to_dict(user_schema):
 
     :param user_schema: User schema.
     """
-    res_dict = user_schema.dict()
+    res_dict = user_schema.model_dump()
 
     assert res_dict["uuid"] == user_schema.uuid
     assert res_dict["username"] == user_schema.username

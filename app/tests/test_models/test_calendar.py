@@ -4,17 +4,10 @@ Module for testing calendar model
 from models import CalendarModel
 
 
-def test_create_document(db_session):
+def test_create_document(db_session, rules_json_club_member):
     """
     Test creating document model.
     """
-    rules = {
-        "night_time": False,
-        "reservation_more_24_hours": False,
-        "in_advance_hours": 24,
-        "in_advance_minutes": 14,
-        "in_advance_day": 14
-    }
     db_obj = CalendarModel(
         calendar_id="c_19586a3da50ca06566ef62012d6829ebf4e3026108212"
                     "e9f9d0cc2fc6bc7c44a@group.calendar.google.com",
@@ -23,9 +16,9 @@ def test_create_document(db_session):
         event_name="Celý Prostor/Entire Space",
         max_people=10,
         collision_with_itself=True,
-        club_member_rules=rules,
-        active_member_rules=rules,
-        manager_rules=rules,
+        club_member_rules=rules_json_club_member,
+        active_member_rules=rules_json_club_member,
+        manager_rules=rules_json_club_member,
         mini_services=[]
     )
 
