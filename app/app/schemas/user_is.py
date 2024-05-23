@@ -2,7 +2,7 @@
 DTO schemes for User from IS entity.
 """
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from .zone import Room
 
 
@@ -45,8 +45,8 @@ class Service(BaseModel):
 
 class ServiceValidity(BaseModel):
     """Represents a service validity."""
-    from_date: Optional[str]
-    to_date: Optional[str]
+    from_: Optional[str] = Field(None, alias='from')
+    to: Optional[str]
     note: Optional[str]
     service: Service
     usetype: str
@@ -83,4 +83,4 @@ class InformationFromIS(BaseModel):
     """Represents all information about user from IS."""
     user: UserIS
     room: Room
-    services: dict
+    services: list[ServiceValidity]

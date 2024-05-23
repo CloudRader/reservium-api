@@ -8,13 +8,13 @@ from models import CalendarModel
 from schemas import Rules, EventCreate, InformationFromIS
 
 
-def control_conditions_and_permissions(user, services, event_input: EventCreate,
+def control_conditions_and_permissions(user, is_buk, event_input: EventCreate,
                                        google_calendar_service, calendar: CalendarModel):
     """
     Check conditions and permissions for creating an event.
 
     :param user: User object in db.
-    :param services: List of available user services on IS.
+    :param is_buk: Information about user from IS.
     :param event_input: Input data for creating the event.
     :param google_calendar_service: Google Calendar service.
     :param calendar: Calendar object in db.
@@ -22,16 +22,13 @@ def control_conditions_and_permissions(user, services, event_input: EventCreate,
     :return: Message indicating whether access is granted or denied.
     """
 
-    # Check of the membership
-    if not service_availability_check(services, calendar.service_alias):
-        return {"message": f"You don't have {calendar.service_alias} service!"}
-
     start_datetime = dt.datetime.strptime(event_input.start_datetime, '%Y-%m-%dT%H:%M:%S')
     end_datetime = dt.datetime.strptime(event_input.end_datetime, '%Y-%m-%dT%H:%M:%S')
 
-    # Check error reservation
-    if start_datetime < dt.datetime.now():
-        return {"message": "You can't make a reservation before the present time!"}
+    # Check of the membership
+    standard_message = first_standard_check(is_buk, calendar, start_datetime)
+    if not standard_message == "Access":
+        return standard_message
 
     # Choose user rules
     user_rules = choose_user_rules(user, calendar)
@@ -43,10 +40,11 @@ def control_conditions_and_permissions(user, services, event_input: EventCreate,
 
     # Check collision with other reservation
     check_collision: list = []
-    for calendar_id in calendar.collision_with_calendar:
-        check_collision.extend(get_events(google_calendar_service,
-                                          event_input.start_datetime,
-                                          event_input.end_datetime, calendar_id))
+    if calendar.collision_with_calendar:
+        for calendar_id in calendar.collision_with_calendar:
+            check_collision.extend(get_events(google_calendar_service,
+                                              event_input.start_datetime,
+                                              event_input.end_datetime, calendar_id))
 
     if not check_collision_time(check_collision, start_datetime, end_datetime):
         return {"message": "There's already a reservation for that time."}
@@ -55,14 +53,56 @@ def control_conditions_and_permissions(user, services, event_input: EventCreate,
     if not dif_days_res(start_datetime, end_datetime, user_rules):
         return {"message": "You can reserve on different day."}
 
+    # Check reservation in advance and prior
+    message = reservation_in_advance(start_datetime, user_rules)
+    if not message == "Access":
+        return message
+
+    return "Access"
+
+
+def first_standard_check(is_buk, calendar, start_time):
+    """
+    Checking if the user is reserving the service user has
+    and that user can't reserve before current date.
+
+    :param is_buk: Information about user from IS.
+    :param calendar: Calendar object in db.
+    :param start_time: Start time of the reservation.
+
+    :return: True indicating if the reservation
+    is made rightly or message if not.
+    """
+    # Check of the membership
+    if not service_availability_check(is_buk.services, calendar.service_alias):
+        return {"message": f"You don't have {calendar.service_alias} service!"}
+
+    # Check error reservation
+    if start_time < dt.datetime.now():
+        return {"message": "You can't make a reservation before the present time!"}
+
+    return "Access"
+
+
+def reservation_in_advance(start_time, user_rules):
+    """
+    Check if the reservation is made within the specified advance and prior time.
+
+    :param start_time: Start time of the reservation.
+    :param user_rules: Rules object containing reservation rules.
+    reservation is made in advance or in prior.
+
+    :return: True indicating if the reservation
+    is made within the specified advance or prior time or message if not.
+    """
     # Reservation in advance
-    if not control_res_in_advance_or_prior(start_datetime, user_rules, True):
+    if not control_res_in_advance_or_prior(start_time, user_rules, True):
         return {"message": f"You have to make reservations {user_rules.in_advance_day} day,"
                            f"{user_rules.in_advance_hours} hours and"
                            f"{user_rules.in_advance_minutes} minutes in advance!"}
 
     # Reservation prior than
-    if not control_res_in_advance_or_prior(start_datetime, user_rules, False):
+    if not control_res_in_advance_or_prior(start_time, user_rules, False):
         return {"message": f"You can't make reservations earlier than "
                            f"{user_rules.in_advance_day} days "
                            f"in advance!"}
@@ -168,6 +208,8 @@ def check_collision_time(check_collision, start_datetime, end_datetime) -> bool:
 
     :return: Boolean indicating if here is already another reservation or not.
     """
+    if len(check_collision) == 0:
+        return True
 
     if len(check_collision) > 1:
         return False
@@ -207,11 +249,11 @@ def get_events(service, start_time, end_time, calendar_id):
     return events_result.get('items', [])
 
 
-def description_of_event(user_is, room, event_input: EventCreate):
+def description_of_event(user, room, event_input: EventCreate):
     """
     Description of the event.
 
-    :param user_is: User object from IS.
+    :param user: User object from IS.
     :param room: Room object from IS.
     :param event_input: Input data for creating the event.
 
@@ -222,7 +264,7 @@ def description_of_event(user_is, room, event_input: EventCreate):
     if event_input.additional_services:
         formatted_services = ", ".join(event_input.additional_services)
     return (
-        f"Jméno/Name: {user_is.first_name} {user_is.surname}\n"
+        f"Jméno/Name: {user.first_name} {user.surname}\n"
         f"Pokoj/Room: {room.door_number}\n"
         f"Číslo osob/Participants: {event_input.guests}\n"
         f"Účel/Purpose: {event_input.purpose}\n"
@@ -245,7 +287,7 @@ def ready_event(calendar: CalendarModel, event_input: EventCreate,
 
     return {
         "summary": calendar.event_name,
-        "description": description_of_event(is_buk.user_is, is_buk.room, event_input),
+        "description": description_of_event(is_buk.user, is_buk.room, event_input),
         "start": {
             "dateTime": event_input.start_datetime,
             "timeZone": "Europe/Vienna"
@@ -260,18 +302,17 @@ def ready_event(calendar: CalendarModel, event_input: EventCreate,
     }
 
 
-def service_availability_check(services, service_name) -> bool:
+def service_availability_check(services, service_alias) -> bool:
     """
     Checking if the user is reserving the service user has.
 
     :param services: List of available user services on IS.
-    :param service_name: The name of the service user wants to reserve .
+    :param service_alias: The alias of the service user wants to reserve .
 
     :return: Boolean indicating if a user have this service or not.
     """
 
-    for item in services:
-        if "service" in item and "name" in item["service"] and \
-                item["service"]["alias"] == service_name:
+    for service in services:
+        if service.service.alias == service_alias:
             return True
     return False

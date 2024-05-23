@@ -14,8 +14,9 @@ from core import settings
 from db import Base
 from schemas import CalendarCreate, CalendarUpdate, \
     UserCreate, UserUpdate, UserIS, Role, LimitObject, \
-    MiniServiceCreate, MiniServiceUpdate
-from services import UserService
+    MiniServiceCreate, MiniServiceUpdate, Room, Zone, \
+    Service, ServiceValidity, InformationFromIS, EventCreate, User
+from services import UserService, CalendarService
 
 
 # Using fixtures as variables is a standard for pytest
@@ -108,7 +109,7 @@ def rules_json_club_member() -> dict:
     }
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def calendar_create(rules_json_club_member) -> CalendarCreate:
     """
     Return new calendar.
@@ -159,10 +160,37 @@ def user_update() -> UserUpdate:
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
+def zone_data_from_is() -> Zone:
+    """
+    Return new Zone schema.
+    """
+    return Zone(
+        alias=None,
+        id=252,
+        name="blok",
+        note="cool",
+    )
+
+
+@pytest.fixture(scope="module")
+def room_data_from_is(zone_data_from_is) -> Room:
+    """
+    Return new Room schema.
+    """
+    return Room(
+        door_number="212",
+        floor=2,
+        id=212,
+        name=None,
+        zone=zone_data_from_is
+    )
+
+
+@pytest.fixture(scope="module")
 def user_data_from_is() -> UserIS:
     """
-    Return new UserCreate schema.
+    Return new UserIS schema.
     """
     return UserIS(
         country="Czech Republic",
@@ -189,7 +217,7 @@ def user_data_from_is() -> UserIS:
 @pytest.fixture(scope="module")
 def limit_data_from_is() -> LimitObject:
     """
-    Return new UserCreate schema.
+    Return new LimitObject schema.
     """
     return LimitObject(
         id=1,
@@ -202,7 +230,7 @@ def limit_data_from_is() -> LimitObject:
 @pytest.fixture(scope="module")
 def role_data_from_is(limit_data_from_is) -> Role:
     """
-    Return new UserCreate schema.
+    Return new Role schema.
     """
     return Role(
         role="service_admin",
@@ -213,12 +241,84 @@ def role_data_from_is(limit_data_from_is) -> Role:
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def roles_data_from_is(role_data_from_is) -> list[Role]:
     """
-    Return new UserCreate schema.
+    Return new list[Role] schemas.
     """
     return [role_data_from_is]
+
+
+@pytest.fixture(scope="module")
+def service_data_from_is() -> Service:
+    """
+    Return new Service schema.
+    """
+    return Service(
+        alias="stud",
+        name="Studovna",
+        note=None,
+        servicetype="free_auto",
+        web="buk.cvut.cz"
+    )
+
+
+@pytest.fixture(scope="module")
+def service_validity_data_from_is(
+        service_data_from_is
+) -> ServiceValidity:
+    """
+    Return new ServiceValidity schema.
+    """
+    return ServiceValidity(
+        from_="2024-02-12",
+        to="2024-08-31",
+        note="Zaklad",
+        service=service_data_from_is,
+        usetype="free"
+    )
+
+
+@pytest.fixture(scope="module")
+def services_data_from_is(
+        service_validity_data_from_is
+) -> list[ServiceValidity]:
+    """
+    Return new list[ServiceValidity] schemas.
+    """
+    return [service_validity_data_from_is]
+
+
+@pytest.fixture(scope="module")
+def information_data_from_is(
+        services_data_from_is,
+        room_data_from_is,
+        user_data_from_is
+) -> InformationFromIS:
+    """
+    Return new InformationFromIS schemas.
+    """
+    return InformationFromIS(
+        user=user_data_from_is,
+        room=room_data_from_is,
+        services=services_data_from_is
+    )
+
+
+@pytest.fixture()
+def event_create() -> EventCreate:
+    """
+    Return new EventCreate schemas.
+    """
+    return EventCreate(
+        start_datetime="2024-12-05T10:00:00",
+        end_datetime="2024-12-05T18:00:00",
+        purpose="Chill",
+        guests=5,
+        reservation_type="Study Room",
+        email="some_test_other_bother@buk.cvut.cz",
+        username="kanya_garin",
+    )
 
 
 # Services
@@ -228,3 +328,23 @@ def service_user(db_session) -> UserService:
     Return UserService.
     """
     return UserService(db=db_session)
+
+
+@pytest.fixture()
+def create_user_manager_stud(
+        db_session, user_data_from_is, roles_data_from_is
+) -> User:
+    """
+    Return User schema.
+    """
+    service = UserService(db=db_session)
+    return service.create_user(user_data_from_is, roles_data_from_is,
+                               "fwafjwafvwaif")
+
+
+@pytest.fixture()
+def service_calendar(db_session) -> CalendarService:
+    """
+    Return CalendarService.
+    """
+    return CalendarService(db=db_session)

@@ -1,21 +1,10 @@
 """
-Module for testing document service
+Module for testing document service.
 """
-from services import CalendarService
-
-import pytest
 
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
-
-
-@pytest.fixture()
-def service_calendar(db_session) -> CalendarService:
-    """
-    Return CalendarService.
-    """
-    return CalendarService(db=db_session)
 
 
 def test_create_calendar(service_calendar, calendar_create,

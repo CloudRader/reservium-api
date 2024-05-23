@@ -4,7 +4,6 @@ Test variant
 """
 from typing import Any, Annotated
 from abc import ABC, abstractmethod
-from googleapiclient.discovery import build
 from services.utils import control_conditions_and_permissions, \
     ready_event
 from fastapi import Depends
@@ -24,14 +23,13 @@ class AbstractEventService(ABC):
 
     @abstractmethod
     def post_event(self, event_input: EventCreate, is_buk: InformationFromIS,
-                   user: User, creds, services) -> Any:
+                   user: User, google_calendar_service) -> Any:
         """
-        Post document in google calendar.
+        Post event in google calendar.
         :param event_input: EventThat me need to post.
-        :param is_buk:
-        :param user:
-        :param creds:
-        :param services:
+        :param is_buk: Information about user from IS.
+        :param user: User object in db.
+        :param google_calendar_service: Google Calendar service.
 
         :returns Event json object: the created event or exception otherwise.
         """
@@ -45,13 +43,15 @@ class EventService(AbstractEventService):
     def __init__(self, db: Annotated[Session, Depends(get_db)]):
         self.calendar_crud = CRUDCalendar(db)
 
+    # pylint: disable=no-member
+    # reason: The googleapiclient.discovery.build function
+    # dynamically creates the events attribute, which is not easily
+    # understood by static code analysis tools like pylint.
     def post_event(self, event_input: EventCreate, is_buk: InformationFromIS, user: User,
-                   creds, services) -> Any:
-        google_calendar_service = build("calendar", "v3", credentials=creds)
-
+                   google_calendar_service) -> Any:
         calendar = self.calendar_crud.get_by_reservation_type(event_input.reservation_type)
 
-        message = control_conditions_and_permissions(user, services, event_input,
+        message = control_conditions_and_permissions(user, is_buk, event_input,
                                                      google_calendar_service, calendar)
 
         if message != "Access":

@@ -12,9 +12,16 @@ from services import UserService
 
 import httpx
 
-CLIENT_ID = "e36219f8fdd7619dfa80754aa17c47e38c04e4407d37c26e48058531c82b18c1"
-CLIENT_SECRET = "44218c6184e21ee1e679586bcbe8d5b1727d6a771c6619a46aa821fe1eff4e98"
-REDIRECT_URI = "https://rezervace.buk.cvut.cz:8000/auth_is/login/callback"
+# For testing on my computer.
+CLIENT_ID = "7b6b8b84740117ff55c72c8c74f9fd4c75a82b1e471b411e6f6a9ca5c063af18"
+CLIENT_SECRET = "903e0b4d8d5cfb69ba540b782e339979b829652ed4d97fb5075f6f6ff73ad284"
+REDIRECT_URI = "https://10.0.52.106:8000/auth_is/login/callback"
+
+
+# For buk server.
+# CLIENT_ID = "e36219f8fdd7619dfa80754aa17c47e38c04e4407d37c26e48058531c82b18c1"
+# CLIENT_SECRET = "44218c6184e21ee1e679586bcbe8d5b1727d6a771c6619a46aa821fe1eff4e98"
+# REDIRECT_URI = "https://rezervace.buk.cvut.cz:8000/auth_is/login/callback"
 
 
 async def get_request(token: str, request: str):
@@ -206,10 +213,10 @@ def not_implemented_exception_handler(
 class FastApiDocs:
     """Information for fastapi documentation."""
     NAME = "Reservation System of the Buben Club"
-    DESCRIPTION = """
-    Reservation System of the Buben Club API is a 
-    **REST API** that offers you an access to
-    our application!"""
+    DESCRIPTION = \
+        "Reservation System of the Buben Club API is " \
+        "a REST API that offers you an access to our " \
+        "application!"
     VERSION = "1.0.0"
     AUTHORISATION_TAG = {
         "name": "users",
