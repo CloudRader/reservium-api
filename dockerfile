@@ -36,5 +36,4 @@ ENTRYPOINT  cd / && \
   tar xzf venv.tar.gz && \
   source venv/bin/activate && \
   cd /app/app/app && \
-  ls && \
   python -m main
