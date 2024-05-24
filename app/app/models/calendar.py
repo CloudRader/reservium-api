@@ -1,8 +1,10 @@
 """
 Calendar ORM model and its dependencies.
 """
+from typing import List, Optional
 from sqlalchemy import Column, String, JSON, Integer, Boolean
 from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.orm import Mapped, mapped_column
 from db.base_class import Base
 
 
@@ -18,11 +20,12 @@ class Calendar(Base):
     event_name = Column(String, nullable=False)
     max_people = Column(Integer, default=0)
     collision_with_itself = Column(Boolean, nullable=False)
-    collision_with_calendar = Column(ARRAY(String), nullable=True)
+    collision_with_calendar: Mapped[Optional[List[str]]] = \
+        mapped_column(ARRAY(String), nullable=True)
     club_member_rules = Column(JSON, nullable=True)
     active_member_rules = Column(JSON, nullable=False)
     manager_rules = Column(JSON, nullable=False)
 
-    mini_services = Column(ARRAY(String), nullable=True)
+    mini_services: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), nullable=True)
 
 # pylint: enable=too-few-public-methods

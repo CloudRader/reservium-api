@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     # pylint: disable=no-self-argument
     # reason: pydantic validator doesn't work with self argument.
     @validator("POSTGRES_DATABASE_URI", pre=True)
-    def assemble_db_connection(cls, value: str | None, values: Dict[str, Any]) -> Any:
+    def assemble_db_connection(cls, value: str | None, values: Dict[str, Any]) -> str:
         """Assemble database connection URI.
 
         :param value: Value to set URI with.
@@ -35,14 +35,14 @@ class Settings(BaseSettings):
         """
         if isinstance(value, str):
             return value
-        return PostgresDsn.build(  # pylint: disable=no-member
-            scheme=values.get("SQLALCHEMY_SCHEME"),
+        return str(PostgresDsn.build(  # pylint: disable=no-member
+            scheme=values.get("SQLALCHEMY_SCHEME", "postgresql"),
             username=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),
             host=values.get("POSTGRES_SERVER"),
             port=values.get("POSTGRES_PORT"),
             path=f'{values.get("POSTGRES_DB")}'
-        )
+        ))
 
     # pylint: enable=no-self-argument
 

@@ -147,7 +147,8 @@ class CalendarService(AbstractCalendarService):
                         user: User) -> CalendarModel | None:
         calendar_to_update = self.get_by_calendar_id(calendar_id)
 
-        if user is None or calendar_to_update.service_alias not in user.roles:
+        if calendar_to_update is None or user is None or \
+                calendar_to_update.service_alias not in user.roles:
             return None
 
         return self.update(calendar_id, calendar_update)
@@ -161,6 +162,9 @@ class CalendarService(AbstractCalendarService):
             return None
 
         calendars = self.get_by_service_alias(calendar.service_alias)
+
+        if calendars is None:
+            return None
 
         for calendar_to_update in calendars:
             if calendar_to_update.collision_with_calendar and \
@@ -184,11 +188,14 @@ class CalendarService(AbstractCalendarService):
                                               ) -> list[str] | None:
         calendars = self.get_by_service_alias(service_alias)
 
+        if calendars is None:
+            return None
+
         reservation_types: list[str] = []
         for calendar in calendars:
             reservation_types.append(calendar.reservation_type)
 
-        if len(reservation_types) == 0:
+        if not reservation_types:
             return None
 
         return reservation_types
@@ -197,8 +204,9 @@ class CalendarService(AbstractCalendarService):
                                               ) -> list[str] | None:
         calendar = self.get_by_reservation_type(reservation_type)
 
-        if len(calendar.mini_services) == 0:
+        if calendar is None or not calendar.mini_services:
             return None
+
         return calendar.mini_services
 
     def get_by_calendar_id(self, calendar_id: str) -> CalendarModel | None:
