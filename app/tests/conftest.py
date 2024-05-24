@@ -9,14 +9,16 @@ from typing import Generator, Dict, Any
 import pytest
 from sqlalchemy import create_engine, Engine
 from sqlalchemy.orm import sessionmaker, Session
+from starlette.testclient import TestClient
 
 from core import settings
-from db import Base
+from db import Base, get_db
 from schemas import CalendarCreate, CalendarUpdate, \
     UserCreate, UserUpdate, UserIS, Role, LimitObject, \
     MiniServiceCreate, MiniServiceUpdate, Room, Zone, \
     Service, ServiceValidity, InformationFromIS, EventCreate, User
 from services import UserService, CalendarService
+from main import app
 
 
 # Using fixtures as variables is a standard for pytest
@@ -69,6 +71,19 @@ def db_session(db_session_maker) -> Generator[Session, None, None]:
     """
     with db_session_maker() as db:
         yield db
+
+
+@pytest.fixture(scope="module")
+def client(db_session_maker):
+    """
+    Return new client for testing api.
+    """
+    def override_get_db():
+        with db_session_maker() as db:
+            yield db
+
+    app.dependency_overrides[get_db] = override_get_db
+    return TestClient(app)
 
 
 # Schemas
