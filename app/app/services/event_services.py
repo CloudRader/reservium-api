@@ -51,6 +51,9 @@ class EventService(AbstractEventService):
                    google_calendar_service) -> Any:
         calendar = self.calendar_crud.get_by_reservation_type(event_input.reservation_type)
 
+        if not calendar:
+            return None
+
         message = control_conditions_and_permissions(user, is_buk, event_input,
                                                      google_calendar_service, calendar)
 

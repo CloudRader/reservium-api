@@ -22,11 +22,11 @@ def control_conditions_and_permissions(user, is_buk, event_input: EventCreate,
     :return: Message indicating whether access is granted or denied.
     """
 
-    start_datetime = dt.datetime.strptime(event_input.start_datetime, '%Y-%m-%dT%H:%M:%S')
-    end_datetime = dt.datetime.strptime(event_input.end_datetime, '%Y-%m-%dT%H:%M:%S')
+    # start_datetime = dt.datetime.strptime(event_input.start_datetime, '%Y-%m-%dT%H:%M:%S')
+    # end_datetime = dt.datetime.strptime(event_input.end_datetime, '%Y-%m-%dT%H:%M:%S')
 
     # Check of the membership
-    standard_message = first_standard_check(is_buk, calendar, start_datetime)
+    standard_message = first_standard_check(is_buk, calendar, event_input.start_datetime)
     if not standard_message == "Access":
         return standard_message
 
@@ -35,7 +35,8 @@ def control_conditions_and_permissions(user, is_buk, event_input: EventCreate,
 
     # Check available reservation time
     if not user_rules.night_time:
-        if not control_available_reservation_time(start_datetime, end_datetime):
+        if not control_available_reservation_time(event_input.start_datetime,
+                                                  event_input.end_datetime):
             return {"message": "You can't reserve in this gap!"}
 
     # Check collision with other reservation
@@ -44,17 +45,22 @@ def control_conditions_and_permissions(user, is_buk, event_input: EventCreate,
         for calendar_id in calendar.collision_with_calendar:
             check_collision.extend(get_events(google_calendar_service,
                                               event_input.start_datetime,
-                                              event_input.end_datetime, calendar_id))
+                                              event_input.end_datetime,
+                                              calendar_id))
 
-    if not check_collision_time(check_collision, start_datetime, end_datetime):
+    if not check_collision_time(check_collision,
+                                event_input.start_datetime,
+                                event_input.end_datetime,
+                                calendar,
+                                google_calendar_service):
         return {"message": "There's already a reservation for that time."}
 
     # Reservation no more than 24 hours
-    if not dif_days_res(start_datetime, end_datetime, user_rules):
+    if not dif_days_res(event_input.start_datetime, event_input.end_datetime, user_rules):
         return {"message": "You can reserve on different day."}
 
     # Check reservation in advance and prior
-    message = reservation_in_advance(start_datetime, user_rules)
+    message = reservation_in_advance(event_input.start_datetime, user_rules)
     if not message == "Access":
         return message
 
@@ -198,16 +204,27 @@ def control_available_reservation_time(start_datetime, end_datetime) -> bool:
     return True
 
 
-def check_collision_time(check_collision, start_datetime, end_datetime) -> bool:
+def check_collision_time(check_collision, start_datetime,
+                         end_datetime, calendar: CalendarModel,
+                         google_calendar_service) -> bool:
     """
     Check if there is already another reservation at that time.
 
     :param check_collision: Start time of the reservation.
     :param start_datetime: End time of the reservation.
     :param end_datetime: End time of the reservation.
+    :param calendar: Calendar object in db.
+    :param google_calendar_service: Google Calendar service.
 
     :return: Boolean indicating if here is already another reservation or not.
     """
+    if not calendar.collision_with_itself:
+        collisions = get_events(google_calendar_service,
+                                start_datetime,
+                                end_datetime, calendar.calendar_id)
+        if len(collisions) > calendar.max_people:
+            return False
+
     if len(check_collision) == 0:
         return True
 
@@ -238,11 +255,15 @@ def get_events(service, start_time, end_time, calendar_id):
     :return: List of the events for that time
     """
 
+    # Convert datetime to string in ISO 8601 format and add 'Z' to indicate UTC time
+    start_time_str = start_time.isoformat(timespec='seconds') + 'Z'
+    end_time_str = end_time.isoformat(timespec='seconds') + 'Z'
+
     # Call the Calendar API
     events_result = service.events().list(
         calendarId=calendar_id,
-        timeMin=start_time + 'Z',
-        timeMax=end_time + 'Z',
+        timeMin=start_time_str,
+        timeMax=end_time_str,
         singleEvents=True,
         orderBy='startTime'
     ).execute()
@@ -285,15 +306,17 @@ def ready_event(calendar: CalendarModel, event_input: EventCreate,
     :return: Dict body of the event.
     """
 
+    start_time = event_input.start_datetime.isoformat(timespec='seconds') + 'Z'
+    end_time = event_input.end_datetime.isoformat(timespec='seconds') + 'Z'
     return {
         "summary": calendar.event_name,
         "description": description_of_event(is_buk.user, is_buk.room, event_input),
         "start": {
-            "dateTime": event_input.start_datetime,
+            "dateTime": start_time,
             "timeZone": "Europe/Vienna"
         },
         "end": {
-            "dateTime": event_input.end_datetime,
+            "dateTime": end_time,
             "timeZone": "Europe/Vienna"
         },
         "attendees": [

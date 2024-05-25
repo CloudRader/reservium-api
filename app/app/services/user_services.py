@@ -76,14 +76,18 @@ class UserService(AbstractUserService):
                     if manager.alias in ("klub", "grill", "stud"):
                         user_roles.append(manager.alias)
 
+        active_member = False
+        if user_data.note.strip() == "active" or bool(user_roles):
+            active_member = True
+
         if user:
             user_update = UserUpdate(
                 user_token=token,
+                active_member=active_member,
                 roles=user_roles,
             )
             return self.update(user.uuid, user_update)
 
-        active_member = bool(user_roles)
         user_create = UserCreate(
             username=user_data.username,
             user_token=token,
