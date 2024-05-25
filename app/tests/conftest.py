@@ -136,6 +136,7 @@ def calendar_create(rules_json_club_member) -> CalendarCreate:
         event_name="Studovna/Study Room",
         max_people=15,
         collision_with_itself=False,
+        collision_with_calendar=[],
         club_member_rules=rules_json_club_member,
         active_member_rules=rules_json_club_member,
         manager_rules=rules_json_club_member,
@@ -327,7 +328,7 @@ def event_create() -> EventCreate:
     """
     return EventCreate(
         start_datetime="2024-12-05T10:00:00",
-        end_datetime="2024-12-05T18:00:00",
+        end_datetime="2024-12-05T23:00:00",
         purpose="Chill",
         guests=5,
         reservation_type="Study Room",

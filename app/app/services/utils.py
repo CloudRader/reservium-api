@@ -22,9 +22,6 @@ def control_conditions_and_permissions(user, is_buk, event_input: EventCreate,
     :return: Message indicating whether access is granted or denied.
     """
 
-    # start_datetime = dt.datetime.strptime(event_input.start_datetime, '%Y-%m-%dT%H:%M:%S')
-    # end_datetime = dt.datetime.strptime(event_input.end_datetime, '%Y-%m-%dT%H:%M:%S')
-
     # Check of the membership
     standard_message = first_standard_check(is_buk, calendar, event_input.start_datetime)
     if not standard_message == "Access":

@@ -2,8 +2,8 @@
 DTO schemes for Event entity.
 Test variation
 """
-from pydantic import BaseModel
 from datetime import datetime
+from pydantic import BaseModel
 
 
 class EventCreate(BaseModel):

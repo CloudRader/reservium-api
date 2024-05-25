@@ -38,4 +38,4 @@ def test_post_event(create_user_manager_stud, service_event,
     )
     assert event is not None
     assert event["message"] == \
-           "You can't make reservations earlier than 14 days in advance!"
+           "You can't reserve in this gap!"
