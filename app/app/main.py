@@ -5,6 +5,7 @@ In other words it is an entry point of the application.
 from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 
 from api import buk_is_auth, events, calendars, mini_services, \
     MethodNotAllowedException, EntityNotFoundException, NotImplementedException, \
@@ -53,11 +54,19 @@ app.add_exception_handler(
     NotImplementedException, not_implemented_exception_handler
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://rezervace.buk.cvut.cz:80"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
+
 if __name__ == "__main__":
     uvicorn.run("main:app",
                 host=settings.APP_SERVER_HOST,
                 port=settings.APP_SERVER_PORT,
-                # reload=settings.APP_SERVER_USE_RELOAD,
-                # proxy_headers=settings.APP_SERVER_USE_PROXY_HEADERS,
+                reload=settings.APP_SERVER_USE_RELOAD,
+                proxy_headers=settings.APP_SERVER_USE_PROXY_HEADERS,
                 ssl_keyfile="certification/key.pem",
                 ssl_certfile="certification/cert.pem")

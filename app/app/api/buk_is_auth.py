@@ -52,7 +52,7 @@ async def callback(user_service: Annotated[UserService, Depends(UserService)],
     """
     user = await exchange_code_for_token(user_service, code)
 
-    redirect_url = f"http://rezervace.buk.cvut.cz:80/logined?" \
+    redirect_url = f"https://rezervace.buk.cvut.cz:80/logined?" \
                    f"username={user.username}"
 
     return RedirectResponse(url=redirect_url)
