@@ -43,7 +43,8 @@ async def create_mini_service(service: Annotated[MiniServiceService, Depends(Min
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={
-                "message": "Could not create calendar."
+                "message": "Could not create mini services, because bad "
+                           "request or you don't have permission for that."
             }
         )
     return mini_service
