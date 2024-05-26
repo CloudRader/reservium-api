@@ -64,7 +64,8 @@ class EventService(AbstractEventService):
 
         if event_input.guests > calendar.max_people:
             google_calendar_service.events().insert(calendarId='primary', body=event_body).execute()
-            return {"message": "You need get permission from the dormitory head, "
+            return {"message": "Too many people!"
+                               "You need get permission from the dormitory head, "
                                "after you will be automatically created a reservation or "
                                "will be canceled with explanation of the reason from the manager."}
 

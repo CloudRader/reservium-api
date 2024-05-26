@@ -34,7 +34,7 @@ def control_conditions_and_permissions(user, is_buk, event_input: EventCreate,
     if not user_rules.night_time:
         if not control_available_reservation_time(event_input.start_datetime,
                                                   event_input.end_datetime):
-            return {"message": "You can't reserve in this gap!"}
+            return {"message": "You can't make reservations at night!"}
 
     # Check collision with other reservation
     check_collision: list = []
