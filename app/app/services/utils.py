@@ -252,8 +252,8 @@ def get_events(service, start_time, end_time, calendar_id):
     :return: List of the events for that time
     """
 
-    start_time_str = (start_time.astimezone(pytz.timezone('Europe/Vienna'))).isoformat()
-    end_time_str = (end_time.astimezone(pytz.timezone('Europe/Vienna'))).isoformat()
+    start_time_str = start_time.isoformat() + "+02:00"
+    end_time_str = end_time.isoformat() + "+02:00"
 
     # Call the Calendar API
     events_result = service.events().list(
@@ -262,7 +262,7 @@ def get_events(service, start_time, end_time, calendar_id):
         timeMax=end_time_str,
         singleEvents=True,
         orderBy='startTime',
-        timeZone = 'Europe/Vienna'
+        timeZone='Europe/Prague'
     ).execute()
     return events_result.get('items', [])
 
@@ -310,11 +310,11 @@ def ready_event(calendar: CalendarModel, event_input: EventCreate,
         "description": description_of_event(is_buk.user, is_buk.room, event_input),
         "start": {
             "dateTime": start_time,
-            "timeZone": "Europe/Vienna"
+            "timeZone": "Europe/Prague"
         },
         "end": {
             "dateTime": end_time,
-            "timeZone": "Europe/Vienna"
+            "timeZone": "Europe/Prague"
         },
         "attendees": [
             {"email": event_input.email},
