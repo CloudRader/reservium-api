@@ -61,7 +61,7 @@ class LimitObject(BaseModel):
     """Represents a limit object."""
     id: int
     name: str
-    alias: str
+    alias: Optional[str]
     note: str
 
 
