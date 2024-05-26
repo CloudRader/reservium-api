@@ -100,8 +100,8 @@ def reservation_in_advance(start_time, user_rules):
     """
     # Reservation in advance
     if not control_res_in_advance_or_prior(start_time, user_rules, True):
-        return {"message": f"You have to make reservations {user_rules.in_advance_day} day,"
-                           f"{user_rules.in_advance_hours} hours and"
+        return {"message": f"You have to make reservations "
+                           f"{user_rules.in_advance_hours} hours and "
                            f"{user_rules.in_advance_minutes} minutes in advance!"}
 
     # Reservation prior than
