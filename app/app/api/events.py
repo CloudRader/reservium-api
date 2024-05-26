@@ -50,11 +50,12 @@ async def post_event(service: Annotated[EventService, Depends(EventService)],
                                google_calendar_service)
     if not event or (len(event) == 1 and 'message' in event):
         if event:
-            message = event
-        else:
-            message = {"message": "Could not create event."}
+            return JSONResponse(
+                status_code=status.HTTP_200_OK,
+                content=event
+            )
         return JSONResponse(
-            status_code=status.HTTP_200_OK,
-            content=message
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"message": "Could not create event."}
         )
     return event

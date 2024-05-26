@@ -4,8 +4,11 @@ API controllers for calendars.
 from typing import Any, Annotated, List
 from fastapi import APIRouter, Depends, Path, status, Body
 from fastapi.responses import JSONResponse
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
-from api import EntityNotFoundException, Entity, Message, fastapi_docs
+from api import EntityNotFoundException, Entity, Message, fastapi_docs, \
+    auth_google
 from schemas import CalendarCreate, Calendar, CalendarUpdate
 from services import CalendarService, UserService
 
@@ -15,6 +18,7 @@ router = APIRouter(
 )
 
 
+# pylint: disable=no-member
 @router.post("/create_calendar",
              response_model=Calendar,
              responses={
@@ -36,6 +40,18 @@ async def create_calendar(service: Annotated[CalendarService, Depends(CalendarSe
 
     :returns CalendarModel: the created calendar.
     """
+    try:
+        google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
+        google_calendar_service.calendars(). \
+            get(calendarId=calendar_create.calendar_id).execute()
+    except HttpError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={
+                "message": "This calendar not exist in Google calendar."
+            }
+        )
+
     user = user_service.get_by_username(username)
     calendar = service.create_calendar(calendar_create, user)
     if not calendar:

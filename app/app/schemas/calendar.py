@@ -28,6 +28,10 @@ class CalendarCreate(CalendarBase):
     reservation_type: str
     event_name: str
     max_people: int
+    collision_with_itself: bool
+    club_member_rules: Rules
+    active_member_rules: Rules
+    manager_rules: Rules
 
 
 class CalendarUpdate(CalendarBase):

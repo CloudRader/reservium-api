@@ -131,12 +131,15 @@ class CalendarService(AbstractCalendarService):
 
         if calendar_create.collision_with_calendar is not None:
             for collision in calendar_create.collision_with_calendar:
+                if not self.get_by_calendar_id(collision):
+                    return None
                 collision_calendar_to_update = set(self.get(collision).collision_with_calendar)
                 collision_calendar_to_update.add(calendar_create.calendar_id)
                 update_exist_calendar = CalendarUpdate(
                     collision_with_calendar=list(collision_calendar_to_update)
                 )
-                self.update(collision, update_exist_calendar)
+                if not self.update(collision, update_exist_calendar):
+                    return None
 
         if calendar_create.collision_with_itself:
             calendar_create.collision_with_calendar.append(calendar_create.calendar_id)
