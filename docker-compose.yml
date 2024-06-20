@@ -1,0 +1,30 @@
+version: '3.0'
+services:
+  db:
+    container_name: buk-reservation-db
+    image: postgres:13.4
+    restart: on-failure
+    environment:
+      - POSTGRES_USER=dev
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=devdb
+    ports:
+      - "5432:5432"
+    networks:
+      - internal
+  backend:
+    container_name: buk-reservation-backendls
+    image: darkrader/buk-reservation-backend-amd64:latest
+    environment:
+      - POSTGRES_SERVER=db
+    depends_on:
+      - db
+    restart: on-failure
+    volumes:
+      - ./:/app
+    ports:
+      - "8000:8000"
+    networks:
+      - internal
+networks:
+  internal:
