@@ -22,6 +22,16 @@ class Settings(BaseSettings):
     SQLALCHEMY_SCHEME: str
     POSTGRES_DATABASE_URI: PostgresDsn | None = None
 
+    SECRET_KEY: str
+
+    CLIENT_ID: str
+    CLIENT_SECRET: str
+    REDIRECT_URI: str
+
+    CLIENT_ID_DEV: str
+    CLIENT_SECRET_DEV: str
+    REDIRECT_URI_DEV: str
+
     TEST_DATABASE_URI: str
 
     # pylint: disable=no-self-argument

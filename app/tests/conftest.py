@@ -354,8 +354,7 @@ def create_user_manager_stud(
     Return User schema.
     """
     service = UserService(db=db_session)
-    return service.create_user(user_data_from_is, roles_data_from_is,
-                               "fwafjwafvwaif")
+    return service.create_user(user_data_from_is, roles_data_from_is)
 
 
 @pytest.fixture()

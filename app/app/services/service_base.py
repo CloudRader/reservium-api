@@ -32,7 +32,7 @@ class AbstractCRUDService(ABC, Generic[Model, Crud, CreateSchema, UpdateSchema])
     """
 
     @abstractmethod
-    def get(self, uuid: UUID) -> Model | None:
+    def get(self, uuid: UUID | str | int) -> Model | None:
         """
         Retrieve an object from the database.
         :param uuid: the ID of the object to retrieve.
@@ -55,7 +55,8 @@ class AbstractCRUDService(ABC, Generic[Model, Crud, CreateSchema, UpdateSchema])
         """
 
     @abstractmethod
-    def update(self, uuid: UUID, obj_in: UpdateSchema) -> Model | None:
+    def update(self, uuid: UUID | str | int,
+               obj_in: UpdateSchema) -> Model | None:
         """
         Update an object in the database.
         :param uuid: the ID of the object to update.
@@ -64,7 +65,7 @@ class AbstractCRUDService(ABC, Generic[Model, Crud, CreateSchema, UpdateSchema])
         """
 
     @abstractmethod
-    def remove(self, uuid: UUID | None) -> Model | None:
+    def remove(self, uuid: UUID | str | int | None) -> Model | None:
         """
         Delete an object from the database.
         :param uuid: The ID of the object to delete.
@@ -86,7 +87,7 @@ class CrudServiceBase(AbstractCRUDService[Model, Crud, CreateSchema, UpdateSchem
     def __init__(self, crud: Crud):
         self.crud: Crud = crud
 
-    def get(self, uuid: UUID | str) -> Model | None:
+    def get(self, uuid: UUID | str | int) -> Model | None:
         return self.crud.get(uuid)
 
     def get_all(self) -> list[Row[Model]] | None:
@@ -98,11 +99,12 @@ class CrudServiceBase(AbstractCRUDService[Model, Crud, CreateSchema, UpdateSchem
     def create(self, obj_in: CreateSchema) -> Model | None:
         return self.crud.create(obj_in)
 
-    def update(self, uuid: UUID | str, obj_in: UpdateSchema) -> Model | None:
+    def update(self, uuid: UUID | str | int,
+               obj_in: UpdateSchema) -> Model | None:
         obj_to_update = self.get(uuid)
         if obj_to_update is None:
             return None
         return self.crud.update(db_obj=obj_to_update, obj_in=obj_in)
 
-    def remove(self, uuid: UUID | str | None) -> Model | None:
+    def remove(self, uuid: UUID | str | int | None) -> Model | None:
         return self.crud.remove(uuid)

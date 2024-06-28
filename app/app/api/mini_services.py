@@ -6,9 +6,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Path, status, Body
 from fastapi.responses import JSONResponse
 
-from api import EntityNotFoundException, Entity, Message, fastapi_docs
-from schemas import MiniServiceCreate, MiniServiceUpdate, MiniService
-from services import MiniServiceService, UserService
+from api import EntityNotFoundException, Entity, Message, fastapi_docs, \
+    get_current_user
+from schemas import MiniServiceCreate, MiniServiceUpdate, MiniService, User
+from services import MiniServiceService
 
 router = APIRouter(
     prefix='/mini_services',
@@ -23,21 +24,20 @@ router = APIRouter(
                        "description": "Couldn't create mini service."},
              },
              status_code=status.HTTP_201_CREATED)
-async def create_mini_service(service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-                              user_service: Annotated[UserService, Depends(UserService)],
-                              mini_service_create: MiniServiceCreate,
-                              username: str) -> Any:
+async def create_mini_service(
+        service: Annotated[MiniServiceService, Depends(MiniServiceService)],
+        user: Annotated[User, Depends(get_current_user)],
+        mini_service_create: MiniServiceCreate
+) -> Any:
     """
     Create mini service, only users with special roles can create mini service.
 
     :param service: Mini Service ser.
-    :param user_service: User service.
+    :param user: User who make this request.
     :param mini_service_create: Mini Service Create schema.
-    :param username: Username of the user who will make this request.
 
     :returns MiniServiceModel: the created mini service.
     """
-    user = user_service.get_by_username(username)
     mini_service = service.create_mini_service(mini_service_create, user)
     if not mini_service:
         return JSONResponse(
@@ -56,8 +56,10 @@ async def create_mini_service(service: Annotated[MiniServiceService, Depends(Min
                 **EntityNotFoundException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
-async def get_mini_service(service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-                           mini_service_uuid: Annotated[str, Path()]) -> Any:
+async def get_mini_service(
+        service: Annotated[MiniServiceService, Depends(MiniServiceService)],
+        mini_service_uuid: Annotated[str, Path()]
+) -> Any:
     """
     Get mini service by its uuid.
 
@@ -76,8 +78,9 @@ async def get_mini_service(service: Annotated[MiniServiceService, Depends(MiniSe
 @router.get("/",
             response_model=List[MiniService],
             status_code=status.HTTP_200_OK)
-async def get_mini_services(service: Annotated[MiniServiceService, Depends(MiniServiceService)]
-                            ) -> Any:
+async def get_mini_services(
+        service: Annotated[MiniServiceService, Depends(MiniServiceService)]
+) -> Any:
     """
     Get all mini services from database.
 
@@ -102,24 +105,23 @@ async def get_mini_services(service: Annotated[MiniServiceService, Depends(MiniS
                 **EntityNotFoundException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
-async def update_mini_service(service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-                              user_service: Annotated[UserService, Depends(UserService)],
-                              mini_service_uuid: Annotated[UUID, Path()],
-                              mini_service_update: Annotated[MiniServiceUpdate, Body()],
-                              username: str) -> Any:
+async def update_mini_service(
+        service: Annotated[MiniServiceService, Depends(MiniServiceService)],
+        user: Annotated[User, Depends(get_current_user)],
+        mini_service_uuid: Annotated[UUID, Path()],
+        mini_service_update: Annotated[MiniServiceUpdate, Body()]
+) -> Any:
     """
     Update mini service with uuid equal to mini_service_uuid,
     only users with special roles can update mini service.
 
     :param service: Mini Service ser.
-    :param user_service: User service.
+    :param user: User who make this request.
     :param mini_service_uuid: uuid of the mini service.
     :param mini_service_update: MiniServiceUpdate schema.
-    :param username: Username of the user who will make this request.
 
     :returns MiniServiceModel: the updated mini service.
     """
-    user = user_service.get_by_username(username)
     mini_service = service.update_mini_service(mini_service_uuid, mini_service_update, user)
     if not mini_service:
         raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_uuid)
@@ -132,22 +134,21 @@ async def update_mini_service(service: Annotated[MiniServiceService, Depends(Min
                    **EntityNotFoundException.RESPONSE,
                },
                status_code=status.HTTP_200_OK)
-async def delete_mini_service(service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-                              user_service: Annotated[UserService, Depends(UserService)],
-                              mini_service_uuid: Annotated[UUID, Path()],
-                              username: str) -> Any:
+async def delete_mini_service(
+        service: Annotated[MiniServiceService, Depends(MiniServiceService)],
+        user: Annotated[User, Depends(get_current_user)],
+        mini_service_uuid: Annotated[UUID, Path()],
+) -> Any:
     """
     Delete calendar with id equal to calendar_id,
     only users with special roles can delete mini service.
 
     :param service: Mini Service ser.
-    :param user_service: User service.
+    :param user: User who make this request.
     :param mini_service_uuid: uuid of the mini service.
-    :param username: Username of the user who will make this request.
 
     :returns MiniServiceModel: the deleted mini service.
     """
-    user = user_service.get_by_username(username)
     mini_service = service.delete_mini_service(mini_service_uuid, user)
     if not mini_service:
         raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_uuid)
@@ -160,9 +161,10 @@ async def delete_mini_service(service: Annotated[MiniServiceService, Depends(Min
                 **EntityNotFoundException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
-async def get_mini_services_by_alias(service: Annotated[MiniServiceService,
-                                     Depends(MiniServiceService)],
-                                     service_alias: Annotated[str, Path()]) -> Any:
+async def get_mini_services_by_alias(
+        service: Annotated[MiniServiceService, Depends(MiniServiceService)],
+        service_alias: Annotated[str, Path()]
+) -> Any:
     """
     Get mini services by its service alias.
 

@@ -24,7 +24,7 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
    """
 
     @abstractmethod
-    def get(self, uuid: UUID | str) -> Model | None:
+    def get(self, uuid: UUID | str | int) -> Model | None:
         """
         Retrieve a single record by its UUID.
         """
@@ -54,7 +54,7 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
         """
 
     @abstractmethod
-    def remove(self, uuid: UUID | str | None) -> Model | None:
+    def remove(self, uuid: UUID | str | int | None) -> Model | None:
         """
         Remove a record by its UUID.
         """
@@ -70,7 +70,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         self.model: Type[Model] = model
         self.db: Session = db
 
-    def get(self, uuid: UUID | str) -> Model | None:
+    def get(self, uuid: UUID | str | int) -> Model | None:
         if uuid is None:
             return None
         return self.db.get(self.model, uuid)
@@ -105,7 +105,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         self.db.refresh(db_obj)
         return db_obj
 
-    def remove(self, uuid: UUID | str | None) -> Model | None:
+    def remove(self, uuid: UUID | str | int | None) -> Model | None:
         if uuid is None:
             return None
         obj = self.db.get(self.model, uuid)

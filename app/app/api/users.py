@@ -1,0 +1,120 @@
+"""
+API controllers for authorisation in IS(Information System of the Buben club)
+and users itself.
+"""
+from typing import Annotated, Any, List
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, Request
+from fastapi.responses import RedirectResponse, JSONResponse
+from services import UserService
+from api import authenticate_user, utils, get_oauth_session, get_current_user
+from schemas import User
+from core import settings
+
+app = FastAPI()
+
+router = APIRouter(
+    prefix='/users',
+    tags=[utils.fastapi_docs.AUTHORISATION_TAG["name"]]
+)
+
+
+@router.get("/login")
+async def login(request: Request):
+    """
+    Authenticate a user, construct authorization URL and redirect to authorization page of IS.
+    """
+    authorization_url = (
+        f"https://is.buk.cvut.cz/oauth/authorize?client_id={settings.CLIENT_ID_DEV}"
+        "&response_type=code&scope=location"  # Include the "location" scope
+    )
+    oauth = get_oauth_session()
+    authorization_url, state = oauth.authorization_url(authorization_url)
+    request.session['oauth_state'] = state
+    return RedirectResponse(url=authorization_url)
+
+
+@router.get("/callback")
+async def callback(
+        user_service: Annotated[UserService, Depends(UserService)],
+        request: Request
+) -> Any:
+    """
+    Callback link after authorization on IS.
+
+    :param user_service: User service.
+    :param request: Request received, needed to get the user token.
+
+    :return: Authorized  User schema.
+    """
+    oauth = get_oauth_session()
+
+    try:
+        token = oauth.fetch_token(
+            "https://is.buk.cvut.cz/oauth/token",
+            client_secret=settings.CLIENT_SECRET_DEV,
+            authorization_response=str(request.url)
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="There's some kind of authorization problem",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
+
+    request.session['oauth_token'] = token
+
+    user = await authenticate_user(user_service, token['access_token'])
+    request.session['user_username'] = user.username
+
+    return {"username": user.username, "token_type": "bearer"}
+
+
+@router.get("/me",
+            response_model=User)
+async def get_user(
+        current_user: Annotated[User, Depends(get_current_user)]
+) -> Any:
+    """
+     Get currently authenticated user.
+
+     :param current_user: Current user.
+
+     :return: Current user.
+     """
+    return current_user
+
+
+@router.get("/",
+            response_model=List[User])
+async def get_all_users(
+        user_service: Annotated[UserService, Depends(UserService)]
+) -> Any:
+    """
+     Get all users.
+
+     :param user_service: User service.
+
+     :return: All users in database.
+     """
+    users = user_service.get_all()
+    if not users:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={
+                "message": "No users in db."
+            }
+        )
+    return users
+
+
+@router.get("/logout")
+async def logout(request: Request):
+    """
+    Clean session of the current user.
+
+    :param request: Request received.
+
+    :return: Message.
+    """
+    request.session.clear()
+    return {"message": "Logged out"}

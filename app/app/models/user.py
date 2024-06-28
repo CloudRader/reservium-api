@@ -1,10 +1,9 @@
 """
 User ORM model and its dependencies.
 """
-from uuid import uuid4
 from typing import Optional, List
-from sqlalchemy import Column, String, Boolean
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy import Column, String, Boolean, Integer
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 from db.base_class import Base
 
@@ -15,9 +14,8 @@ class User(Base):
     """
     User model to create and manipulate user entity in the database.
     """
-    uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    id = Column(Integer, primary_key=True, unique=True, nullable=False)
     username = Column(String, unique=True, nullable=False)
-    user_token = Column(String, unique=True, nullable=False)
     active_member = Column(Boolean, unique=False, nullable=False)
     roles: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), unique=False, nullable=True)
 

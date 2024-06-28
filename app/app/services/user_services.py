@@ -25,13 +25,12 @@ class AbstractUserService(CrudServiceBase[
     """
 
     @abstractmethod
-    def create_user(self, user_data: UserIS, roles: list[Role], token) -> UserModel:
+    def create_user(self, user_data: UserIS, roles: list[Role]) -> UserModel:
         """
         Create a User in the database.
 
         :param user_data: Received data from IS.
         :param roles: List of user roles in IS.
-        :param token: Token of a user.
 
         :return: the created User.
         """
@@ -46,16 +45,6 @@ class AbstractUserService(CrudServiceBase[
         :return: The User instance if found, None otherwise.
         """
 
-    @abstractmethod
-    def get_by_token(self, token: str) -> UserModel:
-        """
-        Retrieves a User instance by its token.
-
-        :param token: The token of the User.
-
-        :return: The User instance if found, None otherwise.
-        """
-
 
 class UserService(AbstractUserService):
     """
@@ -65,7 +54,7 @@ class UserService(AbstractUserService):
     def __init__(self, db: Annotated[Session, Depends(get_db)]):
         super().__init__(CRUDUser(db))
 
-    def create_user(self, user_data: UserIS, roles: list[Role], token) -> UserModel:
+    def create_user(self, user_data: UserIS, roles: list[Role]) -> UserModel:
         user = self.get_by_username(user_data.username)
 
         user_roles = []
@@ -82,15 +71,14 @@ class UserService(AbstractUserService):
 
         if user:
             user_update = UserUpdate(
-                user_token=token,
                 active_member=active_member,
                 roles=user_roles,
             )
-            return self.update(user.uuid, user_update)
+            return self.update(user.id, user_update)
 
         user_create = UserCreate(
+            id=user_data.id,
             username=user_data.username,
-            user_token=token,
             active_member=active_member,
             roles=user_roles,
         )
@@ -98,6 +86,3 @@ class UserService(AbstractUserService):
 
     def get_by_username(self, username: str) -> UserModel:
         return self.crud.get_by_username(username)
-
-    def get_by_token(self, token: str) -> UserModel:
-        return self.crud.get_by_token(token)
