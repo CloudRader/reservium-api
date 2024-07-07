@@ -19,6 +19,7 @@ class Entity(Enum):
     CALENDAR = "Calendar"
     EVENT = "Event"
     MINI_SERVICE = "Mini Service"
+    RESERVATION_SERVICE = "Reservation Service"
 
 
 # pylint: disable=unused-argument
@@ -134,6 +135,10 @@ class FastApiDocs:
         "name": "users",
         "description": "Authorisation in IS.",
     }
+    RESERVATION_SERVICE_TAG = {
+        "name": "reservation services",
+        "description": "Operations with reservation services.",
+    }
     CALENDAR_TAG = {
         "name": "calendars",
         "description": "Operations with calendars.",
@@ -151,6 +156,7 @@ class FastApiDocs:
         """Get tags metadata."""
         return [
             self.AUTHORISATION_TAG,
+            self.RESERVATION_SERVICE_TAG,
             self.CALENDAR_TAG,
             self.MINI_SERVICE_TAG,
             self.EVENT_TAG,

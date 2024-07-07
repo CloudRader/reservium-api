@@ -6,9 +6,11 @@ from .crud_base import CRUDBase
 from .crud_user import CRUDUser
 from .crud_calendar import CRUDCalendar
 from .crud_mini_service import CRUDMiniService
+from .crud_reservation_service import CRUDReservationService
 
 __all__ = ["CRUDBase",
            "CRUDCalendar",
            "CRUDUser",
-           "CRUDMiniService"
+           "CRUDMiniService",
+           "CRUDReservationService"
            ]

@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from api import users, events, calendars, mini_services, \
+from api import users, events, calendars, mini_services, reservation_services, \
     MethodNotAllowedException, EntityNotFoundException, NotImplementedException, \
     fastapi_docs, method_not_allowed_exception_handler, \
     entity_not_found_exception_handler, not_implemented_exception_handler
@@ -42,6 +42,7 @@ app = FastAPI(
 )
 app.include_router(users.router)
 app.include_router(events.router)
+app.include_router(reservation_services.router)
 app.include_router(calendars.router)
 app.include_router(mini_services.router)
 
