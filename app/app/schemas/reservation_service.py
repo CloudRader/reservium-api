@@ -1,6 +1,7 @@
 """DTO schemes for ReservationService entity."""
 from uuid import UUID
 from pydantic import BaseModel
+from schemas import MiniService
 
 
 class ReservationServiceBase(BaseModel):
@@ -26,6 +27,7 @@ class ReservationServiceInDBBase(ReservationServiceBase):
     uuid: UUID
     name: str
     alias: str
+    mini_services: list[MiniService]
 
     # pylint: disable=too-few-public-methods
     # reason: Config class only needs to set orm_mode to True.

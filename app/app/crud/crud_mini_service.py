@@ -34,16 +34,6 @@ class AbstractCRUDMiniService(CRUDBase[
         :return: The Mini Service instance if found, None otherwise.
         """
 
-    @abstractmethod
-    def get_by_service_alias(self, service_alias: str) -> list[Type[MiniServiceModel]]:
-        """
-        Retrieves a Mini Services instance by its service alias.
-
-        :param service_alias: The service alias of the Mini Service.
-
-        :return: The Mini Service instance if found, None otherwise.
-        """
-
 
 class CRUDMiniService(AbstractCRUDMiniService):
     """
@@ -59,8 +49,3 @@ class CRUDMiniService(AbstractCRUDMiniService):
         return self.db.query(self.model) \
             .filter(self.model.name == name) \
             .first()
-
-    def get_by_service_alias(self, service_alias: str) -> list[Type[MiniServiceModel]]:
-        return self.db.query(self.model) \
-            .filter(self.model.service_alias == service_alias) \
-            .all()

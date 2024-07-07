@@ -1,13 +1,13 @@
 """
 This module defines an abstract base class AbstractMiniServiceService that work with Mini Service
 """
-from typing import Annotated, Type
+from typing import Annotated
 from abc import ABC, abstractmethod
 from uuid import UUID
 
 from db import get_db
 from fastapi import Depends
-from crud import CRUDMiniService, CRUDCalendar
+from crud import CRUDMiniService, CRUDCalendar, CRUDReservationService
 from services import CrudServiceBase
 from models import MiniServiceModel
 from schemas import MiniServiceCreate, MiniServiceUpdate, CalendarUpdate, User
@@ -64,19 +64,9 @@ class AbstractMiniServiceService(CrudServiceBase[
         """
 
     @abstractmethod
-    def get_by_service_alias(self, service_alias: str) -> list[Type[MiniServiceModel]] | None:
-        """
-        Retrieves a Mini Service instance by its service_alias.
-
-        :param service_alias: The service alias of the Mini Service.
-
-        :return: The Mini Services instance if found, None otherwise.
-        """
-
-    @abstractmethod
     def get_by_name(self, name: str) -> MiniServiceModel | None:
         """
-        Retrieves a Calendar instance by its name.
+        Retrieves a Mini Service instance by its name.
 
         :param name: The name of the Mini Service.
 
@@ -91,6 +81,7 @@ class MiniServiceService(AbstractMiniServiceService):
 
     def __init__(self, db: Annotated[Session, Depends(get_db)]):
         self.calendar_crud = CRUDCalendar(db)
+        self.reservation_service_crud = CRUDReservationService(db)
         super().__init__(CRUDMiniService(db))
 
     def create_mini_service(self, mini_service_create: MiniServiceCreate,
@@ -98,7 +89,12 @@ class MiniServiceService(AbstractMiniServiceService):
         if self.crud.get_by_name(mini_service_create.name):
             return None
 
-        if user is None or mini_service_create.service_alias not in user.roles:
+        reservation_service = self.reservation_service_crud.get(
+            mini_service_create.reservation_service_uuid
+        )
+
+        if user is None or reservation_service is None or \
+                reservation_service.alias not in user.roles:
             return None
 
         return self.crud.create(mini_service_create)
@@ -108,7 +104,12 @@ class MiniServiceService(AbstractMiniServiceService):
                             user: User) -> MiniServiceModel | None:
         mini_service_to_update = self.get(uuid)
 
-        if user is None or mini_service_to_update.service_alias not in user.roles:
+        reservation_service = self.reservation_service_crud.get(
+            mini_service_to_update.reservation_service_uuid
+        )
+
+        if user is None or reservation_service is None or \
+                reservation_service.alias not in user.roles:
             return None
 
         return self.update(uuid, mini_service_update)
@@ -117,27 +118,26 @@ class MiniServiceService(AbstractMiniServiceService):
                             user: User) -> MiniServiceModel | None:
         mini_service = self.crud.get(uuid)
 
-        if user is None or mini_service.service_alias not in user.roles:
+        reservation_service = self.reservation_service_crud.get(
+            mini_service.reservation_service_uuid
+        )
+
+        if user is None or reservation_service is None or \
+                reservation_service.alias not in user.roles:
             return None
 
-        calendars = self.calendar_crud.get_by_service_alias(mini_service.service_alias)
-
-        for calendar in calendars:
-            if mini_service.name in calendar.mini_services:
-                list_of_mini_services = calendar.mini_services.copy()
-                list_of_mini_services.remove(mini_service.name)
-                update_exist_calendar = CalendarUpdate(
-                    mini_services=list_of_mini_services
-                )
-                self.calendar_crud.update(db_obj=calendar, obj_in=update_exist_calendar)
+        # calendars = self.calendar_crud.get_by_service_alias(mini_service.service_alias)
+        #
+        # for calendar in calendars:
+        #     if mini_service.name in calendar.mini_services:
+        #         list_of_mini_services = calendar.mini_services.copy()
+        #         list_of_mini_services.remove(mini_service.name)
+        #         update_exist_calendar = CalendarUpdate(
+        #             mini_services=list_of_mini_services
+        #         )
+        #         self.calendar_crud.update(db_obj=calendar, obj_in=update_exist_calendar)
 
         return self.crud.remove(uuid)
-
-    def get_by_service_alias(self, service_alias: str) -> list[Type[MiniServiceModel]] | None:
-        mini_services = self.crud.get_by_service_alias(service_alias)
-        if len(mini_services) == 0:
-            return None
-        return mini_services
 
     def get_by_name(self, name: str) -> MiniServiceModel | None:
         return self.crud.get_by_name(name)

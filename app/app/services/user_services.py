@@ -62,7 +62,7 @@ class UserService(AbstractUserService):
         for role in roles:
             if role.role == "service_admin":
                 for manager in role.limit_objects:
-                    if manager.alias in ("сlub", "grill", "stud"):
+                    if manager.alias in ("club", "grill", "stud"):
                         user_roles.append(manager.alias)
 
         active_member = False

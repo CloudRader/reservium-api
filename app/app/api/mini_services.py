@@ -140,7 +140,7 @@ async def delete_mini_service(
         mini_service_uuid: Annotated[UUID, Path()],
 ) -> Any:
     """
-    Delete calendar with id equal to calendar_id,
+    Delete mini service with mini_service_uuid equal to uuid,
     only users with special roles can delete mini service.
 
     :param service: Mini Service ser.
@@ -155,7 +155,7 @@ async def delete_mini_service(
     return mini_service
 
 
-@router.get("/alias/{service_alias}",
+@router.get("/name/{name}",
             response_model=List[MiniService],
             responses={
                 **EntityNotFoundException.RESPONSE,
@@ -163,18 +163,18 @@ async def delete_mini_service(
             status_code=status.HTTP_200_OK)
 async def get_mini_services_by_alias(
         service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-        service_alias: Annotated[str, Path()]
+        name: Annotated[str, Path()]
 ) -> Any:
     """
-    Get mini services by its service alias.
+    Get mini services by its service name.
 
     :param service: Mini Service ser.
-    :param service_alias: service alias of the mini service.
+    :param name: service name of the mini service.
 
-    :return: Mini Service with uuid equal to uuid
+    :return: Mini Service with name equal to name
              or None if no such mini service exists.
     """
-    mini_service = service.get_by_service_alias(service_alias)
+    mini_service = service.get_by_name(name)
     if not mini_service:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, service_alias)
+        raise EntityNotFoundException(Entity.MINI_SERVICE, name)
     return mini_service

@@ -5,27 +5,24 @@ from pydantic import BaseModel
 
 class MiniServiceBase(BaseModel):
     """Shared properties of MiniService."""
-    name: str | None = None
-    service_alias: str | None = None
 
 
 class MiniServiceCreate(MiniServiceBase):
     """Properties to receive via API on creation."""
+    reservation_service_uuid: UUID
     name: str
-    service_alias: str
 
 
 class MiniServiceUpdate(MiniServiceBase):
     """Properties to receive via API on update."""
     name: str | None = None
-    service_alias: str | None = None
 
 
 class MiniServiceInDBBase(MiniServiceBase):
     """Base model for mini service in database."""
     uuid: UUID
     name: str
-    service_alias: str
+    reservation_service_uuid: UUID
 
     # pylint: disable=too-few-public-methods
     # reason: Config class only needs to set orm_mode to True.
