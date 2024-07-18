@@ -59,6 +59,13 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
         Remove a record by its UUID.
         """
 
+    @abstractmethod
+    def soft_remove(self, uuid: UUID | str | int | None) -> Model | None:
+        """
+        Soft remove a record by its UUID.
+        Change attribute is_active to False in model
+        """
+
 
 class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
     """
@@ -112,5 +119,16 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         if obj is None:
             return None
         self.db.delete(obj)
+        self.db.commit()
+        return obj
+
+    def soft_remove(self, uuid: UUID | str | int | None) -> Model | None:
+        if uuid is None:
+            return None
+        obj = self.db.get(self.model, uuid)
+        if obj is None:
+            return None
+        obj.is_active = False
+        self.db.add(obj)
         self.db.commit()
         return obj

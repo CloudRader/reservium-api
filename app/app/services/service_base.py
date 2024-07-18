@@ -71,6 +71,14 @@ class AbstractCRUDService(ABC, Generic[Model, Crud, CreateSchema, UpdateSchema])
         :param uuid: The ID of the object to delete.
         """
 
+    @abstractmethod
+    def soft_remove(self, uuid: UUID | str | int | None) -> Model | None:
+        """
+        Soft remove a record by its UUID.
+        Change attribute is_active to False in model
+        :param uuid: The ID of the object to delete.
+        """
+
 
 class CrudServiceBase(AbstractCRUDService[Model, Crud, CreateSchema, UpdateSchema]):
     """
@@ -108,3 +116,6 @@ class CrudServiceBase(AbstractCRUDService[Model, Crud, CreateSchema, UpdateSchem
 
     def remove(self, uuid: UUID | str | int | None) -> Model | None:
         return self.crud.remove(uuid)
+
+    def soft_remove(self, uuid: UUID | str | int | None) -> Model | None:
+        return self.crud.soft_remove(uuid)

@@ -21,6 +21,7 @@ class MiniServiceUpdate(MiniServiceBase):
 class MiniServiceInDBBase(MiniServiceBase):
     """Base model for mini service in database."""
     uuid: UUID
+    is_active: bool
     name: str
     reservation_service_uuid: UUID
 

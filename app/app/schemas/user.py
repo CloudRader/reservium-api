@@ -26,6 +26,7 @@ class UserUpdate(UserBase):
 class UserInDBBase(UserBase):
     """Base model for user in database."""
     id: int
+    is_active: bool
     username: str
     active_member: bool
     roles: list[str]

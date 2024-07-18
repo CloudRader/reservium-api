@@ -1,11 +1,11 @@
 """
 This module defines an abstract base class AbstractCalendarService that work with Calendar
 """
-from typing import Annotated, Type, List
+from typing import Annotated
 from abc import ABC, abstractmethod
 from fastapi import Depends
 from db import get_db
-from crud import CRUDCalendar
+from crud import CRUDCalendar, CRUDReservationService
 from services import CrudServiceBase
 from models import CalendarModel
 from schemas import CalendarCreate, CalendarUpdate, User
@@ -24,8 +24,10 @@ class AbstractCalendarService(CrudServiceBase[
     """
 
     @abstractmethod
-    def create_calendar(self, calendar_create,
-                        user: User) -> CalendarModel | None:
+    def create_calendar(
+            self, calendar_create: CalendarCreate,
+            user: User
+    ) -> CalendarModel | None:
         """
         Create a Calendar in the database.
 
@@ -36,12 +38,15 @@ class AbstractCalendarService(CrudServiceBase[
         """
 
     @abstractmethod
-    def update_calendar(self, calendar_id, calendar_update,
-                        user: User) -> CalendarModel | None:
+    def update_calendar(
+            self, calendar_id: str,
+            calendar_update: CalendarUpdate,
+            user: User
+    ) -> CalendarModel | None:
         """
         Update a Calendar in the database.
 
-        :param calendar_id: The calendar id of the Calendar.
+        :param calendar_id: The id of the Calendar.
         :param calendar_update: CalendarUpdate Schema for update.
         :param user: the UserSchema for control permissions of the calendar.
 
@@ -49,18 +54,23 @@ class AbstractCalendarService(CrudServiceBase[
         """
 
     @abstractmethod
-    def delete_calendar(self, calendar_id, user: User) -> CalendarModel | None:
+    def delete_calendar(
+            self, calendar_id: str,
+            user: User
+    ) -> CalendarModel | None:
         """
         Delete a Calendar in the database.
 
-        :param calendar_id: The calendar id of the Calendar.
+        :param calendar_id: The id of the Calendar.
         :param user: the UserSchema for control permissions of the calendar.
 
         :return: the deleted Calendar.
         """
 
     @abstractmethod
-    def get_by_reservation_type(self, reservation_type: str) -> CalendarModel | None:
+    def get_by_reservation_type(
+            self, reservation_type: str
+    ) -> CalendarModel | None:
         """
         Retrieves a Calendar instance by its reservation_type.
 
@@ -70,45 +80,15 @@ class AbstractCalendarService(CrudServiceBase[
         """
 
     @abstractmethod
-    def get_by_service_alias(self, service_alias: str) -> list[Type[CalendarModel]] | None:
-        """
-        Retrieves a Calendar instance by its service_alias.
-
-        :param service_alias: The service alias of the Calendar.
-
-        :return: The Calendar instance if found, None otherwise.
-        """
-
-    @abstractmethod
-    def get_reservation_type_by_service_alias(self, service_alias: str
-                                              ) -> list[str] | None:
-        """
-        Retrieves a list reservation types instance by its service_alias.
-
-        :param service_alias: The service alias of the Calendar.
-
-        :return: The str of reservation types if found, None otherwise.
-        """
-
-    @abstractmethod
-    def get_mini_services_by_reservation_type(self, reservation_type: str
-                                              ) -> list[str] | None:
+    def get_mini_services_by_reservation_type(
+            self, calendar_id: str
+    ) -> list[str] | None:
         """
         Retrieves a list mini services instance by its reservation_type.
 
-        :param reservation_type: The reservation type of the Calendar.
+        :param calendar_id: The id of the Calendar.
 
         :return: The str of mini services if found, None otherwise.
-        """
-
-    @abstractmethod
-    def get_by_calendar_id(self, calendar_id: str) -> CalendarModel | None:
-        """
-        Retrieves a Calendar instance by its calendar id.
-
-        :param calendar_id: The calendar id of the Calendar.
-
-        :return: The Calendar instance if found, None otherwise.
         """
 
 
@@ -118,99 +98,96 @@ class CalendarService(AbstractCalendarService):
     """
 
     def __init__(self, db: Annotated[Session, Depends(get_db)]):
+        self.reservation_service_crud = CRUDReservationService(db)
         super().__init__(CRUDCalendar(db))
 
-    def create_calendar(self, calendar_create: CalendarCreate,
-                        user: User) -> CalendarModel | None:
-        if self.get(calendar_create.calendar_id) or \
+    def create_calendar(
+            self, calendar_create: CalendarCreate,
+            user: User
+    ) -> CalendarModel | None:
+        if self.get(calendar_create.id) or \
                 self.get_by_reservation_type(calendar_create.reservation_type):
             return None
 
-        if user is None or calendar_create.service_alias not in user.roles:
+        reservation_service = self.reservation_service_crud.get(
+            calendar_create.reservation_service_uuid
+        )
+
+        if user is None or reservation_service is None or \
+                reservation_service.alias not in user.roles:
             return None
 
         if calendar_create.collision_with_calendar is not None:
             for collision in calendar_create.collision_with_calendar:
-                if not self.get_by_calendar_id(collision):
+                if not self.get(collision):
                     return None
                 collision_calendar_to_update = set(self.get(collision).collision_with_calendar)
-                collision_calendar_to_update.add(calendar_create.calendar_id)
+                collision_calendar_to_update.add(calendar_create.id)
                 update_exist_calendar = CalendarUpdate(
                     collision_with_calendar=list(collision_calendar_to_update)
                 )
                 if not self.update(collision, update_exist_calendar):
                     return None
 
-        if calendar_create.collision_with_itself:
-            calendar_create.collision_with_calendar.append(calendar_create.calendar_id)
-
         return self.create(calendar_create)
 
-    def update_calendar(self, calendar_id, calendar_update,
-                        user: User) -> CalendarModel | None:
-        calendar_to_update = self.get_by_calendar_id(calendar_id)
+    def update_calendar(
+            self, calendar_id: str,
+            calendar_update: CalendarUpdate,
+            user: User
+    ) -> CalendarModel | None:
+        calendar_to_update = self.get(calendar_id)
 
-        if calendar_to_update is None or user is None or \
-                calendar_to_update.service_alias not in user.roles:
+        reservation_service = self.reservation_service_crud.get(
+            calendar_to_update.reservation_service_uuid
+        )
+
+        if user is None or reservation_service is None or \
+                reservation_service.alias not in user.roles:
             return None
 
         return self.update(calendar_id, calendar_update)
 
-    def delete_calendar(self, calendar_id, user: User) -> CalendarModel | None:
-        calendar = self.get_by_calendar_id(calendar_id)
-        if calendar is None:
+    def delete_calendar(
+            self, calendar_id: str,
+            user: User
+    ) -> CalendarModel | None:
+        calendar = self.get(calendar_id)
+
+        reservation_service = self.reservation_service_crud.get(
+            calendar.reservation_service_uuid
+        )
+
+        if user is None or reservation_service is None or \
+                reservation_service.alias not in user.roles:
             return None
 
-        if user is None or calendar.service_alias not in user.roles:
-            return None
-
-        calendars = self.get_by_service_alias(calendar.service_alias)
-
-        if calendars is None:
-            return None
-
-        for calendar_to_update in calendars:
-            if calendar_to_update.collision_with_calendar and \
-                    calendar.calendar_id in calendar_to_update.collision_with_calendar:
-                collision_to_update = calendar_to_update.collision_with_calendar.copy()
-                collision_to_update.remove(calendar.calendar_id)
-                update_exist_calendar = CalendarUpdate(
-                    collision_with_calendar=collision_to_update
-                )
-                self.update(calendar_to_update.calendar_id, update_exist_calendar)
+        # calendars = self.get_by_service_alias(calendar.service_alias)
+        #
+        # if calendars is None:
+        #     return None
+        #
+        # for calendar_to_update in calendars:
+        #     if calendar_to_update.collision_with_calendar and \
+        #             calendar.id in calendar_to_update.collision_with_calendar:
+        #         collision_to_update = calendar_to_update.collision_with_calendar.copy()
+        #         collision_to_update.remove(calendar.id)
+        #         update_exist_calendar = CalendarUpdate(
+        #             collision_with_calendar=collision_to_update
+        #         )
+        #         self.update(calendar_to_update.id, update_exist_calendar)
 
         return self.crud.remove(calendar_id)
 
     def get_by_reservation_type(self, reservation_type: str) -> CalendarModel | None:
         return self.crud.get_by_reservation_type(reservation_type)
 
-    def get_by_service_alias(self, service_alias: str) -> List[Type[CalendarModel]] | None:
-        return self.crud.get_by_service_alias(service_alias)
-
-    def get_reservation_type_by_service_alias(self, service_alias: str
-                                              ) -> list[str] | None:
-        calendars = self.get_by_service_alias(service_alias)
-
-        if calendars is None:
-            return None
-
-        reservation_types: list[str] = []
-        for calendar in calendars:
-            reservation_types.append(calendar.reservation_type)
-
-        if not reservation_types:
-            return None
-
-        return reservation_types
-
-    def get_mini_services_by_reservation_type(self, reservation_type: str
-                                              ) -> list[str] | None:
-        calendar = self.get_by_reservation_type(reservation_type)
+    def get_mini_services_by_reservation_type(
+            self, calendar_id: str
+    ) -> list[str] | None:
+        calendar = self.crud.get(calendar_id)
 
         if calendar is None or not calendar.mini_services:
             return None
 
         return calendar.mini_services
-
-    def get_by_calendar_id(self, calendar_id: str) -> CalendarModel | None:
-        return self.crud.get_by_calendar_id(calendar_id)

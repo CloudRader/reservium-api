@@ -24,7 +24,7 @@ def test_get_by_calendar_id(service_calendar, calendar_create):
     """
     Test getting created calendar.
     """
-    db_calendar = service_calendar.get_by_calendar_id(calendar_create.calendar_id)
+    db_calendar = service_calendar.get_by_calendar_id(calendar_create.id)
     assert db_calendar is not None
 
 
@@ -57,12 +57,12 @@ def test_delete_calendar(service_calendar, calendar_create,
     """
     user = service_user.get_by_token("fkbwa;uwfgagflwy")
     removed_calendar = service_calendar.delete_calendar(
-        calendar_create.calendar_id,
+        calendar_create.id,
         user
     )
     assert removed_calendar is not None
-    assert removed_calendar.calendar_id == calendar_create.calendar_id
-    db_calendar = service_calendar.get(removed_calendar.calendar_id)
+    assert removed_calendar.id == calendar_create.id
+    db_calendar = service_calendar.get(removed_calendar.id)
     assert db_calendar is None
 
 
@@ -71,9 +71,9 @@ def test_remove_nonexistent_calendar(service_calendar, calendar_create):
     Test deleting nonexistent calendar.
     """
     calendar = service_calendar.create(calendar_create)
-    calendar_removed = service_calendar.remove(calendar.calendar_id)
+    calendar_removed = service_calendar.remove(calendar.id)
     assert calendar_removed is not None
-    calendar_removed = service_calendar.remove(calendar_removed.calendar_id)
+    calendar_removed = service_calendar.remove(calendar_removed.id)
     assert calendar_removed is None
     calendar_removed = service_calendar.remove(None)
     assert calendar_removed is None
@@ -87,7 +87,7 @@ def test_update_calendar(service_calendar, calendar_create,
     user = service_user.get_by_token("fkbwa;uwfgagflwy")
     calendar = service_calendar.create_calendar(calendar_create, user)
     calendar_updated = service_calendar.update_calendar(
-        calendar.calendar_id,
+        calendar.id,
         calendar_update,
         user
     )
@@ -102,6 +102,6 @@ def test_get_all(service_calendar, calendar_create):
     """
     calendars = service_calendar.get_all()
     assert calendars is not None
-    service_calendar.remove(calendar_create.calendar_id)
+    service_calendar.remove(calendar_create.id)
     calendars = service_calendar.get_all()
     assert calendars is None

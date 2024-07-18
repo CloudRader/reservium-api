@@ -50,7 +50,7 @@ def test_conversion_to_dict(calendar_schema):
     """
     res_dict = calendar_schema.model_dump()
 
-    assert res_dict["calendar_id"] == calendar_schema.calendar_id
+    assert res_dict["calendar_id"] == calendar_schema.id
     assert res_dict["service_alias"] == calendar_schema.service_alias
     assert res_dict["reservation_type"] == calendar_schema.reservation_type
     assert res_dict["event_name"] == calendar_schema.event_name

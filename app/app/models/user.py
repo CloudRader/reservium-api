@@ -14,6 +14,9 @@ class User(Base):
     """
     User model to create and manipulate user entity in the database.
     """
+    __tablename__ = "user"
+    is_active = Column(Boolean, nullable=False, default=True)
+
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     username = Column(String, unique=True, nullable=False)
     active_member = Column(Boolean, unique=False, nullable=False)

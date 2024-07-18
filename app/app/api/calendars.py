@@ -43,7 +43,7 @@ async def create_calendar(
     try:
         google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
         google_calendar_service.calendars(). \
-            get(calendarId=calendar_create.calendar_id).execute()
+            get(calendarId=calendar_create.id).execute()
     except HttpError:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -78,7 +78,7 @@ async def get_calendar(
     Get calendar by its uuid.
 
     :param service: Calendar service.
-    :param calendar_id: uuid of the calendar.
+    :param calendar_id: id of the calendar.
 
     :return: Calendar with uuid equal to calendar_uuid
              or None if no such document exists.
@@ -131,7 +131,7 @@ async def update_calendar(
 
     :param service: Calendar service.
     :param user: User who make this request.
-    :param calendar_id: uuid of the calendar.
+    :param calendar_id: id of the calendar.
     :param calendar_update: CalendarUpdate schema.
 
     :returns CalendarModel: the updated calendar.
@@ -159,7 +159,7 @@ async def delete_calendar(
 
     :param service: Calendar service.
     :param user: User who make this request.
-    :param calendar_id: uuid of the document.
+    :param calendar_id: id of the calendar.
 
     :returns CalendarModel: the deleted calendar.
     """
@@ -169,49 +169,25 @@ async def delete_calendar(
     return calendar
 
 
-@router.get("/alias/{service_alias}",
-            responses={
-                **EntityNotFoundException.RESPONSE,
-            },
-            status_code=status.HTTP_200_OK)
-async def get_reservation_types_by_alias(
-        service: Annotated[CalendarService, Depends(CalendarService)],
-        service_alias: Annotated[str, Path()]
-) -> Any:
-    """
-    Get reservation types by its service alias.
-
-    :param service: Calendar service.
-    :param service_alias: service alias of the calendar.
-
-    :return: List reservation types with alias equal to service alias
-             or None if no such calendars exists.
-    """
-    reservation_types = service.get_reservation_type_by_service_alias(service_alias)
-    if not reservation_types:
-        raise EntityNotFoundException(Entity.CALENDAR, service_alias)
-    return reservation_types
-
-
-@router.get("/type/{reservation_type}",
+@router.get("/mini_services/{calendar_id}",
             responses={
                 **EntityNotFoundException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
 async def get_mini_services_by_reservation_type(
         service: Annotated[CalendarService, Depends(CalendarService)],
-        reservation_type: Annotated[str, Path()]
+        calendar_id: Annotated[str, Path()]
 ) -> Any:
     """
     Get mini services by its reservation type.
 
     :param service: Calendar service.
-    :param reservation_type: reservation type of the calendar.
+    :param calendar_id: id of the calendar.
 
     :return: List mini services with type equal to service type
              or None if no such calendars exists.
     """
-    mini_services = service.get_mini_services_by_reservation_type(reservation_type)
+    mini_services = service.get_mini_services_by_reservation_type(calendar_id)
     if not mini_services:
-        raise EntityNotFoundException(Entity.CALENDAR, reservation_type)
+        raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
     return mini_services

@@ -69,7 +69,7 @@ class EventService(AbstractEventService):
                                "after you will be automatically created a reservation or "
                                "will be canceled with explanation of the reason from the manager."}
 
-        event = google_calendar_service.events().insert(calendarId=calendar.calendar_id,
+        event = google_calendar_service.events().insert(calendarId=calendar.id,
                                                         body=event_body).execute()
 
         print(f"Event created {event.get('htmlLink')}")

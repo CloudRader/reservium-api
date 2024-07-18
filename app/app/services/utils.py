@@ -38,8 +38,10 @@ def control_conditions_and_permissions(user, is_buk, event_input: EventCreate,
 
     # Check collision with other reservation
     check_collision: list = []
+    collisions: list = calendar.collision_with_calendar
+    collisions.append(calendar.id)
     if calendar.collision_with_calendar:
-        for calendar_id in calendar.collision_with_calendar:
+        for calendar_id in collisions:
             check_collision.extend(get_events(google_calendar_service,
                                               event_input.start_datetime,
                                               event_input.end_datetime,
@@ -144,10 +146,10 @@ def dif_days_res(start_datetime, end_datetime, user_rules: Rules) -> bool:
     if start_datetime.year != end_datetime.year \
             or start_datetime.month != end_datetime.month:
         return False
-    if not user_rules.reservation_more_24_hours:
-        time_difference = abs(end_datetime - start_datetime)
-        if time_difference > dt.timedelta(hours=24):
-            return False
+
+    time_difference = abs(end_datetime - start_datetime)
+    if time_difference > dt.timedelta(hours=user_rules.max_reservation_hours):
+        return False
     return True
 
 
@@ -218,7 +220,7 @@ def check_collision_time(check_collision, start_datetime,
     if not calendar.collision_with_itself:
         collisions = get_events(google_calendar_service,
                                 start_datetime,
-                                end_datetime, calendar.calendar_id)
+                                end_datetime, calendar.id)
         if len(collisions) > calendar.max_people:
             return False
 
@@ -306,7 +308,7 @@ def ready_event(calendar: CalendarModel, event_input: EventCreate,
     start_time = event_input.start_datetime.isoformat()
     end_time = event_input.end_datetime.isoformat()
     return {
-        "summary": calendar.event_name,
+        "summary": calendar.reservation_type,
         "description": description_of_event(is_buk.user, is_buk.room, event_input),
         "start": {
             "dateTime": start_time,
