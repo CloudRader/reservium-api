@@ -97,23 +97,23 @@ class ReservationServiceService(AbstractReservationServiceService):
         if self.crud.get_by_name(reservation_service_create.name):
             return None
 
-        # TODO only head of the operation section can creat new reservation service
+        if not user.section_head:
+            return None
 
         return self.crud.create(reservation_service_create)
 
     def update_mini_service(self, uuid: UUID,
                             reservation_service_update: ReservationServiceUpdate,
                             user: User) -> ReservationServiceModel | None:
-        # mini_service_to_update = self.get(uuid)
-
-        # TODO only head of the operation section can update reservation service
+        if not user.section_head:
+            return None
 
         return self.update(uuid, reservation_service_update)
 
     def delete_mini_service(self, uuid: UUID,
                             user: User) -> ReservationServiceModel | None:
-
-        # TODO only head of the operation section can delete reservation service
+        if not user.section_head:
+            return None
 
         return self.crud.remove(uuid)
 

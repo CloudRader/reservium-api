@@ -5,7 +5,7 @@ from typing import Annotated
 from abc import ABC, abstractmethod
 from fastapi import Depends
 from db import get_db
-from crud import CRUDCalendar, CRUDReservationService
+from crud import CRUDCalendar, CRUDReservationService, CRUDMiniService
 from services import CrudServiceBase
 from models import CalendarModel
 from schemas import CalendarCreate, CalendarUpdate, User
@@ -99,6 +99,7 @@ class CalendarService(AbstractCalendarService):
 
     def __init__(self, db: Annotated[Session, Depends(get_db)]):
         self.reservation_service_crud = CRUDReservationService(db)
+        self.mini_service_crud = CRUDMiniService(db)
         super().__init__(CRUDCalendar(db))
 
     def create_calendar(
@@ -116,6 +117,12 @@ class CalendarService(AbstractCalendarService):
         if user is None or reservation_service is None or \
                 reservation_service.alias not in user.roles:
             return None
+
+        for mini_service in calendar_create.mini_services:
+            if mini_service not in \
+                    self.mini_service_crud.get_names_by_reservation_service_uuid(
+                        reservation_service.uuid):
+                return None
 
         if calendar_create.collision_with_calendar is not None:
             for collision in calendar_create.collision_with_calendar:
@@ -162,20 +169,15 @@ class CalendarService(AbstractCalendarService):
                 reservation_service.alias not in user.roles:
             return None
 
-        # calendars = self.get_by_service_alias(calendar.service_alias)
-        #
-        # if calendars is None:
-        #     return None
-        #
-        # for calendar_to_update in calendars:
-        #     if calendar_to_update.collision_with_calendar and \
-        #             calendar.id in calendar_to_update.collision_with_calendar:
-        #         collision_to_update = calendar_to_update.collision_with_calendar.copy()
-        #         collision_to_update.remove(calendar.id)
-        #         update_exist_calendar = CalendarUpdate(
-        #             collision_with_calendar=collision_to_update
-        #         )
-        #         self.update(calendar_to_update.id, update_exist_calendar)
+        for calendar_to_update in reservation_service.calendars:
+            if calendar_to_update.collision_with_calendar and \
+                    calendar.id in calendar_to_update.collision_with_calendar:
+                collision_to_update = calendar_to_update.collision_with_calendar.copy()
+                collision_to_update.remove(calendar.id)
+                update_exist_calendar = CalendarUpdate(
+                    collision_with_calendar=collision_to_update
+                )
+                self.update(calendar_to_update.id, update_exist_calendar)
 
         return self.crud.remove(calendar_id)
 

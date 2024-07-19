@@ -19,7 +19,8 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     username = Column(String, unique=True, nullable=False)
-    active_member = Column(Boolean, unique=False, nullable=False)
+    active_member = Column(Boolean, unique=False, nullable=False, default=False)
+    section_head = Column(Boolean, unique=False, nullable=False, default=False)
     roles: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), unique=False, nullable=True)
 
 # pylint: enable=too-few-public-methods

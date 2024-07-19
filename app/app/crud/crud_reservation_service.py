@@ -4,8 +4,8 @@ abstract base class (AbstractCRUDReservationService) and a concrete implementati
 using SQLAlchemy.
 """
 from abc import ABC, abstractmethod
-from typing import Type
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from models import ReservationServiceModel
 from schemas import ReservationServiceCreate, ReservationServiceUpdate
@@ -44,6 +44,14 @@ class AbstractCRUDReservationService(CRUDBase[
         :return: The Reservation Service instance if found, None otherwise.
         """
 
+    @abstractmethod
+    def get_all_aliases(self) -> list[str]:
+        """
+        Retrieves all aliases from all  Reservation Services.
+
+        :return: list of aliases.
+        """
+
 
 class CRUDReservationService(AbstractCRUDReservationService):
     """
@@ -64,3 +72,8 @@ class CRUDReservationService(AbstractCRUDReservationService):
         return self.db.query(self.model) \
             .filter(self.model.alias == alias) \
             .first()
+
+    def get_all_aliases(self) -> list[str]:
+        stmt = select(self.model.alias)
+        result = self.db.execute(stmt)
+        return [row[0] for row in result.fetchall()]

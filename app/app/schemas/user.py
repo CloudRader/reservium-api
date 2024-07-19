@@ -6,8 +6,6 @@ from pydantic import BaseModel
 
 class UserBase(BaseModel):
     """Shared properties of User."""
-    username: str | None = None
-    active_member: bool | None = None
     roles: list[str] | None = None
 
 
@@ -16,11 +14,15 @@ class UserCreate(UserBase):
     id: int
     username: str
     active_member: bool
+    section_head: bool
 
 
 class UserUpdate(UserBase):
     """Properties to receive via API on update."""
+    id: int | None = None
+    username: str | None = None
     active_member: bool | None = None
+    section_head: bool | None = None
 
 
 class UserInDBBase(UserBase):
@@ -29,7 +31,7 @@ class UserInDBBase(UserBase):
     is_active: bool
     username: str
     active_member: bool
-    roles: list[str]
+    section_head: bool
 
     # pylint: disable=too-few-public-methods
     # reason: Config class only needs to set orm_mode to True.

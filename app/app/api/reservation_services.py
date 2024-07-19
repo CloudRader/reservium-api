@@ -74,7 +74,7 @@ async def get_reservation_service(
     """
     reservation_service = service.get(reservation_service_uuid)
     if not reservation_service:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, reservation_service_uuid)
+        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_uuid)
     return reservation_service
 
 
@@ -129,7 +129,7 @@ async def update_reservation_service(
         reservation_service_uuid, reservation_service_update, user
     )
     if not reservation_service:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, reservation_service_uuid)
+        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_uuid)
     return reservation_service
 
 
@@ -156,7 +156,7 @@ async def delete_reservation_service(
     """
     reservation_service = service.delete_mini_service(reservation_service_uuid, user)
     if not reservation_service:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, reservation_service_uuid)
+        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_uuid)
     return reservation_service
 
 
@@ -181,7 +181,7 @@ async def get_reservation_service_by_name(
     """
     reservation_service = service.get_by_name(name)
     if not reservation_service:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, name)
+        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, name)
     return reservation_service
 
 
@@ -206,5 +206,5 @@ async def get_reservation_service_by_alias(
     """
     reservation_service = service.get_by_alias(alias)
     if not reservation_service:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, alias)
+        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, alias)
     return reservation_service

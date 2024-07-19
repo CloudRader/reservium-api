@@ -4,7 +4,9 @@ abstract base class (AbstractCRUDMiniService) and a concrete implementation (CRU
 using SQLAlchemy.
 """
 from abc import ABC, abstractmethod
+from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from models import MiniServiceModel
 from schemas import MiniServiceCreate, MiniServiceUpdate
@@ -48,3 +50,12 @@ class CRUDMiniService(AbstractCRUDMiniService):
         return self.db.query(self.model) \
             .filter(self.model.name == name) \
             .first()
+
+    def get_names_by_reservation_service_uuid(
+            self, reservation_service_uuid: UUID
+    ) -> list[str]:
+        stmt = select(self.model.name).where(
+            self.model.reservation_service_uuid == reservation_service_uuid
+        )
+        result = self.db.execute(stmt)
+        return [row[0] for row in result.fetchall()]

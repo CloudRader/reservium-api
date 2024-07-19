@@ -126,16 +126,14 @@ class MiniServiceService(AbstractMiniServiceService):
                 reservation_service.alias not in user.roles:
             return None
 
-        # calendars = self.calendar_crud.get_by_service_alias(mini_service.service_alias)
-        #
-        # for calendar in calendars:
-        #     if mini_service.name in calendar.mini_services:
-        #         list_of_mini_services = calendar.mini_services.copy()
-        #         list_of_mini_services.remove(mini_service.name)
-        #         update_exist_calendar = CalendarUpdate(
-        #             mini_services=list_of_mini_services
-        #         )
-        #         self.calendar_crud.update(db_obj=calendar, obj_in=update_exist_calendar)
+        for calendar in reservation_service.calendars:
+            if mini_service.name in calendar.mini_services:
+                list_of_mini_services = calendar.mini_services.copy()
+                list_of_mini_services.remove(mini_service.name)
+                update_exist_calendar = CalendarUpdate(
+                    mini_services=list_of_mini_services
+                )
+                self.calendar_crud.update(db_obj=calendar, obj_in=update_exist_calendar)
 
         return self.crud.remove(uuid)
 
