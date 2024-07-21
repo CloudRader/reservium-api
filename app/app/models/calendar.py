@@ -1,18 +1,22 @@
 """
 Calendar ORM model and its dependencies.
 """
-from typing import List, Optional, Type, Any
+from typing import Type, Any
+import json
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import mapped_column, relationship
 from sqlalchemy.types import TypeDecorator, TEXT
 from db.base_class import Base
 from schemas import Rules
 
-import json
 
-
+# pylint: disable=too-many-ancestors
 class RulesType(TypeDecorator):
+    """
+    Custom SQLAlchemy type to handle the serialization and deserialization of
+    the `Rules` Pydantic model to and from JSON.
+    """
     impl = TEXT
 
     @property
@@ -58,14 +62,13 @@ class Calendar(Base):
     reservation_type = Column(String, unique=True, nullable=False)
     max_people = Column(Integer, default=0)
     collision_with_itself = Column(Boolean, nullable=False)
-    collision_with_calendar: Mapped[Optional[List[str]]] = \
-        mapped_column(ARRAY(String), nullable=True)
+    collision_with_calendar = mapped_column(ARRAY(String), nullable=True)
     club_member_rules = Column(RulesType, nullable=True)
     active_member_rules = Column(RulesType, nullable=False)
     manager_rules = Column(RulesType, nullable=False)
     reservation_service_uuid = Column(UUID(as_uuid=True), ForeignKey("reservation_service.uuid"))
 
     reservation_service = relationship("ReservationService", back_populates="calendars")
-    mini_services: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), nullable=True)
+    mini_services = mapped_column(ARRAY(String), nullable=True)
 
 # pylint: enable=too-few-public-methods

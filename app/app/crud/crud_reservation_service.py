@@ -1,7 +1,7 @@
 """
 This module defines the CRUD operations for the ReservationService model, including an
-abstract base class (AbstractCRUDReservationService) and a concrete implementation (CRUDReservationService)
-using SQLAlchemy.
+abstract base class (AbstractCRUDReservationService) and a concrete implementation
+(CRUDReservationService) using SQLAlchemy.
 """
 from abc import ABC, abstractmethod
 

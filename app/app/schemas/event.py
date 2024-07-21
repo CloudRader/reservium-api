@@ -15,4 +15,3 @@ class EventCreate(BaseModel):
     reservation_type: str
     email: str
     additional_services: list[str] | None = None
-    username: str

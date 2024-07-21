@@ -20,6 +20,7 @@ class ReservationService(Base):
     uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     name = Column(String, unique=True, nullable=False)
     alias = Column(String, unique=True, nullable=False)
+    public = Column(Boolean, nullable=False, default=True)
     web = Column(String, nullable=True)
     contact_mail = Column(String, nullable=True)
 

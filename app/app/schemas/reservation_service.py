@@ -8,6 +8,7 @@ class ReservationServiceBase(BaseModel):
     """Shared properties of ReservationService."""
     web: str | None = None
     contact_mail: str | None = None
+    public: bool | None = None
 
 
 class ReservationServiceCreate(ReservationServiceBase):

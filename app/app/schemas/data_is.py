@@ -1,9 +1,8 @@
 """
-DTO schemes for User from IS entity.
+DTO schemes for Data from IS.
 """
 from typing import Optional
 from pydantic import BaseModel, Field
-from .zone import Room
 
 
 class Organization(BaseModel):
@@ -77,6 +76,23 @@ class Role(BaseModel):
 class RoleList(BaseModel):
     """Represents a list user roles."""
     roles: list[Role]
+
+
+class Zone(BaseModel):
+    """Represents a zone."""
+    alias: Optional[str]
+    id: int
+    name: str
+    note: str
+
+
+class Room(BaseModel):
+    """Represents a room in the IS."""
+    door_number: str
+    floor: int
+    id: int
+    name: Optional[str]
+    zone: Zone
 
 
 class InformationFromIS(BaseModel):

@@ -145,6 +145,9 @@ class CalendarService(AbstractCalendarService):
     ) -> CalendarModel | None:
         calendar_to_update = self.get(calendar_id)
 
+        if calendar_to_update is None:
+            return None
+
         reservation_service = self.reservation_service_crud.get(
             calendar_to_update.reservation_service_uuid
         )

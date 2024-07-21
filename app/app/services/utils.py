@@ -4,83 +4,29 @@ Utils for services.
 import datetime as dt
 import pytz
 
-from models import CalendarModel
+from models import CalendarModel, ReservationServiceModel
 from schemas import Rules, EventCreate, InformationFromIS
 
 
-def control_conditions_and_permissions(user, is_buk, event_input: EventCreate,
-                                       google_calendar_service, calendar: CalendarModel):
-    """
-    Check conditions and permissions for creating an event.
-
-    :param user: User object in db.
-    :param is_buk: Information about user from IS.
-    :param event_input: Input data for creating the event.
-    :param google_calendar_service: Google Calendar service.
-    :param calendar: Calendar object in db.
-
-    :return: Message indicating whether access is granted or denied.
-    """
-
-    # Check of the membership
-    standard_message = first_standard_check(is_buk, calendar, event_input.start_datetime)
-    if not standard_message == "Access":
-        return standard_message
-
-    # Choose user rules
-    user_rules = choose_user_rules(user, calendar)
-
-    # Check available reservation time
-    if not user_rules.night_time:
-        if not control_available_reservation_time(event_input.start_datetime,
-                                                  event_input.end_datetime):
-            return {"message": "You can't make reservations at night!"}
-
-    # Check collision with other reservation
-    check_collision: list = []
-    collisions: list = calendar.collision_with_calendar
-    collisions.append(calendar.id)
-    if calendar.collision_with_calendar:
-        for calendar_id in collisions:
-            check_collision.extend(get_events(google_calendar_service,
-                                              event_input.start_datetime,
-                                              event_input.end_datetime,
-                                              calendar_id))
-
-    if not check_collision_time(check_collision,
-                                event_input.start_datetime,
-                                event_input.end_datetime,
-                                calendar,
-                                google_calendar_service):
-        return {"message": "There's already a reservation for that time."}
-
-    # Reservation no more than 24 hours
-    if not dif_days_res(event_input.start_datetime, event_input.end_datetime, user_rules):
-        return {"message": "You can reserve on different day."}
-
-    # Check reservation in advance and prior
-    message = reservation_in_advance(event_input.start_datetime, user_rules)
-    if not message == "Access":
-        return message
-
-    return "Access"
-
-
-def first_standard_check(is_buk, calendar, start_time):
+def first_standard_check(
+        is_info: InformationFromIS,
+        reservation_service: ReservationServiceModel,
+        start_time
+):
     """
     Checking if the user is reserving the service user has
     and that user can't reserve before current date.
 
-    :param is_buk: Information about user from IS.
-    :param calendar: Calendar object in db.
+    :param is_info: Information about user from IS.
+    :param reservation_service: Reservation Service object in db.
     :param start_time: Start time of the reservation.
 
     :return: True indicating if the reservation
     is made rightly or message if not.
     """
     # Check of the membership
-    if not service_availability_check(is_buk.services, calendar.service_alias):
-        return {"message": f"You don't have {calendar.service_alias} service!"}
+    if not service_availability_check(is_info.services, reservation_service.alias):
+        return {"message": f"You don't have {reservation_service.alias} service!"}
 
     # Check error reservation
     if start_time < dt.datetime.now():
@@ -109,27 +55,10 @@ def reservation_in_advance(start_time, user_rules):
     # Reservation prior than
     if not control_res_in_advance_or_prior(start_time, user_rules, False):
         return {"message": f"You can't make reservations earlier than "
-                           f"{user_rules.in_advance_day} days "
+                           f"{user_rules.in_prior_days} days "
                            f"in advance!"}
 
     return "Access"
-
-
-def choose_user_rules(user, calendar):
-    """
-    Choose user rules based on the calendar rules and user roles.
-
-    :param user: User object in db.
-    :param calendar: Calendar object in db.
-
-    :return: Rules object.
-    """
-
-    if not user.active_member:
-        return Rules(**calendar.club_member_rules)
-    if calendar.service_alias in user.roles:
-        return Rules(**calendar.manager_rules)
-    return Rules(**calendar.active_member_rules)
 
 
 def dif_days_res(start_datetime, end_datetime, user_rules: Rules) -> bool:
@@ -176,7 +105,7 @@ def control_res_in_advance_or_prior(start_time, user_rules: Rules,
                                           hours=user_rules.in_advance_hours):
             return False
     else:
-        if time_difference > dt.timedelta(days=user_rules.in_advance_day):
+        if time_difference > dt.timedelta(days=user_rules.in_prior_days):
             return False
     return True
 
@@ -294,13 +223,13 @@ def description_of_event(user, room, event_input: EventCreate):
 
 
 def ready_event(calendar: CalendarModel, event_input: EventCreate,
-                is_buk: InformationFromIS):
+                is_info: InformationFromIS):
     """
     Constructing the body of the event .
 
     :param calendar: Calendar object in db.
     :param event_input: Input data for creating the event.
-    :param is_buk: Information about user from IS.
+    :param is_info: Information about user from IS.
 
     :return: Dict body of the event.
     """
@@ -309,7 +238,7 @@ def ready_event(calendar: CalendarModel, event_input: EventCreate,
     end_time = event_input.end_datetime.isoformat()
     return {
         "summary": calendar.reservation_type,
-        "description": description_of_event(is_buk.user, is_buk.room, event_input),
+        "description": description_of_event(is_info.user, is_info.room, event_input),
         "start": {
             "dateTime": start_time,
             "timeZone": "Europe/Prague"
@@ -318,9 +247,9 @@ def ready_event(calendar: CalendarModel, event_input: EventCreate,
             "dateTime": end_time,
             "timeZone": "Europe/Prague"
         },
-        "attendees": [
-            {"email": event_input.email},
-        ],
+        # "attendees": [
+        #     {"email": event_input.email},
+        # ],
     }
 
 

@@ -16,11 +16,7 @@ class Rules(BaseModel):
 
 class CalendarBase(BaseModel):
     """Shared properties of Calendar."""
-    collision_with_itself: bool | None = None
     collision_with_calendar: list[str] | None = None
-    club_member_rules: Rules | None = None
-    active_member_rules: Rules | None = None
-    manager_rules: Rules | None = None
     mini_services: list[str] | None = None
 
 
@@ -54,6 +50,10 @@ class CalendarInDBBase(CalendarBase):
     is_active: bool
     reservation_type: str
     max_people: int
+    collision_with_itself: bool
+    club_member_rules: Rules
+    active_member_rules: Rules
+    manager_rules: Rules
     reservation_service_uuid: UUID
 
     # pylint: disable=too-few-public-methods

@@ -1,5 +1,6 @@
 """
-This module defines an abstract base class AbstractReservationServiceService that work with Reservation Service
+This module defines an abstract base class AbstractReservationServiceService
+that work with Reservation Service
 """
 from typing import Annotated
 from abc import ABC, abstractmethod

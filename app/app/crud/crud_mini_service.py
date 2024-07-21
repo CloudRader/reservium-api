@@ -35,6 +35,19 @@ class AbstractCRUDMiniService(CRUDBase[
         :return: The Mini Service instance if found, None otherwise.
         """
 
+    @abstractmethod
+    def get_names_by_reservation_service_uuid(
+            self, reservation_service_uuid: UUID
+    ) -> list[str]:
+        """
+        Retrieves all names from all Mini Services
+        by reservation service uuid.
+
+        :param reservation_service_uuid: The uuid of the reservation service.
+
+        :return: list of aliases.
+        """
+
 
 class CRUDMiniService(AbstractCRUDMiniService):
     """
