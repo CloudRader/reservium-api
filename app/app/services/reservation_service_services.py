@@ -39,9 +39,9 @@ class AbstractReservationServiceService(CrudServiceBase[
         """
 
     @abstractmethod
-    def update_mini_service(self, uuid: UUID,
-                            reservation_service_update: ReservationServiceUpdate,
-                            user: User) -> ReservationServiceModel | None:
+    def update_reservation_service(self, uuid: UUID,
+                                   reservation_service_update: ReservationServiceUpdate,
+                                   user: User) -> ReservationServiceModel | None:
         """
         Update a Reservation Service in the database.
 
@@ -53,8 +53,8 @@ class AbstractReservationServiceService(CrudServiceBase[
         """
 
     @abstractmethod
-    def delete_mini_service(self, uuid: UUID,
-                            user: User) -> ReservationServiceModel | None:
+    def delete_reservation_service(self, uuid: UUID,
+                                   user: User) -> ReservationServiceModel | None:
         """
         Delete a Reservation Service in the database.
 
@@ -103,16 +103,16 @@ class ReservationServiceService(AbstractReservationServiceService):
 
         return self.crud.create(reservation_service_create)
 
-    def update_mini_service(self, uuid: UUID,
-                            reservation_service_update: ReservationServiceUpdate,
-                            user: User) -> ReservationServiceModel | None:
+    def update_reservation_service(self, uuid: UUID,
+                                   reservation_service_update: ReservationServiceUpdate,
+                                   user: User) -> ReservationServiceModel | None:
         if not user.section_head:
             return None
 
         return self.update(uuid, reservation_service_update)
 
-    def delete_mini_service(self, uuid: UUID,
-                            user: User) -> ReservationServiceModel | None:
+    def delete_reservation_service(self, uuid: UUID,
+                                   user: User) -> ReservationServiceModel | None:
         if not user.section_head:
             return None
 

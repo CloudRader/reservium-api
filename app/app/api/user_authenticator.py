@@ -23,8 +23,8 @@ def get_oauth_session():
 
     :return: OAuth2Session.
     """
-    return OAuth2Session(client_id=settings.CLIENT_ID_DEV,
-                         redirect_uri=settings.REDIRECT_URI_DEV)
+    return OAuth2Session(client_id=settings.CLIENT_ID,
+                         redirect_uri=settings.REDIRECT_URI)
 
 
 async def get_request(token: str, request: str):
