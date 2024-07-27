@@ -113,6 +113,53 @@ async def get_all_calendars(
     return calendars
 
 
+@router.get("/google_calendars/test/",
+            status_code=status.HTTP_200_OK)
+async def test(
+        service: Annotated[CalendarService, Depends(CalendarService)],
+) -> Any:
+    """
+    Test function. Don't forget delete it
+    """
+    calendar = service.get_by_reservation_type("Entire Space")
+    test_event = service.test(calendar.id)
+    if not test_event:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={
+                "message": "You don't have permission for this operation."
+            }
+        )
+    return test_event
+
+
+@router.get("/google_calendars/",
+            status_code=status.HTTP_200_OK)
+async def get_all_google_calendar_to_add(
+        service: Annotated[CalendarService, Depends(CalendarService)],
+        user: Annotated[User, Depends(get_current_user)],
+) -> Any:
+    """
+    Get Calendars from Google Calendar
+    that are candidates for additions
+
+    :param service: Calendar service.
+    :param user: User who make this request.
+
+    :returns list[dict]: candidate list for additions.
+    """
+
+    calendars = service.get_all_google_calendar_to_add(user)
+    if not calendars:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={
+                "message": "You don't have permission for this operation."
+            }
+        )
+    return calendars
+
+
 @router.put("/{calendar_id}",
             response_model=Calendar,
             responses={
