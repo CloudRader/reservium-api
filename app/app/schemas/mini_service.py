@@ -1,4 +1,6 @@
 """DTO schemes for MiniService entity."""
+from datetime import datetime
+from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel
 
@@ -21,7 +23,8 @@ class MiniServiceUpdate(MiniServiceBase):
 class MiniServiceInDBBase(MiniServiceBase):
     """Base model for mini service in database."""
     uuid: UUID
-    is_active: bool
+    # is_active: bool
+    deleted_at: Optional[datetime] = None
     name: str
     reservation_service_uuid: UUID
 

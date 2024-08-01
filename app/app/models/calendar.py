@@ -9,6 +9,7 @@ from sqlalchemy.orm import mapped_column, relationship
 from sqlalchemy.types import TypeDecorator, TEXT
 from db.base_class import Base
 from schemas import Rules
+from models.soft_delete_mixin import SoftDeleteMixin
 
 
 # pylint: disable=too-many-ancestors
@@ -51,12 +52,12 @@ class RulesType(TypeDecorator):
 
 # pylint: disable=too-few-public-methods
 # reason: ORM model does not require to have any public methods
-class Calendar(Base):
+class Calendar(Base, SoftDeleteMixin):
     """
     Calendar model to create and manipulate user entity in the database.
     """
     __tablename__ = "calendar"
-    is_active = Column(Boolean, nullable=False, default=True)
+    # is_active = Column(Boolean, nullable=False, default=True)
 
     id = Column(String, primary_key=True, unique=True, nullable=False)
     reservation_type = Column(String, unique=True, nullable=False)

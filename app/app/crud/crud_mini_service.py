@@ -26,11 +26,13 @@ class AbstractCRUDMiniService(CRUDBase[
     """
 
     @abstractmethod
-    def get_by_name(self, name: str) -> MiniServiceModel | None:
+    def get_by_name(self, name: str,
+                    include_removed: bool = False) -> MiniServiceModel | None:
         """
         Retrieves a Calendar instance by its name.
 
         :param name: The name of the Mini Service.
+        :param include_removed: Include removed object or not.
 
         :return: The Mini Service instance if found, None otherwise.
         """
@@ -59,8 +61,10 @@ class CRUDMiniService(AbstractCRUDMiniService):
     def __init__(self, db: Session):
         super().__init__(MiniServiceModel, db)
 
-    def get_by_name(self, name: str) -> MiniServiceModel | None:
+    def get_by_name(self, name: str,
+                    include_removed: bool = False) -> MiniServiceModel | None:
         return self.db.query(self.model) \
+            .execution_options(include_deleted=include_removed) \
             .filter(self.model.name == name) \
             .first()
 

@@ -1,4 +1,6 @@
 """DTO schemes for ReservationService entity."""
+from datetime import datetime
+from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel
 from schemas import MiniService, Calendar
@@ -26,7 +28,8 @@ class ReservationServiceUpdate(ReservationServiceBase):
 class ReservationServiceInDBBase(ReservationServiceBase):
     """Base model for reservation service in database."""
     uuid: UUID
-    is_active: bool
+    # is_active: bool
+    deleted_at: Optional[datetime] = None
     name: str
     alias: str
     calendars: list[Calendar]

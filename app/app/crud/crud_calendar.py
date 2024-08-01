@@ -24,11 +24,13 @@ class AbstractCRUDCalendar(CRUDBase[
     """
 
     @abstractmethod
-    def get_by_reservation_type(self, reservation_type: str) -> CalendarModel | None:
+    def get_by_reservation_type(self, reservation_type: str,
+                                include_removed: bool = False) -> CalendarModel | None:
         """
         Retrieves a Calendar instance by its reservation type.
 
         :param reservation_type: The reservation type of the Calendar.
+        :param include_removed: Include removed object or not.
 
         :return: The Calendar instance if found, None otherwise.
         """
@@ -44,7 +46,9 @@ class CRUDCalendar(AbstractCRUDCalendar):
     def __init__(self, db: Session):
         super().__init__(CalendarModel, db)
 
-    def get_by_reservation_type(self, reservation_type: str) -> CalendarModel | None:
+    def get_by_reservation_type(self, reservation_type: str,
+                                include_removed: bool = False) -> CalendarModel | None:
         return self.db.query(self.model) \
+            .execution_options(include_deleted=include_removed) \
             .filter(self.model.reservation_type == reservation_type) \
             .first()

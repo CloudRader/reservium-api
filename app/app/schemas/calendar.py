@@ -1,4 +1,6 @@
 """DTO schemes for Calendar entity."""
+from datetime import datetime
+from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel
 
@@ -47,7 +49,8 @@ class CalendarUpdate(CalendarBase):
 class CalendarInDBBase(CalendarBase):
     """Base model for user in database."""
     id: str
-    is_active: bool
+    # is_active: bool
+    deleted_at: Optional[datetime] = None
     reservation_type: str
     max_people: int
     collision_with_itself: bool

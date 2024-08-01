@@ -3,6 +3,7 @@ This module provides an abstract CRUD base class and a concrete implementation
 for handling common database operations with SQLAlchemy and FastAPI.
 """
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import TypeVar, Generic, Type, Any
 from uuid import UUID
 
@@ -24,9 +25,12 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
    """
 
     @abstractmethod
-    def get(self, uuid: UUID | str | int) -> Model | None:
+    def get(self, uuid: UUID | str | int,
+            include_removed: bool = False) -> Model | None:
         """
         Retrieve a single record by its UUID.
+        If include_removed is True retrieve a single record
+        including marked as deleted.
         """
 
     @abstractmethod
@@ -36,9 +40,11 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
         """
 
     @abstractmethod
-    def get_all(self) -> list[Row[Model]]:
+    def get_all(self, include_removed: bool = False) -> list[Row[Model]]:
         """
         Retrieve all records without pagination.
+        If include_removed is True retrieve all records
+        including marked as deleted.
         """
 
     @abstractmethod
@@ -63,7 +69,7 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
     def soft_remove(self, uuid: UUID | str | int | None) -> Model | None:
         """
         Soft remove a record by its UUID.
-        Change attribute is_active to False in model
+        Change attribute deleted_at to time of deletion
         """
 
 
@@ -77,17 +83,21 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         self.model: Type[Model] = model
         self.db: Session = db
 
-    def get(self, uuid: UUID | str | int) -> Model | None:
+    def get(self, uuid: UUID | str | int,
+            include_removed: bool = False) -> Model | None:
         if uuid is None:
             return None
-        return self.db.get(self.model, uuid)
+        return self.db.query(self.model) \
+            .execution_options(include_deleted=include_removed) \
+            .filter(self.model.uuid == uuid).first()
 
     def get_multi(self, skip: int = 0, limit: int = 100) -> list[Row[Model]]:
         return self.db.query(self.model).order_by(self.model.submitted_at.desc()) \
             .offset(skip).limit(limit).all()
 
-    def get_all(self) -> list[Row[Model]]:
-        return self.db.query(self.model).all()
+    def get_all(self, include_removed: bool = False) -> list[Row[Model]]:
+        return self.db.query(self.model) \
+            .execution_options(include_deleted=include_removed).all()
 
     def create(self, obj_in: CreateSchema | dict[str, Any]) -> Model:
         obj_in_data = obj_in if isinstance(obj_in, dict) else obj_in.dict()
@@ -115,7 +125,9 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
     def remove(self, uuid: UUID | str | int | None) -> Model | None:
         if uuid is None:
             return None
-        obj = self.db.get(self.model, uuid)
+        obj = self.db.query(self.model) \
+            .execution_options(include_deleted=True). \
+            filter(self.model.uuid == uuid).first()
         if obj is None:
             return None
         self.db.delete(obj)
@@ -126,9 +138,11 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         if uuid is None:
             return None
         obj = self.db.get(self.model, uuid)
-        if obj is None:
+        if obj is None or obj.deleted_at is not None:
             return None
-        obj.is_active = False
+        obj.deleted_at = datetime.utcnow()
         self.db.add(obj)
         self.db.commit()
-        return obj
+        return self.db.query(self.model) \
+            .execution_options(include_deleted=True). \
+            filter(self.model.uuid == uuid).first()

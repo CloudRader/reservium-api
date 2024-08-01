@@ -6,16 +6,17 @@ from sqlalchemy import Column, String, Boolean, Integer
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 from db.base_class import Base
+from models.soft_delete_mixin import SoftDeleteMixin
 
 
 # pylint: disable=too-few-public-methods
 # reason: ORM model does not require to have any public methods
-class User(Base):
+class User(Base, SoftDeleteMixin):
     """
     User model to create and manipulate user entity in the database.
     """
     __tablename__ = "user"
-    is_active = Column(Boolean, nullable=False, default=True)
+    # is_active = Column(Boolean, nullable=False, default=True)
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     # id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)

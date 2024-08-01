@@ -64,11 +64,13 @@ class AbstractMiniServiceService(CrudServiceBase[
         """
 
     @abstractmethod
-    def get_by_name(self, name: str) -> MiniServiceModel | None:
+    def get_by_name(self, name: str,
+                    include_removed: bool = False) -> MiniServiceModel | None:
         """
         Retrieves a Mini Service instance by its name.
 
         :param name: The name of the Mini Service.
+        :param include_removed: Include removed object or not.
 
         :return: The Mini Service instance if found, None otherwise.
         """
@@ -86,7 +88,7 @@ class MiniServiceService(AbstractMiniServiceService):
 
     def create_mini_service(self, mini_service_create: MiniServiceCreate,
                             user: User) -> MiniServiceModel | None:
-        if self.crud.get_by_name(mini_service_create.name):
+        if self.crud.get_by_name(mini_service_create.name, True):
             return None
 
         reservation_service = self.reservation_service_crud.get(
@@ -104,6 +106,9 @@ class MiniServiceService(AbstractMiniServiceService):
                             user: User) -> MiniServiceModel | None:
         mini_service_to_update = self.get(uuid)
 
+        if mini_service_to_update is None:
+            return None
+
         reservation_service = self.reservation_service_crud.get(
             mini_service_to_update.reservation_service_uuid
         )
@@ -117,6 +122,9 @@ class MiniServiceService(AbstractMiniServiceService):
     def delete_mini_service(self, uuid: UUID,
                             user: User) -> MiniServiceModel | None:
         mini_service = self.crud.get(uuid)
+
+        if mini_service is None:
+            return None
 
         reservation_service = self.reservation_service_crud.get(
             mini_service.reservation_service_uuid
@@ -135,7 +143,8 @@ class MiniServiceService(AbstractMiniServiceService):
                 )
                 self.calendar_crud.update(db_obj=calendar, obj_in=update_exist_calendar)
 
-        return self.crud.remove(uuid)
+        return self.crud.soft_remove(uuid)
 
-    def get_by_name(self, name: str) -> MiniServiceModel | None:
-        return self.crud.get_by_name(name)
+    def get_by_name(self, name: str,
+                    include_removed: bool = False) -> MiniServiceModel | None:
+        return self.crud.get_by_name(name, include_removed)

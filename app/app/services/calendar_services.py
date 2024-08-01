@@ -94,12 +94,14 @@ class AbstractCalendarService(CrudServiceBase[
 
     @abstractmethod
     def get_by_reservation_type(
-            self, reservation_type: str
+            self, reservation_type: str,
+            include_removed: bool = False
     ) -> CalendarModel | None:
         """
         Retrieves a Calendar instance by its reservation_type.
 
         :param reservation_type: The reservation type of the Calendar.
+        :param include_removed: Include removed object or not.
 
         :return: The Calendar instance if found, None otherwise.
         """
@@ -132,8 +134,8 @@ class CalendarService(AbstractCalendarService):
             self, calendar_create: CalendarCreate,
             user: User
     ) -> CalendarModel | None:
-        if self.get(calendar_create.id) or \
-                self.get_by_reservation_type(calendar_create.reservation_type):
+        if self.get(calendar_create.id, True) or \
+                self.get_by_reservation_type(calendar_create.reservation_type, True):
             return None
 
         reservation_service = self.reservation_service_crud.get(
@@ -190,6 +192,9 @@ class CalendarService(AbstractCalendarService):
     ) -> CalendarModel | None:
         calendar = self.get(calendar_id)
 
+        if calendar is None:
+            return None
+
         reservation_service = self.reservation_service_crud.get(
             calendar.reservation_service_uuid
         )
@@ -208,7 +213,7 @@ class CalendarService(AbstractCalendarService):
                 )
                 self.update(calendar_to_update.id, update_exist_calendar)
 
-        return self.crud.remove(calendar_id)
+        return self.crud.soft_remove(calendar_id)
 
     # pylint: disable=no-member
     # reason: The googleapiclient.discovery.build function
@@ -248,8 +253,12 @@ class CalendarService(AbstractCalendarService):
 
         return new_calendar_candidates
 
-    def get_by_reservation_type(self, reservation_type: str) -> CalendarModel | None:
-        return self.crud.get_by_reservation_type(reservation_type)
+    def get_by_reservation_type(
+            self, reservation_type: str,
+            include_removed: bool = False
+    ) -> CalendarModel | None:
+        return self.crud.get_by_reservation_type(
+            reservation_type, include_removed)
 
     def get_mini_services_by_reservation_type(
             self, calendar_id: str

@@ -65,21 +65,25 @@ class AbstractReservationServiceService(CrudServiceBase[
         """
 
     @abstractmethod
-    def get_by_alias(self, alias: str) -> ReservationServiceModel | None:
+    def get_by_alias(self, alias: str,
+                     include_removed: bool = False) -> ReservationServiceModel | None:
         """
         Retrieves a Reservation Service instance by its alias.
 
         :param alias: The alias of the Reservation Service.
+        :param include_removed: Include removed object or not.
 
         :return: The Reservation Services instance if found, None otherwise.
         """
 
     @abstractmethod
-    def get_by_name(self, name: str) -> ReservationServiceModel | None:
+    def get_by_name(self, name: str,
+                    include_removed: bool = False) -> ReservationServiceModel | None:
         """
         Retrieves a Reservation Service instance by its name.
 
         :param name: The name of the Reservation Service.
+        :param include_removed: Include removed object or not.
 
         :return: The Reservation Service instance if found, None otherwise.
         """
@@ -95,7 +99,8 @@ class ReservationServiceService(AbstractReservationServiceService):
 
     def create_reservation_service(self, reservation_service_create: ReservationServiceCreate,
                                    user: User) -> ReservationServiceModel | None:
-        if self.crud.get_by_name(reservation_service_create.name):
+        if self.crud.get_by_name(reservation_service_create.name, True) or \
+                self.crud.get_by_alias(reservation_service_create.alias, True):
             return None
 
         if not user.section_head:
@@ -116,10 +121,12 @@ class ReservationServiceService(AbstractReservationServiceService):
         if not user.section_head:
             return None
 
-        return self.crud.remove(uuid)
+        return self.crud.soft_remove(uuid)
 
-    def get_by_alias(self, alias: str) -> ReservationServiceModel | None:
-        return self.crud.get_by_alias(alias)
+    def get_by_alias(self, alias: str,
+                     include_removed: bool = False) -> ReservationServiceModel | None:
+        return self.crud.get_by_alias(alias, include_removed)
 
-    def get_by_name(self, name: str) -> ReservationServiceModel | None:
-        return self.crud.get_by_name(name)
+    def get_by_name(self, name: str,
+                    include_removed: bool = False) -> ReservationServiceModel | None:
+        return self.crud.get_by_name(name, include_removed)

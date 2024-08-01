@@ -1,6 +1,8 @@
 """
 DTO schemes for User entity.
 """
+from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -28,7 +30,8 @@ class UserUpdate(UserBase):
 class UserInDBBase(UserBase):
     """Base model for user in database."""
     id: int
-    is_active: bool
+    # is_active: bool
+    deleted_at: Optional[datetime] = None
     username: str
     active_member: bool
     section_head: bool

@@ -32,17 +32,24 @@ class AbstractCRUDService(ABC, Generic[Model, Crud, CreateSchema, UpdateSchema])
     """
 
     @abstractmethod
-    def get(self, uuid: UUID | str | int) -> Model | None:
+    def get(self, uuid: UUID | str | int,
+            include_removed: bool = False) -> Model | None:
         """
         Retrieve an object from the database.
+        If include_removed is True retrieve a single record
+        including marked as deleted.
         :param uuid: the ID of the object to retrieve.
+        :param include_removed: include removed object or not.
         :returns T: the retrieved object.
         """
 
     @abstractmethod
-    def get_all(self) -> list[Row[Model]] | None:
+    def get_all(self, include_removed: bool = False) -> list[Row[Model]] | None:
         """
         Retrieve all objects from the database.
+        If include_removed is True retrieve all objects
+        including marked as deleted.
+        :param include_removed: include removed object or not.
         :returns List[T]: A list of all objects in the database.
         """
 
@@ -75,7 +82,7 @@ class AbstractCRUDService(ABC, Generic[Model, Crud, CreateSchema, UpdateSchema])
     def soft_remove(self, uuid: UUID | str | int | None) -> Model | None:
         """
         Soft remove a record by its UUID.
-        Change attribute is_active to False in model
+        Change attribute deleted_at to time of deletion
         :param uuid: The ID of the object to delete.
         """
 
@@ -95,11 +102,12 @@ class CrudServiceBase(AbstractCRUDService[Model, Crud, CreateSchema, UpdateSchem
     def __init__(self, crud: Crud):
         self.crud: Crud = crud
 
-    def get(self, uuid: UUID | str | int) -> Model | None:
-        return self.crud.get(uuid)
+    def get(self, uuid: UUID | str | int,
+            include_removed: bool = False) -> Model | None:
+        return self.crud.get(uuid, include_removed)
 
-    def get_all(self) -> list[Row[Model]] | None:
-        all_objects = self.crud.get_all()
+    def get_all(self, include_removed: bool = False) -> list[Row[Model]] | None:
+        all_objects = self.crud.get_all(include_removed)
         if len(all_objects) == 0:
             return None
         return all_objects

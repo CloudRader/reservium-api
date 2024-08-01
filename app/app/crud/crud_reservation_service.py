@@ -25,21 +25,25 @@ class AbstractCRUDReservationService(CRUDBase[
     """
 
     @abstractmethod
-    def get_by_name(self, name: str) -> ReservationServiceModel | None:
+    def get_by_name(self, name: str,
+                    include_removed: bool = False) -> ReservationServiceModel | None:
         """
         Retrieves a Reservation Service instance by its name.
 
         :param name: The name of the Reservation Service.
+        :param include_removed: Include removed object or not.
 
         :return: The Reservation Service instance if found, None otherwise.
         """
 
     @abstractmethod
-    def get_by_alias(self, alias: str) -> ReservationServiceModel | None:
+    def get_by_alias(self, alias: str,
+                     include_removed: bool = False) -> ReservationServiceModel | None:
         """
         Retrieves a Reservation Services instance by its service alias.
 
         :param alias: The alias of the Reservation Service.
+        :param include_removed: Include removed object or not.
 
         :return: The Reservation Service instance if found, None otherwise.
         """
@@ -63,13 +67,17 @@ class CRUDReservationService(AbstractCRUDReservationService):
     def __init__(self, db: Session):
         super().__init__(ReservationServiceModel, db)
 
-    def get_by_name(self, name: str) -> ReservationServiceModel | None:
+    def get_by_name(self, name: str,
+                    include_removed: bool = False) -> ReservationServiceModel | None:
         return self.db.query(self.model) \
+            .execution_options(include_deleted=include_removed) \
             .filter(self.model.name == name) \
             .first()
 
-    def get_by_alias(self, alias: str) -> ReservationServiceModel | None:
+    def get_by_alias(self, alias: str,
+                     include_removed: bool = False) -> ReservationServiceModel | None:
         return self.db.query(self.model) \
+            .execution_options(include_deleted=include_removed) \
             .filter(self.model.alias == alias) \
             .first()
 

@@ -6,16 +6,17 @@ from sqlalchemy import Column, String, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from db.base_class import Base
+from models.soft_delete_mixin import SoftDeleteMixin
 
 
 # pylint: disable=too-few-public-methods
 # reason: ORM model does not require to have any public methods
-class ReservationService(Base):
+class ReservationService(Base, SoftDeleteMixin):
     """
     Reservation service model to create and manipulate reservation service entity in the database.
     """
     __tablename__ = "reservation_service"
-    is_active = Column(Boolean, nullable=False, default=True)
+    # is_active = Column(Boolean, nullable=False, default=True)
 
     uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     name = Column(String, unique=True, nullable=False)
