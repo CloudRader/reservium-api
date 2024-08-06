@@ -50,7 +50,7 @@ async def create_mini_service(
     return mini_service
 
 
-@router.get("/{mini_service_uuid}",
+@router.get("/{mini_service_id}",
             response_model=MiniService,
             responses={
                 **EntityNotFoundException.RESPONSE,
@@ -58,20 +58,20 @@ async def create_mini_service(
             status_code=status.HTTP_200_OK)
 async def get_mini_service(
         service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-        mini_service_uuid: Annotated[str, Path()]
+        mini_service_id: Annotated[str, Path()]
 ) -> Any:
     """
     Get mini service by its uuid.
 
     :param service: Mini Service ser.
-    :param mini_service_uuid: uuid of the mini service.
+    :param mini_service_id: uuid of the mini service.
 
     :return: Mini Service with uuid equal to uuid
              or None if no such mini service exists.
     """
-    mini_service = service.get(mini_service_uuid)
+    mini_service = service.get(mini_service_id)
     if not mini_service:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_uuid)
+        raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_id)
     return mini_service
 
 
@@ -99,7 +99,7 @@ async def get_mini_services(
     return mini_services
 
 
-@router.put("/{mini_service_uuid}",
+@router.put("/{mini_service_id}",
             response_model=MiniService,
             responses={
                 **EntityNotFoundException.RESPONSE,
@@ -108,7 +108,7 @@ async def get_mini_services(
 async def update_mini_service(
         service: Annotated[MiniServiceService, Depends(MiniServiceService)],
         user: Annotated[User, Depends(get_current_user)],
-        mini_service_uuid: Annotated[UUID, Path()],
+        mini_service_id: Annotated[UUID, Path()],
         mini_service_update: Annotated[MiniServiceUpdate, Body()]
 ) -> Any:
     """
@@ -117,18 +117,18 @@ async def update_mini_service(
 
     :param service: Mini Service ser.
     :param user: User who make this request.
-    :param mini_service_uuid: uuid of the mini service.
+    :param mini_service_id: uuid of the mini service.
     :param mini_service_update: MiniServiceUpdate schema.
 
     :returns MiniServiceModel: the updated mini service.
     """
-    mini_service = service.update_mini_service(mini_service_uuid, mini_service_update, user)
+    mini_service = service.update_mini_service(mini_service_id, mini_service_update, user)
     if not mini_service:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_uuid)
+        raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_id)
     return mini_service
 
 
-@router.delete("/{mini_service_uuid}",
+@router.delete("/{mini_service_id}",
                response_model=MiniService,
                responses={
                    **EntityNotFoundException.RESPONSE,
@@ -137,7 +137,7 @@ async def update_mini_service(
 async def delete_mini_service(
         service: Annotated[MiniServiceService, Depends(MiniServiceService)],
         user: Annotated[User, Depends(get_current_user)],
-        mini_service_uuid: Annotated[UUID, Path()],
+        mini_service_id: Annotated[UUID, Path()],
 ) -> Any:
     """
     Delete mini service with mini_service_uuid equal to uuid,
@@ -145,13 +145,13 @@ async def delete_mini_service(
 
     :param service: Mini Service ser.
     :param user: User who make this request.
-    :param mini_service_uuid: uuid of the mini service.
+    :param mini_service_id: uuid of the mini service.
 
     :returns MiniServiceModel: the deleted mini service.
     """
-    mini_service = service.delete_mini_service(mini_service_uuid, user)
+    mini_service = service.delete_mini_service(mini_service_id, user)
     if not mini_service:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_uuid)
+        raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_id)
     return mini_service
 
 

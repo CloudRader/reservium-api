@@ -53,7 +53,7 @@ async def create_reservation_service(
     return reservation_service
 
 
-@router.get("/{reservation_service_uuid}",
+@router.get("/{reservation_service_id}",
             response_model=ReservationService,
             responses={
                 **EntityNotFoundException.RESPONSE,
@@ -61,20 +61,20 @@ async def create_reservation_service(
             status_code=status.HTTP_200_OK)
 async def get_reservation_service(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-        reservation_service_uuid: Annotated[str, Path()]
+        reservation_service_id: Annotated[str, Path()]
 ) -> Any:
     """
     Get reservation service by its uuid.
 
     :param service: Reservation Service ser.
-    :param reservation_service_uuid: uuid of the reservation service.
+    :param reservation_service_id: uuid of the reservation service.
 
     :return: Reservation Service with uuid equal to uuid
              or None if no such reservation service exists.
     """
-    reservation_service = service.get(reservation_service_uuid)
+    reservation_service = service.get(reservation_service_id)
     if not reservation_service:
-        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_uuid)
+        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service
 
 
@@ -102,7 +102,7 @@ async def get_reservation_services(
     return reservation_service
 
 
-@router.put("/{reservation_service_uuid}",
+@router.put("/{reservation_service_id}",
             response_model=ReservationService,
             responses={
                 **EntityNotFoundException.RESPONSE,
@@ -111,7 +111,7 @@ async def get_reservation_services(
 async def update_reservation_service(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
         user: Annotated[User, Depends(get_current_user)],
-        reservation_service_uuid: Annotated[UUID, Path()],
+        reservation_service_id: Annotated[UUID, Path()],
         reservation_service_update: Annotated[ReservationServiceUpdate, Body()]
 ) -> Any:
     """
@@ -120,20 +120,20 @@ async def update_reservation_service(
 
     :param service: Reservation Service ser.
     :param user: User who make this request.
-    :param reservation_service_uuid: uuid of the reservation service.
+    :param reservation_service_id: uuid of the reservation service.
     :param reservation_service_update: ReservationServiceUpdate schema.
 
     :returns ReservationServiceModel: the updated reservation service.
     """
-    reservation_service = service.update_mini_service(
-        reservation_service_uuid, reservation_service_update, user
+    reservation_service = service.update_reservation_service(
+        reservation_service_id, reservation_service_update, user
     )
     if not reservation_service:
-        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_uuid)
+        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service
 
 
-@router.delete("/{reservation_service_uuid}",
+@router.delete("/{reservation_service_id}",
                response_model=ReservationService,
                responses={
                    **EntityNotFoundException.RESPONSE,
@@ -142,7 +142,7 @@ async def update_reservation_service(
 async def delete_reservation_service(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
         user: Annotated[User, Depends(get_current_user)],
-        reservation_service_uuid: Annotated[UUID, Path()],
+        reservation_service_id: Annotated[UUID, Path()],
 ) -> Any:
     """
     Delete reservation service with id equal to reservation_service_uuid,
@@ -150,13 +150,13 @@ async def delete_reservation_service(
 
     :param service: Reservation Service ser.
     :param user: User who make this request.
-    :param reservation_service_uuid: uuid of the reservation service.
+    :param reservation_service_id: uuid of the reservation service.
 
     :returns ReservationServiceModel: the deleted reservation service.
     """
-    reservation_service = service.delete_mini_service(reservation_service_uuid, user)
+    reservation_service = service.delete_reservation_service(reservation_service_id, user)
     if not reservation_service:
-        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_uuid)
+        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service
 
 

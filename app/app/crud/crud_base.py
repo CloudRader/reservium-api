@@ -89,7 +89,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
             return None
         return self.db.query(self.model) \
             .execution_options(include_deleted=include_removed) \
-            .filter(self.model.uuid == uuid).first()
+            .filter(self.model.id == uuid).first()
 
     def get_multi(self, skip: int = 0, limit: int = 100) -> list[Row[Model]]:
         return self.db.query(self.model).order_by(self.model.submitted_at.desc()) \
@@ -125,9 +125,10 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
     def remove(self, uuid: UUID | str | int | None) -> Model | None:
         if uuid is None:
             return None
+        # obj = self.db.get(self.model, uuid)
         obj = self.db.query(self.model) \
             .execution_options(include_deleted=True). \
-            filter(self.model.uuid == uuid).first()
+            filter(self.model.id == uuid).first()
         if obj is None:
             return None
         self.db.delete(obj)
@@ -145,4 +146,4 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         self.db.commit()
         return self.db.query(self.model) \
             .execution_options(include_deleted=True). \
-            filter(self.model.uuid == uuid).first()
+            filter(self.model.id == uuid).first()

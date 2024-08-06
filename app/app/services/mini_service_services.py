@@ -92,7 +92,7 @@ class MiniServiceService(AbstractMiniServiceService):
             return None
 
         reservation_service = self.reservation_service_crud.get(
-            mini_service_create.reservation_service_uuid
+            mini_service_create.reservation_service_id
         )
 
         if user is None or reservation_service is None or \
@@ -110,7 +110,7 @@ class MiniServiceService(AbstractMiniServiceService):
             return None
 
         reservation_service = self.reservation_service_crud.get(
-            mini_service_to_update.reservation_service_uuid
+            mini_service_to_update.reservation_service_id
         )
 
         if user is None or reservation_service is None or \
@@ -127,7 +127,7 @@ class MiniServiceService(AbstractMiniServiceService):
             return None
 
         reservation_service = self.reservation_service_crud.get(
-            mini_service.reservation_service_uuid
+            mini_service.reservation_service_id
         )
 
         if user is None or reservation_service is None or \

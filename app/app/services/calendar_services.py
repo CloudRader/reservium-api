@@ -139,7 +139,7 @@ class CalendarService(AbstractCalendarService):
             return None
 
         reservation_service = self.reservation_service_crud.get(
-            calendar_create.reservation_service_uuid
+            calendar_create.reservation_service_id
         )
 
         if user is None or reservation_service is None or \
@@ -149,7 +149,7 @@ class CalendarService(AbstractCalendarService):
         for mini_service in calendar_create.mini_services:
             if mini_service not in \
                     self.mini_service_crud.get_names_by_reservation_service_uuid(
-                        reservation_service.uuid):
+                        reservation_service.id):
                 return None
 
         if calendar_create.collision_with_calendar is not None:
@@ -177,7 +177,7 @@ class CalendarService(AbstractCalendarService):
             return None
 
         reservation_service = self.reservation_service_crud.get(
-            calendar_to_update.reservation_service_uuid
+            calendar_to_update.reservation_service_id
         )
 
         if user is None or reservation_service is None or \
@@ -196,7 +196,7 @@ class CalendarService(AbstractCalendarService):
             return None
 
         reservation_service = self.reservation_service_crud.get(
-            calendar.reservation_service_uuid
+            calendar.reservation_service_id
         )
 
         if user is None or reservation_service is None or \

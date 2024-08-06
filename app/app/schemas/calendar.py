@@ -25,7 +25,7 @@ class CalendarBase(BaseModel):
 class CalendarCreate(CalendarBase):
     """Properties to receive via API on creation."""
     id: str
-    reservation_service_uuid: UUID
+    reservation_service_id: UUID
     reservation_type: str
     max_people: int
     collision_with_itself: bool
@@ -49,7 +49,6 @@ class CalendarUpdate(CalendarBase):
 class CalendarInDBBase(CalendarBase):
     """Base model for user in database."""
     id: str
-    # is_active: bool
     deleted_at: Optional[datetime] = None
     reservation_type: str
     max_people: int
@@ -57,7 +56,7 @@ class CalendarInDBBase(CalendarBase):
     club_member_rules: Rules
     active_member_rules: Rules
     manager_rules: Rules
-    reservation_service_uuid: UUID
+    reservation_service_id: UUID
 
     # pylint: disable=too-few-public-methods
     # reason: Config class only needs to set orm_mode to True.

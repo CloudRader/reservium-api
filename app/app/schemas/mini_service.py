@@ -11,7 +11,7 @@ class MiniServiceBase(BaseModel):
 
 class MiniServiceCreate(MiniServiceBase):
     """Properties to receive via API on creation."""
-    reservation_service_uuid: UUID
+    reservation_service_id: UUID
     name: str
 
 
@@ -22,11 +22,10 @@ class MiniServiceUpdate(MiniServiceBase):
 
 class MiniServiceInDBBase(MiniServiceBase):
     """Base model for mini service in database."""
-    uuid: UUID
-    # is_active: bool
+    id: UUID
     deleted_at: Optional[datetime] = None
     name: str
-    reservation_service_uuid: UUID
+    reservation_service_id: UUID
 
     # pylint: disable=too-few-public-methods
     # reason: Config class only needs to set orm_mode to True.

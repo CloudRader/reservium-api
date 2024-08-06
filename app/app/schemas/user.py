@@ -30,7 +30,6 @@ class UserUpdate(UserBase):
 class UserInDBBase(UserBase):
     """Base model for user in database."""
     id: int
-    # is_active: bool
     deleted_at: Optional[datetime] = None
     username: str
     active_member: bool

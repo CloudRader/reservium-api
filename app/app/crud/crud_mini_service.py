@@ -72,7 +72,7 @@ class CRUDMiniService(AbstractCRUDMiniService):
             self, reservation_service_uuid: UUID
     ) -> list[str]:
         stmt = select(self.model.name).where(
-            self.model.reservation_service_uuid == reservation_service_uuid
+            self.model.reservation_service_id == reservation_service_uuid
         )
         result = self.db.execute(stmt)
         return [row[0] for row in result.fetchall()]

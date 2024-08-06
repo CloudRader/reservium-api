@@ -111,7 +111,7 @@ class EventService(AbstractEventService):
         :return: Message indicating whether access is granted or denied.
         """
         reservation_service = self.reservation_service_crud.get(
-            calendar.reservation_service_uuid)
+            calendar.reservation_service_id)
 
         # Check of the membership
         standard_message = first_standard_check(is_info, reservation_service,
@@ -164,7 +164,7 @@ class EventService(AbstractEventService):
         :return: Rules object.
         """
         reservation_service = self.reservation_service_crud.get(
-            calendar.reservation_service_uuid)
+            calendar.reservation_service_id)
 
         if not user.active_member:
             return calendar.club_member_rules

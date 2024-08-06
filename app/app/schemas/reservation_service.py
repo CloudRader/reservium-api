@@ -27,8 +27,7 @@ class ReservationServiceUpdate(ReservationServiceBase):
 
 class ReservationServiceInDBBase(ReservationServiceBase):
     """Base model for reservation service in database."""
-    uuid: UUID
-    # is_active: bool
+    id: UUID
     deleted_at: Optional[datetime] = None
     name: str
     alias: str

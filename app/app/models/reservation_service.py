@@ -16,9 +16,8 @@ class ReservationService(Base, SoftDeleteMixin):
     Reservation service model to create and manipulate reservation service entity in the database.
     """
     __tablename__ = "reservation_service"
-    # is_active = Column(Boolean, nullable=False, default=True)
 
-    uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     name = Column(String, unique=True, nullable=False)
     alias = Column(String, unique=True, nullable=False)
     public = Column(Boolean, nullable=False, default=True)

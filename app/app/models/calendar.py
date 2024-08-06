@@ -57,7 +57,6 @@ class Calendar(Base, SoftDeleteMixin):
     Calendar model to create and manipulate user entity in the database.
     """
     __tablename__ = "calendar"
-    # is_active = Column(Boolean, nullable=False, default=True)
 
     id = Column(String, primary_key=True, unique=True, nullable=False)
     reservation_type = Column(String, unique=True, nullable=False)
@@ -67,7 +66,7 @@ class Calendar(Base, SoftDeleteMixin):
     club_member_rules = Column(RulesType, nullable=True)
     active_member_rules = Column(RulesType, nullable=False)
     manager_rules = Column(RulesType, nullable=False)
-    reservation_service_uuid = Column(UUID(as_uuid=True), ForeignKey("reservation_service.uuid"))
+    reservation_service_id = Column(UUID(as_uuid=True), ForeignKey("reservation_service.id"))
 
     reservation_service = relationship("ReservationService", back_populates="calendars")
     mini_services = mapped_column(ARRAY(String), nullable=True)
