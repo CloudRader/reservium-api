@@ -5,6 +5,7 @@ to ensure proper handling of the database and UUIDs during the testing process.
 Except that other fixture that use in all tests modules
 """
 from typing import Generator, Dict, Any
+from uuid import uuid4
 
 import pytest
 from sqlalchemy import create_engine, Engine
@@ -13,12 +14,9 @@ from starlette.testclient import TestClient
 
 from core import settings
 from db import Base, get_db
-# from services import UserService
 from schemas import MiniServiceCreate, \
     ReservationServiceCreate, Role, LimitObject, UserIS, \
-    ReservationServiceUpdate
-# UserCreate, UserUpdate, UserIS, Role, LimitObject
-# from services import UserService, CalendarService
+    ReservationServiceUpdate, UserCreate, UserUpdate
 from main import app
 
 
@@ -97,8 +95,8 @@ def mini_service_create() -> MiniServiceCreate:
     Return new MiniServiceCreate schema.
     """
     return MiniServiceCreate(
+        reservation_service_id=uuid4(),
         name="Board games",
-        service_alias="stud",
     )
 
 
@@ -119,7 +117,7 @@ def reservation_service_update() -> ReservationServiceUpdate:
     Return new MiniServiceCreate schema.
     """
     return ReservationServiceUpdate(
-        alias="stud",
+        web="something",
     )
 
 
@@ -175,29 +173,31 @@ def reservation_service_update() -> ReservationServiceUpdate:
 #     return CalendarUpdate(
 #         max_people=10,
 #     )
-#
-#
-# @pytest.fixture()
-# def user_create() -> UserCreate:
-#     """
-#     Return new UserCreate schema.
-#     """
-#     return UserCreate(
-#         username="buk_ashi",
-#         user_token="fh327ygf3yfvs",
-#         active_member=False,
-#     )
-#
-#
-# @pytest.fixture()
-# def user_update() -> UserUpdate:
-#     """
-#     Return new UserUpdate schema.
-#     """
-#     return UserUpdate(
-#         active_member=True,
-#     )
-#
+
+
+@pytest.fixture()
+def user_create() -> UserCreate:
+    """
+    Return new UserCreate schema.
+    """
+    return UserCreate(
+        id=12223,
+        username="buk_ashi",
+        active_member=False,
+        section_head=False
+    )
+
+
+@pytest.fixture()
+def user_update() -> UserUpdate:
+    """
+    Return new UserUpdate schema.
+    """
+    return UserUpdate(
+        active_member=True,
+    )
+
+
 #
 # @pytest.fixture(scope="module")
 # def zone_data_from_is() -> Zone:
@@ -362,6 +362,7 @@ def roles_data_from_is(role_data_from_is) -> list[Role]:
 #
 #
 # Services
+
 # @pytest.fixture()
 # def service_user(db_session) -> UserService:
 #     """

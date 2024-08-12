@@ -1,38 +1,32 @@
-# """
-# Module for testing mini service ser.
-# """
-# from services import MiniServiceService
-#
-# import pytest
-#
-#
-# # pylint: disable=redefined-outer-name
-# # reason: using fixtures as variables is a standard for pytest
-#
-#
-# @pytest.fixture()
-# def service_mini_service(db_session) -> MiniServiceService:
-#     """
-#     Return MiniServiceService.
-#     """
-#     return MiniServiceService(db=db_session)
-#
-#
+"""
+Module for testing mini service ser.
+"""
+# from schemas import UserUpdate
+
+
+# pylint: disable=redefined-outer-name
+# reason: using fixtures as variables is a standard for pytest
+
+
 # def test_create_mini_service(service_mini_service, mini_service_create,
 #                              service_user, user_data_from_is,
-#                              roles_data_from_is):
+#                              roles_data_from_is, service_reservation_service,
+#                              reservation_service_create):
 #     """
 #     Test creating mini service.
 #     """
 #     user = service_user.create_user(user_data_from_is,
-#                                     roles_data_from_is,
-#                                     "fhailwt7taf")
+#                                     roles_data_from_is)
+#     user = service_user.update(user.id, UserUpdate(roles=["club"]))
+#     reservation_service = service_reservation_service.create_reservation_service(
+#         reservation_service_create, user
+#     )
+#     mini_service_create.reservation_service_id = reservation_service.id
 #     mini_service = service_mini_service.create_mini_service(
 #         mini_service_create, user
 #     )
 #     assert mini_service is not None
-#
-#
+
 # def test_get_by_service_alias(service_mini_service, mini_service_create):
 #     """
 #     Test getting by service alias.

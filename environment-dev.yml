@@ -16,7 +16,7 @@ dependencies:
   - python-dotenv=1.0.1
   - python-jose=3.3.0
   - python-multipart=0.0.9
-  - duckdb-engine=0.7.0
+  - duckdb-engine=0.13.1
   - mypy=1.10.0
   - httpx=0.27.0
   - conda-pack=0.7.1

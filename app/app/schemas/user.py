@@ -21,7 +21,6 @@ class UserCreate(UserBase):
 
 class UserUpdate(UserBase):
     """Properties to receive via API on update."""
-    id: int | None = None
     username: str | None = None
     active_member: bool | None = None
     section_head: bool | None = None
