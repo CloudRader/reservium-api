@@ -2,18 +2,18 @@
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Rules(BaseModel):
     """Represents rules of user."""
     night_time: bool
     reservation_without_permission: bool
-    max_reservation_hours: int
-    in_advance_hours: int
-    in_advance_minutes: int
+    max_reservation_hours: int = Field(ge=0)
+    in_advance_hours: int = Field(ge=0)
+    in_advance_minutes: int = Field(ge=0)
     # How many prior days can a person reserve for
-    in_prior_days: int
+    in_prior_days: int = Field(ge=0)
 
 
 class CalendarBase(BaseModel):
@@ -27,7 +27,7 @@ class CalendarCreate(CalendarBase):
     id: str
     reservation_service_id: UUID
     reservation_type: str
-    max_people: int
+    max_people: int = Field(ge=1)
     collision_with_itself: bool
     club_member_rules: Rules
     active_member_rules: Rules
@@ -37,7 +37,7 @@ class CalendarCreate(CalendarBase):
 class CalendarUpdate(CalendarBase):
     """Properties to receive via API on update."""
     reservation_type: str | None = None
-    max_people: int | None = None
+    max_people: int | None = Field(None, ge=1)
     collision_with_itself: bool | None = None
     collision_with_calendar: list[str] | None = None
     club_member_rules: Rules | None = None

@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from schemas import MiniService, Calendar
 
 
@@ -16,13 +16,13 @@ class ReservationServiceBase(BaseModel):
 class ReservationServiceCreate(ReservationServiceBase):
     """Properties to receive via API on creation."""
     name: str
-    alias: str
+    alias: str = Field(max_length=5)
 
 
 class ReservationServiceUpdate(ReservationServiceBase):
     """Properties to receive via API on update."""
     name: str | None = None
-    alias: str | None = None
+    alias: str | None = Field(None, max_length=5)
 
 
 class ReservationServiceInDBBase(ReservationServiceBase):
