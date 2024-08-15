@@ -2,7 +2,6 @@
 Utils for services.
 """
 import datetime as dt
-import pytz
 
 from models import CalendarModel, ReservationServiceModel
 from schemas import Rules, EventCreate, InformationFromIS
@@ -108,94 +107,6 @@ def control_res_in_advance_or_prior(start_time, user_rules: Rules,
         if time_difference > dt.timedelta(days=user_rules.in_prior_days):
             return False
     return True
-
-
-def control_available_reservation_time(start_datetime, end_datetime) -> bool:
-    """
-    Check if a user can reserve at night.
-
-    :param start_datetime: Start time of the reservation.
-    :param end_datetime: End time of the reservation.
-
-    :return: Boolean indicating if a user can reserve at night or not.
-    """
-
-    start_time = start_datetime.time()
-    end_time = end_datetime.time()
-
-    start_res_time = dt.datetime.strptime('08:00:00', '%H:%M:%S').time()
-    end_res_time = dt.datetime.strptime('22:00:00', '%H:%M:%S').time()
-
-    if start_time < start_res_time or end_time < start_res_time \
-            or end_time > end_res_time:
-        return False
-    return True
-
-
-def check_collision_time(check_collision, start_datetime,
-                         end_datetime, calendar: CalendarModel,
-                         google_calendar_service) -> bool:
-    """
-    Check if there is already another reservation at that time.
-
-    :param check_collision: Start time of the reservation.
-    :param start_datetime: End time of the reservation.
-    :param end_datetime: End time of the reservation.
-    :param calendar: Calendar object in db.
-    :param google_calendar_service: Google Calendar service.
-
-    :return: Boolean indicating if here is already another reservation or not.
-    """
-    if not calendar.collision_with_itself:
-        collisions = get_events(google_calendar_service,
-                                start_datetime,
-                                end_datetime, calendar.id)
-        if len(collisions) > calendar.max_people:
-            return False
-
-    if len(check_collision) == 0:
-        return True
-
-    if len(check_collision) > 1:
-        return False
-
-    start_date = dt.datetime.fromisoformat(str(start_datetime))
-    end_date = dt.datetime.fromisoformat(str(end_datetime))
-    start_date_event = dt.datetime.fromisoformat(str(check_collision[0]['start']['dateTime']))
-    end_date_event = dt.datetime.fromisoformat(str(check_collision[0]['end']['dateTime']))
-
-    if end_date_event == start_date.astimezone(pytz.timezone('Europe/Vienna')) \
-            or start_date_event == end_date.astimezone(pytz.timezone('Europe/Vienna')):
-        return True
-
-    return False
-
-
-def get_events(service, start_time, end_time, calendar_id):
-    """
-    Get events from Google calendar by its id
-
-    :param service: Google Calendar service.
-    :param start_time: Start time of the reservation.
-    :param end_time: End time of the reservation.
-    :param calendar_id: The calendar id of the Calendar object.
-
-    :return: List of the events for that time
-    """
-
-    start_time_str = start_time.isoformat() + "+02:00"
-    end_time_str = end_time.isoformat() + "+02:00"
-
-    # Call the Calendar API
-    events_result = service.events().list(
-        calendarId=calendar_id,
-        timeMin=start_time_str,
-        timeMax=end_time_str,
-        singleEvents=True,
-        orderBy='startTime',
-        timeZone='Europe/Prague'
-    ).execute()
-    return events_result.get('items', [])
 
 
 def description_of_event(user, room, event_input: EventCreate):
