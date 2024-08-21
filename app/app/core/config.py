@@ -58,7 +58,7 @@ class Settings(BaseSettings):
         """Config class."""
         case_sensitive = True
         env_settings = True
-        env_file = get_env_file_path([".env.dev", ".env"])
+        env_file = get_env_file_path([".env.dev", ".env.secret", ".env"])
 
     # pylint: enable=too-few-public-methods
 

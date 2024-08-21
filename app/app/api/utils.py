@@ -25,6 +25,9 @@ def control_collision(
 
     :return: Boolean indicating if here is already another reservation or not.
     """
+    if not calendar:
+        return False
+
     check_collision: list = []
     collisions: list = calendar.collision_with_calendar
     collisions.append(calendar.id)
