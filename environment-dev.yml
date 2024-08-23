@@ -28,6 +28,7 @@ dependencies:
   - google-auth-oauthlib=1.2.0
   - sqlalchemy-easy-softdelete=0.8.3
   - alembic=1.13.2
+  - itsdangerous=2.2.0
 platforms:
   - linux-64
   - win-64
