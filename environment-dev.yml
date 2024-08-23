@@ -2,6 +2,7 @@ name: buk-reservation
 channels:
   - conda-forge
 dependencies:
+  - pip
   - python=3.11.8
   - fastapi=0.110.0
   - uvicorn=0.27.1
@@ -26,8 +27,10 @@ dependencies:
   - pytz=2024.1
   - google-api-python-client=2.120.0
   - google-auth-oauthlib=1.2.0
-  - sqlalchemy-easy-softdelete=0.8.3
+  - pip:
+    - sqlalchemy-easy-softdelete==0.8.3
   - alembic=1.13.2
+  - starlette=0.36.3
   - itsdangerous=2.2.0
 platforms:
   - linux-64
