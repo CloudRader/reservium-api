@@ -23,10 +23,10 @@ router = APIRouter(
 # reason: The googleapiclient.discovery.build function
 # dynamically creates the events attribute, which is not easily
 # understood by static code analysis tools like pylint.
-@router.post("/post",
+@router.post("/create_event",
              status_code=status.HTTP_201_CREATED,
              )
-async def post_event(
+async def create_event(
         service: Annotated[EventService, Depends(EventService)],
         calendar_service: Annotated[CalendarService, Depends(CalendarService)],
         user: Annotated[User, Depends(get_current_user)],
