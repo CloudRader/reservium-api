@@ -20,6 +20,7 @@ class CalendarBase(BaseModel):
     """Shared properties of Calendar."""
     collision_with_calendar: list[str] | None = None
     mini_services: list[str] | None = None
+    color: bool | None = None
 
 
 class CalendarCreate(CalendarBase):

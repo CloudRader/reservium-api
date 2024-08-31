@@ -4,7 +4,7 @@ and users itself.
 """
 from typing import Annotated, Any, List
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, Request
-from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from services import UserService
 from api import authenticate_user, utils, get_oauth_session, get_current_user
 from schemas import User
@@ -30,7 +30,7 @@ async def login(request: Request):
     oauth = get_oauth_session()
     authorization_url, state = oauth.authorization_url(authorization_url)
     request.session['oauth_state'] = state
-    return RedirectResponse(url=authorization_url)
+    return authorization_url
 
 
 @router.get("/callback")
@@ -47,6 +47,7 @@ async def callback(
     :return: Authorized  User schema.
     """
     oauth = get_oauth_session()
+
 
     try:
         token = oauth.fetch_token(
