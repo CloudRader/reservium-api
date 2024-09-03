@@ -72,7 +72,8 @@ async def create_event(
         )
 
     if event_create.guests > calendar.max_people:
-        google_calendar_service.events().insert(calendarId='primary',
+        event_body["summary"] = f"Not approved - more than {calendar.max_people} people"
+        google_calendar_service.events().insert(calendarId=calendar.id,
                                                 body=event_body).execute()
         return {"message": "Too many people!"
                            "You need get permission from the dormitory head, "
@@ -81,9 +82,10 @@ async def create_event(
 
     # Check night reservation
     if not check_night_reservation(user):
+        event_body["summary"] = "Not approved - night time"
         if not control_available_reservation_time(event_create.start_datetime,
                                                   event_create.end_datetime):
-            google_calendar_service.events().insert(calendarId='primary',
+            google_calendar_service.events().insert(calendarId=calendar.id,
                                                     body=event_body).execute()
             return {"message": "Request for a night reservation has been sent to the manager, "
                                "awaiting a response. Please note that the manager "

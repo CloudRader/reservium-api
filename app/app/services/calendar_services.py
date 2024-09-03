@@ -265,7 +265,7 @@ class CalendarService(AbstractCalendarService):
     ) -> list[str] | None:
         calendar = self.crud.get(calendar_id)
 
-        if calendar is None or not calendar.mini_services:
+        if calendar is None:
             return None
 
         return calendar.mini_services
