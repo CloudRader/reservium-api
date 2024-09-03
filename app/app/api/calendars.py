@@ -235,6 +235,6 @@ async def get_mini_services_by_reservation_type(
              or None if no such calendars exists.
     """
     mini_services = service.get_mini_services_by_reservation_type(calendar_id)
-    if not mini_services:
+    if mini_services is None:
         raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
     return mini_services
