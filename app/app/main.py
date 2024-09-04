@@ -75,5 +75,6 @@ if __name__ == "__main__":
                 port=settings.APP_SERVER_PORT,
                 reload=settings.APP_SERVER_USE_RELOAD,
                 proxy_headers=settings.APP_SERVER_USE_PROXY_HEADERS,
-                ssl_keyfile="certification/key.pem",
-                ssl_certfile="certification/cert.pem")
+                # ssl_keyfile="certification/key.pem",
+                # ssl_certfile="certification/cert.pem"
+                )
