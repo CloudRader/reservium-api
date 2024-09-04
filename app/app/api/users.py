@@ -3,6 +3,7 @@ API controllers for authorisation in IS(Information System of the Buben club)
 and users itself.
 """
 from typing import Annotated, Any, List
+from urllib.parse import urlparse, urlunparse
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from services import UserService
@@ -33,6 +34,15 @@ async def login(request: Request):
     return authorization_url
 
 
+def modify_url_scheme(url: str, new_scheme: str) -> str:
+    parsed_url = urlparse(url)
+    # Ensure the new scheme is used
+    new_url = urlunparse(
+        (new_scheme, parsed_url.netloc, parsed_url.path, parsed_url.params, parsed_url.query, parsed_url.fragment)
+    )
+    return new_url
+
+
 @router.get("/callback")
 async def callback(
         user_service: Annotated[UserService, Depends(UserService)],
@@ -48,18 +58,19 @@ async def callback(
     """
     oauth = get_oauth_session()
 
+    authorization_response_url = modify_url_scheme(str(request.url), 'https')
 
     try:
         token = oauth.fetch_token(
             "https://is.buk.cvut.cz/oauth/token",
             client_secret=settings.CLIENT_SECRET,
-            authorization_response=str(request.url)
+            authorization_response=authorization_response_url
         )
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"There's some problem with getting token. "
-                   f"Control this url: {request.url}",
+                   f"Control this url: {authorization_response_url}",
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
 
