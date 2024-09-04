@@ -58,7 +58,8 @@ async def callback(
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="There's some kind of authorization problem",
+            detail=f"There's some problem with getting token. "
+                   f"Control this url: {request.url}",
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
 
