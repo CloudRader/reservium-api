@@ -4,11 +4,31 @@ Utils for API.
 import datetime as dt
 from enum import Enum
 from uuid import UUID
+from urllib.parse import urlparse, urlunparse
 import pytz
 from fastapi import status, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from schemas import User, Calendar, EventCreate
+
+
+def modify_url_scheme(url: str, new_scheme: str) -> str:
+    """
+    Modify the scheme of the provided URL (e.g., change from 'http' to 'https').
+
+    :param url: The original URL to modify.
+    :param new_scheme: The new scheme to use (e.g., 'https').
+
+    :return: The modified URL with the new scheme.
+    """
+    parsed_url = urlparse(url)
+
+    # Ensure the new scheme is used
+    new_url = urlunparse(
+        (new_scheme, parsed_url.netloc, parsed_url.path, parsed_url.params,
+         parsed_url.query, parsed_url.fragment)
+    )
+    return new_url
 
 
 def control_collision(

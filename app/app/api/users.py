@@ -3,11 +3,11 @@ API controllers for authorisation in IS(Information System of the Buben club)
 and users itself.
 """
 from typing import Annotated, Any, List
-from urllib.parse import urlparse, urlunparse
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from services import UserService
-from api import authenticate_user, utils, get_oauth_session, get_current_user
+from api import authenticate_user, utils, get_oauth_session, get_current_user, \
+    modify_url_scheme
 from schemas import User
 from core import settings
 
@@ -32,15 +32,6 @@ async def login(request: Request):
     authorization_url, state = oauth.authorization_url(authorization_url)
     request.session['oauth_state'] = state
     return authorization_url
-
-
-def modify_url_scheme(url: str, new_scheme: str) -> str:
-    parsed_url = urlparse(url)
-    # Ensure the new scheme is used
-    new_url = urlunparse(
-        (new_scheme, parsed_url.netloc, parsed_url.path, parsed_url.params, parsed_url.query, parsed_url.fragment)
-    )
-    return new_url
 
 
 @router.get("/callback")

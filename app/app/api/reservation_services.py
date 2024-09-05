@@ -7,9 +7,9 @@ from fastapi import APIRouter, Depends, Path, status, Body
 from fastapi.responses import JSONResponse
 
 from api import EntityNotFoundException, Entity, Message, fastapi_docs, \
-    get_current_user
+    get_current_user, authenticate_user, get_current_token
 from schemas import ReservationServiceCreate, ReservationServiceUpdate, ReservationService, User
-from services import ReservationServiceService
+from services import ReservationServiceService, UserService
 
 router = APIRouter(
     prefix='/reservation_services',
@@ -26,7 +26,9 @@ router = APIRouter(
              status_code=status.HTTP_201_CREATED)
 async def create_reservation_service(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+        user_service: Annotated[UserService, Depends(UserService)],
         user: Annotated[User, Depends(get_current_user)],
+        token: Annotated[Any, Depends(get_current_token)],
         reservation_service_create: ReservationServiceCreate
 ) -> Any:
     """
@@ -34,7 +36,9 @@ async def create_reservation_service(
     operation section role can create reservation service.
 
     :param service: Reservation Service ser.
+    :param user_service: User service.
     :param user: User who make this request.
+    :param token: Token for user identification.
     :param reservation_service_create: Reservation Service Create schema.
 
     :returns ReservationServiceModel: the created reservation service.
@@ -50,6 +54,7 @@ async def create_reservation_service(
                            "request or you don't have permission for that."
             }
         )
+    await authenticate_user(user_service, token)
     return reservation_service
 
 
