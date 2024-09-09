@@ -36,7 +36,7 @@ async def get_request(token: str, request: str):
 
     :return: The JSON response from the API.
     """
-    info_endpoint = "https://api.is.buk.cvut.cz/v1/" + request
+    info_endpoint = settings.IS_SCOPES + request
 
     async with httpx.AsyncClient() as client:
         response = await client.get(info_endpoint, headers={"Authorization": f"Bearer {token}"})

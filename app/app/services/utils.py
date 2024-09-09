@@ -124,12 +124,12 @@ def description_of_event(user, room, event_input: EventCreate):
     if event_input.additional_services:
         formatted_services = ", ".join(event_input.additional_services)
     return (
-        f"Jméno/Name: {user.first_name} {user.surname}\n"
-        f"Pokoj/Room: {room.door_number}\n"
-        f"Číslo osob/Participants: {event_input.guests}\n"
-        f"Účel/Purpose: {event_input.purpose}\n"
+        f"Name: {user.first_name} {user.surname}\n"
+        f"Room: {room.door_number}\n"
+        f"Participants: {event_input.guests}\n"
+        f"Purpose: {event_input.purpose}\n"
         f"\n"
-        f"Další služby/Add. services: {formatted_services}\n"
+        f"Additionals: {formatted_services}\n"
     )
 
 
@@ -158,9 +158,9 @@ def ready_event(calendar: CalendarModel, event_input: EventCreate,
             "dateTime": end_time,
             "timeZone": "Europe/Prague"
         },
-        # "attendees": [
-        #     {"email": event_input.email},
-        # ],
+        "attendees": [
+            {"email": event_input.email},
+        ],
     }
 
 

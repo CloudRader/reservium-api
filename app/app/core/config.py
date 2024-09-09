@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     CLIENT_ID: str
     CLIENT_SECRET: str
     REDIRECT_URI: str
+    IS_SCOPES: str
+    IS_OAUTH_TOKEN: str
+    IS_OAUTH: str
+
+    GOOGLE_SCOPES: str
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
 
     TEST_DATABASE_URI: str
 

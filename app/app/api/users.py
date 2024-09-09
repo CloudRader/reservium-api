@@ -25,7 +25,8 @@ async def login(request: Request):
     Authenticate a user, construct authorization URL and redirect to authorization page of IS.
     """
     authorization_url = (
-        f"https://is.buk.cvut.cz/oauth/authorize?client_id={settings.CLIENT_ID}"
+        # f"https://is.buk.cvut.cz/oauth/authorize?client_id={settings.CLIENT_ID}"
+        f"{settings.IS_OAUTH}/authorize?client_id={settings.CLIENT_ID}"
         "&response_type=code&scope=location"  # Include the "location" scope
     )
     oauth = get_oauth_session()
@@ -53,7 +54,7 @@ async def callback(
 
     try:
         token = oauth.fetch_token(
-            "https://is.buk.cvut.cz/oauth/token",
+            settings.IS_OAUTH_TOKEN,
             client_secret=settings.CLIENT_SECRET,
             authorization_response=authorization_response_url
         )
