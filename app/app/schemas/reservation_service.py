@@ -16,13 +16,13 @@ class ReservationServiceBase(BaseModel):
 class ReservationServiceCreate(ReservationServiceBase):
     """Properties to receive via API on creation."""
     name: str
-    alias: str = Field(max_length=5)
+    alias: str = Field(max_length=6)
 
 
 class ReservationServiceUpdate(ReservationServiceBase):
     """Properties to receive via API on update."""
     name: str | None = None
-    alias: str | None = Field(None, max_length=5)
+    alias: str | None = Field(None, max_length=6)
 
 
 class ReservationServiceInDBBase(ReservationServiceBase):

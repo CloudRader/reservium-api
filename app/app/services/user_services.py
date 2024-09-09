@@ -9,7 +9,7 @@ from db import get_db
 from crud import CRUDUser, CRUDReservationService
 from services import CrudServiceBase
 from models import UserModel
-from schemas import UserCreate, UserUpdate, User, UserIS, Role
+from schemas import UserCreate, UserUpdate, User, UserIS, Role, ServiceValidity
 from sqlalchemy.orm import Session
 
 
@@ -25,12 +25,17 @@ class AbstractUserService(CrudServiceBase[
     """
 
     @abstractmethod
-    def create_user(self, user_data: UserIS, roles: list[Role]) -> UserModel:
+    def create_user(
+            self, user_data: UserIS,
+            roles: list[Role],
+            services: list[ServiceValidity]
+    ) -> UserModel:
         """
         Create a User in the database.
 
         :param user_data: Received data from IS.
         :param roles: List of user roles in IS.
+        :param services: List of user services in IS.
 
         :return: the created User.
         """
@@ -55,7 +60,11 @@ class UserService(AbstractUserService):
         self.reservation_service_crud = CRUDReservationService(db)
         super().__init__(CRUDUser(db))
 
-    def create_user(self, user_data: UserIS, roles: list[Role]) -> UserModel:
+    def create_user(
+            self, user_data: UserIS,
+            roles: list[Role],
+            services: list[ServiceValidity]
+    ) -> UserModel:
         user = self.get_by_username(user_data.username)
 
         user_roles = []
@@ -67,8 +76,9 @@ class UserService(AbstractUserService):
                         user_roles.append(manager.alias)
 
         active_member = False
-        if user_data.note.strip() == "active" or bool(user_roles):
-            active_member = True
+        for service in services:
+            if service.service.alias == "active":
+                active_member = True
 
         section_head = False
         if user_data.note.strip() == "head" or bool(user_roles):
