@@ -5,7 +5,7 @@ abstract base class (AbstractCRUDReservationService) and a concrete implementati
 """
 from abc import ABC, abstractmethod
 
-from sqlalchemy import select
+from sqlalchemy import select, Row
 from sqlalchemy.orm import Session
 from models import ReservationServiceModel
 from schemas import ReservationServiceCreate, ReservationServiceUpdate
@@ -56,6 +56,18 @@ class AbstractCRUDReservationService(CRUDBase[
         :return: list of aliases.
         """
 
+    @abstractmethod
+    def get_public_services(
+            self, include_removed: bool = False
+    ) -> list[Row[ReservationServiceModel]]:
+        """
+        Retrieves a public Reservation Service instance.
+
+        :param include_removed: Include removed object or not.
+
+        :return: The public Reservation Service instance if found, None otherwise.
+        """
+
 
 class CRUDReservationService(AbstractCRUDReservationService):
     """
@@ -85,3 +97,11 @@ class CRUDReservationService(AbstractCRUDReservationService):
         stmt = select(self.model.alias)
         result = self.db.execute(stmt)
         return [row[0] for row in result.fetchall()]
+
+    def get_public_services(
+            self, include_removed: bool = False
+    ) -> list[Row[ReservationServiceModel]]:
+        return self.db.query(self.model) \
+            .execution_options(include_deleted=include_removed) \
+            .filter(self.model.public) \
+            .all()

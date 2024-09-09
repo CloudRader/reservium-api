@@ -87,16 +87,21 @@ async def get_reservation_service(
             response_model=List[ReservationService],
             status_code=status.HTTP_200_OK)
 async def get_reservation_services(
-        service: Annotated[ReservationServiceService, Depends(ReservationServiceService)]
+        service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+        user: Annotated[User, Depends(get_current_user)],
 ) -> Any:
     """
     Get all reservation services from database.
 
     :param service: Reservation Service ser.
+    :param user: User who make this request.
 
     :return: List of all reservation services or None if there are no reservation services in db.
     """
-    reservation_service = service.get_all()
+    if user.active_member:
+        reservation_service = service.get_all()
+    else:
+        reservation_service = service.get_public_services()
     if not reservation_service:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,

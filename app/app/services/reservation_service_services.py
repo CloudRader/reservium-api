@@ -12,6 +12,7 @@ from crud import CRUDReservationService
 from services import CrudServiceBase
 from models import ReservationServiceModel
 from schemas import ReservationServiceCreate, ReservationServiceUpdate, User
+from sqlalchemy import Row
 from sqlalchemy.orm import Session
 
 
@@ -88,6 +89,18 @@ class AbstractReservationServiceService(CrudServiceBase[
         :return: The Reservation Service instance if found, None otherwise.
         """
 
+    @abstractmethod
+    def get_public_services(
+            self, include_removed: bool = False
+    ) -> list[Row[ReservationServiceModel]] | None:
+        """
+        Retrieves a public Reservation Service instance.
+
+        :param include_removed: Include removed object or not.
+
+        :return: The public Reservation Service instance if found, None otherwise.
+        """
+
 
 class ReservationServiceService(AbstractReservationServiceService):
     """
@@ -130,3 +143,11 @@ class ReservationServiceService(AbstractReservationServiceService):
     def get_by_name(self, name: str,
                     include_removed: bool = False) -> ReservationServiceModel | None:
         return self.crud.get_by_name(name, include_removed)
+
+    def get_public_services(
+            self, include_removed: bool = False
+    ) -> list[Row[ReservationServiceModel]] | None:
+        services = self.crud.get_public_services(include_removed)
+        if len(services) == 0:
+            return None
+        return services
