@@ -79,9 +79,9 @@ async def create_event(
 
     # Check night reservation
     if not check_night_reservation(user):
-        event_body["summary"] = "Not approved - night time"
         if not control_available_reservation_time(event_create.start_datetime,
                                                   event_create.end_datetime):
+            event_body["summary"] = "Not approved - night time"
             google_calendar_service.events().insert(calendarId=calendar.id,
                                                     body=event_body).execute()
             return {"message": "Night time"}
