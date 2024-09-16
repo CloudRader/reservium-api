@@ -10,7 +10,7 @@ from schemas import Rules, EventCreate, InformationFromIS
 def first_standard_check(
         is_info: InformationFromIS,
         reservation_service: ReservationServiceModel,
-        start_time
+        start_time, end_time
 ):
     """
     Checking if the user is reserving the service user has
@@ -19,6 +19,7 @@ def first_standard_check(
     :param is_info: Information about user from IS.
     :param reservation_service: Reservation Service object in db.
     :param start_time: Start time of the reservation.
+    :param end_time: End time of the reservation.
 
     :return: True indicating if the reservation
     is made rightly or message if not.
@@ -30,6 +31,9 @@ def first_standard_check(
     # Check error reservation
     if start_time < dt.datetime.now():
         return {"message": "You can't make a reservation before the present time!"}
+
+    if end_time < start_time:
+        return {"message": "The end of a reservation cannot be before its beginning!"}
 
     return "Access"
 

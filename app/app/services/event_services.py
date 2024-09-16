@@ -82,7 +82,8 @@ class EventService(AbstractEventService):
 
         # Check of the membership
         standard_message = first_standard_check(is_info, reservation_service,
-                                                event_input.start_datetime)
+                                                event_input.start_datetime,
+                                                event_input.end_datetime)
         if not standard_message == "Access":
             return standard_message
 

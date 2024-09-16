@@ -114,4 +114,8 @@ async def get_current_user(
     user = user_service.get_by_username(username)
     if not user:
         raise credentials_exception
+    token = request.session['oauth_token']['access_token']
+    user_is = UserIS.model_validate(await get_request(token, "/users/me"))
+    if not user_is:
+        raise credentials_exception
     return user
