@@ -32,6 +32,7 @@ dependencies:
   - alembic=1.13.2
   - starlette=0.36.3
   - itsdangerous=2.2.0
+  - fastapi-mail=1.4.1
 platforms:
   - linux-64
   - win-64

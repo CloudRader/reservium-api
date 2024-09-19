@@ -4,14 +4,14 @@ API controllers for events.
 from typing import Any, Annotated
 
 from googleapiclient.discovery import build
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, BackgroundTasks
 from fastapi.responses import JSONResponse
 from schemas import EventCreate, Room, UserIS, InformationFromIS, \
-    ServiceList, User
+    ServiceList, User, EmailCreate
 from services import EventService, CalendarService
 from api import get_request, fastapi_docs, \
     get_current_user, get_current_token, auth_google, control_collision, \
-    check_night_reservation, control_available_reservation_time
+    check_night_reservation, control_available_reservation_time, send_email
 
 router = APIRouter(
     prefix='/events',
@@ -85,6 +85,17 @@ async def create_event(
             google_calendar_service.events().insert(calendarId=calendar.id,
                                                     body=event_body).execute()
             return {"message": "Night time"}
+
+    email_create = EmailCreate(
+        email=event_create.email,
+        subject=f"{calendar.reservation_type} Reservation",
+        body=(
+            f"{event_body['description']}\n"
+            f"Start: {event_create.start_datetime}\n"
+            f"End: {event_create.end_datetime}"
+        ),
+    )
+    await send_email(email_create, BackgroundTasks())
 
     return google_calendar_service.events().insert(calendarId=calendar.id,
                                                    body=event_body).execute()

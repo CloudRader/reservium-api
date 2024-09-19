@@ -1,6 +1,5 @@
 """
 DTO schemes for Event entity.
-Test variation
 """
 from datetime import datetime
 from pydantic import BaseModel, Field

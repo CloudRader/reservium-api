@@ -9,6 +9,7 @@ from .calendar import Calendar, CalendarCreate, CalendarUpdate, CalendarInDBBase
 from .mini_service import MiniService, MiniServiceCreate, MiniServiceUpdate, MiniServiceInDBBase
 from .reservation_service import ReservationService, ReservationServiceCreate, \
     ReservationServiceUpdate, ReservationServiceInDBBase
+from .email import EmailCreate
 
 __all__ = [
     "User", "UserCreate", "UserUpdate", "UserInDB",
@@ -16,7 +17,7 @@ __all__ = [
     "MiniService", "MiniServiceCreate", "MiniServiceUpdate", "MiniServiceInDBBase",
     "ReservationService", "ReservationServiceCreate", "ReservationServiceUpdate",
     "ReservationServiceInDBBase",
-    "EventCreate",
+    "EventCreate", "EmailCreate",
     "UserIS", "RoleList", "Role", "ServiceList", "ServiceValidity", "InformationFromIS",
     "Zone", "Room", "LimitObject", "Service"
 ]

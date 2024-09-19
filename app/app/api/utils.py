@@ -182,6 +182,7 @@ class Entity(Enum):
     EVENT = "Event"
     MINI_SERVICE = "Mini Service"
     RESERVATION_SERVICE = "Reservation Service"
+    EMAIL = "Email"
 
 
 # pylint: disable=unused-argument
@@ -313,6 +314,10 @@ class FastApiDocs:
         "name": "events",
         "description": "Operations with events.",
     }
+    EMAIL_TAG = {
+        "name": "emails",
+        "description": "Operations with emails.",
+    }
 
     def get_tags_metadata(self):
         """Get tags metadata."""
@@ -322,6 +327,7 @@ class FastApiDocs:
             self.CALENDAR_TAG,
             self.MINI_SERVICE_TAG,
             self.EVENT_TAG,
+            self.EMAIL_TAG
         ]
 
 
