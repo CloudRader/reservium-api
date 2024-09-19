@@ -50,6 +50,36 @@ async def create_mini_service(
     return mini_service
 
 
+@router.post("/create_mini_services",
+             response_model=List[MiniService],
+             responses={
+                 400: {"model": Message,
+                       "description": "Couldn't create mini service."},
+             },
+             status_code=status.HTTP_201_CREATED)
+async def create_mini_services(
+        service: Annotated[MiniServiceService, Depends(MiniServiceService)],
+        user: Annotated[User, Depends(get_current_user)],
+        mini_services_create: List[MiniServiceCreate]
+) -> Any:
+    """
+    Create mini services, only users with special roles can create mini service.
+
+    :param service: Mini Service ser.
+    :param user: User who make this request.
+    :param mini_services_create: Mini Services Create schema.
+
+    :returns MiniServiceModel: the created mini service.
+    """
+    mini_service_result: List[MiniService] = []
+    for mini_service_create in mini_services_create:
+        mini_service_result.append(
+            await create_mini_service(service, user, mini_service_create)
+        )
+
+    return mini_service_result
+
+
 @router.get("/{mini_service_id}",
             response_model=MiniService,
             responses={

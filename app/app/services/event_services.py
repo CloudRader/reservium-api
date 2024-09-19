@@ -87,6 +87,11 @@ class EventService(AbstractEventService):
         if not standard_message == "Access":
             return standard_message
 
+        if not calendar.more_than_max_people_with_permission and \
+                event_input.guests > calendar.max_people:
+            return {"message": f"You can't reserve this type of "
+                               f"reservation for more than {calendar.max_people} people!"}
+
         # Choose user rules
         user_rules = self.__choose_user_rules(user, calendar)
 

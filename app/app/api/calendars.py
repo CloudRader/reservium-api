@@ -64,6 +64,36 @@ async def create_calendar(
     return calendar
 
 
+@router.post("/create_calendars",
+             response_model=List[Calendar],
+             responses={
+                 400: {"model": Message,
+                       "description": "Couldn't create calendar."},
+             },
+             status_code=status.HTTP_201_CREATED)
+async def create_calendars(
+        service: Annotated[CalendarService, Depends(CalendarService)],
+        user: Annotated[User, Depends(get_current_user)],
+        calendars_create: List[CalendarCreate],
+) -> Any:
+    """
+    Create calendars, only users with special roles can create calendar.
+
+    :param service: Calendar service.
+    :param user: User who make this request.
+    :param calendars_create: Calendars Create schema.
+
+    :returns CalendarModel: the created calendar.
+    """
+    calendars_result: List[Calendar] = []
+    for calendar in calendars_create:
+        calendars_result.append(
+            await create_calendar(service, user, calendar)
+        )
+
+    return calendars_result
+
+
 @router.get("/{calendar_id}",
             response_model=Calendar,
             responses={

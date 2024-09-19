@@ -19,6 +19,7 @@ class Rules(BaseModel):
 class CalendarBase(BaseModel):
     """Shared properties of Calendar."""
     collision_with_calendar: list[str] | None = None
+    more_than_max_people_with_permission: bool | None = None
     mini_services: list[str] | None = None
     color: str | None = None
 

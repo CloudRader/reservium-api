@@ -58,6 +58,43 @@ async def create_reservation_service(
     return reservation_service
 
 
+@router.post("/create_reservation_services",
+             response_model=List[ReservationService],
+             responses={
+                 400: {"model": Message,
+                       "description": "Couldn't create reservation service."},
+             },
+             status_code=status.HTTP_201_CREATED)
+async def create_reservation_services(
+        service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+        user_service: Annotated[UserService, Depends(UserService)],
+        user: Annotated[User, Depends(get_current_user)],
+        token: Annotated[Any, Depends(get_current_token)],
+        reservation_services_create: List[ReservationServiceCreate]
+) -> Any:
+    """
+    Create reservation services, only user with head of the
+    operation section role can create reservation services.
+
+    :param service: Reservation Service ser.
+    :param user_service: User service.
+    :param user: User who make this request.
+    :param token: Token for user identification.
+    :param reservation_services_create: Reservation Services Create schema.
+
+    :returns ReservationServicesModel: the created reservation service.
+    """
+    reservation_services_result: List[ReservationService] = []
+    for reservation in reservation_services_create:
+        reservation_services_result.append(
+            await create_reservation_service(service, user_service,
+                                             user, token, reservation)
+        )
+
+    await authenticate_user(user_service, token)
+    return reservation_services_result
+
+
 @router.get("/{reservation_service_id}",
             response_model=ReservationService,
             responses={

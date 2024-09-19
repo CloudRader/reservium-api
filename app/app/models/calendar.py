@@ -62,6 +62,7 @@ class Calendar(Base, SoftDeleteMixin):
     reservation_type = Column(String, unique=True, nullable=False)
     color = Column(String, default="#05baf5")
     max_people = Column(Integer, default=0)
+    more_than_max_people_with_permission = Column(Boolean, nullable=False, default=True)
     collision_with_itself = Column(Boolean, nullable=False)
     collision_with_calendar = mapped_column(ARRAY(String), nullable=True)
     club_member_rules = Column(RulesType, nullable=True)
