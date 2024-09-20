@@ -3,12 +3,14 @@ This module defines an abstract base class AbstractCalendarService that work wit
 """
 from typing import Annotated
 from abc import ABC, abstractmethod
+from uuid import UUID
+
 from googleapiclient.discovery import build
 from fastapi import Depends
 from db import get_db
 from crud import CRUDCalendar, CRUDReservationService, CRUDMiniService
 from services import CrudServiceBase
-from models import CalendarModel
+from models import CalendarModel, ReservationServiceModel
 from schemas import CalendarCreate, CalendarUpdate, User
 from api import auth_google
 from sqlalchemy.orm import Session
@@ -116,6 +118,19 @@ class AbstractCalendarService(CrudServiceBase[
         :param calendar_id: The id of the Calendar.
 
         :return: The str of mini services if found, None otherwise.
+        """
+
+    @abstractmethod
+    def get_reservation_service_of_this_calendar(
+            self, reservation_service_id: UUID
+    ) -> ReservationServiceModel | None:
+        """
+        Retrieves the reservation service of this calendar
+        by reservation service id.
+
+        :param reservation_service_id: The id of the Reservation Service.
+
+        :return: Reservation Service of this calendar if found, None otherwise.
         """
 
 
@@ -269,3 +284,14 @@ class CalendarService(AbstractCalendarService):
             return None
 
         return calendar.mini_services
+
+    def get_reservation_service_of_this_calendar(
+            self, reservation_service_id: UUID
+    ) -> ReservationServiceModel | None:
+        reservation_service = self.reservation_service_crud.get(
+            reservation_service_id)
+
+        if not reservation_service:
+            return None
+
+        return reservation_service

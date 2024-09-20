@@ -4,7 +4,7 @@ API controllers for emails.
 from typing import Any
 
 from fastapi_mail import FastMail, MessageSchema, MessageType
-from fastapi import APIRouter, status, BackgroundTasks
+from fastapi import APIRouter, status
 from api import fastapi_docs
 from schemas import EmailCreate
 from core import email_connection
@@ -19,8 +19,7 @@ router = APIRouter(
              status_code=status.HTTP_201_CREATED,
              )
 async def send_email(
-        email_create: EmailCreate,
-        background_tasks: BackgroundTasks
+        email_create: EmailCreate
 ) -> Any:
     """
     Sends an email asynchronously.
@@ -29,8 +28,6 @@ async def send_email(
     sent in the background to avoid blocking the request-response cycle.
 
     :param email_create: Email Create schema.
-    :param background_tasks: FastAPI's background tasks object to
-    handle asynchronous email sending.
 
     :returns Dictionary: Confirming that the email has been sent.
     """
@@ -42,5 +39,6 @@ async def send_email(
     )
 
     fm = FastMail(email_connection)
-    background_tasks.add_task(fm.send_message, message)
+    # background_tasks.add_task(fm.send_message, message)
+    await fm.send_message(message)
     return {"message": "Email has been sent"}
