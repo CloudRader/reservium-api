@@ -9,7 +9,7 @@ class EventCreate(BaseModel):
     """Schema for creating an event."""
     start_datetime: datetime
     end_datetime: datetime
-    purpose: str = Field(max_length=30)
+    purpose: str = Field(max_length=40)
     guests: int = Field(ge=1)
     reservation_type: str
     email: str
