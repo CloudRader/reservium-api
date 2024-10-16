@@ -40,17 +40,34 @@ async def create_calendar(
 
     :returns CalendarModel: the created calendar.
     """
-    try:
-        google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
-        google_calendar_service.calendars(). \
-            get(calendarId=calendar_create.id).execute()
-    except HttpError:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={
-                "message": "This calendar not exist in Google calendar."
+    google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
+    if calendar_create.id:
+        try:
+            google_calendar_service.calendars(). \
+                get(calendarId=calendar_create.id).execute()
+        except HttpError:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={
+                    "message": "This calendar not exist in Google calendar."
+                }
+            )
+    else:
+        try:
+            calendar_body = {
+                'summary': calendar_create.reservation_type,  # Title of the new calendar
+                'timeZone': 'Europe/Prague',  # Set your desired timezone
             }
-        )
+            created_calendar = (google_calendar_service.calendars().
+                                insert(body=calendar_body).execute())
+            calendar_create.id = created_calendar.get('id')
+        except HttpError:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={
+                    "message": "Can't create calendar in Google Calendar."
+                }
+            )
 
     calendar = service.create_calendar(calendar_create, user)
     if not calendar:
@@ -143,26 +160,6 @@ async def get_all_calendars(
     return calendars
 
 
-@router.get("/google_calendars/test/",
-            status_code=status.HTTP_200_OK)
-async def test(
-        service: Annotated[CalendarService, Depends(CalendarService)],
-) -> Any:
-    """
-    Test function. Don't forget delete it
-    """
-    calendar = service.get_by_reservation_type("Entire Space")
-    test_event = service.test(calendar.id)
-    if not test_event:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={
-                "message": "You don't have permission for this operation."
-            }
-        )
-    return test_event
-
-
 @router.get("/google_calendars/",
             status_code=status.HTTP_200_OK)
 async def get_all_google_calendar_to_add(
@@ -178,13 +175,16 @@ async def get_all_google_calendar_to_add(
 
     :returns list[dict]: candidate list for additions.
     """
+    google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
+    google_calendars = google_calendar_service.calendarList().list().execute()
 
-    calendars = service.get_all_google_calendar_to_add(user)
+    calendars = service.get_all_google_calendar_to_add(user, google_calendars)
     if not calendars:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={
-                "message": "You don't have permission for this operation."
+                "message": "All calendars added or "
+                           "you don't have permission for this operation."
             }
         )
     return calendars

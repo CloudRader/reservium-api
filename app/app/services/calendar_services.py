@@ -5,14 +5,12 @@ from typing import Annotated
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from googleapiclient.discovery import build
 from fastapi import Depends
 from db import get_db
 from crud import CRUDCalendar, CRUDReservationService, CRUDMiniService
 from services import CrudServiceBase
 from models import CalendarModel, ReservationServiceModel
 from schemas import CalendarCreate, CalendarUpdate, User
-from api import auth_google
 from sqlalchemy.orm import Session
 
 
@@ -72,24 +70,16 @@ class AbstractCalendarService(CrudServiceBase[
         """
 
     @abstractmethod
-    def test(
-            self, calendar_id
-    ):
-        """
-        Something not impl yet
-
-        :return: Any.
-        """
-
-    @abstractmethod
     def get_all_google_calendar_to_add(
-            self, user: User
+            self, user: User,
+            google_calendars: dict,
     ) -> list[dict] | None:
         """
         Retrieves a Calendars from Google calendars
         that are candidates for additions
 
         :param user: the UserSchema for control permissions of the calendar.
+        :param google_calendars: calendars from Google Calendars.
 
         :return: candidate list for additions, None otherwise.
         """
@@ -140,7 +130,6 @@ class CalendarService(AbstractCalendarService):
     """
 
     def __init__(self, db: Annotated[Session, Depends(get_db)]):
-        self.google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
         self.reservation_service_crud = CRUDReservationService(db)
         self.mini_service_crud = CRUDMiniService(db)
         super().__init__(CRUDCalendar(db))
@@ -230,33 +219,12 @@ class CalendarService(AbstractCalendarService):
 
         return self.crud.soft_remove(calendar_id)
 
-    # pylint: disable=no-member
-    # reason: The googleapiclient.discovery.build function
-    # dynamically creates the events attribute, which is not easily
-    # understood by static code analysis tools like pylint.
-    def test(
-            self, calendar_id
-    ):
-        test = self.google_calendar_service.events().list(
-            calendarId=calendar_id,
-            singleEvents=True,
-            orderBy='startTime'
-        ).execute()
-
-        # event = self.google_calendar_service.events().get(
-        #     calendarId=calendar_id, eventId="1lnut6920f7sesr6spc1veliss"
-        # ).execute()
-
-        return test
-
     def get_all_google_calendar_to_add(
-            self, user: User
+            self, user: User,
+            google_calendars: dict
     ) -> list[dict] | None:
-        if len(user.roles) < 1:
+        if not user.roles:
             return None
-
-        google_calendars = self.google_calendar_service. \
-            calendarList().list().execute()
 
         new_calendar_candidates = []
 
