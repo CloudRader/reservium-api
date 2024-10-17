@@ -61,6 +61,15 @@ async def create_calendar(
             created_calendar = (google_calendar_service.calendars().
                                 insert(body=calendar_body).execute())
             calendar_create.id = created_calendar.get('id')
+
+            rule = {
+                'role': 'reader',  # Role is 'reader' for read-only public access
+                'scope': {
+                    'type': 'default'  # 'default' means public access
+                }
+            }
+            (google_calendar_service.acl().
+             insert(calendarId=calendar_create.id, body=rule).execute())
         except HttpError:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -179,12 +188,11 @@ async def get_all_google_calendar_to_add(
     google_calendars = google_calendar_service.calendarList().list().execute()
 
     calendars = service.get_all_google_calendar_to_add(user, google_calendars)
-    if not calendars:
+    if calendars is None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={
-                "message": "All calendars added or "
-                           "you don't have permission for this operation."
+                "message": "You don't have permission for this operation."
             }
         )
     return calendars
