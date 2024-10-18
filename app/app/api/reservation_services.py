@@ -3,7 +3,7 @@ API controllers for reservation services.
 """
 from typing import Any, Annotated, List
 from uuid import UUID
-from fastapi import APIRouter, Depends, Path, status, Body
+from fastapi import APIRouter, Depends, Path, status, Body, Query
 from fastapi.responses import JSONResponse
 
 from api import EntityNotFoundException, Entity, Message, fastapi_docs, \
@@ -103,18 +103,20 @@ async def create_reservation_services(
             status_code=status.HTTP_200_OK)
 async def get_reservation_service(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-        reservation_service_id: Annotated[str, Path()]
+        reservation_service_id: Annotated[str, Path()],
+        include_removed: bool = Query(False)
 ) -> Any:
     """
     Get reservation service by its uuid.
 
     :param service: Reservation Service ser.
     :param reservation_service_id: uuid of the reservation service.
+    :param include_removed: include removed reservation service or not.
 
     :return: Reservation Service with uuid equal to uuid
              or None if no such reservation service exists.
     """
-    reservation_service = service.get(reservation_service_id)
+    reservation_service = service.get(reservation_service_id, include_removed)
     if not reservation_service:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service
@@ -126,19 +128,21 @@ async def get_reservation_service(
 async def get_reservation_services(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
         user: Annotated[User, Depends(get_current_user)],
+        include_removed: bool = Query(False)
 ) -> Any:
     """
     Get all reservation services from database.
 
     :param service: Reservation Service ser.
     :param user: User who make this request.
+    :param include_removed: include removed reservation service or not.
 
     :return: List of all reservation services or None if there are no reservation services in db.
     """
     if user.active_member:
-        reservation_service = service.get_all()
+        reservation_service = service.get_all(include_removed)
     else:
-        reservation_service = service.get_public_services()
+        reservation_service = service.get_public_services(include_removed)
     if not reservation_service:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -215,18 +219,20 @@ async def delete_reservation_service(
             status_code=status.HTTP_200_OK)
 async def get_reservation_service_by_name(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-        name: Annotated[str, Path()]
+        name: Annotated[str, Path()],
+        include_removed: bool = Query(False)
 ) -> Any:
     """
     Get reservation services by its name.
 
     :param service: Mini Service ser.
     :param name: service alias of the mini service.
+    :param include_removed: include removed reservation service or not.
 
     :return: Reservation Service with name equal to name
              or None if no such reservation service exists.
     """
-    reservation_service = service.get_by_name(name)
+    reservation_service = service.get_by_name(name, include_removed)
     if not reservation_service:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, name)
     return reservation_service
@@ -240,18 +246,20 @@ async def get_reservation_service_by_name(
             status_code=status.HTTP_200_OK)
 async def get_reservation_service_by_alias(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-        alias: Annotated[str, Path()]
+        alias: Annotated[str, Path()],
+        include_removed: bool = Query(False)
 ) -> Any:
     """
     Get reservation services by its alias.
 
     :param service: Mini Service ser.
     :param alias: service alias of the mini service.
+    :param include_removed: include removed reservation service or not.
 
     :return: Reservation Service with alias equal to alias
              or None if no such reservation service exists.
     """
-    reservation_service = service.get_by_alias(alias)
+    reservation_service = service.get_by_alias(alias, include_removed)
     if not reservation_service:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, alias)
     return reservation_service

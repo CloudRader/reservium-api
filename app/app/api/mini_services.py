@@ -3,7 +3,7 @@ API controllers for mini services.
 """
 from typing import Any, Annotated, List
 from uuid import UUID
-from fastapi import APIRouter, Depends, Path, status, Body
+from fastapi import APIRouter, Depends, Path, status, Body, Query
 from fastapi.responses import JSONResponse
 
 from api import EntityNotFoundException, Entity, Message, fastapi_docs, \
@@ -88,18 +88,20 @@ async def create_mini_services(
             status_code=status.HTTP_200_OK)
 async def get_mini_service(
         service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-        mini_service_id: Annotated[str, Path()]
+        mini_service_id: Annotated[str, Path()],
+        include_removed: bool = Query(False)
 ) -> Any:
     """
     Get mini service by its uuid.
 
     :param service: Mini Service ser.
     :param mini_service_id: uuid of the mini service.
+    :param include_removed: include removed mini service or not.
 
     :return: Mini Service with uuid equal to uuid
              or None if no such mini service exists.
     """
-    mini_service = service.get(mini_service_id)
+    mini_service = service.get(mini_service_id, include_removed)
     if not mini_service:
         raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_id)
     return mini_service
@@ -109,16 +111,18 @@ async def get_mini_service(
             response_model=List[MiniService],
             status_code=status.HTTP_200_OK)
 async def get_mini_services(
-        service: Annotated[MiniServiceService, Depends(MiniServiceService)]
+        service: Annotated[MiniServiceService, Depends(MiniServiceService)],
+        include_removed: bool = Query(False)
 ) -> Any:
     """
     Get all mini services from database.
 
     :param service: Mini Service ser.
+    :param include_removed: include removed mini services or not.
 
     :return: List of all mini services or None if there are no mini services in db.
     """
-    mini_services = service.get_all()
+    mini_services = service.get_all(include_removed)
     if not mini_services:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -191,20 +195,22 @@ async def delete_mini_service(
                 **EntityNotFoundException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
-async def get_mini_services_by_alias(
+async def get_mini_services_by_name(
         service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-        name: Annotated[str, Path()]
+        name: Annotated[str, Path()],
+        include_removed: bool = Query(False)
 ) -> Any:
     """
     Get mini services by its service name.
 
     :param service: Mini Service ser.
     :param name: service name of the mini service.
+    :param include_removed: include removed mini service or not.
 
     :return: Mini Service with name equal to name
              or None if no such mini service exists.
     """
-    mini_service = service.get_by_name(name)
+    mini_service = service.get_by_name(name, include_removed)
     if not mini_service:
         raise EntityNotFoundException(Entity.MINI_SERVICE, name)
     return mini_service

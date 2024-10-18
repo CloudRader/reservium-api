@@ -2,7 +2,7 @@
 API controllers for calendars.
 """
 from typing import Any, Annotated, List
-from fastapi import APIRouter, Depends, Path, status, Body
+from fastapi import APIRouter, Depends, Path, status, Body, Query
 from fastapi.responses import JSONResponse
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -128,18 +128,20 @@ async def create_calendars(
             status_code=status.HTTP_200_OK)
 async def get_calendar(
         service: Annotated[CalendarService, Depends(CalendarService)],
-        calendar_id: Annotated[str, Path()]
+        calendar_id: Annotated[str, Path()],
+        include_removed: bool = Query(False)
 ) -> Any:
     """
     Get calendar by its uuid.
 
     :param service: Calendar service.
     :param calendar_id: id of the calendar.
+    :param include_removed: include removed calendar or not.
 
     :return: Calendar with uuid equal to calendar_uuid
              or None if no such document exists.
     """
-    calendar = service.get(calendar_id)
+    calendar = service.get(calendar_id, include_removed)
     if not calendar:
         raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
     return calendar
@@ -149,16 +151,18 @@ async def get_calendar(
             response_model=List[Calendar],
             status_code=status.HTTP_200_OK)
 async def get_all_calendars(
-        service: Annotated[CalendarService, Depends(CalendarService)]
+        service: Annotated[CalendarService, Depends(CalendarService)],
+        include_removed: bool = Query(False)
 ) -> Any:
     """
     Get all calendars from database.
 
     :param service: Calendar service.
+    :param include_removed: include removed calendars or not.
 
     :return: List of all calendars or None if there are no calendars in db.
     """
-    calendars = service.get_all()
+    calendars = service.get_all(include_removed)
     if not calendars:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
