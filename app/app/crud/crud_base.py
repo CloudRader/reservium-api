@@ -60,6 +60,13 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
         """
 
     @abstractmethod
+    def retrieve_removed_object(self, uuid: UUID | str | int | None
+                                ) -> Model | None:
+        """
+        Retrieve removed object from soft removed.
+        """
+
+    @abstractmethod
     def remove(self, uuid: UUID | str | int | None) -> Model | None:
         """
         Remove a record by its UUID.
@@ -121,6 +128,20 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         self.db.commit()
         self.db.refresh(db_obj)
         return db_obj
+
+    def retrieve_removed_object(self, uuid: UUID | str | int | None
+                                ) -> Model | None:
+        if uuid is None:
+            return None
+        obj = self.db.query(self.model) \
+            .execution_options(include_deleted=True). \
+            filter(self.model.id == uuid).first()
+        if obj is None:
+            return None
+        obj.deleted_at = None
+        self.db.add(obj)
+        self.db.commit()
+        return obj
 
     def remove(self, uuid: UUID | str | int | None) -> Model | None:
         if uuid is None:

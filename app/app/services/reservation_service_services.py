@@ -54,6 +54,19 @@ class AbstractReservationServiceService(CrudServiceBase[
         """
 
     @abstractmethod
+    def retrieve_removed_object(self, uuid: UUID | str | int | None,
+                                user: User
+                                ) -> ReservationServiceModel | None:
+        """
+        Retrieve removed object from soft removed.
+
+        :param uuid: The ID of the object to retrieve from removed.
+        :param user: the UserSchema for control permissions of the reservation service.
+
+        :return: the updated Reservation Service.
+        """
+
+    @abstractmethod
     def delete_reservation_service(self, uuid: UUID,
                                    user: User,
                                    hard_remove: bool = False
@@ -131,6 +144,14 @@ class ReservationServiceService(AbstractReservationServiceService):
             return None
 
         return self.update(uuid, reservation_service_update)
+
+    def retrieve_removed_object(self, uuid: UUID | str | int | None,
+                                user: User
+                                ) -> ReservationServiceModel | None:
+        if not user.section_head:
+            return None
+
+        return self.crud.retrieve_removed_object(uuid)
 
     def delete_reservation_service(
             self, uuid: UUID,

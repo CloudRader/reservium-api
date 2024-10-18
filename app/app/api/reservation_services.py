@@ -183,6 +183,34 @@ async def update_reservation_service(
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service
 
+@router.put("/retrieve_deleted_reservation_service/{reservation_service_id}",
+            response_model=ReservationService,
+            responses={
+                **EntityNotFoundException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def retrieve_deleted_reservation_service(
+        service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+        user: Annotated[User, Depends(get_current_user)],
+        reservation_service_id: Annotated[UUID, Path()]
+) -> Any:
+    """
+    Retrieve deleted reservation service with uuid equal to reservation_service_uuid,
+    only user with head of the operation section role can update reservation service.
+
+    :param service: Reservation Service ser.
+    :param user: User who make this request.
+    :param reservation_service_id: uuid of the reservation service.
+
+    :returns ReservationServiceModel: the updated reservation service.
+    """
+    reservation_service = service.retrieve_removed_object(
+        reservation_service_id, user
+    )
+    if not reservation_service:
+        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_id)
+    return reservation_service
+
 
 @router.delete("/{reservation_service_id}",
                response_model=ReservationService,
