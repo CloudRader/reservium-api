@@ -194,7 +194,7 @@ class CalendarService(AbstractCalendarService):
             self, calendar_id: str,
             user: User
     ) -> CalendarModel | None:
-        calendar = self.get(calendar_id)
+        calendar = self.get(calendar_id, True)
 
         if calendar is None:
             return None
@@ -217,7 +217,7 @@ class CalendarService(AbstractCalendarService):
                 )
                 self.update(calendar_to_update.id, update_exist_calendar)
 
-        return self.crud.soft_remove(calendar_id)
+        return self.crud.remove(calendar_id)
 
     def get_all_google_calendar_to_add(
             self, user: User,

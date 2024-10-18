@@ -194,6 +194,7 @@ async def delete_reservation_service(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
         user: Annotated[User, Depends(get_current_user)],
         reservation_service_id: Annotated[UUID, Path()],
+        hard_remove: bool = Query(False)
 ) -> Any:
     """
     Delete reservation service with id equal to reservation_service_uuid,
@@ -202,10 +203,12 @@ async def delete_reservation_service(
     :param service: Reservation Service ser.
     :param user: User who make this request.
     :param reservation_service_id: uuid of the reservation service.
+    :param hard_remove: hard remove of the reservation service or not.
 
     :returns ReservationServiceModel: the deleted reservation service.
     """
-    reservation_service = service.delete_reservation_service(reservation_service_id, user)
+    reservation_service = service.delete_reservation_service(
+        reservation_service_id, user, hard_remove)
     if not reservation_service:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service

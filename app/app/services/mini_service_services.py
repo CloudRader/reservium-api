@@ -121,7 +121,7 @@ class MiniServiceService(AbstractMiniServiceService):
 
     def delete_mini_service(self, uuid: UUID,
                             user: User) -> MiniServiceModel | None:
-        mini_service = self.crud.get(uuid)
+        mini_service = self.crud.get(uuid, True)
 
         if mini_service is None:
             return None
@@ -143,7 +143,7 @@ class MiniServiceService(AbstractMiniServiceService):
                 )
                 self.calendar_crud.update(db_obj=calendar, obj_in=update_exist_calendar)
 
-        return self.crud.soft_remove(uuid)
+        return self.crud.remove(uuid)
 
     def get_by_name(self, name: str,
                     include_removed: bool = False) -> MiniServiceModel | None:

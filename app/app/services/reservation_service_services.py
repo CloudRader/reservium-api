@@ -55,12 +55,15 @@ class AbstractReservationServiceService(CrudServiceBase[
 
     @abstractmethod
     def delete_reservation_service(self, uuid: UUID,
-                                   user: User) -> ReservationServiceModel | None:
+                                   user: User,
+                                   hard_remove: bool = False
+                                   ) -> ReservationServiceModel | None:
         """
         Delete a Reservation Service in the database.
 
         :param uuid: The uuid of the Reservation Service.
         :param user: the UserSchema for control permissions of the reservation service.
+        :param hard_remove: hard remove of the reservation service or not.
 
         :return: the deleted Reservation Service.
         """
@@ -129,10 +132,16 @@ class ReservationServiceService(AbstractReservationServiceService):
 
         return self.update(uuid, reservation_service_update)
 
-    def delete_reservation_service(self, uuid: UUID,
-                                   user: User) -> ReservationServiceModel | None:
+    def delete_reservation_service(
+            self, uuid: UUID,
+            user: User,
+            hard_remove: bool = False
+    ) -> ReservationServiceModel | None:
         if not user.section_head:
             return None
+
+        if hard_remove:
+            return self.crud.remove(uuid)
 
         return self.crud.soft_remove(uuid)
 
