@@ -68,7 +68,7 @@ class Role(BaseModel):
     """Represents a role."""
     role: str
     name: str
-    description: str
+    description: Optional[str]
     limit: str
     limit_objects: list[LimitObject]
 
