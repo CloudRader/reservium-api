@@ -153,6 +153,31 @@ async def get_reservation_services(
     return reservation_service
 
 
+@router.get("/public/",
+            response_model=List[ReservationService],
+            status_code=status.HTTP_200_OK)
+async def get_public_reservation_services(
+        service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+) -> Any:
+    """
+    Get all public reservation services from database.
+
+    :param service: Reservation Service ser.
+
+    :return: List of all public reservation services or None if
+    there are no reservation services in db.
+    """
+    reservation_service = service.get_public_services()
+    if not reservation_service:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={
+                "message": "No reservation services in db."
+            }
+        )
+    return reservation_service
+
+
 @router.put("/{reservation_service_id}",
             response_model=ReservationService,
             responses={
@@ -182,6 +207,7 @@ async def update_reservation_service(
     if not reservation_service:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service
+
 
 @router.put("/retrieve_deleted_reservation_service/{reservation_service_id}",
             response_model=ReservationService,

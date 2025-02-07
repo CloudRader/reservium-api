@@ -5,6 +5,7 @@ using SQLAlchemy.
 """
 from abc import ABC, abstractmethod
 
+from sqlalchemy import Row
 from sqlalchemy.orm import Session
 from models import CalendarModel
 from schemas import CalendarCreate, CalendarUpdate
@@ -35,6 +36,21 @@ class AbstractCRUDCalendar(CRUDBase[
         :return: The Calendar instance if found, None otherwise.
         """
 
+    @abstractmethod
+    def get_by_reservation_service_id(
+            self, reservation_service_id: str,
+            include_removed: bool = False
+    ) -> list[Row[CalendarModel]] | None:
+        """
+        Retrieves a Calendars instance by its reservation service id.
+
+        :param reservation_service_id: reservation service id of the calendars.
+        :param include_removed: Include removed object or not.
+
+        :return: Calendars with reservation service id equal
+        to reservation service id or None if no such calendars exists.
+        """
+
 
 class CRUDCalendar(AbstractCRUDCalendar):
     """
@@ -52,3 +68,12 @@ class CRUDCalendar(AbstractCRUDCalendar):
             .execution_options(include_deleted=include_removed) \
             .filter(self.model.reservation_type == reservation_type) \
             .first()
+
+    def get_by_reservation_service_id(
+            self, reservation_service_id: str,
+            include_removed: bool = False
+    ) -> list[Row[CalendarModel]] | None:
+        return self.db.query(self.model) \
+            .execution_options(include_deleted=include_removed) \
+            .filter(self.model.reservation_service_id == reservation_service_id) \
+            .all()

@@ -6,7 +6,7 @@ using SQLAlchemy.
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, Row
 from sqlalchemy.orm import Session
 from models import MiniServiceModel
 from schemas import MiniServiceCreate, MiniServiceUpdate
@@ -35,6 +35,21 @@ class AbstractCRUDMiniService(CRUDBase[
         :param include_removed: Include removed object or not.
 
         :return: The Mini Service instance if found, None otherwise.
+        """
+
+    @abstractmethod
+    def get_by_reservation_service_id(
+            self, reservation_service_id: str,
+            include_removed: bool = False
+    ) -> list[Row[MiniServiceModel]] | None:
+        """
+        Retrieves a Mini Services instance by its reservation service id.
+
+        :param reservation_service_id: reservation service id of the mini services.
+        :param include_removed: Include removed object or not.
+
+        :return: Mini Services with reservation service id equal
+        to reservation service id or None if no such mini services exists.
         """
 
     @abstractmethod
@@ -67,6 +82,15 @@ class CRUDMiniService(AbstractCRUDMiniService):
             .execution_options(include_deleted=include_removed) \
             .filter(self.model.name == name) \
             .first()
+
+    def get_by_reservation_service_id(
+            self, reservation_service_id: str,
+            include_removed: bool = False
+    ) -> list[Row[MiniServiceModel]] | None:
+        return self.db.query(self.model) \
+            .execution_options(include_deleted=include_removed) \
+            .filter(self.model.reservation_service_id == reservation_service_id) \
+            .all()
 
     def get_names_by_reservation_service_uuid(
             self, reservation_service_uuid: UUID

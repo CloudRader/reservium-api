@@ -172,6 +172,7 @@ async def delete_mini_service(
         service: Annotated[MiniServiceService, Depends(MiniServiceService)],
         user: Annotated[User, Depends(get_current_user)],
         mini_service_id: Annotated[UUID, Path()],
+        hard_remove: bool = Query(False)
 ) -> Any:
     """
     Delete mini service with mini_service_uuid equal to uuid,
@@ -180,17 +181,19 @@ async def delete_mini_service(
     :param service: Mini Service ser.
     :param user: User who make this request.
     :param mini_service_id: uuid of the mini service.
+    :param hard_remove: hard remove of the mini service or not.
 
     :returns MiniServiceModel: the deleted mini service.
     """
-    mini_service = service.delete_mini_service(mini_service_id, user)
+    mini_service = service.delete_mini_service(mini_service_id, user,
+                                               hard_remove)
     if not mini_service:
         raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_id)
     return mini_service
 
 
 @router.get("/name/{name}",
-            response_model=List[MiniService],
+            response_model=MiniService,
             responses={
                 **EntityNotFoundException.RESPONSE,
             },
@@ -201,10 +204,10 @@ async def get_mini_services_by_name(
         include_removed: bool = Query(False)
 ) -> Any:
     """
-    Get mini services by its service name.
+    Get mini service by its name.
 
     :param service: Mini Service ser.
-    :param name: service name of the mini service.
+    :param name: name of the mini service.
     :param include_removed: include removed mini service or not.
 
     :return: Mini Service with name equal to name
@@ -214,3 +217,31 @@ async def get_mini_services_by_name(
     if not mini_service:
         raise EntityNotFoundException(Entity.MINI_SERVICE, name)
     return mini_service
+
+
+@router.get("/reservation_service/{reservation_service_id}",
+            response_model=List[MiniService],
+            responses={
+                **EntityNotFoundException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def get_mini_services_by_reservation_service_id(
+        service: Annotated[MiniServiceService, Depends(MiniServiceService)],
+        reservation_service_id: Annotated[str, Path()],
+        include_removed: bool = Query(False)
+) -> Any:
+    """
+    Get mini services by its reservation service id.
+
+    :param service: Mini Service ser.
+    :param reservation_service_id: reservation service id of the mini services.
+    :param include_removed: include removed mini service or not.
+
+    :return: Mini Services with reservation service id equal
+    to reservation service id or None if no such mini services exists.
+    """
+    mini_services = service.get_by_reservation_service_id(reservation_service_id,
+                                                         include_removed)
+    if not mini_services:
+        raise EntityNotFoundException(Entity.MINI_SERVICE, reservation_service_id)
+    return mini_services

@@ -11,6 +11,7 @@ from crud import CRUDMiniService, CRUDCalendar, CRUDReservationService
 from services import CrudServiceBase
 from models import MiniServiceModel
 from schemas import MiniServiceCreate, MiniServiceUpdate, CalendarUpdate, User
+from sqlalchemy import Row
 from sqlalchemy.orm import Session
 
 
@@ -52,13 +53,17 @@ class AbstractMiniServiceService(CrudServiceBase[
         """
 
     @abstractmethod
-    def delete_mini_service(self, uuid: UUID,
-                            user: User) -> MiniServiceModel | None:
+    def delete_mini_service(
+            self, uuid: UUID,
+            user: User,
+            hard_remove: bool = False
+    ) -> MiniServiceModel | None:
         """
         Delete a Mini Service in the database.
 
         :param uuid: The uuid of the Mini Service.
         :param user: the UserSchema for control permissions of the mini service.
+        :param hard_remove: hard remove of the reservation service or not.
 
         :return: the deleted Mini Service.
         """
@@ -73,6 +78,22 @@ class AbstractMiniServiceService(CrudServiceBase[
         :param include_removed: Include removed object or not.
 
         :return: The Mini Service instance if found, None otherwise.
+        """
+
+    @abstractmethod
+    def get_by_reservation_service_id(
+            self,
+            reservation_service_id: str,
+            include_removed: bool = False
+    ) -> list[Row[MiniServiceModel]] | None:
+        """
+        Retrieves a Mini Service instance by reservation service id.
+
+        :param reservation_service_id: reservation service id of the mini services.
+        :param include_removed: Include removed object or not.
+
+        :return: Mini Services with reservation service id equal
+        to reservation service id or None if no such mini services exists.
         """
 
 
@@ -120,7 +141,9 @@ class MiniServiceService(AbstractMiniServiceService):
         return self.update(uuid, mini_service_update)
 
     def delete_mini_service(self, uuid: UUID,
-                            user: User) -> MiniServiceModel | None:
+                            user: User,
+                            hard_remove: bool = False
+                            ) -> MiniServiceModel | None:
         mini_service = self.crud.get(uuid, True)
 
         if mini_service is None:
@@ -143,8 +166,19 @@ class MiniServiceService(AbstractMiniServiceService):
                 )
                 self.calendar_crud.update(db_obj=calendar, obj_in=update_exist_calendar)
 
-        return self.crud.remove(uuid)
+        if hard_remove:
+            return self.crud.remove(uuid)
+
+        return self.crud.soft_remove(uuid)
 
     def get_by_name(self, name: str,
                     include_removed: bool = False) -> MiniServiceModel | None:
         return self.crud.get_by_name(name, include_removed)
+
+    def get_by_reservation_service_id(
+            self,
+            reservation_service_id: str,
+            include_removed: bool = False
+    ) -> list[Row[MiniServiceModel]] | None:
+        return self.crud.get_by_reservation_service_id(reservation_service_id,
+                                                       include_removed)

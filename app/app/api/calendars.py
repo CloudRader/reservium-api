@@ -241,6 +241,7 @@ async def delete_calendar(
         service: Annotated[CalendarService, Depends(CalendarService)],
         user: Annotated[User, Depends(get_current_user)],
         calendar_id: Annotated[str, Path()],
+        hard_remove: bool = Query(False)
 ) -> Any:
     """
     Delete calendar with id equal to calendar_id,
@@ -249,10 +250,11 @@ async def delete_calendar(
     :param service: Calendar service.
     :param user: User who make this request.
     :param calendar_id: id of the calendar.
+    :param hard_remove: hard remove of the calendar or not.
 
     :returns CalendarModel: the deleted calendar.
     """
-    calendar = service.delete_calendar(calendar_id, user)
+    calendar = service.delete_calendar(calendar_id, user, hard_remove)
     if not calendar:
         raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
     return calendar
@@ -280,3 +282,31 @@ async def get_mini_services_by_reservation_type(
     if mini_services is None:
         raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
     return mini_services
+
+
+@router.get("/reservation_service/{reservation_service_id}",
+            response_model=List[Calendar],
+            responses={
+                **EntityNotFoundException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def get_mini_services_by_reservation_service_id(
+        service: Annotated[CalendarService, Depends(CalendarService)],
+        reservation_service_id: Annotated[str, Path()],
+        include_removed: bool = Query(False)
+) -> Any:
+    """
+    Get calendars by its reservation service id.
+
+    :param service: Calendar Service.
+    :param reservation_service_id: reservation service id of the calendars.
+    :param include_removed: include removed mini service or not.
+
+    :return: Calendars with reservation service id equal
+    to reservation service id or None if no such calendars exists.
+    """
+    calendars = service.get_by_reservation_service_id(reservation_service_id,
+                                                      include_removed)
+    if not calendars:
+        raise EntityNotFoundException(Entity.MINI_SERVICE, reservation_service_id)
+    return calendars

@@ -11,6 +11,7 @@ from crud import CRUDCalendar, CRUDReservationService, CRUDMiniService
 from services import CrudServiceBase
 from models import CalendarModel, ReservationServiceModel
 from schemas import CalendarCreate, CalendarUpdate, User
+from sqlalchemy import Row
 from sqlalchemy.orm import Session
 
 
@@ -58,13 +59,15 @@ class AbstractCalendarService(CrudServiceBase[
     @abstractmethod
     def delete_calendar(
             self, calendar_id: str,
-            user: User
+            user: User,
+            hard_remove: bool = False
     ) -> CalendarModel | None:
         """
         Delete a Calendar in the database.
 
         :param calendar_id: The id of the Calendar.
         :param user: the UserSchema for control permissions of the calendar.
+        :param hard_remove: hard remove of the calendar or not.
 
         :return: the deleted Calendar.
         """
@@ -121,6 +124,21 @@ class AbstractCalendarService(CrudServiceBase[
         :param reservation_service_id: The id of the Reservation Service.
 
         :return: Reservation Service of this calendar if found, None otherwise.
+        """
+
+    @abstractmethod
+    def get_by_reservation_service_id(
+            self, reservation_service_id: str,
+            include_removed: bool = False
+    ) -> list[Row[CalendarModel]] | None:
+        """
+        Retrieves a Calendars instance by its reservation service id.
+
+        :param reservation_service_id: reservation service id of the calendars.
+        :param include_removed: Include removed object or not.
+
+        :return: Calendars with reservation service id equal
+        to reservation service id or None if no such calendars exists.
         """
 
 
@@ -192,7 +210,8 @@ class CalendarService(AbstractCalendarService):
 
     def delete_calendar(
             self, calendar_id: str,
-            user: User
+            user: User,
+            hard_remove: bool = False
     ) -> CalendarModel | None:
         calendar = self.get(calendar_id, True)
 
@@ -217,7 +236,10 @@ class CalendarService(AbstractCalendarService):
                 )
                 self.update(calendar_to_update.id, update_exist_calendar)
 
-        return self.crud.remove(calendar_id)
+        if hard_remove:
+            return self.crud.remove(calendar_id)
+
+        return self.crud.soft_remove(calendar_id)
 
     def get_all_google_calendar_to_add(
             self, user: User,
@@ -263,3 +285,10 @@ class CalendarService(AbstractCalendarService):
             return None
 
         return reservation_service
+
+    def get_by_reservation_service_id(
+            self, reservation_service_id: str,
+            include_removed: bool = False
+    ) -> list[Row[CalendarModel]] | None:
+        return self.crud.get_by_reservation_service_id(reservation_service_id,
+                                                       include_removed)
