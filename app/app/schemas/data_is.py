@@ -60,15 +60,16 @@ class LimitObject(BaseModel):
     """Represents a limit object."""
     id: int
     name: str
-    alias: Optional[str]
-    note: str
+    alias: Optional[str] = None
+    note: Optional[str] = None
+    # description: Optional[str]
 
 
 class Role(BaseModel):
     """Represents a role."""
     role: str
     name: str
-    description: Optional[str]
+    description: str
     limit: str
     limit_objects: list[LimitObject]
 
