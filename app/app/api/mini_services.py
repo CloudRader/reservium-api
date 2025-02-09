@@ -162,6 +162,35 @@ async def update_mini_service(
     return mini_service
 
 
+@router.put("/retrieve_deleted_mini_service/{mini_service_id}",
+            response_model=MiniService,
+            responses={
+                **EntityNotFoundException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def retrieve_deleted_reservation_service(
+        service: Annotated[MiniServiceService, Depends(MiniServiceService)],
+        user: Annotated[User, Depends(get_current_user)],
+        mini_service_id: Annotated[UUID, Path()]
+) -> Any:
+    """
+    Retrieve deleted mini service with uuid equal to mini_service_id,
+    only users with special roles can update mini service.
+
+    :param service: Mini Service ser.
+    :param user: User who make this request.
+    :param mini_service_id: id of the mini service.
+
+    :returns MiniServiceModel: the updated mini service.
+    """
+    mini_service = service.retrieve_removed_object(
+        mini_service_id, user
+    )
+    if not mini_service:
+        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, mini_service_id)
+    return mini_service
+
+
 @router.delete("/{mini_service_id}",
                response_model=MiniService,
                responses={
@@ -175,7 +204,7 @@ async def delete_mini_service(
         hard_remove: bool = Query(False)
 ) -> Any:
     """
-    Delete mini service with mini_service_uuid equal to uuid,
+    Delete mini service with mini_service_id equal to uuid,
     only users with special roles can delete mini service.
 
     :param service: Mini Service ser.
@@ -241,7 +270,7 @@ async def get_mini_services_by_reservation_service_id(
     to reservation service id or None if no such mini services exists.
     """
     mini_services = service.get_by_reservation_service_id(reservation_service_id,
-                                                         include_removed)
+                                                          include_removed)
     if not mini_services:
         raise EntityNotFoundException(Entity.MINI_SERVICE, reservation_service_id)
     return mini_services

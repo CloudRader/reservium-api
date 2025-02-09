@@ -53,6 +53,20 @@ class AbstractMiniServiceService(CrudServiceBase[
         """
 
     @abstractmethod
+    def retrieve_removed_object(
+            self, uuid: UUID | str | int | None,
+            user: User
+    ) -> MiniServiceModel | None:
+        """
+        Retrieve removed mini service from soft removed.
+
+        :param uuid: The ID of the mini service to retrieve from removed.
+        :param user: the UserSchema for control permissions of the mini service.
+
+        :return: the updated Mini Service.
+        """
+
+    @abstractmethod
     def delete_mini_service(
             self, uuid: UUID,
             user: User,
@@ -140,13 +154,28 @@ class MiniServiceService(AbstractMiniServiceService):
 
         return self.update(uuid, mini_service_update)
 
+    def retrieve_removed_object(self, uuid: UUID | str | int | None,
+                                user: User
+                                ) -> MiniServiceModel | None:
+        mini_service = self.crud.get(uuid, True)
+
+        reservation_service = self.reservation_service_crud.get(
+            mini_service.reservation_service_id
+        )
+
+        if user is None or reservation_service is None or \
+                reservation_service.alias not in user.roles:
+            return None
+
+        return self.crud.retrieve_removed_object(uuid)
+
     def delete_mini_service(self, uuid: UUID,
                             user: User,
                             hard_remove: bool = False
                             ) -> MiniServiceModel | None:
         mini_service = self.crud.get(uuid, True)
 
-        if mini_service is None:
+        if mini_service is None or (hard_remove and not user.section_head):
             return None
 
         reservation_service = self.reservation_service_crud.get(

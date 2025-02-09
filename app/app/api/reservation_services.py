@@ -191,7 +191,7 @@ async def update_reservation_service(
         reservation_service_update: Annotated[ReservationServiceUpdate, Body()]
 ) -> Any:
     """
-    Update reservation service with uuid equal to reservation_service_uuid,
+    Update reservation service with uuid equal to reservation_service_id,
     only user with head of the operation section role can update reservation service.
 
     :param service: Reservation Service ser.
@@ -221,7 +221,7 @@ async def retrieve_deleted_reservation_service(
         reservation_service_id: Annotated[UUID, Path()]
 ) -> Any:
     """
-    Retrieve deleted reservation service with uuid equal to reservation_service_uuid,
+    Retrieve deleted reservation service with uuid equal to reservation_service_id,
     only user with head of the operation section role can update reservation service.
 
     :param service: Reservation Service ser.
@@ -251,7 +251,7 @@ async def delete_reservation_service(
         hard_remove: bool = Query(False)
 ) -> Any:
     """
-    Delete reservation service with id equal to reservation_service_uuid,
+    Delete reservation service with id equal to reservation_service_id,
     only user with head of the operation section role can delete reservation service.
 
     :param service: Reservation Service ser.

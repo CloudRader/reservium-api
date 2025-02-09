@@ -231,6 +231,35 @@ async def update_calendar(
     return calendar
 
 
+@router.put("/retrieve_deleted_calendar/{calendar_id}",
+            response_model=Calendar,
+            responses={
+                **EntityNotFoundException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def retrieve_deleted_calendar(
+        service: Annotated[CalendarService, Depends(CalendarService)],
+        user: Annotated[User, Depends(get_current_user)],
+        calendar_id: Annotated[str, Path()]
+) -> Any:
+    """
+    Retrieve deleted calendar with uuid equal to calendar_id,
+    only users with special roles can update calendar.
+
+    :param service: Reservation Service ser.
+    :param user: User who make this request.
+    :param calendar_id: id of the calendar.
+
+    :returns CalendarModel: the updated calendar.
+    """
+    calendar = service.retrieve_removed_object(
+        calendar_id, user
+    )
+    if not calendar:
+        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, calendar_id)
+    return calendar
+
+
 @router.delete("/{calendar_id}",
                response_model=Calendar,
                responses={

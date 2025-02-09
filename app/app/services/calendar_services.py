@@ -57,6 +57,20 @@ class AbstractCalendarService(CrudServiceBase[
         """
 
     @abstractmethod
+    def retrieve_removed_object(
+            self, uuid: UUID | str | int | None,
+            user: User
+    ) -> CalendarModel | None:
+        """
+        Retrieve removed calendar from soft removed.
+
+        :param uuid: The ID of the calendar to retrieve from removed.
+        :param user: the UserSchema for control permissions of the calendar.
+
+        :return: the updated Calendar.
+        """
+
+    @abstractmethod
     def delete_calendar(
             self, calendar_id: str,
             user: User,
@@ -208,6 +222,22 @@ class CalendarService(AbstractCalendarService):
 
         return self.update(calendar_id, calendar_update)
 
+    def retrieve_removed_object(
+            self, uuid: UUID | str | int | None,
+            user: User
+    ) -> CalendarModel | None:
+        calendar = self.get(uuid, True)
+
+        reservation_service = self.reservation_service_crud.get(
+            calendar.reservation_service_id
+        )
+
+        if user is None or reservation_service is None or \
+                reservation_service.alias not in user.roles:
+            return None
+
+        return self.crud.retrieve_removed_object(uuid)
+
     def delete_calendar(
             self, calendar_id: str,
             user: User,
@@ -215,7 +245,7 @@ class CalendarService(AbstractCalendarService):
     ) -> CalendarModel | None:
         calendar = self.get(calendar_id, True)
 
-        if calendar is None:
+        if calendar is None or (hard_remove and not user.section_head):
             return None
 
         reservation_service = self.reservation_service_crud.get(
