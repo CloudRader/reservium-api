@@ -33,6 +33,7 @@ class Settings(BaseSettings):
 
     GOOGLE_SCOPES: str
     GOOGLE_CLIENT_ID: str
+    GOOGLE_PROJECT_ID: str
     GOOGLE_CLIENT_SECRET: str
 
     MAIL_USERNAME: str
