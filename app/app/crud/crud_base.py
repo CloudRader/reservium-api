@@ -118,7 +118,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
             .execution_options(include_deleted=include_removed).all()
 
     def get_by_reservation_service_id(
-            self, reservation_service_id: str,
+            self, reservation_service_id: UUID | str,
             include_removed: bool = False
     ) -> list[Row[Model]] | None:
         return self.db.query(self.model) \

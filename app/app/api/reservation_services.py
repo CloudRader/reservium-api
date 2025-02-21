@@ -103,7 +103,7 @@ async def create_reservation_services(
             status_code=status.HTTP_200_OK)
 async def get_reservation_service(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-        reservation_service_id: Annotated[str, Path()],
+        reservation_service_id: Annotated[UUID, Path()],
         include_removed: bool = Query(False)
 ) -> Any:
     """
@@ -153,7 +153,7 @@ async def get_reservation_services(
     return reservation_service
 
 
-@router.get("/public/",
+@router.get("/services/public",
             response_model=List[ReservationService],
             status_code=status.HTTP_200_OK)
 async def get_public_reservation_services(

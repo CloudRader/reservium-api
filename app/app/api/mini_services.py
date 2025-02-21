@@ -88,7 +88,7 @@ async def create_mini_services(
             status_code=status.HTTP_200_OK)
 async def get_mini_service(
         service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-        mini_service_id: Annotated[str, Path()],
+        mini_service_id: Annotated[UUID, Path()],
         include_removed: bool = Query(False)
 ) -> Any:
     """
@@ -256,7 +256,7 @@ async def get_mini_services_by_name(
             status_code=status.HTTP_200_OK)
 async def get_mini_services_by_reservation_service_id(
         service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-        reservation_service_id: Annotated[str, Path()],
+        reservation_service_id: Annotated[UUID, Path()],
         include_removed: bool = Query(False)
 ) -> Any:
     """

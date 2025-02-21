@@ -97,7 +97,7 @@ class AbstractMiniServiceService(CrudServiceBase[
     @abstractmethod
     def get_by_reservation_service_id(
             self,
-            reservation_service_id: str,
+            reservation_service_id: UUID,
             include_removed: bool = False
     ) -> list[Row[MiniServiceModel]] | None:
         """
@@ -206,7 +206,7 @@ class MiniServiceService(AbstractMiniServiceService):
 
     def get_by_reservation_service_id(
             self,
-            reservation_service_id: str,
+            reservation_service_id: UUID,
             include_removed: bool = False
     ) -> list[Row[MiniServiceModel]] | None:
         return self.crud.get_by_reservation_service_id(reservation_service_id,
