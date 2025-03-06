@@ -126,8 +126,8 @@ def check_collision_time(check_collision, start_datetime,
     start_date_event = dt.datetime.fromisoformat(str(check_collision[0]['start']['dateTime']))
     end_date_event = dt.datetime.fromisoformat(str(check_collision[0]['end']['dateTime']))
 
-    if end_date_event == start_date.astimezone(pytz.timezone('Europe/Vienna')) \
-            or start_date_event == end_date.astimezone(pytz.timezone('Europe/Vienna')):
+    if end_date_event == start_date.astimezone(pytz.timezone('Europe/Prague')) \
+            or start_date_event == end_date.astimezone(pytz.timezone('Europe/Prague')):
         return True
 
     return False

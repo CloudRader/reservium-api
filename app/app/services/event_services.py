@@ -1,6 +1,5 @@
 """
 This module defines an abstract base class AbstractEventService that work with Event.
-Test variant
 """
 from typing import Any, Annotated
 from abc import ABC, abstractmethod
