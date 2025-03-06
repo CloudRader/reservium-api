@@ -294,12 +294,12 @@ async def delete_calendar(
                 **EntityNotFoundException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
-async def get_mini_services_by_reservation_type(
+async def get_mini_services_by_calendar(
         service: Annotated[CalendarService, Depends(CalendarService)],
         calendar_id: Annotated[str, Path()]
 ) -> Any:
     """
-    Get mini services by its reservation type.
+    Get mini services by its calendar.
 
     :param service: Calendar service.
     :param calendar_id: id of the calendar.
@@ -307,7 +307,7 @@ async def get_mini_services_by_reservation_type(
     :return: List mini services with type equal to service type
              or None if no such calendars exists.
     """
-    mini_services = service.get_mini_services_by_reservation_type(calendar_id)
+    mini_services = service.get_mini_services_by_calendar(calendar_id)
     if mini_services is None:
         raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
     return mini_services
@@ -319,7 +319,7 @@ async def get_mini_services_by_reservation_type(
                 **EntityNotFoundException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
-async def get_mini_services_by_reservation_service_id(
+async def get_calendars_services_by_reservation_service_id(
         service: Annotated[CalendarService, Depends(CalendarService)],
         reservation_service_id: Annotated[str, Path()],
         include_removed: bool = Query(False)
