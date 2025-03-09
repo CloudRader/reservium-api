@@ -3,12 +3,12 @@ API controllers for calendars.
 """
 from typing import Any, Annotated, List
 from fastapi import APIRouter, Depends, Path, status, Body, Query
-from fastapi.responses import JSONResponse
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from api import EntityNotFoundException, Entity, Message, fastapi_docs, \
-    auth_google, get_current_user
+    auth_google, get_current_user, BaseAppException, PermissionDeniedException, \
+    UnauthorizedException
 from schemas import CalendarCreate, Calendar, CalendarUpdate, User
 from services import CalendarService
 
@@ -22,8 +22,11 @@ router = APIRouter(
 @router.post("/create_calendar",
              response_model=Calendar,
              responses={
-                 400: {"model": Message,
-                       "description": "Couldn't create calendar."},
+                 404: {"model": Message,
+                       "description": "This calendar not exist in Google calendar."},
+                 **BaseAppException.RESPONSE,
+                 **PermissionDeniedException.RESPONSE,
+                 **UnauthorizedException.RESPONSE,
              },
              status_code=status.HTTP_201_CREATED)
 async def create_calendar(
@@ -46,12 +49,7 @@ async def create_calendar(
             google_calendar_service.calendars(). \
                 get(calendarId=calendar_create.id).execute()
         except HttpError:
-            return JSONResponse(
-                status_code=status.HTTP_404_NOT_FOUND,
-                content={
-                    "message": "This calendar not exist in Google calendar."
-                }
-            )
+            raise BaseAppException("This calendar not exist in Google calendar.", status_code=404)
     else:
         try:
             calendar_body = {
@@ -71,30 +69,22 @@ async def create_calendar(
             (google_calendar_service.acl().
              insert(calendarId=calendar_create.id, body=rule).execute())
         except HttpError:
-            return JSONResponse(
-                status_code=status.HTTP_404_NOT_FOUND,
-                content={
-                    "message": "Can't create calendar in Google Calendar."
-                }
-            )
+            raise BaseAppException("Can't create calendar in Google Calendar.")
 
     calendar = service.create_calendar(calendar_create, user)
     if not calendar:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={
-                "message": "Could not create calendar, because bad request or "
-                           "you don't have permission for that."
-            }
-        )
+        raise BaseAppException()
     return calendar
 
 
 @router.post("/create_calendars",
              response_model=List[Calendar],
              responses={
-                 400: {"model": Message,
-                       "description": "Couldn't create calendar."},
+                 404: {"model": Message,
+                       "description": "This calendar not exist in Google calendar."},
+                 **BaseAppException.RESPONSE,
+                 **PermissionDeniedException.RESPONSE,
+                 **UnauthorizedException.RESPONSE,
              },
              status_code=status.HTTP_201_CREATED)
 async def create_calendars(
@@ -149,6 +139,9 @@ async def get_calendar(
 
 @router.get("/",
             response_model=List[Calendar],
+            responses={
+                **BaseAppException.RESPONSE,
+            },
             status_code=status.HTTP_200_OK)
 async def get_all_calendars(
         service: Annotated[CalendarService, Depends(CalendarService)],
@@ -163,17 +156,17 @@ async def get_all_calendars(
     :return: List of all calendars or None if there are no calendars in db.
     """
     calendars = service.get_all(include_removed)
-    if not calendars:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={
-                "message": "No calendars in db."
-            }
-        )
+    if calendars is None:
+        raise BaseAppException()
     return calendars
 
 
 @router.get("/google_calendars/",
+            responses={
+                **BaseAppException.RESPONSE,
+                **PermissionDeniedException.RESPONSE,
+                **UnauthorizedException.RESPONSE,
+            },
             status_code=status.HTTP_200_OK)
 async def get_all_google_calendar_to_add(
         service: Annotated[CalendarService, Depends(CalendarService)],
@@ -193,12 +186,7 @@ async def get_all_google_calendar_to_add(
 
     calendars = service.get_all_google_calendar_to_add(user, google_calendars)
     if calendars is None:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={
-                "message": "You don't have permission for this operation."
-            }
-        )
+        raise BaseAppException()
     return calendars
 
 
@@ -206,6 +194,8 @@ async def get_all_google_calendar_to_add(
             response_model=Calendar,
             responses={
                 **EntityNotFoundException.RESPONSE,
+                **PermissionDeniedException.RESPONSE,
+                **UnauthorizedException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
 async def update_calendar(
@@ -235,6 +225,8 @@ async def update_calendar(
             response_model=Calendar,
             responses={
                 **EntityNotFoundException.RESPONSE,
+                **PermissionDeniedException.RESPONSE,
+                **UnauthorizedException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
 async def retrieve_deleted_calendar(
@@ -264,6 +256,8 @@ async def retrieve_deleted_calendar(
                response_model=Calendar,
                responses={
                    **EntityNotFoundException.RESPONSE,
+                   **PermissionDeniedException.RESPONSE,
+                   **UnauthorizedException.RESPONSE,
                },
                status_code=status.HTTP_200_OK)
 async def delete_calendar(
@@ -319,7 +313,7 @@ async def get_mini_services_by_calendar(
                 **EntityNotFoundException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
-async def get_calendars_services_by_reservation_service_id(
+async def get_calendars_by_reservation_service_id(
         service: Annotated[CalendarService, Depends(CalendarService)],
         reservation_service_id: Annotated[str, Path()],
         include_removed: bool = Query(False)

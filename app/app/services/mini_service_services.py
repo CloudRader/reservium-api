@@ -7,6 +7,7 @@ from uuid import UUID
 
 from db import get_db
 from fastapi import Depends
+from api import BaseAppException, PermissionDeniedException
 from crud import CRUDMiniService, CRUDCalendar, CRUDReservationService
 from services import CrudServiceBase
 from models import MiniServiceModel
@@ -124,15 +125,18 @@ class MiniServiceService(AbstractMiniServiceService):
     def create_mini_service(self, mini_service_create: MiniServiceCreate,
                             user: User) -> MiniServiceModel | None:
         if self.crud.get_by_name(mini_service_create.name, True):
-            return None
+            raise BaseAppException("A reservation service with this name already exist.")
 
         reservation_service = self.reservation_service_crud.get(
             mini_service_create.reservation_service_id
         )
 
-        if user is None or reservation_service is None or \
-                reservation_service.alias not in user.roles:
-            return None
+        if reservation_service is None:
+            raise BaseAppException("A reservation service of mini service isn't exist.")
+        if reservation_service.alias not in user.roles:
+            raise PermissionDeniedException(
+                f"You must be the {reservation_service.name} manager to create mini services."
+            )
 
         return self.crud.create(mini_service_create)
 
@@ -148,9 +152,12 @@ class MiniServiceService(AbstractMiniServiceService):
             mini_service_to_update.reservation_service_id
         )
 
-        if user is None or reservation_service is None or \
-                reservation_service.alias not in user.roles:
-            return None
+        if reservation_service is None:
+            raise BaseAppException("A reservation service of mini service isn't exist.")
+        if reservation_service.alias not in user.roles:
+            raise PermissionDeniedException(
+                f"You must be the {reservation_service.name} manager to update mini services."
+            )
 
         return self.update(uuid, mini_service_update)
 
@@ -163,9 +170,12 @@ class MiniServiceService(AbstractMiniServiceService):
             mini_service.reservation_service_id
         )
 
-        if user is None or reservation_service is None or \
-                reservation_service.alias not in user.roles:
-            return None
+        if reservation_service is None:
+            raise BaseAppException("A reservation service of mini service isn't exist.")
+        if reservation_service.alias not in user.roles:
+            raise PermissionDeniedException(
+                f"You must be the {reservation_service.name} manager to retrieve mini services."
+            )
 
         return self.crud.retrieve_removed_object(uuid)
 
@@ -175,16 +185,23 @@ class MiniServiceService(AbstractMiniServiceService):
                             ) -> MiniServiceModel | None:
         mini_service = self.crud.get(uuid, True)
 
-        if mini_service is None or (hard_remove and not user.section_head):
+        if mini_service is None:
             return None
+
+        if hard_remove and not user.section_head:
+            raise PermissionDeniedException(
+                "You must be the head of PS to totally delete mini services.")
 
         reservation_service = self.reservation_service_crud.get(
             mini_service.reservation_service_id
         )
 
-        if user is None or reservation_service is None or \
-                reservation_service.alias not in user.roles:
-            return None
+        if reservation_service is None:
+            raise BaseAppException("A reservation service of mini service isn't exist.")
+        if reservation_service.alias not in user.roles:
+            raise PermissionDeniedException(
+                f"You must be the {reservation_service.name} manager to delete mini services."
+            )
 
         for calendar in reservation_service.calendars:
             if mini_service.name in calendar.mini_services:

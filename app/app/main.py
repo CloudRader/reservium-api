@@ -9,9 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from api import users, events, calendars, mini_services, reservation_services, \
-    MethodNotAllowedException, EntityNotFoundException, NotImplementedException, \
-    fastapi_docs, method_not_allowed_exception_handler, \
-    entity_not_found_exception_handler, not_implemented_exception_handler, emails
+    fastapi_docs, emails, BaseAppException, app_exception_handler
 from core import settings
 from db import init_db
 
@@ -47,15 +45,7 @@ app.include_router(calendars.router)
 app.include_router(mini_services.router)
 app.include_router(emails.router)
 
-app.add_exception_handler(
-    MethodNotAllowedException, method_not_allowed_exception_handler
-)
-app.add_exception_handler(
-    EntityNotFoundException, entity_not_found_exception_handler
-)
-app.add_exception_handler(
-    NotImplementedException, not_implemented_exception_handler
-)
+app.add_exception_handler(BaseAppException, app_exception_handler)
 
 app.add_middleware(
     CORSMiddleware,

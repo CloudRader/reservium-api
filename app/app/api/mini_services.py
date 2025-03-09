@@ -4,10 +4,10 @@ API controllers for mini services.
 from typing import Any, Annotated, List
 from uuid import UUID
 from fastapi import APIRouter, Depends, Path, status, Body, Query
-from fastapi.responses import JSONResponse
 
 from api import EntityNotFoundException, Entity, Message, fastapi_docs, \
-    get_current_user
+    get_current_user, BaseAppException, PermissionDeniedException, \
+    UnauthorizedException
 from schemas import MiniServiceCreate, MiniServiceUpdate, MiniService, User
 from services import MiniServiceService
 
@@ -20,8 +20,9 @@ router = APIRouter(
 @router.post("/create_mini_service",
              response_model=MiniService,
              responses={
-                 400: {"model": Message,
-                       "description": "Couldn't create mini service."},
+                 **BaseAppException.RESPONSE,
+                 **PermissionDeniedException.RESPONSE,
+                 **UnauthorizedException.RESPONSE,
              },
              status_code=status.HTTP_201_CREATED)
 async def create_mini_service(
@@ -40,21 +41,16 @@ async def create_mini_service(
     """
     mini_service = service.create_mini_service(mini_service_create, user)
     if not mini_service:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={
-                "message": "Could not create mini services, because bad "
-                           "request or you don't have permission for that."
-            }
-        )
+        raise BaseAppException()
     return mini_service
 
 
 @router.post("/create_mini_services",
              response_model=List[MiniService],
              responses={
-                 400: {"model": Message,
-                       "description": "Couldn't create mini service."},
+                 **BaseAppException.RESPONSE,
+                 **PermissionDeniedException.RESPONSE,
+                 **UnauthorizedException.RESPONSE,
              },
              status_code=status.HTTP_201_CREATED)
 async def create_mini_services(
@@ -109,6 +105,9 @@ async def get_mini_service(
 
 @router.get("/",
             response_model=List[MiniService],
+            responses={
+                **BaseAppException.RESPONSE,
+            },
             status_code=status.HTTP_200_OK)
 async def get_mini_services(
         service: Annotated[MiniServiceService, Depends(MiniServiceService)],
@@ -123,13 +122,8 @@ async def get_mini_services(
     :return: List of all mini services or None if there are no mini services in db.
     """
     mini_services = service.get_all(include_removed)
-    if not mini_services:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={
-                "message": "No mini services in db."
-            }
-        )
+    if mini_services is None:
+        raise BaseAppException()
     return mini_services
 
 
@@ -137,6 +131,8 @@ async def get_mini_services(
             response_model=MiniService,
             responses={
                 **EntityNotFoundException.RESPONSE,
+                **PermissionDeniedException.RESPONSE,
+                **UnauthorizedException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
 async def update_mini_service(
@@ -166,6 +162,8 @@ async def update_mini_service(
             response_model=MiniService,
             responses={
                 **EntityNotFoundException.RESPONSE,
+                **PermissionDeniedException.RESPONSE,
+                **UnauthorizedException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
 async def retrieve_deleted_reservation_service(
@@ -195,6 +193,8 @@ async def retrieve_deleted_reservation_service(
                response_model=MiniService,
                responses={
                    **EntityNotFoundException.RESPONSE,
+                   **PermissionDeniedException.RESPONSE,
+                   **UnauthorizedException.RESPONSE,
                },
                status_code=status.HTTP_200_OK)
 async def delete_mini_service(

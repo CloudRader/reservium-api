@@ -7,8 +7,9 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 
 from db import get_db
-from fastapi import Depends
+from fastapi import Depends, status
 from crud import CRUDReservationService
+from api import BaseAppException, PermissionDeniedException
 from services import CrudServiceBase
 from models import ReservationServiceModel
 from schemas import ReservationServiceCreate, ReservationServiceUpdate, User
@@ -128,12 +129,13 @@ class ReservationServiceService(AbstractReservationServiceService):
 
     def create_reservation_service(self, reservation_service_create: ReservationServiceCreate,
                                    user: User) -> ReservationServiceModel | None:
-        if self.crud.get_by_name(reservation_service_create.name, True) or \
-                self.crud.get_by_alias(reservation_service_create.alias, True):
-            return None
+        if self.crud.get_by_name(reservation_service_create.name, True):
+            raise BaseAppException("A reservation service with this name already exist.")
+        if self.crud.get_by_alias(reservation_service_create.alias, True):
+            raise BaseAppException("A reservation service with this alias already exist.")
 
         if not user.section_head:
-            return None
+            raise PermissionDeniedException("You must be the head of PS to create services.")
 
         return self.crud.create(reservation_service_create)
 
@@ -141,7 +143,7 @@ class ReservationServiceService(AbstractReservationServiceService):
                                    reservation_service_update: ReservationServiceUpdate,
                                    user: User) -> ReservationServiceModel | None:
         if not user.section_head:
-            return None
+            raise PermissionDeniedException("You must be the head of PS to update services.")
 
         return self.update(uuid, reservation_service_update)
 
@@ -149,7 +151,7 @@ class ReservationServiceService(AbstractReservationServiceService):
                                 user: User
                                 ) -> ReservationServiceModel | None:
         if not user.section_head:
-            return None
+            raise PermissionDeniedException("You must be the head of PS to retrieve removed services.")
 
         return self.crud.retrieve_removed_object(uuid)
 
@@ -159,7 +161,7 @@ class ReservationServiceService(AbstractReservationServiceService):
             hard_remove: bool = False
     ) -> ReservationServiceModel | None:
         if not user.section_head:
-            return None
+            raise PermissionDeniedException("You must be the head of PS to delete services.")
 
         if hard_remove:
             return self.crud.remove(uuid)

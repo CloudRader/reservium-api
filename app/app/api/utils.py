@@ -1,6 +1,7 @@
 """
 Utils for API.
 """
+from typing import Any
 import datetime as dt
 from enum import Enum
 from uuid import UUID
@@ -204,84 +205,110 @@ def get_exception_response_detail(status_code: int, desc: str) -> dict:
     }
 
 
-class MethodNotAllowedException(Exception):
-    """Exception for not allowed methods."""
-    STATUS_CODE = status.HTTP_405_METHOD_NOT_ALLOWED
-    DESCRIPTION = "Method not allowed."
+class BaseAppException(Exception):
+    """Base exception class for custom exceptions."""
+
+    STATUS_CODE: int = status.HTTP_400_BAD_REQUEST
+    DESCRIPTION: str = "An error occurred."
     RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
 
-    def __init__(self, entity: Entity):
-        self.entity = entity
+    def __init__(
+            self, message: str | None = None,
+            status_code: int | None = None,
+            **kwargs: Any):
+        self.message = message or self.DESCRIPTION
+        self.STATUS_CODE = status_code or self.STATUS_CODE
+        self.details = kwargs  # Extra context if needed
+
+    def to_response(self) -> JSONResponse:
+        """Convert exception to a JSONResponse."""
+        return JSONResponse(
+            status_code=self.STATUS_CODE,
+            content={"message": self.message, **self.details},
+        )
 
 
-def method_not_allowed_exception_handler(
-        request: Request, exc: MethodNotAllowedException
-) -> JSONResponse:
-    """Exception handler for MethodNotAllowedException.
-
-    :param request: Request that caused the exception.
-    :param exc: The exception.
+def app_exception_handler(request: Request, exc: BaseAppException) -> JSONResponse:
     """
-    return JSONResponse(
-        status_code=exc.STATUS_CODE,
-        content={
-            "message": f"Method {request.method} is not allowed for entity {exc.entity.value}"
-        },
-    )
+    Generic handler for BaseAppException.
+    """
+    return exc.to_response()
 
 
-class EntityNotFoundException(Exception):
+class EntityNotFoundException(BaseAppException):
     """
     Exception for when entity is not found in database.
     """
+
     STATUS_CODE = status.HTTP_404_NOT_FOUND
     DESCRIPTION = "Entity not found."
     RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
 
     def __init__(self, entity: Entity, entity_id: UUID | str):
-        self.entity = entity
-        self.entity_uuid = entity_id
+        message = f"Entity {entity.value} with id {entity_id} was not found."
+        super().__init__(message=message, entity=entity.value, entity_id=entity_id)
 
 
-def entity_not_found_exception_handler(
-        request: Request, exc: EntityNotFoundException
-) -> JSONResponse:
-    """Exception handler for EntityNotFoundException.
-
-    :param request: Request that caused the exception.
-    :param exc: The exception.
+class PermissionDeniedException(BaseAppException):
     """
-    return JSONResponse(
-        status_code=exc.STATUS_CODE,
-        content={
-            "message": f"Entity {exc.entity.value} with id {exc.entity_uuid} "
-                       f"was not found or you don't "
-                       f"have permission to do operation with that entity."
-        },
-    )
+    Exception raised when a user does not have the required permissions.
+    """
+
+    STATUS_CODE = status.HTTP_403_FORBIDDEN
+    DESCRIPTION = "User does not have the required permissions."
+    RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
+
+    def __init__(self, message: str | None = None, **kwargs):
+        super().__init__(
+            message=message or self.DESCRIPTION,
+            status_code=self.STATUS_CODE,
+            **kwargs
+        )
 
 
-class NotImplementedException(Exception):
-    """Exception for when a functionality is not yet implemented."""
+class UnauthorizedException(BaseAppException):
+    """
+    Exception raised when a user does not have the required permissions.
+    """
+
+    STATUS_CODE = status.HTTP_401_UNAUTHORIZED
+    DESCRIPTION = "There's some kind of authorization problem."
+    RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
+
+    def __init__(self, message: str | None = None, **kwargs):
+        super().__init__(
+            message=message or self.DESCRIPTION,
+            status_code=self.STATUS_CODE,
+            **kwargs
+        )
+
+
+class MethodNotAllowedException(BaseAppException):
+    """
+    Exception for not allowed methods.
+    """
+
+    STATUS_CODE = status.HTTP_405_METHOD_NOT_ALLOWED
+    DESCRIPTION = "Method not allowed."
+    RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
+
+    def __init__(self, entity: Entity, request: Request):
+        message = f"Method {request.method} is not allowed for entity {entity.value}"
+        super().__init__(message=message, entity=entity.value)
+
+
+class NotImplementedException(BaseAppException):
+    """
+    Exception for when a functionality is not yet implemented.
+    """
+
     STATUS_CODE = status.HTTP_501_NOT_IMPLEMENTED
     DESCRIPTION = "Method not implemented."
     RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
 
-
-def not_implemented_exception_handler(
-        request: Request, exc: NotImplementedException
-) -> JSONResponse:
-    """Exception handler for NotImplementedException.
-
-    :param request: Request that caused the exception.
-    :param exc: The exception.
-    """
-    return JSONResponse(
-        status_code=exc.STATUS_CODE,
-        content={
-            "message": exc.DESCRIPTION
-        },
-    )
+    def __init__(self):
+        message = self.DESCRIPTION
+        super().__init__(message=message)
 
 
 # pylint: disable=too-few-public-methods
