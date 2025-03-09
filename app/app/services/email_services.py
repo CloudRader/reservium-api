@@ -8,7 +8,7 @@ from datetime import datetime
 from abc import ABC, abstractmethod
 
 from schemas import EventCreate, User, EmailCreate
-from pypdf import PdfReader, PdfWriter
+# from pypdf import PdfReader, PdfWriter
 
 
 # pylint: disable=too-few-public-methods
@@ -48,34 +48,34 @@ class EmailService(AbstractEmailService):
         shutil.copy(original_pdf_path, output_path)
 
         # Open the copied PDF and fill form fields
-        reader = PdfReader(output_path)
-        writer = PdfWriter()
+        # reader = PdfReader(output_path)
+        # writer = PdfWriter()
 
         # Fill the fields
-        writer.append(reader)
-
-        formatted_start_date = event_input.start_datetime.strftime("%H:%M, %d/%m/%Y")
-        formatted_end_date = event_input.end_datetime.strftime("%H:%M, %d/%m/%Y")
-
-        writer.update_page_form_field_values(
-            writer.pages[0],  # Targeting the first page
-            {
-                "purpose": event_input.purpose,
-                "guests": str(event_input.guests),
-                "start_date": formatted_start_date,
-                "end_date": formatted_end_date,
-                "full_name": user_name,
-                "email": event_input.email,
-                "organizers": "Belly Loghtbom, Laura Linson, Abraham Wollahrson",
-                "space": event_input.reservation_type,
-                "other_spaces": "Study Room, Grillcentrum",
-                "today_date": datetime.today().strftime("%d/%m/%Y"),
-            }
-        )
+        # writer.append(reader)
+        #
+        # formatted_start_date = event_input.start_datetime.strftime("%H:%M, %d/%m/%Y")
+        # formatted_end_date = event_input.end_datetime.strftime("%H:%M, %d/%m/%Y")
+        #
+        # writer.update_page_form_field_values(
+        #     writer.pages[0],  # Targeting the first page
+        #     {
+        #         "purpose": event_input.purpose,
+        #         "guests": str(event_input.guests),
+        #         "start_date": formatted_start_date,
+        #         "end_date": formatted_end_date,
+        #         "full_name": user_name,
+        #         "email": event_input.email,
+        #         "organizers": "Belly Loghtbom, Laura Linson, Abraham Wollahrson",
+        #         "space": event_input.reservation_type,
+        #         "other_spaces": "Study Room, Grillcentrum",
+        #         "today_date": datetime.today().strftime("%d/%m/%Y"),
+        #     }
+        # )
 
         # Save the filled PDF
-        with open(output_path, "wb") as output_pdf:
-            writer.write(output_pdf)
+        # with open(output_path, "wb") as output_pdf:
+        #     writer.write(output_pdf)
 
         email_create = EmailCreate(
             email=event_input.email,
