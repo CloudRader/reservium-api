@@ -5,7 +5,7 @@ from typing import Any, Annotated, List
 from uuid import UUID
 from fastapi import APIRouter, Depends, Path, status, Body, Query
 
-from api import EntityNotFoundException, Entity, Message, fastapi_docs, \
+from api import EntityNotFoundException, Entity, fastapi_docs, \
     get_current_user, BaseAppException, PermissionDeniedException, \
     UnauthorizedException
 from schemas import MiniServiceCreate, MiniServiceUpdate, MiniService, User
@@ -158,7 +158,7 @@ async def update_mini_service(
     return mini_service
 
 
-@router.put("/retrieve_deleted_mini_service/{mini_service_id}",
+@router.put("/retrieve_deleted/{mini_service_id}",
             response_model=MiniService,
             responses={
                 **EntityNotFoundException.RESPONSE,

@@ -221,7 +221,7 @@ async def update_calendar(
     return calendar
 
 
-@router.put("/retrieve_deleted_calendar/{calendar_id}",
+@router.put("/retrieve_deleted/{calendar_id}",
             response_model=Calendar,
             responses={
                 **EntityNotFoundException.RESPONSE,

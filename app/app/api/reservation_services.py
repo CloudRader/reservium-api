@@ -5,7 +5,7 @@ from typing import Any, Annotated, List
 from uuid import UUID
 from fastapi import APIRouter, Depends, Path, status, Body, Query
 
-from api import EntityNotFoundException, Entity, Message, fastapi_docs, BaseAppException, \
+from api import EntityNotFoundException, Entity, fastapi_docs, BaseAppException, \
     get_current_user, authenticate_user, get_current_token, PermissionDeniedException, \
     UnauthorizedException
 from schemas import ReservationServiceCreate, ReservationServiceUpdate, ReservationService, User
@@ -203,7 +203,7 @@ async def update_reservation_service(
     return reservation_service
 
 
-@router.put("/retrieve_deleted_reservation_service/{reservation_service_id}",
+@router.put("/retrieve_deleted/{reservation_service_id}",
             response_model=ReservationService,
             responses={
                 **EntityNotFoundException.RESPONSE,
