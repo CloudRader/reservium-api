@@ -3,12 +3,13 @@ Calendar ORM model and its dependencies.
 """
 from typing import Type, Any
 import json
-from sqlalchemy import Column, String, Integer, Boolean, ForeignKey
+from sqlalchemy import String, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
-from sqlalchemy.orm import mapped_column, relationship
+from sqlalchemy.orm import mapped_column, relationship, Mapped
 from sqlalchemy.types import TypeDecorator, TEXT
 from db.base_class import Base
 from schemas import Rules
+# from models import ReservationServiceModel
 from models.soft_delete_mixin import SoftDeleteMixin
 
 
@@ -56,21 +57,24 @@ class Calendar(Base, SoftDeleteMixin):
     """
     Calendar model to create and manipulate user entity in the database.
     """
-    __tablename__ = "calendar"
 
-    id = Column(String, primary_key=True, unique=True, nullable=False)
-    reservation_type = Column(String, unique=True, nullable=False)
-    color = Column(String, default="#05baf5")
-    max_people = Column(Integer, default=0)
-    more_than_max_people_with_permission = Column(Boolean, nullable=False, default=True)
-    collision_with_itself = Column(Boolean, nullable=False)
-    collision_with_calendar = mapped_column(ARRAY(String), nullable=True)
-    club_member_rules = Column(RulesType, nullable=True)
-    active_member_rules = Column(RulesType, nullable=False)
-    manager_rules = Column(RulesType, nullable=False)
-    reservation_service_id = Column(UUID(as_uuid=True), ForeignKey("reservation_service.id"))
+    id: Mapped[str] = mapped_column(primary_key=True)
+    reservation_type: Mapped[str] = mapped_column(unique=True, nullable=False)
+    color: Mapped[str] = mapped_column(default="#05baf5", nullable=False)
+    max_people: Mapped[int] = mapped_column(default=0, nullable=False)
+    more_than_max_people_with_permission: Mapped[bool] = mapped_column(nullable=False, default=True)
+    collision_with_itself: Mapped[bool] = mapped_column(default=False, nullable=False)
+    collision_with_calendar: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=True)
 
-    reservation_service = relationship("ReservationService", back_populates="calendars")
-    mini_services = mapped_column(ARRAY(String), nullable=True)
+    club_member_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=True)
+    active_member_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
+    manager_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
+
+    reservation_service_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True),
+                                                         ForeignKey("reservation_service.id"))
+
+    reservation_service: Mapped["ReservationService"] = (
+        relationship("ReservationService", back_populates="calendars"))
+    mini_services: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=True)
 
 # pylint: enable=too-few-public-methods

@@ -1,12 +1,10 @@
 """
 Reservation service ORM model and its dependencies.
 """
-from uuid import uuid4
-from sqlalchemy import Column, String, Boolean
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from db.base_class import Base
 from models.soft_delete_mixin import SoftDeleteMixin
+# from models import CalendarModel, MiniServiceModel
 
 
 # pylint: disable=too-few-public-methods
@@ -17,14 +15,15 @@ class ReservationService(Base, SoftDeleteMixin):
     """
     __tablename__ = "reservation_service"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    name = Column(String, unique=True, nullable=False)
-    alias = Column(String, unique=True, nullable=False)
-    public = Column(Boolean, nullable=False, default=True)
-    web = Column(String, nullable=True)
-    contact_mail = Column(String, nullable=True)
+    name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    alias: Mapped[str] = mapped_column(unique=True, nullable=False)
+    public: Mapped[bool] = mapped_column(nullable=False, default=True)
+    web: Mapped[str] = mapped_column(nullable=True)
+    contact_mail: Mapped[str] = mapped_column(nullable=True)
 
-    calendars = relationship("Calendar", back_populates="reservation_service")
-    mini_services = relationship("MiniService", back_populates="reservation_service")
+    calendars: Mapped["Calendar"] = relationship("Calendar",
+                                                    back_populates="reservation_service")
+    mini_services: Mapped["MiniService"] = relationship("MiniService",
+                                                           back_populates="reservation_service")
 
 # pylint: enable=too-few-public-methods
