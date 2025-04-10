@@ -1,19 +1,22 @@
 """
 Module with SQLAlchemy base class used to create other models from this Base class.
 """
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from sqlalchemy.orm import as_declarative, declared_attr
+from sqlalchemy.orm import declared_attr, DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.dialects.postgresql import UUID as pgUUID
 
 
 # Base class is managed by SQLAlchemy and doesn't need more public methods
 # pylint: disable=too-few-public-methods
-@as_declarative()
-class Base:
+# @as_declarative()
+class Base(DeclarativeBase):
     """
     Base class of all ORM mapped models.
     """
-    uuid: UUID  # typehint for SQLAlchemy for every id attribute
+    __abstract__ = True
+
+    id: Mapped[UUID] =  mapped_column(pgUUID(as_uuid=True), primary_key=True, default=uuid4)
     __name__: str
 
     # declared_attr decorator already treats method as a class method and requires to use cls
