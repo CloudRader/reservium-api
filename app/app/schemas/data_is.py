@@ -62,6 +62,7 @@ class LimitObject(BaseModel):
     name: str
     alias: Optional[str] = None
     note: Optional[str] = None
+    # description: Optional[str]
 
 
 class Role(BaseModel):

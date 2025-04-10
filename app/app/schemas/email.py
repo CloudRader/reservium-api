@@ -1,6 +1,7 @@
 """
 DTO schemes for Email entity.
 """
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 
@@ -9,3 +10,4 @@ class EmailCreate(BaseModel):
     email: EmailStr
     subject: str
     body: str
+    attachment: Optional[str] = None

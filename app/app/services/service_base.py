@@ -109,7 +109,7 @@ class CrudServiceBase(AbstractCRUDService[Model, Crud, CreateSchema, UpdateSchem
     def get_all(self, include_removed: bool = False) -> list[Row[Model]] | None:
         all_objects = self.crud.get_all(include_removed)
         if len(all_objects) == 0:
-            return None
+            return []
         return all_objects
 
     def create(self, obj_in: CreateSchema) -> Model | None:

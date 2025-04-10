@@ -116,6 +116,7 @@ def preparing_email(
     :param event_body: Dict body of the event.
     :param reservation_service: Reservation Service object in db.
     :param reservation_service: Calendar object in db.
+    :param calendar: Calendar object in db.
 
     :return: Constructed EmailCreate schema.
     """

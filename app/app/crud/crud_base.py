@@ -48,6 +48,17 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
         """
 
     @abstractmethod
+    def get_by_reservation_service_id(
+            self, reservation_service_id: str,
+            include_removed: bool = False
+    ) -> list[Row[Model]] | None:
+        """
+        Retrieves all records by its reservation service id.
+        If include_removed is True retrieve all records
+        including marked as deleted.
+        """
+
+    @abstractmethod
     def create(self, obj_in: CreateSchema) -> Model:
         """
         Create a new record from the input scheme.
@@ -57,6 +68,13 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
     def update(self, *, db_obj: Model | None, obj_in: UpdateSchema) -> Model | None:
         """
         Update an existing record with the input scheme.
+        """
+
+    @abstractmethod
+    def retrieve_removed_object(self, uuid: UUID | str | int | None
+                                ) -> Model | None:
+        """
+        Retrieve removed object from soft removed.
         """
 
     @abstractmethod
@@ -99,6 +117,15 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         return self.db.query(self.model) \
             .execution_options(include_deleted=include_removed).all()
 
+    def get_by_reservation_service_id(
+            self, reservation_service_id: UUID | str,
+            include_removed: bool = False
+    ) -> list[Row[Model]] | None:
+        return self.db.query(self.model) \
+            .execution_options(include_deleted=include_removed) \
+            .filter(self.model.reservation_service_id == reservation_service_id) \
+            .all()
+
     def create(self, obj_in: CreateSchema | dict[str, Any]) -> Model:
         obj_in_data = obj_in if isinstance(obj_in, dict) else obj_in.dict()
         db_obj = self.model(**obj_in_data)
@@ -121,6 +148,20 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         self.db.commit()
         self.db.refresh(db_obj)
         return db_obj
+
+    def retrieve_removed_object(self, uuid: UUID | str | int | None
+                                ) -> Model | None:
+        if uuid is None:
+            return None
+        obj = self.db.query(self.model) \
+            .execution_options(include_deleted=True). \
+            filter(self.model.id == uuid).first()
+        if obj is None:
+            return None
+        obj.deleted_at = None
+        self.db.add(obj)
+        self.db.commit()
+        return obj
 
     def remove(self, uuid: UUID | str | int | None) -> Model | None:
         if uuid is None:

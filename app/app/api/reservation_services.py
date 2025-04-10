@@ -3,11 +3,11 @@ API controllers for reservation services.
 """
 from typing import Any, Annotated, List
 from uuid import UUID
-from fastapi import APIRouter, Depends, Path, status, Body
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, Path, status, Body, Query
 
-from api import EntityNotFoundException, Entity, Message, fastapi_docs, \
-    get_current_user, authenticate_user, get_current_token
+from api import EntityNotFoundException, Entity, fastapi_docs, BaseAppException, \
+    get_current_user, authenticate_user, get_current_token, PermissionDeniedException, \
+    UnauthorizedException
 from schemas import ReservationServiceCreate, ReservationServiceUpdate, ReservationService, User
 from services import ReservationServiceService, UserService
 
@@ -20,8 +20,9 @@ router = APIRouter(
 @router.post("/create_reservation_service",
              response_model=ReservationService,
              responses={
-                 400: {"model": Message,
-                       "description": "Couldn't create reservation service."},
+                 **BaseAppException.RESPONSE,
+                 **PermissionDeniedException.RESPONSE,
+                 **UnauthorizedException.RESPONSE,
              },
              status_code=status.HTTP_201_CREATED)
 async def create_reservation_service(
@@ -47,13 +48,7 @@ async def create_reservation_service(
         reservation_service_create, user
     )
     if not reservation_service:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={
-                "message": "Could not create reservation services, because bad "
-                           "request or you don't have permission for that."
-            }
-        )
+        raise BaseAppException()
     await authenticate_user(user_service, token)
     return reservation_service
 
@@ -61,8 +56,9 @@ async def create_reservation_service(
 @router.post("/create_reservation_services",
              response_model=List[ReservationService],
              responses={
-                 400: {"model": Message,
-                       "description": "Couldn't create reservation service."},
+                 **BaseAppException.RESPONSE,
+                 **PermissionDeniedException.RESPONSE,
+                 **UnauthorizedException.RESPONSE,
              },
              status_code=status.HTTP_201_CREATED)
 async def create_reservation_services(
@@ -103,18 +99,20 @@ async def create_reservation_services(
             status_code=status.HTTP_200_OK)
 async def get_reservation_service(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-        reservation_service_id: Annotated[str, Path()]
+        reservation_service_id: Annotated[UUID, Path()],
+        include_removed: bool = Query(False)
 ) -> Any:
     """
     Get reservation service by its uuid.
 
     :param service: Reservation Service ser.
     :param reservation_service_id: uuid of the reservation service.
+    :param include_removed: include removed reservation service or not.
 
     :return: Reservation Service with uuid equal to uuid
              or None if no such reservation service exists.
     """
-    reservation_service = service.get(reservation_service_id)
+    reservation_service = service.get(reservation_service_id, include_removed)
     if not reservation_service:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service
@@ -122,30 +120,53 @@ async def get_reservation_service(
 
 @router.get("/",
             response_model=List[ReservationService],
+            responses={
+                **BaseAppException.RESPONSE,
+            },
             status_code=status.HTTP_200_OK)
 async def get_reservation_services(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
         user: Annotated[User, Depends(get_current_user)],
+        include_removed: bool = Query(False)
 ) -> Any:
     """
     Get all reservation services from database.
 
     :param service: Reservation Service ser.
     :param user: User who make this request.
+    :param include_removed: include removed reservation service or not.
 
     :return: List of all reservation services or None if there are no reservation services in db.
     """
     if user.active_member:
-        reservation_service = service.get_all()
+        reservation_service = service.get_all(include_removed)
     else:
-        reservation_service = service.get_public_services()
-    if not reservation_service:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={
-                "message": "No reservation services in db."
-            }
-        )
+        reservation_service = service.get_public_services(include_removed)
+    if reservation_service is None:
+        raise BaseAppException()
+    return reservation_service
+
+
+@router.get("/services/public",
+            response_model=List[ReservationService],
+            responses={
+                **BaseAppException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def get_public_reservation_services(
+        service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+) -> Any:
+    """
+    Get all public reservation services from database.
+
+    :param service: Reservation Service ser.
+
+    :return: List of all public reservation services or None if
+    there are no reservation services in db.
+    """
+    reservation_service = service.get_public_services()
+    if reservation_service is None:
+        raise BaseAppException()
     return reservation_service
 
 
@@ -153,6 +174,8 @@ async def get_reservation_services(
             response_model=ReservationService,
             responses={
                 **EntityNotFoundException.RESPONSE,
+                **PermissionDeniedException.RESPONSE,
+                **UnauthorizedException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
 async def update_reservation_service(
@@ -162,7 +185,7 @@ async def update_reservation_service(
         reservation_service_update: Annotated[ReservationServiceUpdate, Body()]
 ) -> Any:
     """
-    Update reservation service with uuid equal to reservation_service_uuid,
+    Update reservation service with uuid equal to reservation_service_id,
     only user with head of the operation section role can update reservation service.
 
     :param service: Reservation Service ser.
@@ -180,28 +203,64 @@ async def update_reservation_service(
     return reservation_service
 
 
+@router.put("/retrieve_deleted/{reservation_service_id}",
+            response_model=ReservationService,
+            responses={
+                **EntityNotFoundException.RESPONSE,
+                **PermissionDeniedException.RESPONSE,
+                **UnauthorizedException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def retrieve_deleted_reservation_service(
+        service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+        user: Annotated[User, Depends(get_current_user)],
+        reservation_service_id: Annotated[UUID, Path()]
+) -> Any:
+    """
+    Retrieve deleted reservation service with uuid equal to reservation_service_id,
+    only user with head of the operation section role can update reservation service.
+
+    :param service: Reservation Service ser.
+    :param user: User who make this request.
+    :param reservation_service_id: uuid of the reservation service.
+
+    :returns ReservationServiceModel: the updated reservation service.
+    """
+    reservation_service = service.retrieve_removed_object(
+        reservation_service_id, user
+    )
+    if not reservation_service:
+        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_id)
+    return reservation_service
+
+
 @router.delete("/{reservation_service_id}",
                response_model=ReservationService,
                responses={
                    **EntityNotFoundException.RESPONSE,
+                   **PermissionDeniedException.RESPONSE,
+                   **UnauthorizedException.RESPONSE,
                },
                status_code=status.HTTP_200_OK)
 async def delete_reservation_service(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
         user: Annotated[User, Depends(get_current_user)],
         reservation_service_id: Annotated[UUID, Path()],
+        hard_remove: bool = Query(False)
 ) -> Any:
     """
-    Delete reservation service with id equal to reservation_service_uuid,
+    Delete reservation service with id equal to reservation_service_id,
     only user with head of the operation section role can delete reservation service.
 
     :param service: Reservation Service ser.
     :param user: User who make this request.
     :param reservation_service_id: uuid of the reservation service.
+    :param hard_remove: hard remove of the reservation service or not.
 
     :returns ReservationServiceModel: the deleted reservation service.
     """
-    reservation_service = service.delete_reservation_service(reservation_service_id, user)
+    reservation_service = service.delete_reservation_service(
+        reservation_service_id, user, hard_remove)
     if not reservation_service:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service
@@ -215,18 +274,20 @@ async def delete_reservation_service(
             status_code=status.HTTP_200_OK)
 async def get_reservation_service_by_name(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-        name: Annotated[str, Path()]
+        name: Annotated[str, Path()],
+        include_removed: bool = Query(False)
 ) -> Any:
     """
     Get reservation services by its name.
 
     :param service: Mini Service ser.
     :param name: service alias of the mini service.
+    :param include_removed: include removed reservation service or not.
 
     :return: Reservation Service with name equal to name
              or None if no such reservation service exists.
     """
-    reservation_service = service.get_by_name(name)
+    reservation_service = service.get_by_name(name, include_removed)
     if not reservation_service:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, name)
     return reservation_service
@@ -240,18 +301,20 @@ async def get_reservation_service_by_name(
             status_code=status.HTTP_200_OK)
 async def get_reservation_service_by_alias(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-        alias: Annotated[str, Path()]
+        alias: Annotated[str, Path()],
+        include_removed: bool = Query(False)
 ) -> Any:
     """
     Get reservation services by its alias.
 
     :param service: Mini Service ser.
     :param alias: service alias of the mini service.
+    :param include_removed: include removed reservation service or not.
 
     :return: Reservation Service with alias equal to alias
              or None if no such reservation service exists.
     """
-    reservation_service = service.get_by_alias(alias)
+    reservation_service = service.get_by_alias(alias, include_removed)
     if not reservation_service:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, alias)
     return reservation_service

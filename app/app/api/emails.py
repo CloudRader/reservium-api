@@ -1,12 +1,14 @@
 """
 API controllers for emails.
 """
-from typing import Any
+from typing import Any, Annotated
+import os
 
 from fastapi_mail import FastMail, MessageSchema, MessageType
-from fastapi import APIRouter, status
-from api import fastapi_docs
-from schemas import EmailCreate
+from fastapi import APIRouter, status, Depends
+from api import fastapi_docs, get_current_token, get_request
+from schemas import EmailCreate, EventCreate, UserIS
+from services import EmailService
 from core import email_connection
 
 router = APIRouter(
@@ -35,10 +37,45 @@ async def send_email(
         subject=email_create.subject,
         recipients=[email_create.email],  # List of recipients
         body=email_create.body,
-        subtype=MessageType.plain
+        subtype=MessageType.plain,
+        attachments=[email_create.attachment] if email_create.attachment else []
     )
 
     fm = FastMail(email_connection)
     # background_tasks.add_task(fm.send_message, message)
     await fm.send_message(message)
+
+    if email_create.attachment and os.path.exists(email_create.attachment):
+        os.remove(email_create.attachment)
+
     return {"message": "Email has been sent"}
+
+
+@router.post("/send_registration_form",
+             status_code=status.HTTP_201_CREATED,
+             )
+async def send_registration_form(
+        service: Annotated[EmailService, Depends(EmailService)],
+        token: Annotated[Any, Depends(get_current_token)],
+        event_input: EventCreate
+) -> Any:
+    """
+    Sends email with pdf attachment with reservation request to
+    dorm head's email address.
+
+    :param service: Email service.
+    :param token: Token for user identification.
+    :param event_input: EventCreate schema.
+
+    :returns Dictionary: Confirming that the registration form has been sent.
+    """
+    user_is = UserIS.model_validate(await get_request(token, "/users/me"))
+    full_name = user_is.first_name + " " + user_is.surname
+    email_create = service.prepare_registration_form(event_input, full_name)
+
+    await send_email(email_create)
+
+    if email_create.attachment and os.path.exists(email_create.attachment):
+        os.remove(email_create.attachment)
+
+    return {"message": "Registration form has been sent"}

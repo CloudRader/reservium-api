@@ -5,14 +5,14 @@ from typing import Annotated
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from googleapiclient.discovery import build
 from fastapi import Depends
+from api import BaseAppException, PermissionDeniedException
 from db import get_db
 from crud import CRUDCalendar, CRUDReservationService, CRUDMiniService
 from services import CrudServiceBase
 from models import CalendarModel, ReservationServiceModel
 from schemas import CalendarCreate, CalendarUpdate, User
-from api import auth_google
+from sqlalchemy import Row
 from sqlalchemy.orm import Session
 
 
@@ -58,38 +58,46 @@ class AbstractCalendarService(CrudServiceBase[
         """
 
     @abstractmethod
+    def retrieve_removed_object(
+            self, uuid: UUID | str | int | None,
+            user: User
+    ) -> CalendarModel | None:
+        """
+        Retrieve removed calendar from soft removed.
+
+        :param uuid: The ID of the calendar to retrieve from removed.
+        :param user: the UserSchema for control permissions of the calendar.
+
+        :return: the updated Calendar.
+        """
+
+    @abstractmethod
     def delete_calendar(
             self, calendar_id: str,
-            user: User
+            user: User,
+            hard_remove: bool = False
     ) -> CalendarModel | None:
         """
         Delete a Calendar in the database.
 
         :param calendar_id: The id of the Calendar.
         :param user: the UserSchema for control permissions of the calendar.
+        :param hard_remove: hard remove of the calendar or not.
 
         :return: the deleted Calendar.
         """
 
     @abstractmethod
-    def test(
-            self, calendar_id
-    ):
-        """
-        Something not impl yet
-
-        :return: Any.
-        """
-
-    @abstractmethod
     def get_all_google_calendar_to_add(
-            self, user: User
+            self, user: User,
+            google_calendars: dict,
     ) -> list[dict] | None:
         """
         Retrieves a Calendars from Google calendars
         that are candidates for additions
 
         :param user: the UserSchema for control permissions of the calendar.
+        :param google_calendars: calendars from Google Calendars.
 
         :return: candidate list for additions, None otherwise.
         """
@@ -109,11 +117,11 @@ class AbstractCalendarService(CrudServiceBase[
         """
 
     @abstractmethod
-    def get_mini_services_by_reservation_type(
+    def get_mini_services_by_calendar(
             self, calendar_id: str
     ) -> list[str] | None:
         """
-        Retrieves a list mini services instance by its reservation_type.
+        Retrieves a list mini services instance by its calendar.
 
         :param calendar_id: The id of the Calendar.
 
@@ -133,6 +141,21 @@ class AbstractCalendarService(CrudServiceBase[
         :return: Reservation Service of this calendar if found, None otherwise.
         """
 
+    @abstractmethod
+    def get_by_reservation_service_id(
+            self, reservation_service_id: str,
+            include_removed: bool = False
+    ) -> list[Row[CalendarModel]] | None:
+        """
+        Retrieves a Calendars instance by its reservation service id.
+
+        :param reservation_service_id: reservation service id of the calendars.
+        :param include_removed: Include removed object or not.
+
+        :return: Calendars with reservation service id equal
+        to reservation service id or None if no such calendars exists.
+        """
+
 
 class CalendarService(AbstractCalendarService):
     """
@@ -140,7 +163,6 @@ class CalendarService(AbstractCalendarService):
     """
 
     def __init__(self, db: Annotated[Session, Depends(get_db)]):
-        self.google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
         self.reservation_service_crud = CRUDReservationService(db)
         self.mini_service_crud = CRUDMiniService(db)
         super().__init__(CRUDCalendar(db))
@@ -149,35 +171,42 @@ class CalendarService(AbstractCalendarService):
             self, calendar_create: CalendarCreate,
             user: User
     ) -> CalendarModel | None:
-        if self.get(calendar_create.id, True) or \
-                self.get_by_reservation_type(calendar_create.reservation_type, True):
-            return None
+        if self.get(calendar_create.id, True):
+            raise BaseAppException("A calendar with this id already exist.")
+        if self.get_by_reservation_type(calendar_create.reservation_type, True):
+            raise BaseAppException("A calendar with this reservation type already exist.")
 
         reservation_service = self.reservation_service_crud.get(
             calendar_create.reservation_service_id
         )
 
-        if user is None or reservation_service is None or \
-                reservation_service.alias not in user.roles:
-            return None
+        if reservation_service is None:
+            raise BaseAppException("A reservation service of calendar isn't exist.")
+        if reservation_service.alias not in user.roles:
+            raise PermissionDeniedException(
+                f"You must be the {reservation_service.name} manager to create calendars."
+            )
 
         for mini_service in calendar_create.mini_services:
             if mini_service not in \
                     self.mini_service_crud.get_names_by_reservation_service_uuid(
                         reservation_service.id):
-                return None
+                raise BaseAppException("These mini services do not exist in the db "
+                                       "that you want to add to this calendar.")
 
         if calendar_create.collision_with_calendar is not None:
             for collision in calendar_create.collision_with_calendar:
                 if not self.get(collision):
-                    return None
+                    raise BaseAppException("These calendar do not exist in the db "
+                                           "that you want to add to this calendar collision.")
                 collision_calendar_to_update = set(self.get(collision).collision_with_calendar)
                 collision_calendar_to_update.add(calendar_create.id)
                 update_exist_calendar = CalendarUpdate(
                     collision_with_calendar=list(collision_calendar_to_update)
                 )
                 if not self.update(collision, update_exist_calendar):
-                    return None
+                    raise BaseAppException("Failed to update collisions on the calendar "
+                                           f"with this id {collision}")
 
         return self.create(calendar_create)
 
@@ -195,28 +224,58 @@ class CalendarService(AbstractCalendarService):
             calendar_to_update.reservation_service_id
         )
 
-        if user is None or reservation_service is None or \
-                reservation_service.alias not in user.roles:
-            return None
+        if reservation_service is None:
+            raise BaseAppException("A reservation service of calendar isn't exist.")
+        if reservation_service.alias not in user.roles:
+            raise PermissionDeniedException(
+                f"You must be the {reservation_service.name} manager to create calendars."
+            )
 
         return self.update(calendar_id, calendar_update)
 
-    def delete_calendar(
-            self, calendar_id: str,
+    def retrieve_removed_object(
+            self, uuid: UUID | str | int | None,
             user: User
     ) -> CalendarModel | None:
-        calendar = self.get(calendar_id)
-
-        if calendar is None:
-            return None
+        calendar = self.get(uuid, True)
 
         reservation_service = self.reservation_service_crud.get(
             calendar.reservation_service_id
         )
 
-        if user is None or reservation_service is None or \
-                reservation_service.alias not in user.roles:
+        if reservation_service is None:
+            raise BaseAppException("A reservation service of calendar isn't exist.")
+        if reservation_service.alias not in user.roles:
+            raise PermissionDeniedException(
+                f"You must be the {reservation_service.name} manager to create calendars."
+            )
+
+        return self.crud.retrieve_removed_object(uuid)
+
+    def delete_calendar(
+            self, calendar_id: str,
+            user: User,
+            hard_remove: bool = False
+    ) -> CalendarModel | None:
+        calendar = self.get(calendar_id, True)
+
+        if calendar is None:
             return None
+
+        if hard_remove and not user.section_head:
+            raise PermissionDeniedException(
+                "You must be the head of PS to totally delete calendars.")
+
+        reservation_service = self.reservation_service_crud.get(
+            calendar.reservation_service_id
+        )
+
+        if reservation_service is None:
+            raise BaseAppException("A reservation service of calendar isn't exist.")
+        if reservation_service.alias not in user.roles:
+            raise PermissionDeniedException(
+                f"You must be the {reservation_service.name} manager to create calendars."
+            )
 
         for calendar_to_update in reservation_service.calendars:
             if calendar_to_update.collision_with_calendar and \
@@ -228,35 +287,17 @@ class CalendarService(AbstractCalendarService):
                 )
                 self.update(calendar_to_update.id, update_exist_calendar)
 
+        if hard_remove:
+            return self.crud.remove(calendar_id)
+
         return self.crud.soft_remove(calendar_id)
 
-    # pylint: disable=no-member
-    # reason: The googleapiclient.discovery.build function
-    # dynamically creates the events attribute, which is not easily
-    # understood by static code analysis tools like pylint.
-    def test(
-            self, calendar_id
-    ):
-        test = self.google_calendar_service.events().list(
-            calendarId=calendar_id,
-            singleEvents=True,
-            orderBy='startTime'
-        ).execute()
-
-        # event = self.google_calendar_service.events().get(
-        #     calendarId=calendar_id, eventId="1lnut6920f7sesr6spc1veliss"
-        # ).execute()
-
-        return test
-
     def get_all_google_calendar_to_add(
-            self, user: User
+            self, user: User,
+            google_calendars: dict
     ) -> list[dict] | None:
-        if len(user.roles) < 1:
-            return None
-
-        google_calendars = self.google_calendar_service. \
-            calendarList().list().execute()
+        if not user.roles:
+            PermissionDeniedException()
 
         new_calendar_candidates = []
 
@@ -275,7 +316,7 @@ class CalendarService(AbstractCalendarService):
         return self.crud.get_by_reservation_type(
             reservation_type, include_removed)
 
-    def get_mini_services_by_reservation_type(
+    def get_mini_services_by_calendar(
             self, calendar_id: str
     ) -> list[str] | None:
         calendar = self.crud.get(calendar_id)
@@ -295,3 +336,10 @@ class CalendarService(AbstractCalendarService):
             return None
 
         return reservation_service
+
+    def get_by_reservation_service_id(
+            self, reservation_service_id: str,
+            include_removed: bool = False
+    ) -> list[Row[CalendarModel]] | None:
+        return self.crud.get_by_reservation_service_id(reservation_service_id,
+                                                       include_removed)

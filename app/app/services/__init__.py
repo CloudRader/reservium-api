@@ -7,6 +7,7 @@ from .user_services import UserService
 from .calendar_services import CalendarService
 from .mini_service_services import MiniServiceService
 from .reservation_service_services import ReservationServiceService
+from .email_services import EmailService
 
 __all__ = [
     "CrudServiceBase",
@@ -14,5 +15,6 @@ __all__ = [
     "UserService",
     "CalendarService",
     "MiniServiceService",
-    "ReservationServiceService"
+    "ReservationServiceService",
+    "EmailService"
 ]

@@ -18,6 +18,7 @@ class Rules(BaseModel):
 
 class CalendarBase(BaseModel):
     """Shared properties of Calendar."""
+    id: str | None = None
     collision_with_calendar: list[str] | None = None
     more_than_max_people_with_permission: bool | None = None
     mini_services: list[str] | None = None
@@ -26,7 +27,6 @@ class CalendarBase(BaseModel):
 
 class CalendarCreate(CalendarBase):
     """Properties to receive via API on creation."""
-    id: str
     reservation_service_id: UUID
     reservation_type: str
     max_people: int = Field(ge=1)
