@@ -48,8 +48,9 @@ async def create_calendar(
         try:
             google_calendar_service.calendars(). \
                 get(calendarId=calendar_create.id).execute()
-        except HttpError:
-            raise BaseAppException("This calendar not exist in Google calendar.", status_code=404)
+        except HttpError as exc:
+            raise BaseAppException("This calendar not exist in Google calendar.",
+                                   status_code=404) from exc
     else:
         try:
             calendar_body = {
@@ -68,10 +69,10 @@ async def create_calendar(
             }
             (google_calendar_service.acl().
              insert(calendarId=calendar_create.id, body=rule).execute())
-        except HttpError:
-            raise BaseAppException("Can't create calendar in Google Calendar.")
+        except HttpError as exc:
+            raise BaseAppException("Can't create calendar in Google Calendar.") from exc
 
-    calendar = service.create_calendar(calendar_create, user)
+    calendar = await service.create_calendar(calendar_create, user)
     if not calendar:
         raise BaseAppException()
     return calendar
@@ -131,7 +132,7 @@ async def get_calendar(
     :return: Calendar with uuid equal to calendar_uuid
              or None if no such document exists.
     """
-    calendar = service.get(calendar_id, include_removed)
+    calendar = await service.get(calendar_id, include_removed)
     if not calendar:
         raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
     return calendar
@@ -155,7 +156,7 @@ async def get_all_calendars(
 
     :return: List of all calendars or None if there are no calendars in db.
     """
-    calendars = service.get_all(include_removed)
+    calendars = await service.get_all(include_removed)
     if calendars is None:
         raise BaseAppException()
     return calendars
@@ -184,7 +185,7 @@ async def get_all_google_calendar_to_add(
     google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
     google_calendars = google_calendar_service.calendarList().list().execute()
 
-    calendars = service.get_all_google_calendar_to_add(user, google_calendars)
+    calendars = await service.get_all_google_calendar_to_add(user, google_calendars)
     if calendars is None:
         raise BaseAppException()
     return calendars
@@ -215,7 +216,7 @@ async def update_calendar(
 
     :returns CalendarModel: the updated calendar.
     """
-    calendar = service.update_calendar(calendar_id, calendar_update, user)
+    calendar = await service.update_calendar(calendar_id, calendar_update, user)
     if not calendar:
         raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
     return calendar
@@ -244,7 +245,7 @@ async def retrieve_deleted_calendar(
 
     :returns CalendarModel: the updated calendar.
     """
-    calendar = service.retrieve_removed_object(
+    calendar = await service.retrieve_removed_object(
         calendar_id, user
     )
     if not calendar:
@@ -277,7 +278,7 @@ async def delete_calendar(
 
     :returns CalendarModel: the deleted calendar.
     """
-    calendar = service.delete_calendar(calendar_id, user, hard_remove)
+    calendar = await service.delete_calendar(calendar_id, user, hard_remove)
     if not calendar:
         raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
     return calendar
@@ -301,7 +302,7 @@ async def get_mini_services_by_calendar(
     :return: List mini services with type equal to service type
              or None if no such calendars exists.
     """
-    mini_services = service.get_mini_services_by_calendar(calendar_id)
+    mini_services = await service.get_mini_services_by_calendar(calendar_id)
     if mini_services is None:
         raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
     return mini_services
@@ -328,8 +329,8 @@ async def get_calendars_by_reservation_service_id(
     :return: Calendars with reservation service id equal
     to reservation service id or None if no such calendars exists.
     """
-    calendars = service.get_by_reservation_service_id(reservation_service_id,
-                                                      include_removed)
+    calendars = await service.get_by_reservation_service_id(reservation_service_id,
+                                                            include_removed)
     if not calendars:
         raise EntityNotFoundException(Entity.MINI_SERVICE, reservation_service_id)
     return calendars

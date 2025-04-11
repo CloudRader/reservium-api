@@ -19,6 +19,7 @@ router = APIRouter(
 
 @router.post("/create_reservation_service",
              response_model=ReservationService,
+             response_model_exclude={"calendars", "mini_services"},
              responses={
                  **BaseAppException.RESPONSE,
                  **PermissionDeniedException.RESPONSE,
@@ -44,7 +45,7 @@ async def create_reservation_service(
 
     :returns ReservationServiceModel: the created reservation service.
     """
-    reservation_service = service.create_reservation_service(
+    reservation_service = await service.create_reservation_service(
         reservation_service_create, user
     )
     if not reservation_service:
@@ -99,7 +100,7 @@ async def create_reservation_services(
             status_code=status.HTTP_200_OK)
 async def get_reservation_service(
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-        reservation_service_id: Annotated[UUID, Path()],
+        reservation_service_id: Annotated[str, Path()],
         include_removed: bool = Query(False)
 ) -> Any:
     """
@@ -112,7 +113,7 @@ async def get_reservation_service(
     :return: Reservation Service with uuid equal to uuid
              or None if no such reservation service exists.
     """
-    reservation_service = service.get(reservation_service_id, include_removed)
+    reservation_service = await service.get(reservation_service_id, include_removed)
     if not reservation_service:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service
@@ -139,7 +140,7 @@ async def get_reservation_services(
     :return: List of all reservation services or None if there are no reservation services in db.
     """
     if user.active_member:
-        reservation_service = service.get_all(include_removed)
+        reservation_service = await service.get_all(include_removed)
     else:
         reservation_service = service.get_public_services(include_removed)
     if reservation_service is None:
@@ -164,7 +165,7 @@ async def get_public_reservation_services(
     :return: List of all public reservation services or None if
     there are no reservation services in db.
     """
-    reservation_service = service.get_public_services()
+    reservation_service = await service.get_public_services()
     if reservation_service is None:
         raise BaseAppException()
     return reservation_service
@@ -195,7 +196,7 @@ async def update_reservation_service(
 
     :returns ReservationServiceModel: the updated reservation service.
     """
-    reservation_service = service.update_reservation_service(
+    reservation_service = await service.update_reservation_service(
         reservation_service_id, reservation_service_update, user
     )
     if not reservation_service:
@@ -226,7 +227,7 @@ async def retrieve_deleted_reservation_service(
 
     :returns ReservationServiceModel: the updated reservation service.
     """
-    reservation_service = service.retrieve_removed_object(
+    reservation_service = await service.retrieve_removed_object(
         reservation_service_id, user
     )
     if not reservation_service:
@@ -259,7 +260,7 @@ async def delete_reservation_service(
 
     :returns ReservationServiceModel: the deleted reservation service.
     """
-    reservation_service = service.delete_reservation_service(
+    reservation_service = await service.delete_reservation_service(
         reservation_service_id, user, hard_remove)
     if not reservation_service:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, reservation_service_id)
@@ -287,7 +288,7 @@ async def get_reservation_service_by_name(
     :return: Reservation Service with name equal to name
              or None if no such reservation service exists.
     """
-    reservation_service = service.get_by_name(name, include_removed)
+    reservation_service = await service.get_by_name(name, include_removed)
     if not reservation_service:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, name)
     return reservation_service
@@ -314,7 +315,7 @@ async def get_reservation_service_by_alias(
     :return: Reservation Service with alias equal to alias
              or None if no such reservation service exists.
     """
-    reservation_service = service.get_by_alias(alias, include_removed)
+    reservation_service = await service.get_by_alias(alias, include_removed)
     if not reservation_service:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, alias)
     return reservation_service

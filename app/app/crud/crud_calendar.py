@@ -5,7 +5,8 @@ using SQLAlchemy.
 """
 from abc import ABC, abstractmethod
 
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from models import CalendarModel
 from schemas import CalendarCreate, CalendarUpdate
 
@@ -24,7 +25,7 @@ class AbstractCRUDCalendar(CRUDBase[
     """
 
     @abstractmethod
-    def get_by_reservation_type(self, reservation_type: str,
+    async def get_by_reservation_type(self, reservation_type: str,
                                 include_removed: bool = False) -> CalendarModel | None:
         """
         Retrieves a Calendar instance by its reservation type.
@@ -43,12 +44,13 @@ class CRUDCalendar(AbstractCRUDCalendar):
     for querying and manipulating Calendar instances.
     """
 
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         super().__init__(CalendarModel, db)
 
-    def get_by_reservation_type(self, reservation_type: str,
+    async def get_by_reservation_type(self, reservation_type: str,
                                 include_removed: bool = False) -> CalendarModel | None:
-        return self.db.query(self.model) \
-            .execution_options(include_deleted=include_removed) \
-            .filter(self.model.reservation_type == reservation_type) \
-            .first()
+        stmt = select(self.model).where(self.model.reservation_type == reservation_type)
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=True)
+        result = await self.db.execute(stmt)
+        return result.scalars().first()

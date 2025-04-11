@@ -217,13 +217,13 @@ class BaseAppException(Exception):
             status_code: int | None = None,
             **kwargs: Any):
         self.message = message or self.DESCRIPTION
-        self.STATUS_CODE = status_code or self.STATUS_CODE
+        self.status_code = status_code or self.STATUS_CODE
         self.details = kwargs  # Extra context if needed
 
     def to_response(self) -> JSONResponse:
         """Convert exception to a JSONResponse."""
         return JSONResponse(
-            status_code=self.STATUS_CODE,
+            status_code=self.status_code,
             content={"message": self.message, **self.details},
         )
 

@@ -8,4 +8,3 @@ __all__ = [
     "Base",
     "db_session"
 ]
-

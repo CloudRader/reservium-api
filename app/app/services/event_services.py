@@ -9,9 +9,9 @@ from fastapi import Depends
 
 from schemas import EventCreate, User, InformationFromIS, Calendar
 from models import CalendarModel
-from db import get_db
+from db import db_session
 from crud import CRUDReservationService
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 # pylint: disable=too-few-public-methods
@@ -40,7 +40,8 @@ class EventService(AbstractEventService):
     Class EventService represent service that work with Event
     """
 
-    def __init__(self, db: Annotated[Session, Depends(get_db)]):
+    def __init__(self, db: Annotated[
+        AsyncSession, Depends(db_session.scoped_session_dependency)]):
         self.reservation_service_crud = CRUDReservationService(db)
 
     def post_event(
@@ -59,7 +60,7 @@ class EventService(AbstractEventService):
 
         return ready_event(calendar, event_input, is_info)
 
-    def __control_conditions_and_permissions(
+    async def __control_conditions_and_permissions(
             self, user: User,
             is_info: InformationFromIS,
             event_input: EventCreate,
@@ -76,7 +77,7 @@ class EventService(AbstractEventService):
 
         :return: Message indicating whether access is granted or denied.
         """
-        reservation_service = self.reservation_service_crud.get(
+        reservation_service = await self.reservation_service_crud.get(
             calendar.reservation_service_id)
 
         # Check of the membership
@@ -92,7 +93,7 @@ class EventService(AbstractEventService):
                                f"reservation for more than {calendar.max_people} people!"}
 
         # Choose user rules
-        user_rules = self.__choose_user_rules(user, calendar)
+        user_rules = await self.__choose_user_rules(user, calendar)
 
         # Reservation no more than 24 hours
         if not dif_days_res(event_input.start_datetime, event_input.end_datetime, user_rules):
@@ -105,7 +106,7 @@ class EventService(AbstractEventService):
 
         return "Access"
 
-    def __choose_user_rules(
+    async def __choose_user_rules(
             self, user: User,
             calendar: CalendarModel
     ):
@@ -117,7 +118,7 @@ class EventService(AbstractEventService):
 
         :return: Rules object.
         """
-        reservation_service = self.reservation_service_crud.get(
+        reservation_service = await self.reservation_service_crud.get(
             calendar.reservation_service_id)
 
         if not user.active_member:

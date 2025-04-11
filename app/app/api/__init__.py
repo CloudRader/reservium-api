@@ -16,6 +16,7 @@ __all_ = [
     "BaseAppException", "Entity", "Message", "app_exception_handler",
     "fastapi_docs", "auth_google", "modify_url_scheme", "send_email",
     "check_night_reservation", "control_available_reservation_time", "control_collision",
-    "get_oauth_session", "get_request", "authenticate_user", "get_current_user", "get_current_token",
+    "get_oauth_session", "get_request", "authenticate_user",
+    "get_current_user", "get_current_token",
     "PermissionDeniedException", "UnauthorizedException",
 ]

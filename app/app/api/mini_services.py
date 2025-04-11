@@ -39,7 +39,7 @@ async def create_mini_service(
 
     :returns MiniServiceModel: the created mini service.
     """
-    mini_service = service.create_mini_service(mini_service_create, user)
+    mini_service = await service.create_mini_service(mini_service_create, user)
     if not mini_service:
         raise BaseAppException()
     return mini_service
@@ -84,7 +84,7 @@ async def create_mini_services(
             status_code=status.HTTP_200_OK)
 async def get_mini_service(
         service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-        mini_service_id: Annotated[UUID, Path()],
+        mini_service_id: Annotated[str, Path()],
         include_removed: bool = Query(False)
 ) -> Any:
     """
@@ -97,7 +97,7 @@ async def get_mini_service(
     :return: Mini Service with uuid equal to uuid
              or None if no such mini service exists.
     """
-    mini_service = service.get(mini_service_id, include_removed)
+    mini_service = await service.get(mini_service_id, include_removed)
     if not mini_service:
         raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_id)
     return mini_service
@@ -121,7 +121,7 @@ async def get_mini_services(
 
     :return: List of all mini services or None if there are no mini services in db.
     """
-    mini_services = service.get_all(include_removed)
+    mini_services = await service.get_all(include_removed)
     if mini_services is None:
         raise BaseAppException()
     return mini_services
@@ -152,7 +152,7 @@ async def update_mini_service(
 
     :returns MiniServiceModel: the updated mini service.
     """
-    mini_service = service.update_mini_service(mini_service_id, mini_service_update, user)
+    mini_service = await service.update_mini_service(mini_service_id, mini_service_update, user)
     if not mini_service:
         raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_id)
     return mini_service
@@ -181,7 +181,7 @@ async def retrieve_deleted_reservation_service(
 
     :returns MiniServiceModel: the updated mini service.
     """
-    mini_service = service.retrieve_removed_object(
+    mini_service = await service.retrieve_removed_object(
         mini_service_id, user
     )
     if not mini_service:
@@ -214,8 +214,8 @@ async def delete_mini_service(
 
     :returns MiniServiceModel: the deleted mini service.
     """
-    mini_service = service.delete_mini_service(mini_service_id, user,
-                                               hard_remove)
+    mini_service = await service.delete_mini_service(mini_service_id, user,
+                                                     hard_remove)
     if not mini_service:
         raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_id)
     return mini_service
@@ -242,7 +242,7 @@ async def get_mini_services_by_name(
     :return: Mini Service with name equal to name
              or None if no such mini service exists.
     """
-    mini_service = service.get_by_name(name, include_removed)
+    mini_service = await service.get_by_name(name, include_removed)
     if not mini_service:
         raise EntityNotFoundException(Entity.MINI_SERVICE, name)
     return mini_service
@@ -269,8 +269,8 @@ async def get_mini_services_by_reservation_service_id(
     :return: Mini Services with reservation service id equal
     to reservation service id or None if no such mini services exists.
     """
-    mini_services = service.get_by_reservation_service_id(reservation_service_id,
-                                                          include_removed)
+    mini_services = await service.get_by_reservation_service_id(reservation_service_id,
+                                                                include_removed)
     if not mini_services:
         raise EntityNotFoundException(Entity.MINI_SERVICE, reservation_service_id)
     return mini_services

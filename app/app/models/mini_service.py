@@ -1,13 +1,16 @@
 """
 Mini service ORM model and its dependencies.
 """
+from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from db.base_class import Base
-# from models import ReservationServiceModel
 from models.soft_delete_mixin import SoftDeleteMixin
+
+if TYPE_CHECKING:
+    from models.reservation_service import ReservationService
 
 
 # pylint: disable=too-few-public-methods
@@ -22,7 +25,7 @@ class MiniService(Base, SoftDeleteMixin):
     reservation_service_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True),
                                                          ForeignKey("reservation_service.id"))
 
-    reservation_service: Mapped["ReservationService"] = (
-        relationship("ReservationService", back_populates="mini_services"))
+    reservation_service: Mapped["ReservationService"] = relationship(
+        back_populates="mini_services")
 
 # pylint: enable=too-few-public-methods

@@ -5,7 +5,8 @@ using SQLAlchemy.
 """
 from abc import ABC, abstractmethod
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from models import UserModel
 from schemas import UserCreate, UserUpdate
 
@@ -24,7 +25,7 @@ class AbstractCRUDUser(CRUDBase[
     """
 
     @abstractmethod
-    def get_by_username(self, username: str) -> UserModel | None:
+    async def get_by_username(self, username: str) -> UserModel | None:
         """
         Retrieves a User instance by its username.
 
@@ -41,10 +42,10 @@ class CRUDUser(AbstractCRUDUser):
     for querying and manipulating User instances.
     """
 
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         super().__init__(UserModel, db)
 
-    def get_by_username(self, username: str) -> UserModel | None:
-        return self.db.query(self.model) \
-            .filter(self.model.username == username) \
-            .first()
+    async def get_by_username(self, username: str) -> UserModel | None:
+        stmt = select(self.model).filter(self.model.username == username)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()

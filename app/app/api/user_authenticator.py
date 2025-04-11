@@ -69,7 +69,7 @@ async def authenticate_user(user_service: Annotated[UserService, Depends(UserSer
     roles = RoleList(roles=await get_request(token, "/user_roles/mine")).roles
     services = ServiceList(services=await get_request(token,
                                                       "/services/mine")).services
-    return user_service.create_user(user_data, roles, services)
+    return await user_service.create_user(user_data, roles, services)
 
 
 async def get_current_token(request: Request) -> Any:
@@ -111,7 +111,7 @@ async def get_current_user(
     username = request.session.get('user_username')
     if not username:
         raise credentials_exception
-    user = user_service.get_by_username(username)
+    user = await user_service.get_by_username(username)
     if not user:
         raise credentials_exception
     token = request.session['oauth_token']['access_token']

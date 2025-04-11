@@ -3,14 +3,14 @@ This module provides an abstract CRUD base class and a concrete implementation
 for handling common database operations with SQLAlchemy and FastAPI.
 """
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TypeVar, Generic, Type, Any
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy import Row
-from sqlalchemy.orm import Session
+from sqlalchemy import Row, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import Base
 
@@ -25,8 +25,8 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
    """
 
     @abstractmethod
-    def get(self, uuid: UUID | str | int,
-            include_removed: bool = False) -> Model | None:
+    async def get(self, uuid: UUID | str | int,
+                  include_removed: bool = False) -> Model | None:
         """
         Retrieve a single record by its UUID.
         If include_removed is True retrieve a single record
@@ -34,13 +34,13 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
         """
 
     @abstractmethod
-    def get_multi(self, skip: int = 0, limit: int = 100) -> list[Row[Model]]:
+    async def get_multi(self, skip: int = 0, limit: int = 100) -> list[Row[Model]]:
         """
         Retrieve a list of records with pagination.
         """
 
     @abstractmethod
-    def get_all(self, include_removed: bool = False) -> list[Row[Model]]:
+    async def get_all(self, include_removed: bool = False) -> list[Model]:
         """
         Retrieve all records without pagination.
         If include_removed is True retrieve all records
@@ -48,7 +48,7 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
         """
 
     @abstractmethod
-    def get_by_reservation_service_id(
+    async def get_by_reservation_service_id(
             self, reservation_service_id: str,
             include_removed: bool = False
     ) -> list[Row[Model]] | None:
@@ -59,32 +59,32 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
         """
 
     @abstractmethod
-    def create(self, obj_in: CreateSchema) -> Model:
+    async def create(self, obj_in: CreateSchema) -> Model:
         """
         Create a new record from the input scheme.
         """
 
     @abstractmethod
-    def update(self, *, db_obj: Model | None, obj_in: UpdateSchema) -> Model | None:
+    async def update(self, *, db_obj: Model | None, obj_in: UpdateSchema) -> Model | None:
         """
         Update an existing record with the input scheme.
         """
 
     @abstractmethod
-    def retrieve_removed_object(self, uuid: UUID | str | int | None
+    async def retrieve_removed_object(self, uuid: UUID | str | int | None
                                 ) -> Model | None:
         """
         Retrieve removed object from soft removed.
         """
 
     @abstractmethod
-    def remove(self, uuid: UUID | str | int | None) -> Model | None:
+    async def remove(self, uuid: UUID | str | int | None) -> Model | None:
         """
         Remove a record by its UUID.
         """
 
     @abstractmethod
-    def soft_remove(self, uuid: UUID | str | int | None) -> Model | None:
+    async def soft_remove(self, uuid: UUID | str | int | None) -> Model | None:
         """
         Soft remove a record by its UUID.
         Change attribute deleted_at to time of deletion
@@ -97,94 +97,107 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
     common database operations with SQLAlchemy and FastAPI.
     """
 
-    def __init__(self, model: Type[Model], db: Session):
+    def __init__(self, model: Type[Model], db: AsyncSession):
         self.model: Type[Model] = model
-        self.db: Session = db
+        self.db: AsyncSession = db
 
-    def get(self, uuid: UUID | str | int,
-            include_removed: bool = False) -> Model | None:
+    async def get(self, uuid: UUID | str | int,
+                  include_removed: bool = False) -> Model | None:
         if uuid is None:
             return None
-        return self.db.query(self.model) \
-            .execution_options(include_deleted=include_removed) \
-            .filter(self.model.id == uuid).first()
+        stmt = select(self.model).filter(self.model.id == uuid)
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=True)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
 
-    def get_multi(self, skip: int = 0, limit: int = 100) -> list[Row[Model]]:
-        return self.db.query(self.model).order_by(self.model.submitted_at.desc()) \
-            .offset(skip).limit(limit).all()
+    async def get_multi(self, skip: int = 0, limit: int = 100) -> list[Model]:
+        stmt = select(self.model).order_by(self.model.submitted_at.desc()).offset(skip).limit(limit)
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
 
-    def get_all(self, include_removed: bool = False) -> list[Row[Model]]:
-        return self.db.query(self.model) \
-            .execution_options(include_deleted=include_removed).all()
+    async def get_all(self, include_removed: bool = False) -> list[Model]:
+        stmt = select(self.model).execution_options(include_deleted=include_removed)
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
 
-    def get_by_reservation_service_id(
+    async def get_by_reservation_service_id(
             self, reservation_service_id: UUID | str,
             include_removed: bool = False
-    ) -> list[Row[Model]] | None:
-        return self.db.query(self.model) \
-            .execution_options(include_deleted=include_removed) \
-            .filter(self.model.reservation_service_id == reservation_service_id) \
-            .all()
+    ) -> list[Model] | None:
+        stmt = select(self.model).filter(
+            self.model.reservation_service_id == reservation_service_id)
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=True)
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
 
-    def create(self, obj_in: CreateSchema | dict[str, Any]) -> Model:
-        obj_in_data = obj_in if isinstance(obj_in, dict) else obj_in.dict()
+    async def create(self, obj_in: CreateSchema | dict[str, Any]) -> Model:
+        obj_in_data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump()
         db_obj = self.model(**obj_in_data)
         self.db.add(db_obj)
-        self.db.commit()
-        self.db.refresh(db_obj)
+        await self.db.commit()
+        await self.db.refresh(db_obj)
         return db_obj
 
-    def update(self, *,
-               db_obj: Model | None,
-               obj_in: UpdateSchema | dict[str, Any]) -> Model | None:
+    async def update(self, *,
+                     db_obj: Model | None,
+                     obj_in: UpdateSchema | dict[str, Any]) -> Model | None:
         if db_obj is None or obj_in is None:
             return None
+
         db_obj_data = jsonable_encoder(db_obj)
         update_data = obj_in if isinstance(obj_in, dict) else obj_in.dict(exclude_unset=True)
+
         for field in db_obj_data:
             if field in update_data:
                 setattr(db_obj, field, update_data[field])
+
         self.db.add(db_obj)
-        self.db.commit()
-        self.db.refresh(db_obj)
+        await self.db.commit()
+        await self.db.refresh(db_obj)
         return db_obj
 
-    def retrieve_removed_object(self, uuid: UUID | str | int | None
+    async def retrieve_removed_object(self, uuid: UUID | str | int | None
                                 ) -> Model | None:
         if uuid is None:
             return None
-        obj = self.db.query(self.model) \
-            .execution_options(include_deleted=True). \
-            filter(self.model.id == uuid).first()
+        stmt = (select(self.model).execution_options(include_deleted=True)
+                .filter(self.model.id == uuid))
+        result = await self.db.execute(stmt)
+        obj = result.scalar_one_or_none()
         if obj is None:
             return None
         obj.deleted_at = None
         self.db.add(obj)
-        self.db.commit()
+        await self.db.commit()
         return obj
 
-    def remove(self, uuid: UUID | str | int | None) -> Model | None:
-        if uuid is None:
-            return None
-        # obj = self.db.get(self.model, uuid)
-        obj = self.db.query(self.model) \
-            .execution_options(include_deleted=True). \
-            filter(self.model.id == uuid).first()
+    async def remove(self, uuid: UUID | str | int | None) -> Model | None:
+        obj = await self.db.execute(
+            select(self.model)
+            .execution_options(include_deleted=True)
+            .filter(self.model.id == uuid)
+        )
+        obj = obj.scalar_one_or_none()
         if obj is None:
             return None
-        self.db.delete(obj)
-        self.db.commit()
+        await self.db.delete(obj)
+        await self.db.commit()
         return obj
 
-    def soft_remove(self, uuid: UUID | str | int | None) -> Model | None:
+    async def soft_remove(self, uuid: UUID | str | int | None) -> Model | None:
         if uuid is None:
             return None
-        obj = self.db.get(self.model, uuid)
+        stmt = select(self.model).filter(self.model.id == uuid)
+        result = await self.db.execute(stmt)
+        obj = result.scalar_one_or_none()
         if obj is None or obj.deleted_at is not None:
             return None
-        obj.deleted_at = datetime.utcnow()
+        obj.deleted_at = datetime.now(timezone.utc)
         self.db.add(obj)
-        self.db.commit()
-        return self.db.query(self.model) \
-            .execution_options(include_deleted=True). \
-            filter(self.model.id == uuid).first()
+        await self.db.commit()
+        stmt = (select(self.model).execution_options(include_deleted=True)
+                .filter(self.model.id == uuid))
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()

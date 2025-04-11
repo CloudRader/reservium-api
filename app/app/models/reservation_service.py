@@ -1,10 +1,14 @@
 """
 Reservation service ORM model and its dependencies.
 """
+from typing import TYPE_CHECKING
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from db.base_class import Base
 from models.soft_delete_mixin import SoftDeleteMixin
-# from models import CalendarModel, MiniServiceModel
+
+if TYPE_CHECKING:
+    from models.calendar import Calendar
+    from models.mini_service import MiniService
 
 
 # pylint: disable=too-few-public-methods
@@ -21,9 +25,9 @@ class ReservationService(Base, SoftDeleteMixin):
     web: Mapped[str] = mapped_column(nullable=True)
     contact_mail: Mapped[str] = mapped_column(nullable=True)
 
-    calendars: Mapped["Calendar"] = relationship("Calendar",
-                                                    back_populates="reservation_service")
-    mini_services: Mapped["MiniService"] = relationship("MiniService",
-                                                           back_populates="reservation_service")
+    calendars: Mapped[list["Calendar"]] = relationship(
+        back_populates="reservation_service", lazy="selectin")
+    mini_services: Mapped[list["MiniService"]] = relationship(
+        back_populates="reservation_service", lazy="selectin")
 
 # pylint: enable=too-few-public-methods

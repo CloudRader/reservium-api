@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from models import MiniServiceModel
 from schemas import MiniServiceCreate, MiniServiceUpdate
 
@@ -26,7 +26,7 @@ class AbstractCRUDMiniService(CRUDBase[
     """
 
     @abstractmethod
-    def get_by_name(self, name: str,
+    async def get_by_name(self, name: str,
                     include_removed: bool = False) -> MiniServiceModel | None:
         """
         Retrieves a Calendar instance by its name.
@@ -38,7 +38,7 @@ class AbstractCRUDMiniService(CRUDBase[
         """
 
     @abstractmethod
-    def get_names_by_reservation_service_uuid(
+    async def get_names_by_reservation_service_uuid(
             self, reservation_service_uuid: UUID
     ) -> list[str]:
         """
@@ -58,21 +58,22 @@ class CRUDMiniService(AbstractCRUDMiniService):
     for querying and manipulating Calendar instances.
     """
 
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         super().__init__(MiniServiceModel, db)
 
-    def get_by_name(self, name: str,
+    async def get_by_name(self, name: str,
                     include_removed: bool = False) -> MiniServiceModel | None:
-        return self.db.query(self.model) \
-            .execution_options(include_deleted=include_removed) \
-            .filter(self.model.name == name) \
-            .first()
+        stmt = select(self.model).where(self.model.name == name)
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=True)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
 
-    def get_names_by_reservation_service_uuid(
+    async def get_names_by_reservation_service_uuid(
             self, reservation_service_uuid: UUID
     ) -> list[str]:
         stmt = select(self.model.name).where(
             self.model.reservation_service_id == reservation_service_uuid
         )
-        result = self.db.execute(stmt)
+        result = await self.db.execute(stmt)
         return [row[0] for row in result.fetchall()]

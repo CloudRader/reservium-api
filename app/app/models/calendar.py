@@ -1,7 +1,7 @@
 """
 Calendar ORM model and its dependencies.
 """
-from typing import Type, Any
+from typing import Type, Any, TYPE_CHECKING
 import json
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
@@ -9,9 +9,11 @@ from sqlalchemy.orm import mapped_column, relationship, Mapped
 from sqlalchemy.types import TypeDecorator, TEXT
 from db.base_class import Base
 from schemas import Rules
-# from models import ReservationServiceModel
 from models.soft_delete_mixin import SoftDeleteMixin
 
+
+if TYPE_CHECKING:
+    from models.reservation_service import ReservationService
 
 # pylint: disable=too-many-ancestors
 class RulesType(TypeDecorator):
@@ -33,19 +35,19 @@ class RulesType(TypeDecorator):
             return None
         if isinstance(value, dict):
             value = Rules(**value)
-        return json.dumps(value.dict())
+        return json.dumps(value.model_dump())
 
     def process_result_value(self, value, dialect):
         if value is None:
             return None
-        return Rules.parse_raw(value)
+        return Rules.model_validate_json(value)
 
     def process_literal_param(self, value, dialect):
         if value is None:
             return None
         if isinstance(value, dict):
             value = Rules(**value)
-        return json.dumps(value.dict())
+        return json.dumps(value.model_dump())
 
     def copy(self, **kw):
         return RulesType(self.impl)
@@ -53,6 +55,8 @@ class RulesType(TypeDecorator):
 
 # pylint: disable=too-few-public-methods
 # reason: ORM model does not require to have any public methods
+# pylint: disable=unsubscriptable-object
+# reason: Custom SQLAlchemy type, based on TypeDecorator.
 class Calendar(Base, SoftDeleteMixin):
     """
     Calendar model to create and manipulate user entity in the database.
@@ -73,8 +77,8 @@ class Calendar(Base, SoftDeleteMixin):
     reservation_service_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True),
                                                          ForeignKey("reservation_service.id"))
 
-    reservation_service: Mapped["ReservationService"] = (
-        relationship("ReservationService", back_populates="calendars"))
+    reservation_service: Mapped["ReservationService"] = relationship(
+        back_populates="calendars")
     mini_services: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=True)
 
 # pylint: enable=too-few-public-methods

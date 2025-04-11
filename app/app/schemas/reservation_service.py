@@ -31,8 +31,8 @@ class ReservationServiceInDBBase(ReservationServiceBase):
     deleted_at: Optional[datetime] = None
     name: str
     alias: str
-    calendars: list[Calendar]
-    mini_services: list[MiniService]
+    calendars: list[Calendar] = Field(default_factory=list)
+    mini_services: list[MiniService] = Field(default_factory=list)
 
     # pylint: disable=too-few-public-methods
     # reason: Config class only needs to set orm_mode to True.

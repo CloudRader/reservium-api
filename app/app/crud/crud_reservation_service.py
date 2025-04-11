@@ -5,8 +5,8 @@ abstract base class (AbstractCRUDReservationService) and a concrete implementati
 """
 from abc import ABC, abstractmethod
 
-from sqlalchemy import select, Row
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from models import ReservationServiceModel
 from schemas import ReservationServiceCreate, ReservationServiceUpdate
 
@@ -25,8 +25,8 @@ class AbstractCRUDReservationService(CRUDBase[
     """
 
     @abstractmethod
-    def get_by_name(self, name: str,
-                    include_removed: bool = False) -> ReservationServiceModel | None:
+    async def get_by_name(self, name: str,
+                          include_removed: bool = False) -> ReservationServiceModel | None:
         """
         Retrieves a Reservation Service instance by its name.
 
@@ -37,8 +37,8 @@ class AbstractCRUDReservationService(CRUDBase[
         """
 
     @abstractmethod
-    def get_by_alias(self, alias: str,
-                     include_removed: bool = False) -> ReservationServiceModel | None:
+    async def get_by_alias(self, alias: str,
+                           include_removed: bool = False) -> ReservationServiceModel | None:
         """
         Retrieves a Reservation Services instance by its service alias.
 
@@ -49,7 +49,7 @@ class AbstractCRUDReservationService(CRUDBase[
         """
 
     @abstractmethod
-    def get_all_aliases(self) -> list[str]:
+    async def get_all_aliases(self) -> list[str]:
         """
         Retrieves all aliases from all  Reservation Services.
 
@@ -57,9 +57,9 @@ class AbstractCRUDReservationService(CRUDBase[
         """
 
     @abstractmethod
-    def get_public_services(
+    async def get_public_services(
             self, include_removed: bool = False
-    ) -> list[Row[ReservationServiceModel]]:
+    ) -> list[ReservationServiceModel]:
         """
         Retrieves a public Reservation Service instance.
 
@@ -76,32 +76,35 @@ class CRUDReservationService(AbstractCRUDReservationService):
     for querying and manipulating Calendar instances.
     """
 
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         super().__init__(ReservationServiceModel, db)
 
-    def get_by_name(self, name: str,
-                    include_removed: bool = False) -> ReservationServiceModel | None:
-        return self.db.query(self.model) \
-            .execution_options(include_deleted=include_removed) \
-            .filter(self.model.name == name) \
-            .first()
+    async def get_by_name(self, name: str,
+                          include_removed: bool = False) -> ReservationServiceModel | None:
+        stmt = select(self.model).filter(self.model.name == name)
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=True)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
 
-    def get_by_alias(self, alias: str,
-                     include_removed: bool = False) -> ReservationServiceModel | None:
-        return self.db.query(self.model) \
-            .execution_options(include_deleted=include_removed) \
-            .filter(self.model.alias == alias) \
-            .first()
+    async def get_by_alias(self, alias: str,
+                           include_removed: bool = False) -> ReservationServiceModel | None:
+        stmt = select(self.model).filter(self.model.alias == alias)
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=True)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
 
-    def get_all_aliases(self) -> list[str]:
+    async def get_all_aliases(self) -> list[str]:
         stmt = select(self.model.alias)
-        result = self.db.execute(stmt)
+        result = await self.db.execute(stmt)
         return [row[0] for row in result.fetchall()]
 
-    def get_public_services(
+    async def get_public_services(
             self, include_removed: bool = False
-    ) -> list[Row[ReservationServiceModel]]:
-        return self.db.query(self.model) \
-            .execution_options(include_deleted=include_removed) \
-            .filter(self.model.public) \
-            .all()
+    ) -> list[ReservationServiceModel]:
+        stmt = select(self.model).filter(self.model.public)
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=True)
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
