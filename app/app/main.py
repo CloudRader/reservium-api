@@ -48,16 +48,16 @@ app.include_router(emails.router)
 app.add_exception_handler(BaseAppException, app_exception_handler)
 
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
+    SessionMiddleware,
+    secret_key=settings.SECRET_KEY,
 )
 
 app.add_middleware(
-    SessionMiddleware,
-    secret_key=settings.SECRET_KEY,
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
 )
 
 if __name__ == "__main__":
