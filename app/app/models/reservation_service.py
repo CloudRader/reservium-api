@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 
 # pylint: disable=too-few-public-methods
 # reason: ORM model does not require to have any public methods
+# pylint: disable=unsubscriptable-object
+# reason: Custom SQLAlchemy type, based on TypeDecorator.
 class ReservationService(Base, SoftDeleteMixin):
     """
     Reservation service model to create and manipulate reservation service entity in the database.

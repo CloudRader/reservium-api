@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
 # pylint: disable=too-few-public-methods
 # reason: ORM model does not require to have any public methods
+# pylint: disable=unsubscriptable-object
+# reason: Custom SQLAlchemy type, based on TypeDecorator.
 class MiniService(Base, SoftDeleteMixin):
     """
     Mini service model to create and manipulate mini service entity in the database.

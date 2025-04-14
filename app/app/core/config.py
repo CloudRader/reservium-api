@@ -1,6 +1,6 @@
 """Config."""
-from typing import Dict, Any
-from pydantic import validator, PostgresDsn
+from typing import Any
+from pydantic import field_validator, PostgresDsn
 from pydantic_settings import BaseSettings
 from .utils import get_env_file_path
 
@@ -50,22 +50,23 @@ class Settings(BaseSettings):
 
     # pylint: disable=no-self-argument
     # reason: pydantic validator doesn't work with self argument.
-    @validator("POSTGRES_DATABASE_URI", pre=True)
-    def assemble_db_connection(cls, value: str | None, values: Dict[str, Any]) -> str:
+    # @validator("POSTGRES_DATABASE_URI", pre=True)
+    @field_validator("POSTGRES_DATABASE_URI", mode="before")
+    def assemble_db_connection(cls, value: str | None, info: Any) -> str:
         """Assemble database connection URI.
 
         :param value: Value to set URI with.
-        :param values: Values to build URI from, if value is None.
+        :param info: Values to build URI from, if value is None.
         """
         if isinstance(value, str):
             return value
         return str(PostgresDsn.build(  # pylint: disable=no-member
-            scheme=values.get("SQLALCHEMY_SCHEME", "postgresql"),
-            username=values.get("POSTGRES_USER"),
-            password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_SERVER"),
-            port=values.get("POSTGRES_PORT"),
-            path=f'{values.get("POSTGRES_DB")}'
+            scheme=info.data.get("SQLALCHEMY_SCHEME", "postgresql+asyncpg"),
+            username=info.data.get("POSTGRES_USER"),
+            password=info.data.get("POSTGRES_PASSWORD"),
+            host=info.data.get("POSTGRES_SERVER"),
+            port=info.data.get("POSTGRES_PORT"),
+            path=f'{info.data.get("POSTGRES_DB")}'
         ))
 
     # pylint: enable=no-self-argument

@@ -5,11 +5,7 @@ from typing import AsyncGenerator
 from asyncio import current_task
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, \
     async_scoped_session, AsyncSession
-
-# from core import settings
-
-# DATABASE_URI = str(settings.POSTGRES_DATABASE_URI)
-DATABASE_URI = "postgresql+asyncpg://dev:pass@localhost:5432/devdb"
+from core import settings
 
 
 class DatabaseSession:
@@ -27,7 +23,7 @@ class DatabaseSession:
 
     def __init__(self):
         self.engine = create_async_engine(
-            url=DATABASE_URI,
+            url=str(settings.POSTGRES_DATABASE_URI),
             pool_pre_ping=True
         )
         self.session_factory = async_sessionmaker(
