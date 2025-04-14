@@ -81,7 +81,7 @@ class UserService(AbstractUserService):
                 active_member = True
 
         section_head = False
-        if user_data.note.strip() == "head" and bool(user_roles):
+        if user_data.note.strip() == "head":
             active_member = True
             section_head = True
 

@@ -2,7 +2,8 @@
 DTO schemes for Event entity.
 """
 from datetime import datetime
-from pydantic import BaseModel, Field
+from typing import List, Optional
+from pydantic import BaseModel, Field, EmailStr
 
 
 class EventCreate(BaseModel):
@@ -12,5 +13,16 @@ class EventCreate(BaseModel):
     purpose: str = Field(max_length=40)
     guests: int = Field(ge=1)
     reservation_type: str
-    email: str
-    additional_services: list[str] | None = None
+    email: EmailStr
+    additional_services: List[str] = Field(default_factory=list)
+
+
+class RegistrationFormCreate(BaseModel):
+    """Schema for creating a registration form."""
+    event_name: str = Field(max_length=40)
+    guests: int = Field(ge=1)
+    event_start: datetime
+    event_end: datetime
+    email: EmailStr
+    organizers: List[str] = Field(default_factory=list)
+    space: List[str]
