@@ -66,7 +66,7 @@ class EmailService(AbstractEmailService):
                 "end_date": formatted_end_date,
                 "full_name": full_name,
                 "email": str(registration_form.email),
-                "organizers": ", ".join(registration_form.organizers or []),
+                "organizers": registration_form.organizers,
                 "space": registration_form.space,
                 "other_spaces": ", ".join(registration_form.other_space or []),
                 "today_date": datetime.today().strftime("%d/%m/%Y"),

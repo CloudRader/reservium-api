@@ -24,7 +24,7 @@ class RegistrationFormCreate(BaseModel):
     event_start: datetime
     event_end: datetime
     email: EmailStr
-    organizers: List[str] = Field(default_factory=list)
+    organizers: str
     space: str
     other_space: List[str]
     manager_contact_email: EmailStr
