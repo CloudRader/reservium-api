@@ -78,7 +78,7 @@ class EmailService(AbstractEmailService):
             writer.write(output_pdf)
 
         email_create = EmailCreate(
-            email=[registration_form.email, registration_form.manager_contact_email],
+            email=[registration_form.email, registration_form.manager_contact_mail],
             subject="Event Registration",
             body=(
                 f"Request to reserve an event for a member {full_name}"

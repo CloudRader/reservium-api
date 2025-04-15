@@ -27,4 +27,4 @@ class RegistrationFormCreate(BaseModel):
     organizers: str
     space: str
     other_space: List[str]
-    manager_contact_email: EmailStr
+    manager_contact_mail: EmailStr
