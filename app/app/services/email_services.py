@@ -67,8 +67,8 @@ class EmailService(AbstractEmailService):
                 "full_name": full_name,
                 "email": str(registration_form.email),
                 "organizers": ", ".join(registration_form.organizers or []),
-                "space": ", ".join(registration_form.space or []),
-                # "other_spaces": "Study Room, Grillcentrum",
+                "space": registration_form.space,
+                "other_spaces": ", ".join(registration_form.other_space or []),
                 "today_date": datetime.today().strftime("%d/%m/%Y"),
             }
         )
@@ -78,10 +78,10 @@ class EmailService(AbstractEmailService):
             writer.write(output_pdf)
 
         email_create = EmailCreate(
-            email=[registration_form.email],
+            email=[registration_form.email, registration_form.manager_contact_email],
             subject="Event Registration",
             body=(
-                f"Request to reserve an event for a user {full_name}"
+                f"Request to reserve an event for a member {full_name}"
             ),
             attachment=output_path
         )
