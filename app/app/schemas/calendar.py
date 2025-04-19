@@ -41,11 +41,11 @@ class CalendarUpdate(CalendarBase):
     reservation_type: str | None = None
     max_people: int | None = Field(None, ge=1)
     collision_with_itself: bool | None = None
-    collision_with_calendar: list[str] | None = None
+    collision_with_calendar: List[str] = Field(default_factory=list)
     club_member_rules: Rules | None = None
     active_member_rules: Rules | None = None
     manager_rules: Rules | None = None
-    mini_services: list[str] | None = None
+    mini_services: List[str] = Field(default_factory=list)
 
 
 class CalendarInDBBase(CalendarBase):

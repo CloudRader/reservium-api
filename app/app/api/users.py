@@ -4,7 +4,7 @@ and users itself.
 """
 from typing import Annotated, Any, List
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse # , RedirectResponse
 from services import UserService
 from api import authenticate_user, utils, get_oauth_session, get_current_user, \
     modify_url_scheme
@@ -25,14 +25,14 @@ async def login(request: Request):
     Authenticate a user, construct authorization URL and redirect to authorization page of IS.
     """
     authorization_url = (
-        # f"https://is.buk.cvut.cz/oauth/authorize?client_id={settings.CLIENT_ID}"
         f"{settings.IS_OAUTH}/authorize?client_id={settings.CLIENT_ID}"
         "&response_type=code&scope=location"  # Include the "location" scope
     )
     oauth = get_oauth_session()
     authorization_url, state = oauth.authorization_url(authorization_url)
     request.session['oauth_state'] = state
-    return RedirectResponse(authorization_url)
+    # return RedirectResponse(authorization_url) # for local dev
+    return authorization_url
 
 
 @router.get("/callback")

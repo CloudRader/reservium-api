@@ -17,7 +17,6 @@ class Base(DeclarativeBase):
     __abstract__ = True
 
     id: Mapped[UUID] =  mapped_column(pgUUID(as_uuid=True), primary_key=True, default=uuid4)
-    __name__: str
 
     # declared_attr decorator already treats method as a class method and requires to use cls
     # pylint: disable=no-self-argument

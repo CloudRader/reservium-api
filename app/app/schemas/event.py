@@ -2,7 +2,7 @@
 DTO schemes for Event entity.
 """
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 from pydantic import BaseModel, Field, EmailStr
 
 

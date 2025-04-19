@@ -9,7 +9,7 @@ from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy import Row, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import Base
@@ -34,7 +34,7 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
         """
 
     @abstractmethod
-    async def get_multi(self, skip: int = 0, limit: int = 100) -> list[Row[Model]]:
+    async def get_multi(self, skip: int = 0, limit: int = 100) -> list[Model]:
         """
         Retrieve a list of records with pagination.
         """
@@ -51,7 +51,7 @@ class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
     async def get_by_reservation_service_id(
             self, reservation_service_id: str,
             include_removed: bool = False
-    ) -> list[Row[Model]] | None:
+    ) -> list[Model] | None:
         """
         Retrieves all records by its reservation service id.
         If include_removed is True retrieve all records
@@ -174,12 +174,11 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         return obj
 
     async def remove(self, uuid: UUID | str | int | None) -> Model | None:
-        obj = await self.db.execute(
-            select(self.model)
-            .execution_options(include_deleted=True)
-            .filter(self.model.id == uuid)
-        )
-        obj = obj.scalar_one_or_none()
+        stmt = (select(self.model)
+                .execution_options(include_deleted=True)
+                .filter(self.model.id == uuid))
+        result = await self.db.execute(stmt)
+        obj = result.scalar_one_or_none()
         if obj is None:
             return None
         await self.db.delete(obj)
