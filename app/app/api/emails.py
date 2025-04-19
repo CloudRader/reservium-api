@@ -6,7 +6,8 @@ import os
 
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from fastapi import APIRouter, status, Depends
-from api import fastapi_docs, get_current_token, get_request
+from api import get_current_token, get_request
+from .docs import fastapi_docs
 from schemas import EmailCreate, RegistrationFormCreate, UserIS
 from services import EmailService
 from core import email_connection
