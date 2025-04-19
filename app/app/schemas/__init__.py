@@ -2,7 +2,7 @@
 Shortcuts to easily import schemes.
 """
 from .user import User, UserCreate, UserUpdate, UserInDB
-from .event import EventCreate
+from .event import EventCreate, RegistrationFormCreate
 from .data_is import UserIS, RoleList, Role, ServiceList, ServiceValidity, \
     InformationFromIS, LimitObject, Service, Zone, Room
 from .calendar import Calendar, CalendarCreate, CalendarUpdate, CalendarInDBBase, Rules
@@ -17,7 +17,7 @@ __all__ = [
     "MiniService", "MiniServiceCreate", "MiniServiceUpdate", "MiniServiceInDBBase",
     "ReservationService", "ReservationServiceCreate", "ReservationServiceUpdate",
     "ReservationServiceInDBBase",
-    "EventCreate", "EmailCreate",
+    "EventCreate", "EmailCreate", "RegistrationFormCreate",
     "UserIS", "RoleList", "Role", "ServiceList", "ServiceValidity", "InformationFromIS",
     "Zone", "Room", "LimitObject", "Service"
 ]

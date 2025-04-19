@@ -7,7 +7,7 @@ import os
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from fastapi import APIRouter, status, Depends
 from api import fastapi_docs, get_current_token, get_request
-from schemas import EmailCreate, EventCreate, UserIS
+from schemas import EmailCreate, RegistrationFormCreate, UserIS
 from services import EmailService
 from core import email_connection
 
@@ -35,7 +35,7 @@ async def send_email(
     """
     message = MessageSchema(
         subject=email_create.subject,
-        recipients=[email_create.email],  # List of recipients
+        recipients=email_create.email,  # List of recipients
         body=email_create.body,
         subtype=MessageType.plain,
         attachments=[email_create.attachment] if email_create.attachment else []
@@ -57,7 +57,7 @@ async def send_email(
 async def send_registration_form(
         service: Annotated[EmailService, Depends(EmailService)],
         token: Annotated[Any, Depends(get_current_token)],
-        event_input: EventCreate
+        registration_form: RegistrationFormCreate
 ) -> Any:
     """
     Sends email with pdf attachment with reservation request to
@@ -65,13 +65,13 @@ async def send_registration_form(
 
     :param service: Email service.
     :param token: Token for user identification.
-    :param event_input: EventCreate schema.
+    :param registration_form: RegistrationFormCreate schema.
 
     :returns Dictionary: Confirming that the registration form has been sent.
     """
     user_is = UserIS.model_validate(await get_request(token, "/users/me"))
     full_name = user_is.first_name + " " + user_is.surname
-    email_create = service.prepare_registration_form(event_input, full_name)
+    email_create = service.prepare_registration_form(registration_form, full_name)
 
     await send_email(email_create)
 

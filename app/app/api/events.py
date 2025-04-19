@@ -124,7 +124,7 @@ def preparing_email(
     formatted_end_date = event_create.end_datetime.strftime("%d/%m/%Y, %H:%M:%S")
 
     return EmailCreate(
-        email=reservation_service.contact_mail,
+        email=[reservation_service.contact_mail],
         subject=f"{reservation_service.name} Reservation",
         body=(
             f"{calendar.reservation_type}\n\n"

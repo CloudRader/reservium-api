@@ -11,7 +11,6 @@ from starlette.middleware.sessions import SessionMiddleware
 from api import users, events, calendars, mini_services, reservation_services, \
     fastapi_docs, emails, BaseAppException, app_exception_handler
 from core import settings
-from db import init_db
 
 
 # pylint: disable=unused-argument
@@ -23,7 +22,6 @@ async def startup_event(fast_api_app: FastAPI):
     Is used for app initialization, like here it is creating db tables if they are not created.
     """
     print(f"Starting {settings.APP_NAME}.")
-    init_db()
     yield
     print(f"Shutting down {settings.APP_NAME}.")
 
@@ -48,16 +46,16 @@ app.include_router(emails.router)
 app.add_exception_handler(BaseAppException, app_exception_handler)
 
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
+    SessionMiddleware,
+    secret_key=settings.SECRET_KEY,
 )
 
 app.add_middleware(
-    SessionMiddleware,
-    secret_key=settings.SECRET_KEY,
+    CORSMiddleware,
+    allow_origins=["https://develop.reservation.buk.cvut.cz", "https://reservation.buk.cvut.cz"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
 )
 
 if __name__ == "__main__":

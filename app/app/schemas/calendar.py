@@ -1,6 +1,6 @@
 """DTO schemes for Calendar entity."""
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 from pydantic import BaseModel, Field
 
@@ -19,9 +19,9 @@ class Rules(BaseModel):
 class CalendarBase(BaseModel):
     """Shared properties of Calendar."""
     id: str | None = None
-    collision_with_calendar: list[str] | None = None
+    collision_with_calendar: List[str] = Field(default_factory=list)
     more_than_max_people_with_permission: bool | None = None
-    mini_services: list[str] | None = None
+    mini_services: List[str] = Field(default_factory=list)
     color: str | None = None
 
 

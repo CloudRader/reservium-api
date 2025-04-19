@@ -7,7 +7,7 @@ from typing import Any
 from datetime import datetime
 from abc import ABC, abstractmethod
 
-from schemas import EventCreate, User, EmailCreate
+from schemas import RegistrationFormCreate, User, EmailCreate
 from pypdf import PdfReader, PdfWriter
 
 
@@ -20,13 +20,13 @@ class AbstractEmailService(ABC):
 
     @abstractmethod
     def prepare_registration_form(
-            self, event_input: EventCreate,
-            user_name: User
+            self, registration_form: RegistrationFormCreate,
+            full_name: User
     ) -> Any:
         """
         Preparing registration form in pdf for sending to head of the dormitory.
-        :param event_input: Input data for adding in pdf.
-        :param user_name: User fullname.
+        :param registration_form: Input data for adding in pdf.
+        :param full_name: User fullname.
 
         :returns Event json object: the created event or exception otherwise.
         """
@@ -38,8 +38,8 @@ class EmailService(AbstractEmailService):
     """
 
     def prepare_registration_form(
-            self, event_input: EventCreate,
-            user_name: str
+            self, registration_form: RegistrationFormCreate,
+            full_name: str
     ) -> Any:
         original_pdf_path = "templates/event_registration.pdf"
         output_path = "/tmp/event_registration.pdf"
@@ -54,21 +54,21 @@ class EmailService(AbstractEmailService):
         # Fill the fields
         writer.append(reader)
 
-        formatted_start_date = event_input.start_datetime.strftime("%H:%M, %d/%m/%Y")
-        formatted_end_date = event_input.end_datetime.strftime("%H:%M, %d/%m/%Y")
+        formatted_start_date = registration_form.event_start.strftime("%H:%M, %d/%m/%Y")
+        formatted_end_date = registration_form.event_end.strftime("%H:%M, %d/%m/%Y")
 
         writer.update_page_form_field_values(
             writer.pages[0],  # Targeting the first page
             {
-                "purpose": event_input.purpose,
-                "guests": str(event_input.guests),
+                "purpose": registration_form.event_name,
+                "guests": str(registration_form.guests),
                 "start_date": formatted_start_date,
                 "end_date": formatted_end_date,
-                "full_name": user_name,
-                "email": event_input.email,
-                "organizers": "Belly Loghtbom, Laura Linson, Abraham Wollahrson",
-                "space": event_input.reservation_type,
-                "other_spaces": "Study Room, Grillcentrum",
+                "full_name": full_name,
+                "email": str(registration_form.email),
+                "organizers": registration_form.organizers,
+                "space": registration_form.space,
+                "other_spaces": ", ".join(registration_form.other_space or []),
                 "today_date": datetime.today().strftime("%d/%m/%Y"),
             }
         )
@@ -78,10 +78,10 @@ class EmailService(AbstractEmailService):
             writer.write(output_pdf)
 
         email_create = EmailCreate(
-            email=event_input.email,
+            email=[registration_form.email, registration_form.manager_contact_mail],
             subject="Event Registration",
             body=(
-                f"Request to reserve an event for a user {user_name}"
+                f"Request to reserve an event for a member {full_name}"
             ),
             attachment=output_path
         )
