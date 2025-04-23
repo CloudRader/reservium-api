@@ -7,6 +7,10 @@ import sqlalchemy
 import pytest
 
 
+# pylint: disable=redefined-outer-name
+# reason: using fixtures as variables is a standard for pytest
+
+
 @pytest.mark.asyncio
 async def test_create_reservation_service(test_reservation_service,
                                           create_reservation_service_uuid):

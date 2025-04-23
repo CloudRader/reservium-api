@@ -11,6 +11,10 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from db import Base
 
 
+# pylint: disable=redefined-outer-name
+# reason: using fixtures as variables is a standard for pytest
+
+
 class TestDatabaseSession:
     """
     Manages async engine and session for PostgreSQL test container.
@@ -76,7 +80,7 @@ async def pg_container():
 
 
 @pytest_asyncio.fixture(scope="function")
-async def async_session(pg_container): # pylint: disable=redefined-outer-name
+async def async_session(pg_container):
     """
     Provides a fresh database session for each test (with schema reset).
     """
@@ -91,7 +95,7 @@ async def async_session(pg_container): # pylint: disable=redefined-outer-name
 
 
 @pytest_asyncio.fixture(scope="function")
-async def shared_session(pg_container): # pylint: disable=redefined-outer-name
+async def shared_session(pg_container):
     """
     Provides a shared schema for all tests, but new session each time.
     """

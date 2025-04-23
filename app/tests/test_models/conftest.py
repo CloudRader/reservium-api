@@ -9,6 +9,10 @@ from models import UserModel, ReservationServiceModel, \
 from schemas import Rules
 
 
+# pylint: disable=redefined-outer-name
+# reason: using fixtures as variables is a standard for pytest
+
+
 @pytest.fixture(scope="module")
 def create_reservation_service_uuid():
     """
@@ -86,7 +90,7 @@ async def test_mini_service(async_session,
 @pytest.fixture(scope="module")
 def rules_club_member() -> Rules:
     """
-    Return rules json object.
+    Return rules schemas.
     """
     return Rules(
         night_time=False,
