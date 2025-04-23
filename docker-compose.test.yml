@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  test-db:
+    image: postgres:15
+    restart: always
+    ports:
+      - "5433:5432"  # Notice: 5433 to avoid conflict with dev DB
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pass
+      POSTGRES_DB: test_db
+    volumes:
+      - test_db_data:/var/lib/postgresql/data
+
+volumes:
+  test_db_data:
