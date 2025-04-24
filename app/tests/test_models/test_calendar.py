@@ -67,18 +67,18 @@ async def test_list_calendars(async_session,
 
     calendars = [
         CalendarModel(
-            id="test_calendar_type1@google.com",
-            reservation_type="type1",
-            color="#aa0000",
-            max_people=5,
-            more_than_max_people_with_permission=False,
-            collision_with_itself=True,
+            id="test_calwagwagwgwandar_type1@exam.com",
+            reservation_type="type1blan",
+            color="#ba0201",
+            max_people=10,
+            more_than_max_people_with_permission=True,
+            collision_with_itself=False,
             collision_with_calendar=[],
             club_member_rules=rules_club_member,
             active_member_rules=rules_club_member,
             manager_rules=rules_club_member,
             reservation_service_id=test_reservation_service.id,
-            mini_services=["Bar"]
+            mini_services=["Board Games"]
         ),
         CalendarModel(
             id="test_calendar_type2@google.com",
@@ -104,5 +104,5 @@ async def test_list_calendars(async_session,
 
     assert len(result) >= 2
     reservation_types = [c.reservation_type for c in result]
-    assert "type1" in reservation_types
+    assert "type1blan" in reservation_types
     assert "type2" in reservation_types

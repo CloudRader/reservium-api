@@ -38,14 +38,14 @@ class AbstractCRUDMiniService(CRUDBase[
         """
 
     @abstractmethod
-    async def get_names_by_reservation_service_uuid(
-            self, reservation_service_uuid: UUID
+    async def get_names_by_reservation_service_id(
+            self, reservation_service_id: UUID
     ) -> list[str]:
         """
         Retrieves all names from all Mini Services
         by reservation service uuid.
 
-        :param reservation_service_uuid: The uuid of the reservation service.
+        :param reservation_service_id: The uuid of the reservation service.
 
         :return: list of aliases.
         """
@@ -69,11 +69,11 @@ class CRUDMiniService(AbstractCRUDMiniService):
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_names_by_reservation_service_uuid(
-            self, reservation_service_uuid: UUID
+    async def get_names_by_reservation_service_id(
+            self, reservation_service_id: UUID
     ) -> list[str]:
         stmt = select(self.model.name).where(
-            self.model.reservation_service_id == reservation_service_uuid
+            self.model.reservation_service_id == reservation_service_id
         )
         result = await self.db.execute(stmt)
         return [row[0] for row in result.fetchall()]

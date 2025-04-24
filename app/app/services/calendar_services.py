@@ -191,7 +191,7 @@ class CalendarService(AbstractCalendarService):
         if calendar_create.mini_services:
             for mini_service in calendar_create.mini_services:
                 if mini_service not in \
-                        self.mini_service_crud.get_names_by_reservation_service_uuid(
+                        self.mini_service_crud.get_names_by_reservation_service_id(
                             reservation_service.id):
                     raise BaseAppException("These mini services do not exist in the db "
                                            "that you want to add to this calendar.")

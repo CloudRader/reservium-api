@@ -112,7 +112,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         return result.scalar_one_or_none()
 
     async def get_multi(self, skip: int = 0, limit: int = 100) -> list[Model]:
-        stmt = select(self.model).order_by(self.model.submitted_at.desc()).offset(skip).limit(limit)
+        stmt = select(self.model).order_by(self.model.id.desc()).offset(skip).limit(limit)
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
