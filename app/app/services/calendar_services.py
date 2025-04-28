@@ -191,7 +191,7 @@ class CalendarService(AbstractCalendarService):
         if calendar_create.mini_services:
             for mini_service in calendar_create.mini_services:
                 if mini_service not in \
-                        self.mini_service_crud.get_names_by_reservation_service_id(
+                        await self.mini_service_crud.get_names_by_reservation_service_id(
                             reservation_service.id):
                     raise BaseAppException("These mini services do not exist in the db "
                                            "that you want to add to this calendar.")
@@ -241,6 +241,9 @@ class CalendarService(AbstractCalendarService):
             user: User
     ) -> CalendarModel | None:
         calendar = await self.get(uuid, True)
+
+        if calendar.deleted_at is None:
+            raise BaseAppException("A calendar was not soft deleted.")
 
         reservation_service = await self.reservation_service_crud.get(
             str(calendar.reservation_service_id)
@@ -307,7 +310,7 @@ class CalendarService(AbstractCalendarService):
         for calendar in google_calendars.get('items', []):
             if calendar.get('accessRole') == 'owner' and not \
                     calendar.get('primary', False):
-                if self.get(calendar.get('id', None)) is None:
+                if await self.get(calendar.get('id', None)) is None:
                     new_calendar_candidates.append(calendar)
 
         return new_calendar_candidates
@@ -338,7 +341,7 @@ class CalendarService(AbstractCalendarService):
         if not reservation_service:
             return None
 
-        return await reservation_service
+        return reservation_service
 
     async def get_by_reservation_service_id(
             self, reservation_service_id: str,

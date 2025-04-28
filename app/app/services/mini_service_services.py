@@ -167,6 +167,9 @@ class MiniServiceService(AbstractMiniServiceService):
                                       ) -> MiniServiceModel | None:
         mini_service = await self.crud.get(uuid, True)
 
+        if mini_service.deleted_at is None:
+            raise BaseAppException("A mini service was not soft deleted.")
+
         reservation_service = await self.reservation_service_crud.get(
             str(mini_service.reservation_service_id)
         )

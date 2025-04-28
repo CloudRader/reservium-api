@@ -183,5 +183,5 @@ class ReservationServiceService(AbstractReservationServiceService):
     ) -> list[Row[ReservationServiceModel]] | None:
         services = await self.crud.get_public_services(include_removed)
         if len(services) == 0:
-            return None
+            return []
         return services

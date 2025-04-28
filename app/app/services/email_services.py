@@ -2,6 +2,7 @@
 This module defines an abstract base class AbstractEmailService that work with Email.
 """
 import shutil
+import os
 
 from typing import Any
 from datetime import datetime
@@ -40,8 +41,9 @@ class EmailService(AbstractEmailService):
     def prepare_registration_form(
             self, registration_form: RegistrationFormCreate,
             full_name: str
-    ) -> Any:
-        original_pdf_path = "templates/event_registration.pdf"
+    ) -> EmailCreate:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        original_pdf_path = os.path.join(base_dir, '..', 'templates', 'event_registration.pdf')
         output_path = "/tmp/event_registration.pdf"
 
         # Make a copy of the original PDF
