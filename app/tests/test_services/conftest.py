@@ -7,7 +7,8 @@ import pytest_asyncio
 from models.reservation_service import ReservationService
 from schemas import UserIS, LimitObject, Role, Service, ServiceValidity, \
     ReservationServiceCreate, User, UserCreate, RegistrationFormCreate, \
-    MiniServiceCreate, MiniService, CalendarCreate, Calendar, Rules
+    MiniServiceCreate, MiniService, CalendarCreate, Calendar, Rules, \
+    Zone, Room, InformationFromIS, EventCreate
 
 
 # pylint: disable=redefined-outer-name
@@ -51,6 +52,15 @@ def service_calendar(async_session):
     """
     from services import CalendarService
     return CalendarService(db=async_session)
+
+
+@pytest.fixture()
+def service_event(async_session):
+    """
+    Return EventService.
+    """
+    from services import EventService
+    return EventService(db=async_session)
 
 
 @pytest.fixture()
@@ -147,6 +157,63 @@ def services_data_from_is(
 
 
 @pytest.fixture()
+def zone_data_from_is() -> Zone:
+    """
+    Return new Zone schema.
+    """
+    return Zone(
+        alias="game",
+        id=21,
+        name="test.name",
+        note="some.note"
+    )
+
+
+@pytest.fixture()
+def room_data_from_is(zone_data_from_is) -> Room:
+    """
+    Return new Room schema.
+    """
+    return Room(
+        door_number="215",
+        floor=2,
+        id=22,
+        name="best.room",
+        zone=zone_data_from_is,
+    )
+
+
+@pytest.fixture()
+def data_from_is(user_data_from_is,
+                 room_data_from_is,
+                 services_data_from_is) -> InformationFromIS:
+    """
+    Return new InformationFromIS schema.
+    """
+    return InformationFromIS(
+        user=user_data_from_is,
+        room=room_data_from_is,
+        services=services_data_from_is
+    )
+
+
+@pytest.fixture()
+def event_create_form() -> EventCreate:
+    """
+    Return creating Event schema.
+    """
+    return EventCreate(
+        start_datetime="2025-04-28T12:30",
+        end_datetime="2025-04-29T21:00",
+        purpose="Birthday party test",
+        guests=7,
+        reservation_type="Game Room",
+        email="user_mail_test@gmail.com",
+        additional_services=[],
+    )
+
+
+@pytest.fixture()
 def server_create_user(service_user,
                        user_data_from_is,
                        roles_data_from_is,
@@ -235,6 +302,21 @@ async def mini_service(service_mini_service,
     """
     return await service_mini_service.create_mini_service(
         mini_service_create, user
+    )
+
+
+@pytest.fixture
+def rules_schema() -> Rules:
+    """
+    Return rules schemas.
+    """
+    return Rules(
+        night_time=False,
+        reservation_without_permission=False,
+        max_reservation_hours=32,
+        in_advance_hours=36,
+        in_advance_minutes=0,
+        in_prior_days=14
     )
 
 

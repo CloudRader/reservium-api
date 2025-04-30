@@ -22,7 +22,7 @@ class AbstractEventService(ABC):
     """
 
     @abstractmethod
-    def post_event(self, event_input: EventCreate, is_info: InformationFromIS,
+    async def post_event(self, event_input: EventCreate, is_info: InformationFromIS,
                    user: User, calendar: Calendar) -> Any:
         """
         Post event in google calendar.
@@ -44,7 +44,7 @@ class EventService(AbstractEventService):
         AsyncSession, Depends(db_session.scoped_session_dependency)]):
         self.reservation_service_crud = CRUDReservationService(db)
 
-    def post_event(
+    async def post_event(
             self, event_input: EventCreate,
             is_info: InformationFromIS, user: User,
             calendar: Calendar
@@ -52,7 +52,7 @@ class EventService(AbstractEventService):
         if not calendar:
             return {"message": "Calendar with that type not exist!"}
 
-        message = self.__control_conditions_and_permissions(
+        message = await self.__control_conditions_and_permissions(
             user, is_info, event_input, calendar)
 
         if message != "Access":

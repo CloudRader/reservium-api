@@ -75,10 +75,6 @@ def dif_days_res(start_datetime, end_datetime, user_rules: Rules) -> bool:
     :return: Boolean indicating if the reservation duration is less than 24
     """
 
-    if start_datetime.year != end_datetime.year \
-            or start_datetime.month != end_datetime.month:
-        return False
-
     time_difference = abs(end_datetime - start_datetime)
     if time_difference > dt.timedelta(hours=user_rules.max_reservation_hours):
         return False

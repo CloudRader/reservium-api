@@ -51,8 +51,8 @@ async def create_event(
     room = Room.model_validate(await get_request(token, "/rooms/mine"))
     is_info = InformationFromIS(user=user_is, room=room, services=services)
 
-    calendar = calendar_service.get_by_reservation_type(event_create.reservation_type)
-    reservation_service = calendar_service.get_reservation_service_of_this_calendar(
+    calendar = await calendar_service.get_by_reservation_type(event_create.reservation_type)
+    reservation_service = await calendar_service.get_reservation_service_of_this_calendar(
         calendar.reservation_service_id
     )
     google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
@@ -63,7 +63,7 @@ async def create_event(
             content={"message": "There's already a reservation for that time."}
         )
 
-    event_body = service.post_event(event_create, is_info, user, calendar)
+    event_body = await service.post_event(event_create, is_info, user, calendar)
     if not event_body or (len(event_body) == 1 and 'message' in event_body):
         if event_body:
             return JSONResponse(
