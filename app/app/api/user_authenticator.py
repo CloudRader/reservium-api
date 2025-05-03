@@ -50,7 +50,7 @@ async def get_request(token: str, request: str):
 
         response.raise_for_status()
 
-        response_data = await response.json()
+        response_data = response.json()
 
     return response_data
 

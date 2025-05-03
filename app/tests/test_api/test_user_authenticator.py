@@ -1,9 +1,9 @@
 """
 Module for testing user authenticator api
 """
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, MagicMock
 import pytest
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from api import get_oauth_session, get_request, authenticate_user, \
     get_current_token, get_current_user
 
@@ -37,9 +37,10 @@ async def test_get_request_success(mock_get):
     """
     Test successful HTTPX get request returns parsed JSON.
     """
-    mock_response = AsyncMock()
-    mock_response.status_code = 200
-    mock_response.json = AsyncMock(return_value={"data": "ok"})
+    mock_response = MagicMock()
+    mock_response.status_code = status.HTTP_200_OK
+    mock_response.json.return_value = {"data": "ok"}
+    mock_response.raise_for_status.return_value = None
     mock_get.return_value = mock_response
 
     result = await get_request("dummy_token", "/test-endpoint")

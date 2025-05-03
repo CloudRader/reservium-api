@@ -12,7 +12,8 @@ from schemas import EventCreate, Room, UserIS, InformationFromIS, \
 from services import EventService, CalendarService
 from api import get_request, fastapi_docs, \
     get_current_user, get_current_token, auth_google, control_collision, \
-    check_night_reservation, control_available_reservation_time, send_email
+    check_night_reservation, control_available_reservation_time, send_email, \
+    EntityNotFoundException, Entity
 
 router = APIRouter(
     prefix='/events',
@@ -25,6 +26,9 @@ router = APIRouter(
 # dynamically creates the events attribute, which is not easily
 # understood by static code analysis tools like pylint.
 @router.post("/create_event",
+            responses={
+                **EntityNotFoundException.RESPONSE,
+            },
              status_code=status.HTTP_201_CREATED,
              )
 async def create_event(
@@ -52,6 +56,8 @@ async def create_event(
     is_info = InformationFromIS(user=user_is, room=room, services=services)
 
     calendar = await calendar_service.get_by_reservation_type(event_create.reservation_type)
+    if not calendar:
+        raise EntityNotFoundException(Entity.CALENDAR, event_create.reservation_type)
     reservation_service = await calendar_service.get_reservation_service_of_this_calendar(
         calendar.reservation_service_id
     )

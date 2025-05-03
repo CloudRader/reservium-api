@@ -25,6 +25,7 @@ from models import *
 # pylint: enable=wildcard-import
 from db import Base
 from core import settings
+
 # pylint: enable=wrong-import-position
 
 # this is the Alembic Config object, which provides
@@ -46,6 +47,14 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 config.set_main_option('sqlalchemy.url', str(settings.POSTGRES_DATABASE_URI))
+
+
+def render_item(type_, obj, autogen_context):  # pylint: disable=unused-argument
+    """Custom render function to support user-defined types like RulesType."""
+    if isinstance(obj, RulesType):
+        autogen_context.imports.add("from models import RulesType")
+        return "RulesType(length=sa.TEXT())"
+    return False
 
 
 def run_migrations_offline() -> None:
@@ -74,7 +83,11 @@ def run_migrations_offline() -> None:
 
 def do_run_migrations(connection: Connection) -> None:
     """Run migrations in 'online' mode."""
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        render_item=render_item,
+    )
 
     with context.begin_transaction():
         context.run_migrations()

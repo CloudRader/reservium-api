@@ -4,9 +4,9 @@ and users itself.
 """
 from typing import Annotated, Any, List
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, Request
-from fastapi.responses import JSONResponse # , RedirectResponse
+from fastapi.responses import JSONResponse #, RedirectResponse
 from services import UserService
-from api import authenticate_user, utils, get_oauth_session, get_current_user, \
+from api import authenticate_user, fastapi_docs, get_oauth_session, get_current_user, \
     modify_url_scheme
 from schemas import User
 from core import settings
@@ -15,7 +15,7 @@ app = FastAPI()
 
 router = APIRouter(
     prefix='/users',
-    tags=[utils.fastapi_docs.AUTHORISATION_TAG["name"]]
+    tags=[fastapi_docs.AUTHORISATION_TAG["name"]]
 )
 
 

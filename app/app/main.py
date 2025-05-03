@@ -29,7 +29,7 @@ async def startup_event(fast_api_app: FastAPI):
 # pylint: enable=unused-argument
 
 
-app = FastAPI(
+app: FastAPI = FastAPI(
     title=fastapi_docs.NAME,
     description=fastapi_docs.DESCRIPTION,
     version=fastapi_docs.VERSION,
@@ -64,6 +64,6 @@ if __name__ == "__main__":
                 port=settings.APP_SERVER_PORT,
                 reload=settings.APP_SERVER_USE_RELOAD,
                 proxy_headers=settings.APP_SERVER_USE_PROXY_HEADERS,
-                # ssl_keyfile="certification/key.pem", # for local testing
+                # ssl_keyfile="certification/key.pem",  # for local testing
                 # ssl_certfile="certification/cert.pem"
                 )
