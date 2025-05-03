@@ -50,7 +50,7 @@ async def get_request(token: str, request: str):
 
         response.raise_for_status()
 
-        response_data = response.json()
+        response_data = await response.json()
 
     return response_data
 
@@ -85,10 +85,11 @@ async def get_current_token(request: Request) -> Any:
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    token = request.session['oauth_token']['access_token']
-    if not token:
-        raise credentials_exception
-    return token
+    try:
+        token = request.session["oauth_token"]["access_token"]
+        return token
+    except (KeyError, TypeError) as exc:
+        raise credentials_exception from exc
 
 
 async def get_current_user(

@@ -14,6 +14,10 @@ from schemas import UserIS, LimitObject, Role, Service, ServiceValidity, \
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
 
+# pylint: disable=duplicate-code
+# reason: needed for testing; similar conftests are intentionally
+# separated by the model they belong to
+
 # pylint: disable=import-outside-toplevel
 # reason: circular import issue
 

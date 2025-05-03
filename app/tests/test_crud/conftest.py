@@ -11,6 +11,10 @@ from schemas import UserCreate, ReservationServiceCreate, \
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
 
+# pylint: disable=duplicate-code
+# reason: needed for testing; similar conftests are intentionally
+# separated by the model they belong to
+
 
 @pytest.fixture
 def user_crud(async_session):
