@@ -4,6 +4,7 @@ API controllers for events.
 from typing import Any, Annotated, List
 
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from fastapi import APIRouter, Depends, status, Path
 from fastapi.responses import JSONResponse
 from models import ReservationServiceModel, CalendarModel, EventState
@@ -13,7 +14,8 @@ from services import EventService, CalendarService
 from api import get_request, fastapi_docs, \
     get_current_user, get_current_token, auth_google, control_collision, \
     check_night_reservation, control_available_reservation_time, send_email, \
-    EntityNotFoundException, Entity
+    EntityNotFoundException, Entity, PermissionDeniedException, UnauthorizedException, \
+    BaseAppException
 
 router = APIRouter(
     prefix='/events',
@@ -143,6 +145,45 @@ async def get_events_by_user_id(
     if not events:
         raise EntityNotFoundException(Entity.EVENT, user_id)
     return events
+
+
+@router.delete("/{event_id}",
+               response_model=Event,
+               responses={
+                   **EntityNotFoundException.RESPONSE,
+                   **PermissionDeniedException.RESPONSE,
+                   **UnauthorizedException.RESPONSE,
+               },
+               status_code=status.HTTP_200_OK)
+async def cancel_reservation(
+        service: Annotated[EventService, Depends(EventService)],
+        user: Annotated[User, Depends(get_current_user)],
+        event_id: Annotated[str, Path()]
+) -> Any:
+    """
+    Delete event with id equal to event_id, only user who make
+    this reservation can cancel this reservation.
+
+    :param service: Event service.
+    :param user: User who make this reservation.
+    :param event_id: id of the event.
+
+    :returns EventModel: the canceled reservation.
+    """
+    google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
+    event = await service.cancel_event(event_id, user)
+    if not event:
+        raise EntityNotFoundException(Entity.EVENT, event_id)
+    try:
+        google_calendar_service.events().delete(
+            calendarId=event.calendar_id,
+            eventId=event.id
+        ).execute()
+        return event
+
+    except HttpError as exc:
+        raise BaseAppException("This event does not exist in Google Calendar.",
+                               status_code=404) from exc
 
 
 def preparing_email(

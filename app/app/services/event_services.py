@@ -1,18 +1,22 @@
 """
 This module defines an abstract base class AbstractEventService that work with Event.
 """
+import datetime as dt
 from typing import Any, Annotated
 from abc import ABC, abstractmethod
+
+from models.reservation_service import ReservationService
+from models import CalendarModel, EventModel, EventState
 from services.utils import ready_event, first_standard_check, \
     dif_days_res, reservation_in_advance
 from services import CrudServiceBase
 from fastapi import Depends
 
+from api import BaseAppException, PermissionDeniedException
 from schemas import EventCreate, User, InformationFromIS, Calendar, \
-    EventCreateToDb, EventUpdate
-from models import CalendarModel, EventModel, EventState
+    EventCreateToDb, EventUpdate, Event
 from db import db_session
-from crud import CRUDReservationService, CRUDEvent
+from crud import CRUDReservationService, CRUDEvent, CRUDCalendar
 from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -73,6 +77,20 @@ class AbstractEventService(CrudServiceBase[
         to user id or None if no such events exists.
         """
 
+    @abstractmethod
+    async def cancel_event(
+            self, uuid: str,
+            user: User
+    ) -> EventModel | None:
+        """
+        Cancel an Event in the database.
+
+        :param uuid: The uuid of the Event.
+        :param user: the UserSchema for control permissions of the event.
+
+        :return: the canceled Event.
+        """
+
 
 class EventService(AbstractEventService):
     """
@@ -83,6 +101,7 @@ class EventService(AbstractEventService):
         AsyncSession, Depends(db_session.scoped_session_dependency)]):
         super().__init__(CRUDEvent(db))
         self.reservation_service_crud = CRUDReservationService(db)
+        self.calendar_crud = CRUDCalendar(db)
 
     async def post_event(
             self, event_input: EventCreate,
@@ -123,6 +142,37 @@ class EventService(AbstractEventService):
             self, user_id: int,
     ) -> list[Row[EventModel]] | None:
         return await self.crud.get_by_user_id(user_id)
+
+    async def cancel_event(
+            self, uuid: str,
+            user: User
+    ) -> EventModel | None:
+        event: Event = await self.get(uuid)
+        if not event:
+            return None
+
+        if event.start_datetime < dt.datetime.now():
+            raise BaseAppException("You cannot cancel the reservation after it has started.")
+
+        calendar: Calendar = await self.calendar_crud.get(event.calendar_id)
+        if not calendar:
+            return None
+
+        reservation_service: ReservationService = await (self.reservation_service_crud.
+                                                         get(calendar.reservation_service_id))
+        if not reservation_service:
+            return None
+
+        if event.user_id != user.id:
+            if reservation_service.alias not in user.roles:
+                raise PermissionDeniedException("You do not have permission to cancel a "
+                                                "reservation made by another user.")
+
+        updated_event = EventUpdate(
+            event_state=EventState.CANCELED
+        )
+
+        return await self.update(uuid, updated_event)
 
     async def __control_conditions_and_permissions(
             self, user: User,
