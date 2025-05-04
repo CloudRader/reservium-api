@@ -38,7 +38,7 @@ class AbstractCRUDUser(CRUDBase[
 class CRUDUser(AbstractCRUDUser):
     """
     Concrete class for CRUD operations specific to the User model.
-    It extends the abstract AbstractCRUDDocument class and implements the required methods
+    It extends the abstract AbstractCRUDUser class and implements the required methods
     for querying and manipulating User instances.
     """
 

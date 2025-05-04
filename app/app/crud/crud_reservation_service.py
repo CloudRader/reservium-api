@@ -19,9 +19,9 @@ class AbstractCRUDReservationService(CRUDBase[
                                          ReservationServiceUpdate
                                      ], ABC):
     """
-    Abstract class for CRUD operations specific to the Calendar model.
+    Abstract class for CRUD operations specific to the ReservationService model.
     It extends the generic CRUDBase class and defines additional abstract methods
-    for querying and manipulating Calendar instances.
+    for querying and manipulating ReservationService instances.
     """
 
     @abstractmethod
@@ -51,7 +51,7 @@ class AbstractCRUDReservationService(CRUDBase[
     @abstractmethod
     async def get_all_aliases(self) -> list[str]:
         """
-        Retrieves all aliases from all  Reservation Services.
+        Retrieves all aliases from all Reservation Services.
 
         :return: list of aliases.
         """
@@ -71,9 +71,9 @@ class AbstractCRUDReservationService(CRUDBase[
 
 class CRUDReservationService(AbstractCRUDReservationService):
     """
-    Concrete class for CRUD operations specific to the Calendar model.
-    It extends the abstract AbstractCRUDCalendar class and implements the required methods
-    for querying and manipulating Calendar instances.
+    Concrete class for CRUD operations specific to the ReservationService model.
+    It extends the abstract AbstractCRUDReservationService class and implements
+    the required methods for querying and manipulating ReservationService instances.
     """
 
     def __init__(self, db: AsyncSession):

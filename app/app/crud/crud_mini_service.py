@@ -20,9 +20,9 @@ class AbstractCRUDMiniService(CRUDBase[
                                   MiniServiceUpdate
                               ], ABC):
     """
-    Abstract class for CRUD operations specific to the Calendar model.
+    Abstract class for CRUD operations specific to the MiniService model.
     It extends the generic CRUDBase class and defines additional abstract methods
-    for querying and manipulating Calendar instances.
+    for querying and manipulating MiniService instances.
     """
 
     @abstractmethod
@@ -53,9 +53,9 @@ class AbstractCRUDMiniService(CRUDBase[
 
 class CRUDMiniService(AbstractCRUDMiniService):
     """
-    Concrete class for CRUD operations specific to the Calendar model.
-    It extends the abstract AbstractCRUDCalendar class and implements the required methods
-    for querying and manipulating Calendar instances.
+    Concrete class for CRUD operations specific to the MiniService model.
+    It extends the abstract AbstractCRUDMiniService class and implements
+    the required methods for querying and manipulating MiniService instances.
     """
 
     def __init__(self, db: AsyncSession):

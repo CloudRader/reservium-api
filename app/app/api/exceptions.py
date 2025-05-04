@@ -81,7 +81,7 @@ class EntityNotFoundException(BaseAppException):
     DESCRIPTION = "Entity not found."
     RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
 
-    def __init__(self, entity: Entity, entity_id: UUID | str):
+    def __init__(self, entity: Entity, entity_id: UUID | str | int):
         message = f"Entity {entity.value} with id {entity_id} was not found."
         super().__init__(message=message, entity=entity.value, entity_id=entity_id)
 

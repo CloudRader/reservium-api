@@ -1,14 +1,14 @@
 """
 API controllers for events.
 """
-from typing import Any, Annotated
+from typing import Any, Annotated, List
 
 from googleapiclient.discovery import build
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Path
 from fastapi.responses import JSONResponse
-from models import ReservationServiceModel, CalendarModel
+from models import ReservationServiceModel, CalendarModel, EventState
 from schemas import EventCreate, Room, UserIS, InformationFromIS, \
-    ServiceList, User, EmailCreate
+    ServiceList, User, EmailCreate, Event
 from services import EventService, CalendarService
 from api import get_request, fastapi_docs, \
     get_current_user, get_current_token, auth_google, control_collision, \
@@ -26,9 +26,9 @@ router = APIRouter(
 # dynamically creates the events attribute, which is not easily
 # understood by static code analysis tools like pylint.
 @router.post("/create_event",
-            responses={
-                **EntityNotFoundException.RESPONSE,
-            },
+             responses={
+                 **EntityNotFoundException.RESPONSE,
+             },
              status_code=status.HTTP_201_CREATED,
              )
 async def create_event(
@@ -84,13 +84,17 @@ async def create_event(
     email_create = preparing_email(
         event_create, event_body, reservation_service, calendar
     )
+    event_create.reservation_type = calendar.id
 
     if event_create.guests > calendar.max_people:
         event_body["summary"] = f"Not approved - more than {calendar.max_people} people"
         email_create.subject = event_body["summary"]
         await send_email(email_create)
-        google_calendar_service.events().insert(calendarId=calendar.id,
-                                                body=event_body).execute()
+        event = google_calendar_service.events().insert(calendarId=calendar.id,
+                                                        body=event_body).execute()
+        await service.create_event(event_create, user,
+                                   EventState.NOT_APPROVED,
+                                   event['id'])
         return {"message": f"more than {calendar.max_people} people"}
 
     # Check night reservation
@@ -100,13 +104,45 @@ async def create_event(
             event_body["summary"] = "Not approved - night time"
             email_create.subject = event_body["summary"]
             await send_email(email_create)
-            google_calendar_service.events().insert(calendarId=calendar.id,
-                                                    body=event_body).execute()
+            event = google_calendar_service.events().insert(calendarId=calendar.id,
+                                                            body=event_body).execute()
+            await service.create_event(event_create, user,
+                                       EventState.NOT_APPROVED,
+                                       event['id'])
             return {"message": "Night time"}
 
     await send_email(email_create)
-    return google_calendar_service.events().insert(calendarId=calendar.id,
-                                                   body=event_body).execute()
+    event = google_calendar_service.events().insert(calendarId=calendar.id,
+                                                    body=event_body).execute()
+    await service.create_event(event_create, user,
+                               EventState.CONFIRMED,
+                               event['id'])
+    return event
+
+
+@router.get("/user/{user_id}",
+            response_model=List[Event],
+            responses={
+                **EntityNotFoundException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def get_events_by_user_id(
+        service: Annotated[EventService, Depends(EventService)],
+        user_id: Annotated[int, Path()],
+) -> Any:
+    """
+    Get events by its user id.
+
+    :param service: Event service.
+    :param user_id: user id of the events.
+
+    :return: Events with user id equal
+    to user id or None if no such events exists.
+    """
+    events = await service.get_by_user_id(user_id)
+    if not events:
+        raise EntityNotFoundException(Entity.EVENT, user_id)
+    return events
 
 
 def preparing_email(

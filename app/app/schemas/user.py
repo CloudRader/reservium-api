@@ -3,7 +3,8 @@ DTO schemes for User entity.
 """
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from schemas.event import Event
 
 
 class UserBase(BaseModel):
@@ -33,6 +34,8 @@ class UserInDBBase(UserBase):
     username: str
     active_member: bool
     section_head: bool
+
+    events: list[Event] = Field(default_factory=list)
 
     # pylint: disable=too-few-public-methods
     # reason: Config class only needs to set orm_mode to True.

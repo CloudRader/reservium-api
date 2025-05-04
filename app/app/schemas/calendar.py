@@ -49,7 +49,7 @@ class CalendarUpdate(CalendarBase):
 
 
 class CalendarInDBBase(CalendarBase):
-    """Base model for user in database."""
+    """Base model for calendar in database."""
     id: str
     deleted_at: Optional[datetime] = None
     reservation_type: str
@@ -63,7 +63,7 @@ class CalendarInDBBase(CalendarBase):
     # pylint: disable=too-few-public-methods
     # reason: Config class only needs to set orm_mode to True.
     class Config:
-        """Config class for database user model."""
+        """Config class for database calendar model."""
         from_attributes = True
 
 
