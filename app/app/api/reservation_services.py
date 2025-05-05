@@ -140,9 +140,12 @@ async def get_reservation_services(
     :return: List of all reservation services or None if there are no reservation services in db.
     """
     if user.active_member:
-        reservation_service = await service.get_all(include_removed)
+        if include_removed:
+            reservation_service = await service.get_all_services_include_all_removed()
+        else:
+            reservation_service = await service.get_all(include_removed)
     else:
-        reservation_service = service.get_public_services(include_removed)
+        reservation_service = await service.get_public_services()
     if reservation_service is None:
         raise BaseAppException()
     return reservation_service

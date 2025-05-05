@@ -18,31 +18,31 @@ router = APIRouter(
 )
 
 
-@router.get("/test_get_event/{calendar_id}",
-
-)
-async def test_get_event(
-    calendar_id: Annotated[str, Path()],
-) -> Any:
-    google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
-    try:
-        response = google_calendar_service.events().list(
-            calendarId=calendar_id,
-            singleEvents=True,  # Ensures recurring events are expanded
-            orderBy="startTime",  # Optional: order by start time
-            maxResults=2500  # Optional: fetch up to 2500 events (max per API limits)
-        ).execute()
-        events = response.get("items", [])
-        event = google_calendar_service.events().get(
-            calendarId=calendar_id,
-            eventId="cofhcj5lsu08o9geqa10imo7vc"
-        ).execute()
-        print(event)
-        return events
-
-    except HttpError as exc:
-        raise BaseAppException("This calendar not exist in Google calendar.",
-                               status_code=404) from exc
+# @router.get("/test_get_event/{calendar_id}",
+#
+# )
+# async def test_get_event(
+#     calendar_id: Annotated[str, Path()],
+# ) -> Any:
+#     google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
+#     try:
+#         response = google_calendar_service.events().list(
+#             calendarId=calendar_id,
+#             singleEvents=True,  # Ensures recurring events are expanded
+#             orderBy="startTime",  # Optional: order by start time
+#             maxResults=2500  # Optional: fetch up to 2500 events (max per API limits)
+#         ).execute()
+#         events = response.get("items", [])
+#         event = google_calendar_service.events().get(
+#             calendarId=calendar_id,
+#             eventId="cofhcj5lsu08o9geqa10imo7vc"
+#         ).execute()
+#         print(event)
+#         return events
+#
+#     except HttpError as exc:
+#         raise BaseAppException("This calendar not exist in Google calendar.",
+#                                status_code=404) from exc
 
 
 # pylint: disable=no-member

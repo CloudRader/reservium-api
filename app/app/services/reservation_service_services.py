@@ -8,7 +8,7 @@ from uuid import UUID
 
 from db import db_session
 from fastapi import Depends
-from crud import CRUDReservationService
+from crud import CRUDReservationService, CRUDCalendar, CRUDMiniService
 from api import BaseAppException, PermissionDeniedException
 from services import CrudServiceBase
 from models import ReservationServiceModel
@@ -118,6 +118,18 @@ class AbstractReservationServiceService(CrudServiceBase[
         :return: The public Reservation Service instance if found, None otherwise.
         """
 
+    @abstractmethod
+    async def get_all_services_include_all_removed(
+            self,
+    ) -> list[ReservationServiceModel]:
+        """
+        Retrieves Reservation Services instance include soft removed
+        (soft deleted calendars and mini services too).
+
+        :return: The Reservation Services instance include
+        soft removed if found, None otherwise.
+        """
+
 
 class ReservationServiceService(AbstractReservationServiceService):
     """
@@ -127,6 +139,8 @@ class ReservationServiceService(AbstractReservationServiceService):
     def __init__(self, db: Annotated[
         AsyncSession, Depends(db_session.scoped_session_dependency)]):
         super().__init__(CRUDReservationService(db))
+        self.calendar_crud = CRUDCalendar(db)
+        self.mini_service_crud = CRUDMiniService(db)
 
     async def create_reservation_service(self, reservation_service_create: ReservationServiceCreate,
                                          user: User) -> ReservationServiceModel | None:
@@ -185,3 +199,22 @@ class ReservationServiceService(AbstractReservationServiceService):
         if len(services) == 0:
             return []
         return services
+
+    async def get_all_services_include_all_removed(
+            self,
+    ) -> list[ReservationServiceModel]:
+        reservation_services: list[ReservationServiceModel] = await self.crud.get_all(True)
+
+        for reservation_service in reservation_services:
+            calendars = await self.calendar_crud.get_by_reservation_service_id(
+                reservation_service.id, include_removed=True
+            )
+
+            mini_services = await self.mini_service_crud.get_by_reservation_service_id(
+                reservation_service.id, include_removed=True
+            )
+
+            reservation_service.calendars = calendars
+            reservation_service.mini_services = mini_services
+
+        return reservation_services
