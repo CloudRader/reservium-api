@@ -2,6 +2,7 @@
 API controllers for events.
 """
 from typing import Any, Annotated, List
+from uuid import UUID
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -142,8 +143,36 @@ async def get_events_by_user_id(
     to user id or None if no such events exists.
     """
     events = await service.get_by_user_id(user_id)
-    if not events:
-        raise EntityNotFoundException(Entity.EVENT, user_id)
+    if events is None:
+        raise BaseAppException()
+    return events
+
+
+@router.get("/state/reservation_service/{reservation_service_id}",
+            response_model=List[Event],
+            responses={
+                **EntityNotFoundException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def get_by_event_state_by_reservation_service_id(
+        service: Annotated[EventService, Depends(EventService)],
+        reservation_service_id: Annotated[UUID, Path()],
+        event_state: EventState,
+) -> Any:
+    """
+    Get events by its reservation service id.
+
+    :param service: Event service.
+    :param reservation_service_id: reservation service id of the events.
+    :param event_state: event state of the event.
+
+    :return: Events with reservation service id equal
+    to reservation service id or None if no such events exists.
+    """
+    events = await service.get_by_event_state_by_reservation_service_id(
+        reservation_service_id, event_state)
+    if events is None:
+        raise BaseAppException()
     return events
 
 
@@ -179,6 +208,57 @@ async def cancel_reservation(
             calendarId=event.calendar_id,
             eventId=event.id
         ).execute()
+        return event
+
+    except HttpError as exc:
+        raise BaseAppException("This event does not exist in Google Calendar.",
+                               status_code=404) from exc
+
+
+@router.put("/approve_event/{event_id}",
+            response_model=Event,
+            responses={
+                **EntityNotFoundException.RESPONSE,
+                **PermissionDeniedException.RESPONSE,
+                **UnauthorizedException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def approve_reservation(
+        service: Annotated[EventService, Depends(EventService)],
+        calendar_service: Annotated[CalendarService, Depends(CalendarService)],
+        user: Annotated[User, Depends(get_current_user)],
+        event_id: Annotated[str, Path()]
+) -> Any:
+    """
+    Approve reservation with uuid equal to event_id,
+    only users with special roles can approve reservation.
+
+    :param service: Event service.
+    :param calendar_service: Calendar service.
+    :param user: User who make this approve.
+    :param event_id: uuid of the event.
+
+    :returns EventModel: the updated reservation.
+    """
+    google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
+    event = await service.confirm_event(event_id, user)
+    if not event:
+        raise EntityNotFoundException(Entity.EVENT, event_id)
+    try:
+        calendar = await calendar_service.get(event.calendar_id)
+        event_to_update = google_calendar_service.events().get(
+            calendarId=event.calendar_id,
+            eventId=event.id
+        ).execute()
+
+        event_to_update['summary'] = calendar.reservation_type
+
+        google_calendar_service.events().update(
+            calendarId=event.calendar_id,
+            eventId=event.id,
+            body=event_to_update
+        ).execute()
+
         return event
 
     except HttpError as exc:

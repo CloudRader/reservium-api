@@ -271,6 +271,6 @@ async def get_mini_services_by_reservation_service_id(
     """
     mini_services = await service.get_by_reservation_service_id(reservation_service_id,
                                                                 include_removed)
-    if not mini_services:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, reservation_service_id)
+    if mini_services is None:
+        raise BaseAppException()
     return mini_services

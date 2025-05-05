@@ -358,6 +358,6 @@ async def get_calendars_by_reservation_service_id(
     """
     calendars = await service.get_by_reservation_service_id(reservation_service_id,
                                                             include_removed)
-    if not calendars:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, reservation_service_id)
+    if calendars is None:
+        raise BaseAppException()
     return calendars
