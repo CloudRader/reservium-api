@@ -9,7 +9,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
-from models import EventModel, EventState, CalendarModel, ReservationServiceModel
+from models import EventModel, EventState, CalendarModel
 from schemas import EventCreateToDb, EventUpdate
 from crud import CRUDBase
 

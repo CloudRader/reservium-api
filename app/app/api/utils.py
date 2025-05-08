@@ -2,6 +2,7 @@
 Utils for API.
 """
 import datetime as dt
+from datetime import timezone
 from urllib.parse import urlparse, urlunparse
 import pytz
 from schemas import User, Calendar, EventCreate
@@ -74,8 +75,10 @@ def get_events(service, start_time, end_time, calendar_id):
     :return: List of the events for that time
     """
 
-    start_time_str = start_time.isoformat() + "+02:00"
-    end_time_str = end_time.isoformat() + "+02:00"
+    start_time_str = start_time.astimezone(
+        timezone.utc).isoformat()
+    end_time_str = end_time.astimezone(
+        timezone.utc).isoformat()
 
     # Call the Calendar API
     events_result = service.events().list(

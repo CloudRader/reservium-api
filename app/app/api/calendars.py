@@ -35,7 +35,7 @@ router = APIRouter(
 #         events = response.get("items", [])
 #         event = google_calendar_service.events().get(
 #             calendarId=calendar_id,
-#             eventId="cofhcj5lsu08o9geqa10imo7vc"
+#             eventId="95504vtho7223hbga3hg594vu0"
 #         ).execute()
 #         print(event)
 #         return events

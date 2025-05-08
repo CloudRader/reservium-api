@@ -3,14 +3,16 @@ API controllers for events.
 """
 from typing import Any, Annotated, List
 from uuid import UUID
+from datetime import timezone
+from dateutil.parser import isoparse
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from fastapi import APIRouter, Depends, status, Path
+from fastapi import APIRouter, Depends, status, Path, Body, Query
 from fastapi.responses import JSONResponse
 from models import ReservationServiceModel, CalendarModel, EventState
 from schemas import EventCreate, Room, UserIS, InformationFromIS, \
-    ServiceList, User, EmailCreate, Event
+    ServiceList, User, EmailCreate, Event, EventUpdate, EventUpdateTime
 from services import EventService, CalendarService
 from api import get_request, fastapi_docs, \
     get_current_user, get_current_token, auth_google, control_collision, \
@@ -174,6 +176,109 @@ async def get_by_event_state_by_reservation_service_id(
     if events is None:
         raise BaseAppException()
     return events
+
+
+@router.put("/approve_update_reservation_time/{event_id}",
+            response_model=Event,
+            responses={
+                **EntityNotFoundException.RESPONSE,
+                **PermissionDeniedException.RESPONSE,
+                **UnauthorizedException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def approve_update_reservation_time(
+        service: Annotated[EventService, Depends(EventService)],
+        user: Annotated[User, Depends(get_current_user)],
+        event_id: Annotated[str, Path()],
+        approve: bool = Query(False),
+) -> Any:
+    """
+    Approve updating reservation time,
+    only users with special roles can approve this update.
+
+    :param service: Event service.
+    :param user: User who make this request.
+    :param event_id: uuid of the event.
+    :param approve: Approve this update or not.
+
+    :returns EventModel: the updated event.
+    """
+    google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
+    event: Event = await service.get(event_id)
+    if not event:
+        raise EntityNotFoundException(Entity.EVENT, event_id)
+    try:
+        event_update: EventUpdate = EventUpdate(event_state=EventState.CONFIRMED)
+        event_from_google_calendar = google_calendar_service.events().get(
+            calendarId=event.calendar_id,
+            eventId=event.id
+        ).execute()
+        if not approve:
+            event_update.start_datetime = (isoparse(event_from_google_calendar["start"]["dateTime"])
+                                           .replace(tzinfo=None))
+            event_update.end_datetime = (isoparse(event_from_google_calendar["end"]["dateTime"])
+                                         .replace(tzinfo=None))
+            event_to_update = await service.approve_update_reservation_time(
+                event_id, event_update, user
+            )
+            if not event_to_update:
+                raise EntityNotFoundException(Entity.EVENT, event_id)
+        else:
+            event_to_update = await service.approve_update_reservation_time(
+                event_id, event_update, user
+            )
+            if not event_to_update:
+                raise EntityNotFoundException(Entity.EVENT, event_id)
+            event_from_google_calendar["start"]["dateTime"] = (
+                event_to_update.start_datetime.astimezone(timezone.utc).isoformat())
+            event_from_google_calendar["end"]["dateTime"] = (
+                event_to_update.end_datetime.astimezone(timezone.utc).isoformat())
+
+            google_calendar_service.events().update(
+                calendarId=event.calendar_id,
+                eventId=event.id,
+                body=event_from_google_calendar
+            ).execute()
+
+
+        return event_to_update
+
+    except HttpError as exc:
+        raise BaseAppException("Something went wrong, control updating data.",
+                               ) from exc
+
+
+@router.put("/request_update_reservation_time/{event_id}",
+            response_model=Event,
+            responses={
+                **EntityNotFoundException.RESPONSE,
+                **PermissionDeniedException.RESPONSE,
+                **UnauthorizedException.RESPONSE,
+            },
+            status_code=status.HTTP_200_OK)
+async def request_update_reservation_time(
+        service: Annotated[EventService, Depends(EventService)],
+        user: Annotated[User, Depends(get_current_user)],
+        event_id: Annotated[str, Path()],
+        event_update: Annotated[EventUpdateTime, Body()],
+) -> Any:
+    """
+    Request Update reservation time with uuid equal to event_id,
+    only user that create this reservation can request it.
+
+    :param service: Event service.
+    :param user: User who make this request.
+    :param event_id: uuid of the event.
+    :param event_update: EventUpdate schema.
+
+    :returns EventModel: the updated event.
+    """
+    event: Event = await service.request_update_reservation_time(
+        event_id, event_update, user
+    )
+    if not event:
+        raise EntityNotFoundException(Entity.EVENT, event_id)
+    return event
 
 
 @router.delete("/{event_id}",

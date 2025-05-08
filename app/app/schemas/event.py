@@ -43,10 +43,17 @@ class EventUpdate(EventBase):
     guests: int | None = None
     start_datetime: datetime | None = None
     end_datetime: datetime | None = None
+    email: EmailStr | None = None
     event_state: EventState | None = None
 
     user_id: int | None = None
     calendar_id: str | None = None
+
+
+class EventUpdateTime(BaseModel):
+    """Properties to receive via API on update reservation time."""
+    start_datetime: datetime | None = None
+    end_datetime: datetime | None = None
 
 
 class EventInDBBase(EventBase):

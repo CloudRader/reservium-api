@@ -32,6 +32,7 @@ dependencies:
   - google-auth-oauthlib=1.2.0
   - pip:
     - sqlalchemy-easy-softdelete==0.8.3
+    - types-python-dateutil==2.9.0.20241206
   - alembic=1.13.2
   - starlette=0.36.3
   - itsdangerous=2.2.0
