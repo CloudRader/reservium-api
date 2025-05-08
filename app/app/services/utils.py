@@ -3,6 +3,7 @@ Utils for services.
 """
 import datetime as dt
 from datetime import timezone
+from pytz import timezone
 
 from models import CalendarModel, ReservationServiceModel
 from schemas import Rules, EventCreate, InformationFromIS
@@ -146,10 +147,10 @@ def ready_event(calendar: CalendarModel, event_input: EventCreate,
     :return: Dict body of the event.
     """
 
-    start_time = event_input.start_datetime.astimezone(
-        timezone.utc).isoformat()
-    end_time = event_input.end_datetime.astimezone(
-        timezone.utc).isoformat()
+    prague = timezone("Europe/Prague")
+
+    start_time = prague.localize(event_input.start_datetime).isoformat()
+    end_time = prague.localize(event_input.end_datetime).isoformat()
     return {
         "summary": calendar.reservation_type,
         "description": description_of_event(is_info.user, is_info.room, event_input),
