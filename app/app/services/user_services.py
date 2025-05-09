@@ -9,7 +9,8 @@ from db import db_session
 from crud import CRUDUser, CRUDReservationService
 from services import CrudServiceBase
 from models import UserModel
-from schemas import UserCreate, UserUpdate, User, UserIS, Role, ServiceValidity
+from schemas import UserCreate, UserUpdate, User, UserIS, Role, ServiceValidity, \
+    Room
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -28,7 +29,8 @@ class AbstractUserService(CrudServiceBase[
     async def create_user(
             self, user_data: UserIS,
             roles: list[Role],
-            services: list[ServiceValidity]
+            services: list[ServiceValidity],
+            room: Room
     ) -> UserModel:
         """
         Create a User in the database.
@@ -36,6 +38,7 @@ class AbstractUserService(CrudServiceBase[
         :param user_data: Received data from IS.
         :param roles: List of user roles in IS.
         :param services: List of user services in IS.
+        :param room: Room of user in IS.
 
         :return: the created User.
         """
@@ -64,7 +67,8 @@ class UserService(AbstractUserService):
     async def create_user(
             self, user_data: UserIS,
             roles: list[Role],
-            services: list[ServiceValidity]
+            services: list[ServiceValidity],
+            room: Room
     ) -> UserModel:
         user = await self.get_by_username(user_data.username)
 
@@ -88,6 +92,7 @@ class UserService(AbstractUserService):
 
         if user:
             user_update = UserUpdate(
+                room_number=room.door_number,
                 active_member=active_member,
                 section_head=section_head,
                 roles=user_roles,
@@ -97,6 +102,8 @@ class UserService(AbstractUserService):
         user_create = UserCreate(
             id=user_data.id,
             username=user_data.username,
+            full_name=f"{user_data.first_name} {user_data.surname}",
+            room_number=room.door_number,
             active_member=active_member,
             section_head=section_head,
             roles=user_roles,

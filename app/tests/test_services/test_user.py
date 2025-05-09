@@ -36,7 +36,8 @@ async def test_user_service_update_existing_user(server_create_user):
 @pytest.mark.asyncio
 async def test_user_service_create_user_section_head(service_user,
                                                      user_data_from_is,
-                                                     services_data_from_is):
+                                                     services_data_from_is,
+                                                     room_data_from_is):
     """
     Test auto-setting section_head when note='head' in UserIS.
     """
@@ -45,6 +46,7 @@ async def test_user_service_create_user_section_head(service_user,
         user_data=user_data_from_is,
         roles=[],
         services=services_data_from_is,
+        room=room_data_from_is,
     )
 
     assert new_user.section_head is True
@@ -59,6 +61,8 @@ async def test_user_service_get_by_username(service_user):
     user_data = UserCreate(
         id=2141,
         username="test_user",
+        full_name="=Gagir Bakalar",
+        room_number="54875",
         active_member=True,
         section_head=False,
         roles=[],

@@ -5,7 +5,8 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 
-from schemas import UserIS, UserCreate, ReservationServiceCreate
+from schemas import UserIS, UserCreate, ReservationServiceCreate, \
+    Zone, Room
 from crud import CRUDUser, CRUDReservationService
 from app.main import app
 
@@ -101,6 +102,33 @@ def user_data_from_is() -> UserIS:
         ui_skin="Dark",
         username="kanya_garin",
         usertype="individual",
+    )
+
+
+@pytest.fixture()
+def zone_data_from_is() -> Zone:
+    """
+    Return new Zone schema.
+    """
+    return Zone(
+        alias="game",
+        id=21,
+        name="test.name",
+        note="some.note"
+    )
+
+
+@pytest.fixture()
+def room_data_from_is(zone_data_from_is) -> Room:
+    """
+    Return new Room schema.
+    """
+    return Room(
+        door_number="215",
+        floor=2,
+        id=22,
+        name="best.room",
+        zone=zone_data_from_is,
     )
 
 

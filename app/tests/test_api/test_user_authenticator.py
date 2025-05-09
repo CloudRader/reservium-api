@@ -49,7 +49,8 @@ async def test_get_request_success(mock_get):
 
 @pytest.mark.asyncio
 @patch("api.user_authenticator.get_request")
-async def test_authenticate_user(mock_get_request, user_data_from_is):
+async def test_authenticate_user(mock_get_request, user_data_from_is,
+                                 room_data_from_is):
     """
     Test user authentication flow with mocked data from identity service.
     """
@@ -60,7 +61,8 @@ async def test_authenticate_user(mock_get_request, user_data_from_is):
     mock_get_request.side_effect = [
         user_data_from_is.model_dump(),  # /users/me
         [],  # /user_roles/mine
-        []  # /services/mine
+        [],  # /services/mine
+        room_data_from_is.model_dump() # /rooms/mine
     ]
 
     user = await authenticate_user(mock_user_service, token="dummy")

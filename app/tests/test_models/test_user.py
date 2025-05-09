@@ -61,6 +61,8 @@ async def test_list_users(async_session):
         UserModel(
             id=1,
             username="User1",
+            full_name="dfwa dfwanfw",
+            room_number="896",
             active_member=True,
             section_head=False,
             roles=["TeamA"],
@@ -68,6 +70,8 @@ async def test_list_users(async_session):
         UserModel(
             id=2,
             username="User2",
+            full_name="Kagar Lavi",
+            room_number="8978",
             active_member=False,
             section_head=True,
             roles=["TeamB"],

@@ -42,6 +42,8 @@ async def test_user(async_session):
     user = UserModel(
         id=2142,
         username="TestUser",
+        full_name="test testovi",
+        room_number="6343",
         active_member=False,
         section_head=False,
         roles=["Bar", "Consoles"],

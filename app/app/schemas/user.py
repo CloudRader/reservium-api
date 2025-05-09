@@ -16,6 +16,8 @@ class UserCreate(UserBase):
     """Properties to receive via API on creation."""
     id: int
     username: str
+    full_name: str
+    room_number: str
     active_member: bool
     section_head: bool
 
@@ -23,6 +25,8 @@ class UserCreate(UserBase):
 class UserUpdate(UserBase):
     """Properties to receive via API on update."""
     username: str | None = None
+    full_name: str | None = None
+    room_number: str | None = None
     active_member: bool | None = None
     section_head: bool | None = None
 
@@ -32,6 +36,8 @@ class UserInDBBase(UserBase):
     id: int
     deleted_at: Optional[datetime] = None
     username: str
+    full_name: str
+    room_number: str
     active_member: bool
     section_head: bool
 

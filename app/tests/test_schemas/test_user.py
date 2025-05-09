@@ -17,6 +17,8 @@ def test_user_create_schema_valid():
     schema = UserCreate(
         id=2142,
         username="TestUser",
+        full_name="Gars Lars",
+        room_number="212",
         active_member=True,
         section_head=False,
         roles=["Bar", "Consoles"]
@@ -36,6 +38,8 @@ def test_user_create_schema_invalid_roles_type():
         UserCreate(
             id=2142,
             username="TestUser",
+            full_name="Gars Lars",
+            room_number="212",
             active_member=True,
             section_head=False,
             roles="Admin"  # Should be a list, not string
@@ -60,6 +64,8 @@ def test_user_in_db_base_schema():
     user = UserInDBBase(
         id=42,
         username="TestUser",
+        full_name="Gars Lars",
+        room_number="212",
         active_member=False,
         section_head=True,
         deleted_at=None,
@@ -78,6 +84,8 @@ def test_user_schema_extends_base():
     user = User(
         id=1,
         username="TestUser",
+        full_name="Gars Lars",
+        room_number="212",
         active_member=True,
         section_head=False,
         deleted_at=now,
@@ -95,6 +103,8 @@ def test_user_create_required_fields(field):
     data = {
         "id": 1,
         "username": "Test",
+        "full_name": "Gars Lars",
+        "room_number": "212",
         "active_member": True,
         "section_head": False,
         "roles": ["Tech"]

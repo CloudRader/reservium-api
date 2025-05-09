@@ -21,6 +21,8 @@ class User(Base, SoftDeleteMixin):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(unique=True, nullable=False)
+    full_name: Mapped[str] = mapped_column(nullable=False)
+    room_number: Mapped[str] = mapped_column(nullable=False)
     active_member: Mapped[bool] = mapped_column(unique=False, nullable=False, default=False)
     section_head: Mapped[bool] = mapped_column(unique=False, nullable=False, default=False)
     roles: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), unique=False, nullable=True)

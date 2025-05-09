@@ -56,6 +56,8 @@ async def test_user(user_crud):
     user = await user_crud.create(UserCreate(
         id=2142,
         username="fixture_user",
+        full_name="Fixture Gabel",
+        room_number="20123",
         active_member=True,
         section_head=False,
         roles=["club", "grill"]
@@ -71,6 +73,8 @@ async def test_user2(user_crud):
     user = await user_crud.create(UserCreate(
         id=6545,
         username="test_user2",
+        full_name="Barin Gabel",
+        room_number="865",
         active_member=False,
         section_head=True,
         roles=["study", "games"]

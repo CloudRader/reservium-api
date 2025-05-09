@@ -221,14 +221,16 @@ def event_create_form() -> EventCreate:
 def server_create_user(service_user,
                        user_data_from_is,
                        roles_data_from_is,
-                       services_data_from_is):
+                       services_data_from_is,
+                       room_data_from_is):
     """
     Return server creating user.
     """
     return service_user.create_user(
         user_data_from_is,
         roles_data_from_is,
-        services_data_from_is
+        services_data_from_is,
+        room_data_from_is
     )
 
 
@@ -240,6 +242,8 @@ async def user(service_user) -> User:
     return await service_user.create(UserCreate(
         id=9897,
         username="gaga_bakalara",
+        full_name="=Gagir Bakalar",
+        room_number="54875",
         active_member=True,
         section_head=True,
         roles=["game", "stud", "club"],
@@ -254,6 +258,8 @@ async def user_not_head(service_user) -> User:
     return await service_user.create(UserCreate(
         id=5045,
         username="not_head_user",
+        full_name="=wuiyaf Yhwvf",
+        room_number="43643",
         active_member=False,
         section_head=False,
         roles=[],

@@ -6,7 +6,7 @@ from typing import Annotated, Any
 from fastapi import HTTPException, status, Depends, Request
 from requests_oauthlib import OAuth2Session
 from services import UserService
-from schemas import UserIS, RoleList, ServiceList
+from schemas import UserIS, RoleList, ServiceList, Room
 from core import settings
 
 import httpx
@@ -69,7 +69,8 @@ async def authenticate_user(user_service: Annotated[UserService, Depends(UserSer
     roles = RoleList(roles=await get_request(token, "/user_roles/mine")).roles
     services = ServiceList(services=await get_request(token,
                                                       "/services/mine")).services
-    return await user_service.create_user(user_data, roles, services)
+    room = Room.model_validate(await get_request(token, "/rooms/mine"))
+    return await user_service.create_user(user_data, roles, services, room)
 
 
 async def get_current_token(request: Request) -> Any:
