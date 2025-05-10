@@ -2,9 +2,8 @@
 Utils for API.
 """
 import datetime as dt
-from datetime import timezone
 from urllib.parse import urlparse, urlunparse
-import pytz
+from pytz import timezone
 from schemas import User, Calendar, EventCreate
 
 
@@ -74,11 +73,10 @@ def get_events(service, start_time, end_time, calendar_id):
 
     :return: List of the events for that time
     """
+    prague = timezone("Europe/Prague")
 
-    start_time_str = start_time.astimezone(
-        timezone.utc).isoformat()
-    end_time_str = end_time.astimezone(
-        timezone.utc).isoformat()
+    start_time_str = prague.localize(start_time).isoformat()
+    end_time_str = prague.localize(end_time).isoformat()
 
     # Call the Calendar API
     events_result = service.events().list(
@@ -124,8 +122,8 @@ def check_collision_time(check_collision, start_datetime,
     start_date_event = dt.datetime.fromisoformat(str(check_collision[0]['start']['dateTime']))
     end_date_event = dt.datetime.fromisoformat(str(check_collision[0]['end']['dateTime']))
 
-    if end_date_event == start_date.astimezone(pytz.timezone('Europe/Prague')) \
-            or start_date_event == end_date.astimezone(pytz.timezone('Europe/Prague')):
+    if end_date_event == start_date.astimezone(timezone('Europe/Prague')) \
+            or start_date_event == end_date.astimezone(timezone('Europe/Prague')):
         return True
 
     return False

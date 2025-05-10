@@ -8,7 +8,7 @@ from .utils import control_collision, check_night_reservation, \
     control_available_reservation_time, modify_url_scheme
 from .user_authenticator import get_oauth_session, get_request, \
     authenticate_user, get_current_user, get_current_token
-from .emails import send_email
+from .emails import send_email, preparing_email, create_email_meta
 from .google_auth import auth_google
 from .docs import fastapi_docs
 
@@ -27,10 +27,10 @@ __all_ = [
     "get_current_token"
 
     # Emails
-    "send_email"
+    "send_email", "preparing_email",
 
     # Google
-    "auth_google",
+    "auth_google", "create_email_meta",
 
     # Docs
     "fastapi_docs",

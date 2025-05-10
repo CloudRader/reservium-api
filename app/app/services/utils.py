@@ -2,15 +2,14 @@
 Utils for services.
 """
 import datetime as dt
-from datetime import timezone
 from pytz import timezone
 
 from models import CalendarModel, ReservationServiceModel
-from schemas import Rules, EventCreate, InformationFromIS
+from schemas import Rules, EventCreate, ServiceValidity, User
 
 
 def first_standard_check(
-        is_info: InformationFromIS,
+        services: list[ServiceValidity],
         reservation_service: ReservationServiceModel,
         start_time, end_time
 ):
@@ -18,7 +17,7 @@ def first_standard_check(
     Checking if the user is reserving the service user has
     and that user can't reserve before current date.
 
-    :param is_info: Information about user from IS.
+    :param services: User services from IS.
     :param reservation_service: Reservation Service object in db.
     :param start_time: Start time of the reservation.
     :param end_time: End time of the reservation.
@@ -27,7 +26,7 @@ def first_standard_check(
     is made rightly or message if not.
     """
     # Check of the membership
-    if not service_availability_check(is_info.services, reservation_service.alias):
+    if not service_availability_check(services, reservation_service.alias):
         return {"message": f"You don't have {reservation_service.alias} service!"}
 
     # Check error reservation
@@ -111,12 +110,11 @@ def control_res_in_advance_or_prior(start_time, user_rules: Rules,
     return True
 
 
-def description_of_event(user, room, event_input: EventCreate):
+def description_of_event(user: User, event_input: EventCreate):
     """
     Description of the event.
 
-    :param user: User object from IS.
-    :param room: Room object from IS.
+    :param user: User object in db.
     :param event_input: Input data for creating the event.
 
     :return: String of the description.
@@ -126,8 +124,8 @@ def description_of_event(user, room, event_input: EventCreate):
     if event_input.additional_services:
         formatted_services = ", ".join(event_input.additional_services)
     return (
-        f"Name: {user.first_name} {user.surname}\n"
-        f"Room: {room.door_number}\n"
+        f"Name: {user.full_name}\n"
+        f"Room: {user.room_number}\n"
         f"Participants: {event_input.guests}\n"
         f"Purpose: {event_input.purpose}\n"
         f"\n"
@@ -135,14 +133,17 @@ def description_of_event(user, room, event_input: EventCreate):
     )
 
 
-def ready_event(calendar: CalendarModel, event_input: EventCreate,
-                is_info: InformationFromIS):
+def ready_event(
+        calendar: CalendarModel,
+        event_input: EventCreate,
+        user: User
+):
     """
     Constructing the body of the event .
 
     :param calendar: Calendar object in db.
     :param event_input: Input data for creating the event.
-    :param is_info: Information about user from IS.
+    :param user: User object in db.
 
     :return: Dict body of the event.
     """
@@ -153,7 +154,7 @@ def ready_event(calendar: CalendarModel, event_input: EventCreate,
     end_time = prague.localize(event_input.end_datetime).isoformat()
     return {
         "summary": calendar.reservation_type,
-        "description": description_of_event(is_info.user, is_info.room, event_input),
+        "description": description_of_event(user, event_input),
         "start": {
             "dateTime": start_time,
             "timeZone": "Europe/Prague"
@@ -168,7 +169,8 @@ def ready_event(calendar: CalendarModel, event_input: EventCreate,
     }
 
 
-def service_availability_check(services, service_alias) -> bool:
+def service_availability_check(services: list[ServiceValidity],
+                               service_alias) -> bool:
     """
     Checking if the user is reserving the service user has.
 

@@ -1,0 +1,43 @@
+✅ Your Reservation Has Been Approved!
+
+🎉 Great news — your reservation has been reviewed and approved by the manager. Below are the details:
+
+🔔 Please Note the Following Guidelines:
+	•	If your reservation is scheduled during night hours. No noise after 22:00.
+	•	Do not use the courtyard or outside areas during quiet hours.
+	•	After your reservation, clean up and return all furniture to its original place.
+	•	Failure to follow these rules may lead to a temporary suspension from booking this space.
+
+📝 Manager Notes:
+{{ reason }}
+
+
+🔖 Here’s everything you need to know about your reservation:
+
+📌 Reservation Service:
+{{ reservation_service }}
+
+📅 Reservation Type:
+{{ reservation_type }}
+
+🕒 Time:
+{{ start_time }} - {{ end_time }}
+
+📝 Description:
+Name: {{ user_name }}
+Room: {{ user_room }}
+Participants: {{ event_guests }}
+Purpose: {{ event_purpose }}
+
+Additionals: {{ additionals }}
+
+
+ℹ️ Additional Information:
+	•	For all reservation guidelines, usage rules, and helpful tips, please visit our Wiki - {{ wiki }}.
+	•	If you have any questions or need assistance, feel free to contact our space managers at {{ manager_email }}.
+
+💬 Feedback Welcome:
+We’d love to hear how we can improve your experience! Feel free to share your suggestions—your feedback helps us grow.
+
+With appreciation,
+Your Club Buben Team

@@ -3,22 +3,22 @@ API controllers for events.
 """
 from typing import Any, Annotated, List
 from uuid import UUID
-from datetime import timezone
 from dateutil.parser import isoparse
+from pytz import timezone
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from fastapi import APIRouter, Depends, status, Path, Body, Query
 from fastapi.responses import JSONResponse
-from models import ReservationServiceModel, CalendarModel, EventState
-from schemas import EventCreate, Room, UserIS, InformationFromIS, \
-    ServiceList, User, EmailCreate, Event, EventUpdate, EventUpdateTime
+from models import EventState
+from schemas import EventCreate, ServiceList, User, Event, EventUpdate, \
+    EventUpdateTime
 from services import EventService, CalendarService
 from api import get_request, fastapi_docs, \
     get_current_user, get_current_token, auth_google, control_collision, \
-    check_night_reservation, control_available_reservation_time, send_email, \
+    check_night_reservation, control_available_reservation_time, \
     EntityNotFoundException, Entity, PermissionDeniedException, UnauthorizedException, \
-    BaseAppException
+    BaseAppException, preparing_email, create_email_meta
 
 router = APIRouter(
     prefix='/events',
@@ -54,11 +54,8 @@ async def create_event(
 
     :returns Event json object: the created event or exception otherwise.
     """
-    user_is = UserIS.model_validate(await get_request(token, "/users/me"))
-    services = ServiceList(services=await get_request(token,
-                                                      "/services/mine")).services
-    room = Room.model_validate(await get_request(token, "/rooms/mine"))
-    is_info = InformationFromIS(user=user_is, room=room, services=services)
+    services = ServiceList(services=await get_request(
+        token, "/services/mine")).services
 
     calendar = await calendar_service.get_by_reservation_type(event_create.reservation_type)
     if not calendar:
@@ -74,7 +71,7 @@ async def create_event(
             content={"message": "There's already a reservation for that time."}
         )
 
-    event_body = await service.post_event(event_create, is_info, user, calendar)
+    event_body = await service.post_event(event_create, services, user, calendar)
     if not event_body or (len(event_body) == 1 and 'message' in event_body):
         if event_body:
             return JSONResponse(
@@ -86,15 +83,10 @@ async def create_event(
             content={"message": "Could not create event."}
         )
 
-    email_create = preparing_email(
-        event_create, event_body, reservation_service, calendar
-    )
     event_create.reservation_type = calendar.id
 
     if event_create.guests > calendar.max_people:
         event_body["summary"] = f"Not approved - more than {calendar.max_people} people"
-        email_create.subject = event_body["summary"]
-        await send_email(email_create)
         event = google_calendar_service.events().insert(calendarId=calendar.id,
                                                         body=event_body).execute()
         await service.create_event(event_create, user,
@@ -102,27 +94,36 @@ async def create_event(
                                    event['id'])
         return {"message": f"more than {calendar.max_people} people"}
 
-    # Check night reservation
     if not check_night_reservation(user):
         if not control_available_reservation_time(event_create.start_datetime,
                                                   event_create.end_datetime):
             event_body["summary"] = "Not approved - night time"
-            email_create.subject = event_body["summary"]
-            await send_email(email_create)
-            event = google_calendar_service.events().insert(calendarId=calendar.id,
-                                                            body=event_body).execute()
-            await service.create_event(event_create, user,
-                                       EventState.NOT_APPROVED,
-                                       event['id'])
+            subject = event_body["summary"]
+            event_google_calendar = (google_calendar_service.events().
+                                     insert(calendarId=calendar.id,
+                                            body=event_body).execute())
+            event = await service.create_event(event_create, user,
+                                               EventState.NOT_APPROVED,
+                                               event_google_calendar['id'])
+            await preparing_email(
+                service, event,
+                create_email_meta("not_approve_night_time_reservation", subject)
+            )
             return {"message": "Night time"}
 
-    await send_email(email_create)
-    event = google_calendar_service.events().insert(calendarId=calendar.id,
-                                                    body=event_body).execute()
-    await service.create_event(event_create, user,
-                               EventState.CONFIRMED,
-                               event['id'])
-    return event
+    event_google_calendar = google_calendar_service.events().insert(calendarId=calendar.id,
+                                                                    body=event_body).execute()
+    event = await service.create_event(event_create, user,
+                                       EventState.CONFIRMED,
+                                       event_google_calendar['id'])
+
+    await preparing_email(
+        service, event,
+        create_email_meta("confirm_reservation",
+                          f"{reservation_service.name} Reservation Confirmation")
+    )
+
+    return event_google_calendar
 
 
 @router.get("/user/{user_id}",
@@ -191,6 +192,7 @@ async def approve_update_reservation_time(
         user: Annotated[User, Depends(get_current_user)],
         event_id: Annotated[str, Path()],
         approve: bool = Query(False),
+        manager_notes: Annotated[str, Body()] = "-",
 ) -> Any:
     """
     Approve updating reservation time,
@@ -200,6 +202,7 @@ async def approve_update_reservation_time(
     :param user: User who make this request.
     :param event_id: uuid of the event.
     :param approve: Approve this update or not.
+    :param manager_notes: Note for update or decline update reservation time.
 
     :returns EventModel: the updated event.
     """
@@ -223,23 +226,36 @@ async def approve_update_reservation_time(
             )
             if not event_to_update:
                 raise EntityNotFoundException(Entity.EVENT, event_id)
+
+            await preparing_email(
+                service, event,
+                create_email_meta("decline_update_reservation_time",
+                                  "Request Update Reservation Time Has Been Declined",
+                                  manager_notes)
+            )
         else:
             event_to_update = await service.approve_update_reservation_time(
                 event_id, event_update, user
             )
             if not event_to_update:
                 raise EntityNotFoundException(Entity.EVENT, event_id)
-            event_from_google_calendar["start"]["dateTime"] = (
-                event_to_update.start_datetime.astimezone(timezone.utc).isoformat())
-            event_from_google_calendar["end"]["dateTime"] = (
-                event_to_update.end_datetime.astimezone(timezone.utc).isoformat())
+            prague = timezone("Europe/Prague")
+            event_from_google_calendar["start"]["dateTime"] = prague.localize(
+                event.start_datetime).isoformat()
+            event_from_google_calendar["end"]["dateTime"] = prague.localize(
+                event.end_datetime).isoformat()
+            await preparing_email(
+                service, event,
+                create_email_meta("approve_update_reservation_time",
+                                  "Request Update Reservation Time Has Been Approved",
+                                  manager_notes)
+            )
 
             google_calendar_service.events().update(
                 calendarId=event.calendar_id,
                 eventId=event.id,
                 body=event_from_google_calendar
             ).execute()
-
 
         return event_to_update
 
@@ -261,6 +277,7 @@ async def request_update_reservation_time(
         user: Annotated[User, Depends(get_current_user)],
         event_id: Annotated[str, Path()],
         event_update: Annotated[EventUpdateTime, Body()],
+        reason: Annotated[str, Body()] = "",
 ) -> Any:
     """
     Request Update reservation time with uuid equal to event_id,
@@ -270,6 +287,7 @@ async def request_update_reservation_time(
     :param user: User who make this request.
     :param event_id: uuid of the event.
     :param event_update: EventUpdate schema.
+    :param reason: Reason to change reservation time.
 
     :returns EventModel: the updated event.
     """
@@ -278,6 +296,11 @@ async def request_update_reservation_time(
     )
     if not event:
         raise EntityNotFoundException(Entity.EVENT, event_id)
+    await preparing_email(
+        service, event,
+        create_email_meta("request_update_reservation_time",
+                          "Request Update Reservation Time", reason)
+    )
     return event
 
 
@@ -292,7 +315,8 @@ async def request_update_reservation_time(
 async def cancel_reservation(
         service: Annotated[EventService, Depends(EventService)],
         user: Annotated[User, Depends(get_current_user)],
-        event_id: Annotated[str, Path()]
+        event_id: Annotated[str, Path()],
+        cancel_reason: Annotated[str, Body()] = "",
 ) -> Any:
     """
     Delete event with id equal to event_id, only user who make
@@ -301,6 +325,7 @@ async def cancel_reservation(
     :param service: Event service.
     :param user: User who make this reservation.
     :param event_id: id of the event.
+    :param cancel_reason: reason cancellation this reservation.
 
     :returns EventModel: the canceled reservation.
     """
@@ -313,6 +338,20 @@ async def cancel_reservation(
             calendarId=event.calendar_id,
             eventId=event.id
         ).execute()
+
+        if event.user_id == user.id:
+            await preparing_email(
+                service, event,
+                create_email_meta("cancel_reservation",
+                                  "Cancel Reservation")
+            )
+        else:
+            await preparing_email(
+                service, event,
+                create_email_meta("cancel_reservation_by_manager",
+                                  "Cancel Reservation by Manager", cancel_reason)
+            )
+
         return event
 
     except HttpError as exc:
@@ -330,73 +369,68 @@ async def cancel_reservation(
             status_code=status.HTTP_200_OK)
 async def approve_reservation(
         service: Annotated[EventService, Depends(EventService)],
-        calendar_service: Annotated[CalendarService, Depends(CalendarService)],
         user: Annotated[User, Depends(get_current_user)],
-        event_id: Annotated[str, Path()]
+        event_id: Annotated[str, Path()],
+        approve: bool = Query(False),
+        manager_notes: Annotated[str, Body()] = "-",
 ) -> Any:
     """
     Approve reservation with uuid equal to event_id,
     only users with special roles can approve reservation.
 
     :param service: Event service.
-    :param calendar_service: Calendar service.
     :param user: User who make this approve.
     :param event_id: uuid of the event.
+    :param approve: Approve this reservation or not.
+    :param manager_notes: Note for approve or decline reservation.
 
     :returns EventModel: the updated reservation.
     """
     google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
-    event = await service.confirm_event(event_id, user)
-    if not event:
-        raise EntityNotFoundException(Entity.EVENT, event_id)
+    if approve:
+        event = await service.confirm_event(event_id, user)
+        if not event:
+            raise EntityNotFoundException(Entity.EVENT, event_id)
+    else:
+        event = await service.cancel_event(event_id, user)
+        if not event:
+            raise EntityNotFoundException(Entity.EVENT, event_id)
     try:
-        calendar = await calendar_service.get(event.calendar_id)
-        event_to_update = google_calendar_service.events().get(
-            calendarId=event.calendar_id,
-            eventId=event.id
-        ).execute()
+        if approve:
+            calendar = await service.get_calendar_of_this_event(event)
+            event_to_update = google_calendar_service.events().get(
+                calendarId=event.calendar_id,
+                eventId=event.id
+            ).execute()
 
-        event_to_update['summary'] = calendar.reservation_type
+            event_to_update['summary'] = calendar.reservation_type
 
-        google_calendar_service.events().update(
-            calendarId=event.calendar_id,
-            eventId=event.id,
-            body=event_to_update
-        ).execute()
+            google_calendar_service.events().update(
+                calendarId=event.calendar_id,
+                eventId=event.id,
+                body=event_to_update
+            ).execute()
+
+            await preparing_email(
+                service, event,
+                create_email_meta("approve_reservation",
+                                  "Reservation Has Been Approved", manager_notes)
+            )
+
+        else:
+            google_calendar_service.events().delete(
+                calendarId=event.calendar_id,
+                eventId=event.id
+            ).execute()
+
+            await preparing_email(
+                service, event,
+                create_email_meta("decline_reservation",
+                                  "Reservation Has Been Declined", manager_notes)
+            )
 
         return event
 
     except HttpError as exc:
         raise BaseAppException("This event does not exist in Google Calendar.",
                                status_code=404) from exc
-
-
-def preparing_email(
-        event_create: EventCreate,
-        event_body: dict,
-        reservation_service: ReservationServiceModel,
-        calendar: CalendarModel,
-) -> EmailCreate:
-    """
-    Constructing the body of the email .
-
-    :param event_create: EventCreate schema.
-    :param event_body: Dict body of the event.
-    :param reservation_service: Reservation Service object in db.
-    :param reservation_service: Calendar object in db.
-    :param calendar: Calendar object in db.
-
-    :return: Constructed EmailCreate schema.
-    """
-    formatted_start_date = event_create.start_datetime.strftime("%d/%m/%Y, %H:%M:%S")
-    formatted_end_date = event_create.end_datetime.strftime("%d/%m/%Y, %H:%M:%S")
-
-    return EmailCreate(
-        email=[reservation_service.contact_mail],
-        subject=f"{reservation_service.name} Reservation",
-        body=(
-            f"{calendar.reservation_type}\n\n"
-            f"{formatted_start_date} - {formatted_end_date}\n\n"
-            f"{event_body['description']}\n"
-        ),
-    )

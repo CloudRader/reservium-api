@@ -6,18 +6,17 @@ from typing import Any, Annotated
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from models.reservation_service import ReservationService
-from models import CalendarModel, EventModel, EventState, ReservationServiceModel
+from models import CalendarModel, EventModel, EventState, ReservationServiceModel, UserModel
 from services.utils import ready_event, first_standard_check, \
     dif_days_res, reservation_in_advance
 from services import CrudServiceBase
 from fastapi import Depends
 
 from api import BaseAppException, PermissionDeniedException
-from schemas import EventCreate, User, InformationFromIS, Calendar, \
-    EventCreateToDb, EventUpdate, Event, EventUpdateTime
+from schemas import EventCreate, User, ServiceValidity, Calendar, \
+    EventCreateToDb, EventUpdate, Event, EventUpdateTime, ReservationService
 from db import db_session
-from crud import CRUDReservationService, CRUDEvent, CRUDCalendar
+from crud import CRUDReservationService, CRUDEvent, CRUDCalendar, CRUDUser
 from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -35,12 +34,12 @@ class AbstractEventService(CrudServiceBase[
     """
 
     @abstractmethod
-    async def post_event(self, event_input: EventCreate, is_info: InformationFromIS,
+    async def post_event(self, event_input: EventCreate, services: list[ServiceValidity],
                          user: User, calendar: Calendar) -> Any:
         """
         Preparing for posting event in google calendar.
         :param event_input: Input data for creating the event.
-        :param is_info: Information about user from IS.
+        :param services: User services from IS.
         :param user: User object in db.
         :param calendar: Calendar object in db.
 
@@ -103,6 +102,30 @@ class AbstractEventService(CrudServiceBase[
         :param event: Event object in db.
 
         :return: ReservationService of this event.
+        """
+
+    @abstractmethod
+    async def get_calendar_of_this_event(
+            self, event: Event,
+    ) -> CalendarModel:
+        """
+        Retrieve the Calendar instance associated with this event.
+
+        :param event: Event object in db.
+
+        :return: Calendar of this event.
+        """
+
+    @abstractmethod
+    async def get_user_of_this_event(
+            self, event: Event,
+    ) -> UserModel:
+        """
+        Retrieve the User instance associated with this event.
+
+        :param event: Event object in db.
+
+        :return: User of this event.
         """
 
     @abstractmethod
@@ -174,22 +197,23 @@ class EventService(AbstractEventService):
         super().__init__(CRUDEvent(db))
         self.reservation_service_crud = CRUDReservationService(db)
         self.calendar_crud = CRUDCalendar(db)
+        self.user_crud = CRUDUser(db)
 
     async def post_event(
             self, event_input: EventCreate,
-            is_info: InformationFromIS, user: User,
+            services: list[ServiceValidity], user: User,
             calendar: Calendar
     ) -> Any:
         if not calendar:
             return {"message": "Calendar with that type not exist!"}
 
         message = await self.__control_conditions_and_permissions(
-            user, is_info, event_input, calendar)
+            user, services, event_input, calendar)
 
         if message != "Access":
             return message
 
-        return ready_event(calendar, event_input, is_info)
+        return ready_event(calendar, event_input, user)
 
     async def create_event(
             self, event_create: EventCreate,
@@ -243,6 +267,36 @@ class EventService(AbstractEventService):
 
         return reservation_service
 
+    async def get_calendar_of_this_event(
+            self, event: Event,
+    ) -> CalendarModel:
+        if not event:
+            raise BaseAppException("This event does not exist in db.",
+                                   status_code=404)
+
+        calendar: Calendar = await self.calendar_crud.get(event.calendar_id)
+        if not calendar:
+            raise BaseAppException("A calendar of this event isn't exist.",
+                                   status_code=404)
+
+        return calendar
+
+
+    async def get_user_of_this_event(
+            self, event: Event,
+    ) -> UserModel:
+        if not event:
+            raise BaseAppException("This event does not exist in db.",
+                                   status_code=404)
+
+        user = await self.user_crud.get(event.user_id)
+
+        if not user:
+            raise BaseAppException("A user of this event isn't exist.",
+                                   status_code=404)
+
+        return user
+
     async def approve_update_reservation_time(self, uuid: str,
                                               event_update: EventUpdate,
                                               user: User) -> EventModel | None:
@@ -295,6 +349,9 @@ class EventService(AbstractEventService):
         if not event:
             return None
 
+        if event.event_state == EventState.CANCELED:
+            raise BaseAppException("You can't cancel canceled reservation.")
+
         if event.start_datetime < dt.datetime.now():
             raise BaseAppException("You cannot cancel the reservation after it has started.")
 
@@ -334,7 +391,7 @@ class EventService(AbstractEventService):
 
     async def __control_conditions_and_permissions(
             self, user: User,
-            is_info: InformationFromIS,
+            services: list[ServiceValidity],
             event_input: EventCreate,
             calendar: CalendarModel
     ) -> str | dict:
@@ -342,7 +399,7 @@ class EventService(AbstractEventService):
         Check conditions and permissions for creating an event.
 
         :param user: User object in db.
-        :param is_info: Information about user from IS.
+        :param services: User services from IS.
         :param event_input: Input data for creating the event.
         :param calendar: Calendar object in db.
         ReservationService objects in db.
@@ -353,7 +410,7 @@ class EventService(AbstractEventService):
             calendar.reservation_service_id)
 
         # Check of the membership
-        standard_message = first_standard_check(is_info, reservation_service,
+        standard_message = first_standard_check(services, reservation_service,
                                                 event_input.start_datetime,
                                                 event_input.end_datetime)
         if not standard_message == "Access":

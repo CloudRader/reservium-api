@@ -1,0 +1,37 @@
+🔄 Reservation Time Request Pending Review
+
+A {{ user_name }} has submitted a request to update the time of an existing reservation. Please review the details and take appropriate action in the system.
+
+📝 Reason for Time Change:
+{{ reason }}
+
+🔖 New reservation details:
+
+📌 Reservation Service:
+{{ reservation_service }}
+
+📅 Reservation Type:
+{{ reservation_type }}
+
+🕒 Time:
+{{ start_time }} – {{ end_time }}
+
+📝 Description:
+Name: {{ user_name }}
+Room: {{ user_room }}
+Participants: {{ event_guests }}
+Purpose: {{ event_purpose }}
+
+Additionals: {{ additionals }}
+
+
+📝 Manager Notes:
+{{ reason }}
+
+🔔 Action Required:
+	•	This change request requires your review and approval.
+	•	Please ensure that the updated reservation time does not conflict with other events or cause operational issues.
+	•	You can review the original reservation details and make a decision in the reservation system.
+
+With coordination,
+Your Club Buben Reservation System

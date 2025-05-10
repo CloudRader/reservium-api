@@ -14,6 +14,13 @@ class EmailCreate(BaseModel):
     attachment: Optional[str] = None
 
 
+class EmailMeta(BaseModel):
+    """Meta information for creating an email."""
+    template_name: str
+    subject: str
+    reason: str
+
+
 class RegistrationFormCreate(BaseModel):
     """Schema for creating a registration form."""
     event_name: str = Field(max_length=40)

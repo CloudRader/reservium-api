@@ -1,0 +1,31 @@
+New Reservation Created 🛎️
+
+A new reservation has just been made. Here are the details:
+
+
+📌 Reservation Service:
+{{ reservation_service }}
+
+📅 Reservation Type:
+{{ reservation_type }}
+
+🕒 Time:
+{{ start_time }} – {{ end_time }}
+
+📝 Description:
+Name: {{ user_name }}
+Room: {{ user_room }}
+Participants: {{ event_guests }}
+Purpose: {{ event_purpose }}
+
+Additionals: {{ additionals }}
+
+
+🔔 Action Required?
+If this reservation needs review, confirmation, or follow-up, please take the necessary action in the system.
+
+📎 Need More Info?
+You can find full reservation details in the reservation system.
+
+With coordination,
+Your Club Buben Reservation System

@@ -1,0 +1,33 @@
+✅ Reservation Time Change Approved
+
+This is to confirm that the following reservation time change request has been approved by the manager:
+
+📌 Reservation Service:
+{{ reservation_service }}
+
+📅 Reservation Type:
+{{ reservation_type }}
+
+🕒 Time:
+{{ start_time }} – {{ end_time }}
+
+📝 Description:
+Name: {{ user_name }}
+Room: {{ user_room }}
+Participants: {{ event_guests }}
+Purpose: {{ event_purpose }}
+
+Additionals: {{ additionals }}
+
+
+📝 Manager Notes:
+{{ reason }}
+
+ℹ️ No Further Action Required
+This is just an informational notice — no approval or follow-up is needed.
+
+📎 Need More Info?
+You can find full reservation details in the reservation system.
+
+With coordination,
+Your Club Buben Reservation System

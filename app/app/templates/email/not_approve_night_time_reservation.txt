@@ -1,0 +1,36 @@
+⏳ Your reservation request has been received and is pending confirmation
+
+❗️ Important Notice:
+For night-time reservations, additional confirmation from a {{ reservation_service }} manager is required.
+You will receive a follow-up email once your request is either approved or declined.
+
+If you don’t hear back within a few days, feel free to contact the manager directly at {{ manager_email }} with your reservation details.
+
+
+🔖 Here’s everything you need to know about your reservation:
+
+📅 Reservation Type:
+{{ reservation_type }}
+
+🕒 Time:
+{{ start_time }} - {{ end_time }}
+
+📝 Description:
+Name: {{ user_name }}
+Room: {{ user_room }}
+Participants: {{ event_guests }}
+Purpose: {{ event_purpose }}
+
+Additionals: {{ additionals }}
+
+
+ℹ️ Additional Information:
+	•	For all reservation guidelines, usage rules, and helpful tips, please visit our Wiki - {{ wiki }}.
+	•	By submitting your reservation, you confirm that you’ve read and agree to the terms of use that you can find there.
+	•	If you have any questions or need assistance, feel free to contact our space managers at {{ manager_email }}.
+
+💬 Feedback Welcome:
+We’d love to hear how we can improve your experience! Feel free to share your suggestions—your feedback helps us grow.
+
+With appreciation,
+Your Club Buben Team

@@ -1,0 +1,34 @@
+🗑️ Your reservation has been successfully cancelled.
+
+If this was a mistake, or you’d like to reschedule, you can create a new reservation anytime through the reservation system.
+
+
+🔖 Cancelled reservation details:
+
+📌 Reservation Service:
+{{ reservation_service }}
+
+📅 Reservation Type:
+{{ reservation_type }}
+
+🕒 Time:
+{{ start_time }} - {{ end_time }}
+
+📝 Description:
+Name: {{ user_name }}
+Room: {{ user_room }}
+Participants: {{ event_guests }}
+Purpose: {{ event_purpose }}
+
+Additionals: {{ additionals }}
+
+
+ℹ️ Additional Information:
+	•	For all reservation guidelines, usage rules, and helpful tips, please visit our Wiki - {{ wiki }}.
+	•	If you have any questions or need assistance, feel free to contact our space managers at {{ manager_email }}.
+
+💬 Feedback Welcome:
+We’d love to hear how we can improve your experience! Feel free to share your suggestions—your feedback helps us grow.
+
+With appreciation,
+Your Club Buben Team

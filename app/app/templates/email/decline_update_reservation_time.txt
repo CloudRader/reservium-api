@@ -1,0 +1,37 @@
+❌ Your Reservation Time Change Request Was Declined
+
+Unfortunately, your request to change the reservation time has been reviewed and declined by the manager.
+
+📝 Manager’s Reason for Declining:
+{{ reason }}
+
+
+🔖 Original Reservation Details Remain Unchanged:
+
+📌 Reservation Service:
+{{ reservation_service }}
+
+📅 Reservation Type:
+{{ reservation_type }}
+
+🕒 Time:
+{{ start_time }} - {{ end_time }}
+
+📝 Description:
+Name: {{ user_name }}
+Room: {{ user_room }}
+Participants: {{ event_guests }}
+Purpose: {{ event_purpose }}
+
+Additionals: {{ additionals }}
+
+
+ℹ️ Additional Information:
+	•	For all reservation guidelines, usage rules, and helpful tips, please visit our Wiki - {{ wiki }}.
+	•	If you have any questions or need assistance, feel free to contact our space managers at {{ manager_email }}.
+
+💬 Feedback Welcome:
+We’d love to hear how we can improve your experience! Feel free to share your suggestions—your feedback helps us grow.
+
+With appreciation,
+Your Club Buben Team

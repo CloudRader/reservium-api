@@ -1,0 +1,34 @@
+❌ Your Reservation Request Has Been Declined
+
+We regret to inform you that your reservation request has not been approved after review by the manager. Please see the details below for more context.
+
+
+📝 Manager’s Reason for Decline:
+{{ reason }}
+
+
+🔖 Reservation details:
+
+📌 Reservation Service:
+{{ reservation_service }}
+
+📅 Reservation Type:
+{{ reservation_type }}
+
+🕒 Time:
+{{ start_time }} - {{ end_time }}
+
+📝 Description:
+Name: {{ user_name }}
+Room: {{ user_room }}
+Participants: {{ event_guests }}
+Purpose: {{ event_purpose }}
+
+Additionals: {{ additionals }}
+
+
+ℹ️ Need Assistance?
+If you have any questions or need clarification, feel free to reach out to our managers at {{ manager_email }}.
+
+With appreciation,
+Your Club Buben Team

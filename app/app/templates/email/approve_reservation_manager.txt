@@ -1,0 +1,39 @@
+✅ Reservation Has Been Approved!
+
+This is a confirmation that the following reservation has been approved:
+
+📌 Reservation Service:
+{{ reservation_service }}
+
+📅 Reservation Type:
+{{ reservation_type }}
+
+🕒 Time:
+{{ start_time }} – {{ end_time }}
+
+📝 Description:
+Name: {{ user_name }}
+Room: {{ user_room }}
+Participants: {{ event_guests }}
+Purpose: {{ event_purpose }}
+
+Additionals: {{ additionals }}
+
+
+📝 Manager Notes:
+{{ reason }}
+
+🔔 Why Was Manual Approval Required?
+	•	First case: The event is scheduled during quiet hours (after 22:00), when special care must be taken to avoid noise or disturbance.
+	•	Second case: The number of guests exceeds the default limit set for this space, and was reviewed by manager and dormitory management.
+
+
+📎 Reminder to User (Already Notified):
+
+The user has been informed to:
+	•	Avoid noise after 22:00 and refrain from using outside areas like the courtyard at night.
+	•	Clean up after the event and reset furniture.
+	•	Respect space usage rules to avoid future booking restrictions.
+
+With coordination,
+Your Club Buben Reservation System

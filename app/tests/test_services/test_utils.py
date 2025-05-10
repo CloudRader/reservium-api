@@ -16,47 +16,45 @@ from services.utils import description_of_event, reservation_in_advance, \
 
 
 @pytest.mark.asyncio
-def test_first_standard_check(data_from_is,
+def test_first_standard_check(services_data_from_is,
                               reservation_service):
     """
     Test utils function in services.
     """
     start_time = dt.datetime.now() - dt.timedelta(hours=1)
     end_time = dt.datetime.now() + dt.timedelta(hours=4)
-    result = first_standard_check(data_from_is,
+    result = first_standard_check(services_data_from_is,
                                   reservation_service,
                                   start_time, end_time)
     assert result["message"] == f"You don't have {reservation_service.alias} service!"
 
-    data_from_is.services[0].service.alias = "game"
-    result = first_standard_check(data_from_is,
+    services_data_from_is[0].service.alias = "game"
+    result = first_standard_check(services_data_from_is,
                                   reservation_service,
                                   start_time, end_time)
     assert result["message"] == "You can't make a reservation before the present time!"
 
     start_time = dt.datetime.now() + dt.timedelta(hours=5)
-    result = first_standard_check(data_from_is,
+    result = first_standard_check(services_data_from_is,
                                   reservation_service,
                                   start_time, end_time)
     assert result["message"] == "The end of a reservation cannot be before its beginning!"
 
     end_time = dt.datetime.now() + dt.timedelta(hours=7)
-    result = first_standard_check(data_from_is,
+    result = first_standard_check(services_data_from_is,
                                   reservation_service,
                                   start_time, end_time)
     assert result == "Access"
 
 
 @pytest.mark.asyncio
-def test_description_of_event(user_data_from_is,
-                              room_data_from_is,
+def test_description_of_event(user,
                               event_create_form):
     """
     Test utils function in services.
     """
     event_create_form.additional_services = ["Bar", "Console"]
-    result = description_of_event(user_data_from_is,
-                                  room_data_from_is,
+    result = description_of_event(user,
                                   event_create_form)
     assert result is not None
     assert isinstance(result, str)
@@ -65,11 +63,11 @@ def test_description_of_event(user_data_from_is,
 @pytest.mark.asyncio
 def test_ready_event(calendar,
                      event_create_form,
-                     data_from_is):
+                     user):
     """
     Test utils function in services.
     """
-    result = ready_event(calendar, event_create_form, data_from_is)
+    result = ready_event(calendar, event_create_form, user)
     assert result is not None
     assert isinstance(result, dict)
     assert result["summary"] == calendar.reservation_type

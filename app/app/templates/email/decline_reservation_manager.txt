@@ -1,0 +1,32 @@
+❌ Reservation Has Been Declined
+
+This is a confirmation that the following reservation request has been reviewed and declined by the manager. Below are the reservation details for your reference:
+
+📝 Manager’s Reason for Decline:
+{{ reason }}
+
+📌 Reservation Service:
+{{ reservation_service }}
+
+📅 Reservation Type:
+{{ reservation_type }}
+
+🕒 Time:
+{{ start_time }} – {{ end_time }}
+
+📝 Description:
+Name: {{ user_name }}
+Room: {{ user_room }}
+Participants: {{ event_guests }}
+Purpose: {{ event_purpose }}
+
+Additionals: {{ additionals }}
+
+
+📎 User Notification:
+The user has been informed of the decision along with the provided reason for the decline.
+
+No further action is required.
+
+With coordination,
+Your Club Buben Reservation System
