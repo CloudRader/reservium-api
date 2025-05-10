@@ -2,7 +2,6 @@
 API controllers for events.
 """
 from typing import Any, Annotated, List
-from uuid import UUID
 from dateutil.parser import isoparse
 from pytz import timezone
 
@@ -151,29 +150,29 @@ async def get_events_by_user_id(
     return events
 
 
-@router.get("/state/reservation_service/{reservation_service_id}",
+@router.get("/state/reservation_service/{reservation_service_alias}",
             response_model=List[Event],
             responses={
                 **EntityNotFoundException.RESPONSE,
             },
             status_code=status.HTTP_200_OK)
-async def get_by_event_state_by_reservation_service_id(
+async def get_by_event_state_by_reservation_service_alias(
         service: Annotated[EventService, Depends(EventService)],
-        reservation_service_id: Annotated[UUID, Path()],
+        reservation_service_alias: Annotated[str, Path()],
         event_state: EventState,
 ) -> Any:
     """
-    Get events by its reservation service id.
+    Get events by its reservation service alias.
 
     :param service: Event service.
-    :param reservation_service_id: reservation service id of the events.
+    :param reservation_service_alias: reservation service id of the events.
     :param event_state: event state of the event.
 
-    :return: Events with reservation service id equal
-    to reservation service id or None if no such events exists.
+    :return: Events with reservation service alias equal
+    to reservation service alias or None if no such events exists.
     """
-    events = await service.get_by_event_state_by_reservation_service_id(
-        reservation_service_id, event_state)
+    events = await service.get_by_event_state_by_reservation_service_alias(
+        reservation_service_alias, event_state)
     if events is None:
         raise BaseAppException()
     return events

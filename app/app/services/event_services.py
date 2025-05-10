@@ -4,7 +4,6 @@ This module defines an abstract base class AbstractEventService that work with E
 import datetime as dt
 from typing import Any, Annotated
 from abc import ABC, abstractmethod
-from uuid import UUID
 
 from models import CalendarModel, EventModel, EventState, ReservationServiceModel, UserModel
 from services.utils import ready_event, first_standard_check, \
@@ -78,18 +77,18 @@ class AbstractEventService(CrudServiceBase[
         """
 
     @abstractmethod
-    async def get_by_event_state_by_reservation_service_id(
-            self, reservation_service_id: UUID,
+    async def get_by_event_state_by_reservation_service_alias(
+            self, reservation_service_alias: str,
             event_state: EventState,
     ) -> list[EventModel]:
         """
-        Retrieves the Events instance by reservation service id.
+        Retrieves the Events instance by reservation service alias.
 
-        :param reservation_service_id: reservation service id of the events.
+        :param reservation_service_alias: reservation service alias of the events.
         :param event_state: event state of the event.
 
-        :return: Events with reservation service id equal
-        to reservation service id or empty list if no such events exists.
+        :return: Events with reservation service alias equal
+        to reservation service alias or empty list if no such events exists.
         """
 
     @abstractmethod
@@ -240,12 +239,19 @@ class EventService(AbstractEventService):
     ) -> list[Row[EventModel]] | None:
         return await self.crud.get_by_user_id(user_id)
 
-    async def get_by_event_state_by_reservation_service_id(
-            self, reservation_service_id: UUID,
+    async def get_by_event_state_by_reservation_service_alias(
+            self, reservation_service_alias: str,
             event_state: EventState,
     ) -> list[EventModel]:
+        reservation_service = await self.reservation_service_crud.get_by_alias(
+            reservation_service_alias)
+
+        if not reservation_service:
+            raise BaseAppException("A reservation service with this alias isn't exist.",
+                                   status_code=404)
+
         return await self.crud.get_by_event_state_by_reservation_service_id(
-            reservation_service_id, event_state)
+            reservation_service.id, event_state)
 
     async def get_reservation_service_of_this_event(
             self, event: Event,
@@ -280,7 +286,6 @@ class EventService(AbstractEventService):
                                    status_code=404)
 
         return calendar
-
 
     async def get_user_of_this_event(
             self, event: Event,
