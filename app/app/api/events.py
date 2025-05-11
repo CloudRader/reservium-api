@@ -19,6 +19,7 @@ from api import get_request, fastapi_docs, \
     check_night_reservation, control_available_reservation_time, \
     EntityNotFoundException, Entity, PermissionDeniedException, UnauthorizedException, \
     BaseAppException, preparing_email, create_email_meta
+# from api import add_or_update_access_to_reservation_areas, delete_access_to_reservation_areas
 
 router = APIRouter(
     prefix='/events',
@@ -122,6 +123,9 @@ async def create_event(
         create_email_meta("confirm_reservation",
                           f"{reservation_service.name} Reservation Confirmation")
     )
+
+    # Add or update access to dormitory card system only for test
+    # await add_or_update_access_to_reservation_areas(service, event)
 
     return event_google_calendar
 
@@ -257,6 +261,9 @@ async def approve_update_reservation_time(
                 body=event_from_google_calendar
             ).execute()
 
+            # Add or update access to dormitory card system only for test
+            # await add_or_update_access_to_reservation_areas(service, event)
+
         return event_to_update
 
     except HttpError as exc:
@@ -352,6 +359,9 @@ async def cancel_reservation(
                                   "Cancel Reservation by Manager", cancel_reason)
             )
 
+        # Delete access to dormitory card system only for test
+        # await delete_access_to_reservation_areas(service, event)
+
         return event
 
     except HttpError as exc:
@@ -416,6 +426,9 @@ async def approve_reservation(
                 create_email_meta("approve_reservation",
                                   "Reservation Has Been Approved", manager_notes)
             )
+
+            # Add or update access to dormitory card system only for test
+            # await add_or_update_access_to_reservation_areas(service, event)
 
         else:
             google_calendar_service.events().delete(

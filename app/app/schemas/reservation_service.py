@@ -1,6 +1,6 @@
 """DTO schemes for ReservationService entity."""
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 from pydantic import BaseModel, Field
 from schemas import MiniService, Calendar
@@ -11,6 +11,9 @@ class ReservationServiceBase(BaseModel):
     web: str | None = None
     contact_mail: str | None = None
     public: bool | None = None
+    lockers_id: List[int] = Field(default_factory=list)
+    access_group: str | None = None
+    room_id: int | None = None
 
 
 class ReservationServiceCreate(ReservationServiceBase):
