@@ -96,6 +96,20 @@ class AbstractMiniServiceService(CrudServiceBase[
         """
 
     @abstractmethod
+    async def get_by_room_id(
+            self, room_id: int,
+            include_removed: bool = False
+    ) -> MiniServiceModel | None:
+        """
+        Retrieves a Mini Service instance by its room id.
+
+        :param room_id: The room id of the Mini Service.
+        :param include_removed: Include removed object or not.
+
+        :return: The Mini Service instance if found, None otherwise.
+        """
+
+    @abstractmethod
     async def get_by_reservation_service_id(
             self,
             reservation_service_id: UUID,
@@ -224,6 +238,12 @@ class MiniServiceService(AbstractMiniServiceService):
     async def get_by_name(self, name: str,
                           include_removed: bool = False) -> MiniServiceModel | None:
         return await self.crud.get_by_name(name, include_removed)
+
+    async def get_by_room_id(
+            self, room_id: int,
+            include_removed: bool = False
+    ) -> MiniServiceModel | None:
+        return await self.crud.get_by_room_id(room_id, include_removed)
 
     async def get_by_reservation_service_id(
             self,

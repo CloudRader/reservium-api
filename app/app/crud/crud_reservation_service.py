@@ -49,6 +49,20 @@ class AbstractCRUDReservationService(CRUDBase[
         """
 
     @abstractmethod
+    async def get_by_room_id(
+            self, room_id: int,
+            include_removed: bool = False
+    ) -> ReservationServiceModel | None:
+        """
+        Retrieves a Reservation Service instance by its room id.
+
+        :param room_id: The room id of the Reservation Service.
+        :param include_removed: Include removed object or not.
+
+        :return: The Reservation Service instance if found, None otherwise.
+        """
+
+    @abstractmethod
     async def get_all_aliases(self) -> list[str]:
         """
         Retrieves all aliases from all Reservation Services.
@@ -90,6 +104,16 @@ class CRUDReservationService(AbstractCRUDReservationService):
     async def get_by_alias(self, alias: str,
                            include_removed: bool = False) -> ReservationServiceModel | None:
         stmt = select(self.model).filter(self.model.alias == alias)
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=True)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_by_room_id(
+            self, room_id: int,
+            include_removed: bool = False
+    ) -> ReservationServiceModel | None:
+        stmt = select(self.model).filter(self.model.room_id == room_id)
         if include_removed:
             stmt = stmt.execution_options(include_deleted=True)
         result = await self.db.execute(stmt)

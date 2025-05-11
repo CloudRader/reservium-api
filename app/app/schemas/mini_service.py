@@ -1,13 +1,15 @@
 """DTO schemes for MiniService entity."""
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class MiniServiceBase(BaseModel):
     """Shared properties of MiniService."""
-
+    lockers_id: List[int] = Field(default_factory=list)
+    access_group: str | None = None
+    room_id: int | None = None
 
 class MiniServiceCreate(MiniServiceBase):
     """Properties to receive via API on creation."""

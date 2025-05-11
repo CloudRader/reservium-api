@@ -107,6 +107,20 @@ class AbstractReservationServiceService(CrudServiceBase[
         """
 
     @abstractmethod
+    async def get_by_room_id(
+            self, room_id: int,
+            include_removed: bool = False
+    ) -> ReservationServiceModel | None:
+        """
+        Retrieves a Reservation Service instance by its room id.
+
+        :param room_id: The room id of the Reservation Service.
+        :param include_removed: Include removed object or not.
+
+        :return: The Reservation Service instance if found, None otherwise.
+        """
+
+    @abstractmethod
     async def get_public_services(
             self, include_removed: bool = False
     ) -> list[Row[ReservationServiceModel]] | None:
@@ -191,6 +205,12 @@ class ReservationServiceService(AbstractReservationServiceService):
     async def get_by_name(self, name: str,
                           include_removed: bool = False) -> ReservationServiceModel | None:
         return await self.crud.get_by_name(name, include_removed)
+
+    async def get_by_room_id(
+            self, room_id: int,
+            include_removed: bool = False
+    ) -> ReservationServiceModel | None:
+        return await self.crud.get_by_room_id(room_id, include_removed)
 
     async def get_public_services(
             self, include_removed: bool = False

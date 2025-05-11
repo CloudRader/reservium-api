@@ -24,6 +24,9 @@ class Settings(BaseSettings):
 
     SECRET_KEY: str
 
+    DORMITORY_ACCESS_SYSTEM_API_KEY: str
+    DORMITORY_ACCESS_SYSTEM_API_URL: str
+
     CLIENT_ID: str
     CLIENT_SECRET: str
     REDIRECT_URI: str

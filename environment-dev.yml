@@ -33,6 +33,7 @@ dependencies:
   - pip:
     - sqlalchemy-easy-softdelete==0.8.3
     - types-python-dateutil==2.9.0.20241206
+    - types-requests==2.32.0.20250328
   - alembic=1.13.2
   - starlette=0.36.3
   - itsdangerous=2.2.0

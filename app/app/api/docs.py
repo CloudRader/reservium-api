@@ -37,6 +37,10 @@ class FastApiDocs:
         "name": "emails",
         "description": "Operations with emails.",
     }
+    ACCESS_CARD_SYSTEM_TAG = {
+        "name": "access card system",
+        "description": "Operations with access card system.",
+    }
 
     def get_tags_metadata(self):
         """Get tags metadata."""
@@ -46,7 +50,8 @@ class FastApiDocs:
             self.CALENDAR_TAG,
             self.MINI_SERVICE_TAG,
             self.EVENT_TAG,
-            self.EMAIL_TAG
+            self.EMAIL_TAG,
+            self.ACCESS_CARD_SYSTEM_TAG
         ]
 
 

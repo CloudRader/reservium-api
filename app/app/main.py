@@ -9,7 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from api import users, events, calendars, mini_services, reservation_services, \
-    fastapi_docs, emails, BaseAppException, app_exception_handler
+    fastapi_docs, emails, BaseAppException, app_exception_handler, access_card_system
 from core import settings
 
 
@@ -42,6 +42,7 @@ app.include_router(reservation_services.router)
 app.include_router(calendars.router)
 app.include_router(mini_services.router)
 app.include_router(emails.router)
+app.include_router(access_card_system.router)
 
 app.add_exception_handler(BaseAppException, app_exception_handler)
 
@@ -52,7 +53,8 @@ app.add_middleware(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://develop.reservation.buk.cvut.cz", "https://reservation.buk.cvut.cz"],
+    allow_origins=["https://develop.reservation.buk.cvut.cz", "https://reservation.buk.cvut.cz",
+                   "https://is.buk.cvut.cz"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
