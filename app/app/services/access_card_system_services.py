@@ -7,8 +7,10 @@ from abc import ABC, abstractmethod
 
 from fastapi import Depends
 from db import db_session
-from schemas import VarSymbolCreateUpdate, VarSymbolDelete
-from crud import CRUDEvent
+from api import PermissionDeniedException
+from services import EventService
+from schemas import VarSymbolCreateUpdate, VarSymbolDelete, ClubAccessSystemRequest
+from crud import CRUDEvent, CRUDUser, CRUDReservationService, CRUDMiniService
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -77,6 +79,21 @@ class AbstractAccessCardSystemService(ABC):
         :returns: The body fot the API.
         """
 
+    @abstractmethod
+    async def reservation_access_authorize(
+            self,
+            service_event: Annotated[EventService, Depends(EventService)],
+            access_request: ClubAccessSystemRequest
+    ) -> bool:
+        """
+        Perform access control check for a reservation based on UID user, room, and device.
+
+        :param service_event: Event service.
+        :param access_request: Request containing UID, room_id, and device_id.
+
+        :returns: True if access is authorized, False otherwise.
+        """
+
 
 class AccessCardSystemService(AbstractAccessCardSystemService):
     """
@@ -86,6 +103,49 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
     def __init__(self, db: Annotated[
         AsyncSession, Depends(db_session.scoped_session_dependency)]):
         self.event_crud = CRUDEvent(db)
+        self.user_crud = CRUDUser(db)
+        self.reservation_service_crud = CRUDReservationService(db)
+        self.mini_service_crud = CRUDMiniService(db)
+
+    async def reservation_access_authorize(
+            self,
+            service_event: Annotated[EventService, Depends(EventService)],
+            access_request: ClubAccessSystemRequest
+    ) -> bool:
+        user = await self.user_crud.get(access_request.uid)
+
+        if user is None:
+            raise PermissionDeniedException("This user isn't exist in system.")
+
+        reservation_service = await self.reservation_service_crud.get_by_room_id(
+            access_request.room_id)
+        mini_service = await self.mini_service_crud.get_by_room_id(access_request.room_id)
+
+        if (reservation_service is None) and (mini_service is None):
+            raise PermissionDeniedException("This room associated with some service isn't exist "
+                                            "in system or use another access system")
+
+        event = await service_event.get_current_event_for_user(user.id)
+
+        if event is None:
+            raise PermissionDeniedException("No available reservation exists at this time.")
+
+        if mini_service and (mini_service.name in event.additional_services):
+            if access_request.device_id in mini_service.lockers_id:
+                return True
+
+        if reservation_service == await service_event.get_reservation_service_of_this_event(event):
+            if access_request.device_id in reservation_service.lockers_id:
+                return True
+
+            for mini_service_name in event.additional_services:
+                mini_service = await self.mini_service_crud.get_by_name(mini_service_name)
+                if (mini_service.room_id is None) and (access_request.device_id in
+                                                       mini_service.lockers_id):
+                    return True
+
+        raise PermissionDeniedException("No matching reservation exists at this time "
+                                        "for this rules.")
 
     async def add_var_symbol(
             self,

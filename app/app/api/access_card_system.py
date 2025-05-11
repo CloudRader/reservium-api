@@ -3,15 +3,17 @@ API controllers for authorisation in access card system.
 """
 from typing import Any, Dict, Annotated
 import requests
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status
 
 from services import AccessCardSystemService, EventService
-from schemas import VarSymbolCreateUpdate, VarSymbolDelete, Event
+from api import PermissionDeniedException
+from schemas import VarSymbolCreateUpdate, VarSymbolDelete, Event, \
+    ClubAccessSystemRequest
 from core import settings
 from .docs import fastapi_docs
 
 router = APIRouter(
-    prefix='/events',
+    prefix='/access_card_system',
     tags=[fastapi_docs.ACCESS_CARD_SYSTEM_TAG["name"]]
 )
 
@@ -39,6 +41,35 @@ def send_request(data: Dict[str, Any]) -> Dict[str, Any]:
         raise HTTPException(status_code=response.status_code, detail=response.text)
 
     return response.json()
+
+
+@router.post("/external_authorize",
+             responses={
+                 **PermissionDeniedException.RESPONSE,
+             },
+             status_code=status.HTTP_201_CREATED,
+             )
+async def reservation_access_authorize(
+        service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
+        event_service: Annotated[EventService, Depends(EventService)],
+        access_request: ClubAccessSystemRequest
+) -> Any:
+    """
+    Endpoint for external access authorization.
+
+    This endpoint receives an access request from the club access control system
+    containing a user's UID, room ID, and device ID. It checks whether the user has
+    a valid reservation and is authorized to access the specified room and device
+    at the current time.
+
+    :param service: AccessCardSystemService instance used for authorization logic.
+    :param event_service: EventService for querying reservation data.
+    :param access_request: Incoming request with UID, room ID, and device ID.
+
+    :return: Boolean result indicating whether access is granted.
+    """
+    result = await service.reservation_access_authorize(event_service, access_request)
+    return result
 
 
 # Can be uncommented for testing dormitory card system

@@ -27,11 +27,25 @@ class AbstractCRUDMiniService(CRUDBase[
 
     @abstractmethod
     async def get_by_name(self, name: str,
-                    include_removed: bool = False) -> MiniServiceModel | None:
+                          include_removed: bool = False) -> MiniServiceModel | None:
         """
         Retrieves a Calendar instance by its name.
 
         :param name: The name of the Mini Service.
+        :param include_removed: Include removed object or not.
+
+        :return: The Mini Service instance if found, None otherwise.
+        """
+
+    @abstractmethod
+    async def get_by_room_id(
+            self, room_id: int,
+            include_removed: bool = False
+    ) -> MiniServiceModel | None:
+        """
+        Retrieves a Mini Service instance by its room id.
+
+        :param room_id: The room id of the Mini Service.
         :param include_removed: Include removed object or not.
 
         :return: The Mini Service instance if found, None otherwise.
@@ -62,8 +76,18 @@ class CRUDMiniService(AbstractCRUDMiniService):
         super().__init__(MiniServiceModel, db)
 
     async def get_by_name(self, name: str,
-                    include_removed: bool = False) -> MiniServiceModel | None:
+                          include_removed: bool = False) -> MiniServiceModel | None:
         stmt = select(self.model).where(self.model.name == name)
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=True)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_by_room_id(
+            self, room_id: int,
+            include_removed: bool = False
+    ) -> MiniServiceModel | None:
+        stmt = select(self.model).where(self.model.room_id == room_id)
         if include_removed:
             stmt = stmt.execution_options(include_deleted=True)
         result = await self.db.execute(stmt)

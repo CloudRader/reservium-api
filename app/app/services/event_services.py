@@ -129,6 +129,19 @@ class AbstractEventService(CrudServiceBase[
         """
 
     @abstractmethod
+    async def get_current_event_for_user(
+            self, user_id: int
+    ) -> EventModel | None:
+        """
+        Retrieves the current event for the given user where the current
+        time is between start_datetime and end_datetime.
+
+        :param user_id: ID of the user.
+
+        :return: Matching Event or None.
+        """
+
+    @abstractmethod
     async def approve_update_reservation_time(self, uuid: str,
                                               event_update: EventUpdate,
                                               user: User) -> EventModel | None:
@@ -281,7 +294,6 @@ class EventService(AbstractEventService):
 
         return calendar
 
-
     async def get_user_of_this_event(
             self, event: Event,
     ) -> UserModel:
@@ -296,6 +308,11 @@ class EventService(AbstractEventService):
                                    status_code=404)
 
         return user
+
+    async def get_current_event_for_user(
+            self, user_id: int
+    ) -> EventModel | None:
+        return await self.crud.get_current_event_for_user(user_id)
 
     async def approve_update_reservation_time(self, uuid: str,
                                               event_update: EventUpdate,

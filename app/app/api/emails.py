@@ -125,28 +125,28 @@ async def preparing_email(
     # Mail for club members
     template_for_member = f"{email_meta.template_name}.txt"
     body = render_email_template(template_for_member, context)
-    email_create = construct_email(reservation_service, email_meta.subject, body)
+    email_create = construct_email(event.email, email_meta.subject, body)
     await send_email(email_create)
 
     # Mail for manager
     template_for_manager = f"{email_meta.template_name}_manager.txt"
     body = render_email_template(template_for_manager, context)
     email_subject = f"[Reservation Alert] {email_meta.subject}"
-    email_create = construct_email(reservation_service, email_subject, body)
+    email_create = construct_email(reservation_service.contact_mail, email_subject, body)
     await send_email(email_create)
 
     return {"message": "Emails has been sent successfully"}
 
 
 def construct_email(
-        reservation_service: ReservationServiceModel,
+        send_to_email: str,
         subject: str,
         body: str,
 ) -> EmailCreate:
     """
     Constructing the schema of the email .
 
-    :param reservation_service: Reservation Service object in db.
+    :param send_to_email: Recipient email address.
     :param subject: Email subject.
     :param body: Email body.
 
@@ -154,7 +154,7 @@ def construct_email(
     """
 
     return EmailCreate(
-        email=[reservation_service.contact_mail],
+        email=[send_to_email],
         subject=subject,
         body=body,
     )

@@ -53,7 +53,8 @@ app.add_middleware(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://develop.reservation.buk.cvut.cz", "https://reservation.buk.cvut.cz"],
+    allow_origins=["https://develop.reservation.buk.cvut.cz", "https://reservation.buk.cvut.cz",
+                   "https://is.buk.cvut.cz"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],

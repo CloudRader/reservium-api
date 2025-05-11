@@ -3,6 +3,7 @@ This module defines the CRUD operations for the Event model, including an
 abstract base class (AbstractCRUDEvent) and a concrete implementation (CRUDEvent)
 using SQLAlchemy.
 """
+from datetime import datetime
 from abc import ABC, abstractmethod
 from uuid import UUID
 
@@ -65,6 +66,19 @@ class AbstractCRUDEvent(CRUDBase[
         :return: the updated Event.
         """
 
+    @abstractmethod
+    async def get_current_event_for_user(
+            self, user_id: int
+    ) -> EventModel | None:
+        """
+        Retrieves the current event for the given user where the current
+        time is between start_datetime and end_datetime.
+
+        :param user_id: ID of the user.
+
+        :return: Matching Event or None.
+        """
+
 
 class CRUDEvent(AbstractCRUDEvent):
     """
@@ -101,7 +115,6 @@ class CRUDEvent(AbstractCRUDEvent):
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
-
     async def confirm_event(
             self, uuid: str | None,
     ) -> EventModel | None:
@@ -117,3 +130,21 @@ class CRUDEvent(AbstractCRUDEvent):
         self.db.add(obj)
         await self.db.commit()
         return obj
+
+    async def get_current_event_for_user(
+            self, user_id: int
+    ) -> EventModel | None:
+        now = datetime.now()
+
+        stmt = (
+            select(self.model)
+            .filter(
+                self.model.user_id == user_id,
+                self.model.start_datetime <= now,
+                self.model.end_datetime >= now
+            )
+            .order_by(self.model.start_datetime.desc())
+            .limit(1)
+        )
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()

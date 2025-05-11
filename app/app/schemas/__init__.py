@@ -10,7 +10,7 @@ from .mini_service import MiniService, MiniServiceCreate, MiniServiceUpdate, Min
 from .reservation_service import ReservationService, ReservationServiceCreate, \
     ReservationServiceUpdate, ReservationServiceInDBBase
 from .email import EmailCreate, RegistrationFormCreate, EmailMeta
-from .access_card_system import VarSymbolCreateUpdate, VarSymbolDelete
+from .access_card_system import VarSymbolCreateUpdate, VarSymbolDelete, ClubAccessSystemRequest
 
 __all__ = [
     "User", "UserCreate", "UserUpdate", "UserInDB",
@@ -22,5 +22,5 @@ __all__ = [
     "EmailCreate", "RegistrationFormCreate",
     "UserIS", "RoleList", "Role", "ServiceList", "ServiceValidity", "InformationFromIS",
     "Zone", "Room", "LimitObject", "Service", "EmailMeta",
-    "VarSymbolCreateUpdate", "VarSymbolDelete",
+    "VarSymbolCreateUpdate", "VarSymbolDelete", "ClubAccessSystemRequest",
 ]

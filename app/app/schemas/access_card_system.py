@@ -16,3 +16,12 @@ class VarSymbolDelete(BaseModel):
     """Schema for creating or updating a var symbol in access card system."""
     var_symbol: int
     group: str
+
+
+class ClubAccessSystemRequest(BaseModel):
+    """
+    Schema for handling club access card system.
+    """
+    uid: int
+    room_id: int
+    device_id: int
