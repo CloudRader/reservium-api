@@ -14,7 +14,7 @@ services:
       - internal
   backend:
     container_name: buk-reservation-backendls
-    image: darkrader/buk-reservation-backend:latest
+    image: reservationbuk/buk-reservation-backend:latest
     environment:
       - POSTGRES_SERVER=db
     depends_on:
