@@ -4,11 +4,12 @@ This module provides fixtures for test services
 import pytest
 import pytest_asyncio
 
+from models.event import EventState
 from models.reservation_service import ReservationService
 from schemas import UserIS, LimitObject, Role, Service, ServiceValidity, \
     ReservationServiceCreate, User, UserCreate, RegistrationFormCreate, \
     MiniServiceCreate, MiniService, CalendarCreate, Calendar, Rules, \
-    Zone, Room, InformationFromIS, EventCreate
+    Zone, Room, InformationFromIS, EventCreate, Event
 
 
 # pylint: disable=redefined-outer-name
@@ -248,6 +249,24 @@ async def user(service_user) -> User:
         section_head=True,
         roles=["game", "stud", "club"],
     ))
+
+
+@pytest_asyncio.fixture()
+async def event(
+        service_event,
+        event_create_form,
+        user, calendar
+) -> Event:
+    """
+    Return event object in db.
+    """
+    event_create_form.reservation_type=calendar.id
+    return await service_event.create_event(
+        event_create=event_create_form,
+        user=user,
+        event_state=EventState.CONFIRMED,
+        event_id="w67adfiwfawf"
+    )
 
 
 @pytest_asyncio.fixture()
