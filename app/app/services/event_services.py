@@ -13,10 +13,10 @@ from fastapi import Depends
 
 from api import BaseAppException, PermissionDeniedException
 from schemas import EventCreate, User, ServiceValidity, Calendar, \
-    EventCreateToDb, EventUpdate, Event, EventUpdateTime, ReservationService
+    EventCreateToDb, EventUpdate, Event, EventUpdateTime, ReservationService, \
+    EventWithExtraDetails
 from db import db_session
 from crud import CRUDReservationService, CRUDEvent, CRUDCalendar, CRUDUser
-from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -66,7 +66,7 @@ class AbstractEventService(CrudServiceBase[
     @abstractmethod
     async def get_by_user_id(
             self, user_id: int,
-    ) -> list[Row[EventModel]] | None:
+    ) -> list[EventWithExtraDetails] | None:
         """
         Retrieves the Events instance by user id.
 
@@ -80,7 +80,7 @@ class AbstractEventService(CrudServiceBase[
     async def get_by_event_state_by_reservation_service_alias(
             self, reservation_service_alias: str,
             event_state: EventState,
-    ) -> list[EventModel]:
+    ) -> list[EventWithExtraDetails]:
         """
         Retrieves the Events instance by reservation service alias.
 
@@ -249,13 +249,14 @@ class EventService(AbstractEventService):
 
     async def get_by_user_id(
             self, user_id: int,
-    ) -> list[Row[EventModel]] | None:
-        return await self.crud.get_by_user_id(user_id)
+    ) -> list[EventWithExtraDetails] | None:
+        events = await self.crud.get_by_user_id(user_id)
+        return await self.__add_extra_details_to_event(events)
 
     async def get_by_event_state_by_reservation_service_alias(
             self, reservation_service_alias: str,
             event_state: EventState,
-    ) -> list[EventModel]:
+    ) -> list[EventWithExtraDetails]:
         reservation_service = await self.reservation_service_crud.get_by_alias(
             reservation_service_alias)
 
@@ -263,8 +264,10 @@ class EventService(AbstractEventService):
             raise BaseAppException("A reservation service with this alias isn't exist.",
                                    status_code=404)
 
-        return await self.crud.get_by_event_state_by_reservation_service_id(
+        events = await self.crud.get_by_event_state_by_reservation_service_id(
             reservation_service.id, event_state)
+
+        return await self.__add_extra_details_to_event(events)
 
     async def get_reservation_service_of_this_event(
             self, event: Event,
@@ -478,3 +481,31 @@ class EventService(AbstractEventService):
         if reservation_service.alias in user.roles:
             return calendar.manager_rules
         return calendar.active_member_rules
+
+    async def __add_extra_details_to_event(
+            self, events: list[Event]
+    ) -> list[EventWithExtraDetails]:
+        """
+        Enrich a list of Event objects data.
+
+        :param events: A list of Event objects to be enriched.
+
+        :return: A list of EventWithExtraDetails, containing
+        the original event and related metadata.
+        """
+        result = []
+
+        for event in events:
+            calendar = await self.get_calendar_of_this_event(event)
+            user = await self.get_user_of_this_event(event)
+            reservation_service = await  self.get_reservation_service_of_this_event(event)
+
+            event_with_details = EventWithExtraDetails(
+                event=event,
+                reservation_type=calendar.reservation_type,
+                user_name=user.full_name,
+                reservation_service_name=reservation_service.name
+            )
+            result.append(event_with_details)
+
+        return result

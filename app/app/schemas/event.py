@@ -6,14 +6,16 @@ from typing import List, Any
 from pydantic import BaseModel, Field, EmailStr, field_validator
 from models.event import EventState
 
+
 # pylint: disable=too-few-public-methods
 # reason: This class need for proper validation
 class NaiveDatetimeValidatorMixin:
     """
     Mixin to validate that datetime fields are naive (i.e., without timezone info).
     """
+
     @field_validator("start_datetime", "end_datetime", mode="before")
-    def check_naive_datetime(cls, value: Any) -> Any: # pylint: disable=no-self-argument
+    def check_naive_datetime(cls, value: Any) -> Any:  # pylint: disable=no-self-argument
         """
         Validates that datetime values are naive (not timezone-aware).
 
@@ -117,3 +119,11 @@ class Event(EventInDBBase):
 
 class EventInDB(EventInDBBase):
     """Additional properties stored in DB"""
+
+
+class EventWithExtraDetails(BaseModel):
+    """Extend properties of event to return via API."""
+    event: Event
+    reservation_type: str | None = None
+    user_name: str | None = None
+    reservation_service_name: str | None = None

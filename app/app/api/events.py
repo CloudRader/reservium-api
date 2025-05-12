@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, status, Path, Body, Query
 from fastapi.responses import JSONResponse
 from models import EventState
 from schemas import EventCreate, ServiceList, User, Event, EventUpdate, \
-    EventUpdateTime
+    EventUpdateTime, EventWithExtraDetails
 from services import EventService, CalendarService
 from api import get_request, fastapi_docs, \
     get_current_user, get_current_token, auth_google, control_collision, \
@@ -130,7 +130,7 @@ async def create_event(
 
 
 @router.get("/user/{user_id}",
-            response_model=List[Event],
+            response_model=List[EventWithExtraDetails],
             responses={
                 **EntityNotFoundException.RESPONSE,
             },
@@ -155,7 +155,7 @@ async def get_events_by_user_id(
 
 
 @router.get("/state/reservation_service/{reservation_service_alias}",
-            response_model=List[Event],
+            response_model=List[EventWithExtraDetails],
             responses={
                 **EntityNotFoundException.RESPONSE,
             },
