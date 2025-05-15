@@ -11,6 +11,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from api import users, events, calendars, mini_services, reservation_services, \
     fastapi_docs, emails, BaseAppException, app_exception_handler, access_card_system
 from core import settings
+# import os
+# os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1' # for local testing
 
 
 # pylint: disable=unused-argument
