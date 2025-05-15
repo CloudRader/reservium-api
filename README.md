@@ -95,7 +95,7 @@ ssl_certfile="certification/cert.pem"
 1. Start the containers:
 
 ```bash
-docker compose up
+docker compose up -d
 ```
 
 2. Open a shell inside the backend container:
@@ -122,7 +122,7 @@ alembic upgrade head  # Run latest DB migrations
 
 > ⚠️ **These scripts may not run properly inside the container. It’s recommended to execute them locally.**
 > 
-> If you previously uncommented any code for container testing, consider commenting it back.
+> If you previously uncommented any code for container testing, left it uncommenting.
 
 ---
 
