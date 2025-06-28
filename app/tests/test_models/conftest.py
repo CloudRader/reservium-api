@@ -1,11 +1,11 @@
 """
 Conftest for testing model
 """
+
 import uuid
 import pytest
 import pytest_asyncio
-from models import UserModel, ReservationServiceModel, \
-    MiniServiceModel, CalendarModel
+from models import UserModel, ReservationServiceModel, MiniServiceModel, CalendarModel
 from schemas import Rules
 
 
@@ -66,7 +66,7 @@ async def test_reservation_service(async_session, create_reservation_service_uui
         alias="club",
         public=True,
         web="test@example.com",
-        contact_mail="club.room.test@buk.cvut.cz"
+        contact_mail="club.room.test@buk.cvut.cz",
     )
     async_session.add(reservation_service)
     await async_session.commit()
@@ -76,16 +76,16 @@ async def test_reservation_service(async_session, create_reservation_service_uui
 
 @pytest.mark.asyncio
 @pytest_asyncio.fixture
-async def test_mini_service(async_session,
-                            create_mini_service_uuid,
-                            test_reservation_service):
+async def test_mini_service(
+    async_session, create_mini_service_uuid, test_reservation_service
+):
     """
     Creates and returns a sample reservation service for testing.
     """
     mini_service = MiniServiceModel(
         id=create_mini_service_uuid,
         name="Bar",
-        reservation_service_id=test_reservation_service.id
+        reservation_service_id=test_reservation_service.id,
     )
     async_session.add(mini_service)
     await async_session.commit()
@@ -104,15 +104,13 @@ def rules_club_member() -> Rules:
         max_reservation_hours=24,
         in_advance_hours=24,
         in_advance_minutes=30,
-        in_prior_days=14
+        in_prior_days=14,
     )
 
 
 @pytest.mark.asyncio
 @pytest_asyncio.fixture
-async def test_calendar(async_session,
-                        rules_club_member,
-                        test_reservation_service):
+async def test_calendar(async_session, rules_club_member, test_reservation_service):
     """
     Creates and returns a sample calendar for testing.
     """
@@ -128,7 +126,7 @@ async def test_calendar(async_session,
         active_member_rules=rules_club_member,
         manager_rules=rules_club_member,
         reservation_service_id=test_reservation_service.id,
-        mini_services=["Bar"]
+        mini_services=["Bar"],
     )
     async_session.add(calendar)
     await async_session.commit()

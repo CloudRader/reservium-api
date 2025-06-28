@@ -1,11 +1,17 @@
 """
 Conftest for testing crud
 """
+
 import pytest
 import pytest_asyncio
 from crud import CRUDUser, CRUDReservationService, CRUDMiniService, CRUDCalendar
-from schemas import UserCreate, ReservationServiceCreate, \
-    MiniServiceCreate, CalendarCreate, Rules
+from schemas import (
+    UserCreate,
+    ReservationServiceCreate,
+    MiniServiceCreate,
+    CalendarCreate,
+    Rules,
+)
 
 
 # pylint: disable=redefined-outer-name
@@ -53,15 +59,17 @@ async def test_user(user_crud):
     """
     Creates and returns a test user.
     """
-    user = await user_crud.create(UserCreate(
-        id=2142,
-        username="fixture_user",
-        full_name="Fixture Gabel",
-        room_number="20123",
-        active_member=True,
-        section_head=False,
-        roles=["club", "grill"]
-    ))
+    user = await user_crud.create(
+        UserCreate(
+            id=2142,
+            username="fixture_user",
+            full_name="Fixture Gabel",
+            room_number="20123",
+            active_member=True,
+            section_head=False,
+            roles=["club", "grill"],
+        )
+    )
     return user
 
 
@@ -70,15 +78,17 @@ async def test_user2(user_crud):
     """
     Creates and returns a test user2.
     """
-    user = await user_crud.create(UserCreate(
-        id=6545,
-        username="test_user2",
-        full_name="Barin Gabel",
-        room_number="865",
-        active_member=False,
-        section_head=True,
-        roles=["study", "games"]
-    ))
+    user = await user_crud.create(
+        UserCreate(
+            id=6545,
+            username="test_user2",
+            full_name="Barin Gabel",
+            room_number="865",
+            active_member=False,
+            section_head=True,
+            roles=["study", "games"],
+        )
+    )
     return user
 
 
@@ -93,8 +103,9 @@ async def test_reservation_service(reservation_service_crud):
             alias="study",
             web="https://study.room.cz",
             contact_mail="study.test.room@buk.cvut.cz",
-            public=True
-        ))
+            public=True,
+        )
+    )
     return reservation_service
 
 
@@ -109,36 +120,35 @@ async def test_reservation_service2(reservation_service_crud):
             alias="grill",
             web="https://grill.cz",
             contact_mail="grill.test@buk.cvut.cz",
-            public=False
-        ))
+            public=False,
+        )
+    )
     return reservation_service
 
 
 @pytest_asyncio.fixture
-async def test_mini_service(mini_service_crud,
-                            test_reservation_service):
+async def test_mini_service(mini_service_crud, test_reservation_service):
     """
     Creates and returns a test mini service.
     """
     mini_service = await mini_service_crud.create(
         MiniServiceCreate(
-            name="Projector",
-            reservation_service_id=test_reservation_service.id
-        ))
+            name="Projector", reservation_service_id=test_reservation_service.id
+        )
+    )
     return mini_service
 
 
 @pytest_asyncio.fixture
-async def test_mini_service2(mini_service_crud,
-                             test_reservation_service):
+async def test_mini_service2(mini_service_crud, test_reservation_service):
     """
     Creates and returns a test mini service2.
     """
     mini_service = await mini_service_crud.create(
         MiniServiceCreate(
-            name="Bar",
-            reservation_service_id=test_reservation_service.id
-        ))
+            name="Bar", reservation_service_id=test_reservation_service.id
+        )
+    )
     return mini_service
 
 
@@ -153,14 +163,14 @@ def calendar_rules() -> Rules:
         max_reservation_hours=18,
         in_advance_hours=12,
         in_advance_minutes=60,
-        in_prior_days=30
+        in_prior_days=30,
     )
 
 
 @pytest_asyncio.fixture
-async def test_calendar_service(calendar_crud,
-                                calendar_rules,
-                                test_reservation_service):
+async def test_calendar_service(
+    calendar_crud, calendar_rules, test_reservation_service
+):
     """
     Creates and returns a test calendar.
     """
@@ -177,6 +187,7 @@ async def test_calendar_service(calendar_crud,
             active_member_rules=calendar_rules,
             manager_rules=calendar_rules,
             reservation_service_id=test_reservation_service.id,
-            mini_services=["Console", "Bar", "Projector"]
-        ))
+            mini_services=["Console", "Bar", "Projector"],
+        )
+    )
     return calendar

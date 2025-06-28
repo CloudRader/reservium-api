@@ -1,6 +1,7 @@
 """
 Package for ORM models.
 """
+
 from .user import User as UserModel
 from .calendar import Calendar as CalendarModel, RulesType
 from .event import Event as EventModel, EventState
@@ -11,9 +12,10 @@ from .soft_delete_mixin import SoftDeleteMixin
 __all__ = [
     "UserModel",
     "CalendarModel",
-    "EventModel", "EventState",
+    "EventModel",
+    "EventState",
     "MiniServiceModel",
     "ReservationServiceModel",
     "SoftDeleteMixin",
-    "RulesType"
+    "RulesType",
 ]

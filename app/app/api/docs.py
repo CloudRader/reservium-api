@@ -7,11 +7,13 @@ Package for API Documentation.
 # reason: no more public methods needed.
 class FastApiDocs:
     """Information for fastapi documentation."""
+
     NAME = "Reservation System of the Buben Club"
-    DESCRIPTION = \
-        "Reservation System of the Buben Club API is " \
-        "a REST API that offers you an access to our " \
+    DESCRIPTION = (
+        "Reservation System of the Buben Club API is "
+        "a REST API that offers you an access to our "
         "application!"
+    )
     VERSION = "1.0.0"
     AUTHORISATION_TAG = {
         "name": "users",
@@ -51,7 +53,7 @@ class FastApiDocs:
             self.MINI_SERVICE_TAG,
             self.EVENT_TAG,
             self.EMAIL_TAG,
-            self.ACCESS_CARD_SYSTEM_TAG
+            self.ACCESS_CARD_SYSTEM_TAG,
         ]
 
 

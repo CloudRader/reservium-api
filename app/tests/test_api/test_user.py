@@ -1,6 +1,7 @@
 """
 Module for testing user api
 """
+
 from unittest.mock import patch, AsyncMock
 
 import pytest
@@ -28,7 +29,7 @@ async def test_get_all_users_empty(client: AsyncClient):
     """
     response = await client.get("/users/")
     assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {'message': 'No users in db.'}
+    assert response.json() == {"message": "No users in db."}
 
 
 @pytest.mark.asyncio
@@ -48,7 +49,10 @@ async def test_login(mock_get_oauth, client: AsyncClient):
     Test that /users/login redirects to an OAuth authorization URL.
     """
     mock_session = mock_get_oauth.return_value
-    mock_session.authorization_url.return_value = ("https://fake-auth-url", "fake_state")
+    mock_session.authorization_url.return_value = (
+        "https://fake-auth-url",
+        "fake_state",
+    )
 
     response = await client.get("/users/login")
     assert response.status_code == status.HTTP_200_OK
@@ -58,7 +62,9 @@ async def test_login(mock_get_oauth, client: AsyncClient):
 @pytest.mark.asyncio
 @patch("api.users.get_oauth_session")
 @patch("api.users.authenticate_user", new_callable=AsyncMock)
-async def test_callback_success(mock_authenticate_user, mock_get_oauth, client: AsyncClient):
+async def test_callback_success(
+    mock_authenticate_user, mock_get_oauth, client: AsyncClient
+):
     """
     Test successful callback after OAuth authentication.
     """

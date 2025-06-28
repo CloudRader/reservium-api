@@ -1,4 +1,5 @@
 """Utils for core module."""
+
 from typing import List
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.sql.ddl import CreateTable

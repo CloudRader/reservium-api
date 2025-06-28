@@ -1,6 +1,7 @@
 """
 Tests for Calendar Pydantic Schemas
 """
+
 from datetime import datetime, UTC
 from uuid import uuid4
 import pytest
@@ -34,7 +35,7 @@ def test_calendar_create_valid(valid_rules):
         collision_with_calendar=["calendar2"],
         more_than_max_people_with_permission=False,
         mini_services=["printer", "scanner"],
-        color="#FF0000"
+        color="#FF0000",
     )
     assert schema.reservation_type == "Event"
     assert schema.max_people == 25
@@ -67,7 +68,7 @@ def test_calendar_update_partial():
         reservation_type="Meeting",
         max_people=15,
         collision_with_itself=False,
-        mini_services=["projector"]
+        mini_services=["projector"],
     )
     assert update.reservation_type == "Meeting"
     assert update.max_people == 15
@@ -91,7 +92,7 @@ def test_calendar_in_db_schema(valid_rules):
         manager_rules=valid_rules,
         reservation_service_id=uuid4(),
         mini_services=["TV"],
-        color="#00FF00"
+        color="#00FF00",
     )
     assert schema.id == "calendar123"
     assert schema.deleted_at == now
@@ -118,10 +119,10 @@ def test_calendar_schema_extends_base(valid_rules):
     assert calendar.reservation_type == "Training"
 
 
-@pytest.mark.parametrize("field", ["reservation_type",
-                                   "max_people",
-                                   "collision_with_itself",
-                                   "club_member_rules"])
+@pytest.mark.parametrize(
+    "field",
+    ["reservation_type", "max_people", "collision_with_itself", "club_member_rules"],
+)
 def test_calendar_create_required_fields(field, valid_rules):
     """
     Test that missing required fields raises a validation error.
@@ -151,5 +152,5 @@ def test_rules_field_validation():
             max_reservation_hours=-1,  # Invalid
             in_advance_hours=1,
             in_advance_minutes=0,
-            in_prior_days=0
+            in_prior_days=0,
         )

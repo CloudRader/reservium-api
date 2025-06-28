@@ -1,6 +1,7 @@
 """
 Tests for User Pydantic Schemas
 """
+
 from datetime import datetime
 import pytest
 from pydantic import ValidationError
@@ -21,7 +22,7 @@ def test_user_create_schema_valid():
         room_number="212",
         active_member=True,
         section_head=False,
-        roles=["Bar", "Consoles"]
+        roles=["Bar", "Consoles"],
     )
     assert schema.id == 2142
     assert schema.username == "TestUser"
@@ -42,7 +43,7 @@ def test_user_create_schema_invalid_roles_type():
             room_number="212",
             active_member=True,
             section_head=False,
-            roles="Admin"  # Should be a list, not string
+            roles="Admin",  # Should be a list, not string
         )
 
 
@@ -69,7 +70,7 @@ def test_user_in_db_base_schema():
         active_member=False,
         section_head=True,
         deleted_at=None,
-        roles=["Bar"]
+        roles=["Bar"],
     )
     assert user.id == 42
     assert user.deleted_at is None
@@ -89,7 +90,7 @@ def test_user_schema_extends_base():
         active_member=True,
         section_head=False,
         deleted_at=now,
-        roles=["Tech"]
+        roles=["Tech"],
     )
     assert isinstance(user, UserInDBBase)
     assert user.deleted_at == now
@@ -107,7 +108,7 @@ def test_user_create_required_fields(field):
         "room_number": "212",
         "active_member": True,
         "section_head": False,
-        "roles": ["Tech"]
+        "roles": ["Tech"],
     }
     del data[field]
     with pytest.raises(ValidationError):

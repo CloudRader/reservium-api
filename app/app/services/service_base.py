@@ -2,6 +2,7 @@
 This module defines an abstract base class AbstractCRUDService with a common interface
 for services that implement CRUD operations on objects
 """
+
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic
 from uuid import UUID
@@ -32,8 +33,9 @@ class AbstractCRUDService(ABC, Generic[Model, Crud, CreateSchema, UpdateSchema])
     """
 
     @abstractmethod
-    async def get(self, uuid: UUID | str | int,
-            include_removed: bool = False) -> Model | None:
+    async def get(
+        self, uuid: UUID | str | int, include_removed: bool = False
+    ) -> Model | None:
         """
         Retrieve an object from the database.
         If include_removed is True retrieve a single record
@@ -62,8 +64,9 @@ class AbstractCRUDService(ABC, Generic[Model, Crud, CreateSchema, UpdateSchema])
         """
 
     @abstractmethod
-    async def update(self, uuid: UUID | str | int,
-               obj_in: UpdateSchema) -> Model | None:
+    async def update(
+        self, uuid: UUID | str | int, obj_in: UpdateSchema
+    ) -> Model | None:
         """
         Update an object in the database.
         :param uuid: the ID of the object to update.
@@ -102,8 +105,9 @@ class CrudServiceBase(AbstractCRUDService[Model, Crud, CreateSchema, UpdateSchem
     def __init__(self, crud: Crud):
         self.crud: Crud = crud
 
-    async def get(self, uuid: UUID | str | int,
-            include_removed: bool = False) -> Model | None:
+    async def get(
+        self, uuid: UUID | str | int, include_removed: bool = False
+    ) -> Model | None:
         return await self.crud.get(uuid, include_removed)
 
     async def get_all(self, include_removed: bool = False) -> list[Row[Model]] | None:
@@ -115,8 +119,9 @@ class CrudServiceBase(AbstractCRUDService[Model, Crud, CreateSchema, UpdateSchem
     async def create(self, obj_in: CreateSchema) -> Model | None:
         return await self.crud.create(obj_in)
 
-    async def update(self, uuid: UUID | str | int,
-               obj_in: UpdateSchema) -> Model | None:
+    async def update(
+        self, uuid: UUID | str | int, obj_in: UpdateSchema
+    ) -> Model | None:
         obj_to_update = await self.get(uuid)
         if obj_to_update is None:
             return None

@@ -1,10 +1,15 @@
 """
 Module which includes classes and methods responsible for connection to database.
 """
+
 from typing import AsyncGenerator
 from asyncio import current_task
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, \
-    async_scoped_session, AsyncSession
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    async_sessionmaker,
+    async_scoped_session,
+    AsyncSession,
+)
 from core import settings
 
 
@@ -23,14 +28,10 @@ class DatabaseSession:
 
     def __init__(self):
         self.engine = create_async_engine(
-            url=str(settings.POSTGRES_DATABASE_URI),
-            pool_pre_ping=True
+            url=str(settings.POSTGRES_DATABASE_URI), pool_pre_ping=True
         )
         self.session_factory = async_sessionmaker(
-            bind=self.engine,
-            autoflush=False,
-            autocommit=False,
-            expire_on_commit=False
+            bind=self.engine, autoflush=False, autocommit=False, expire_on_commit=False
         )
 
     def get_scoped_session(self):

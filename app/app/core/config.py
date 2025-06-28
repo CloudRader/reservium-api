@@ -1,4 +1,5 @@
 """Config."""
+
 from typing import Any
 from pydantic import field_validator, PostgresDsn
 from pydantic_settings import BaseSettings
@@ -7,6 +8,7 @@ from .utils import get_env_file_path
 
 class Settings(BaseSettings):
     """Settings class."""
+
     APP_NAME: str
     APP_SERVER_HOST: str
     APP_SERVER_PORT: int
@@ -63,14 +65,16 @@ class Settings(BaseSettings):
         """
         if isinstance(value, str):
             return value
-        return str(PostgresDsn.build(  # pylint: disable=no-member
-            scheme=info.data.get("SQLALCHEMY_SCHEME", "postgresql+asyncpg"),
-            username=info.data.get("POSTGRES_USER"),
-            password=info.data.get("POSTGRES_PASSWORD"),
-            host=info.data.get("POSTGRES_SERVER"),
-            port=info.data.get("POSTGRES_PORT"),
-            path=f'{info.data.get("POSTGRES_DB")}'
-        ))
+        return str(
+            PostgresDsn.build(  # pylint: disable=no-member
+                scheme=info.data.get("SQLALCHEMY_SCHEME", "postgresql+asyncpg"),
+                username=info.data.get("POSTGRES_USER"),
+                password=info.data.get("POSTGRES_PASSWORD"),
+                host=info.data.get("POSTGRES_SERVER"),
+                port=info.data.get("POSTGRES_PORT"),
+                path=f'{info.data.get("POSTGRES_DB")}',
+            )
+        )
 
     # pylint: enable=no-self-argument
 
@@ -78,6 +82,7 @@ class Settings(BaseSettings):
     # reason: special class for pydantic configuration.
     class Config:
         """Config class."""
+
         case_sensitive = True
         env_settings = True
         env_file = get_env_file_path([".env.dev", ".env.secret", ".env"])

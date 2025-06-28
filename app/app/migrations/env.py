@@ -4,6 +4,7 @@ Alembic migration environment setup.
 This file configures Alembic's runtime environment and
 handles running migrations in both offline and online modes.
 """
+
 import asyncio
 from logging.config import fileConfig
 
@@ -22,6 +23,7 @@ load_dotenv(dotenv_path=".env.secret")
 # pylint: disable=unused-wildcard-import
 # pylint: disable=wildcard-import
 from models import *
+
 # pylint: enable=wildcard-import
 from db import Base
 from core import settings
@@ -46,7 +48,7 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-config.set_main_option('sqlalchemy.url', str(settings.POSTGRES_DATABASE_URI))
+config.set_main_option("sqlalchemy.url", str(settings.POSTGRES_DATABASE_URI))
 
 
 def render_item(type_, obj, autogen_context):  # pylint: disable=unused-argument

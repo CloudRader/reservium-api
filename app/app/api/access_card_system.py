@@ -1,20 +1,24 @@
 """
 API controllers for authorisation in access card system.
 """
+
 from typing import Any, Dict, Annotated
 import requests
 from fastapi import APIRouter, HTTPException, Depends, status
 
 from services import AccessCardSystemService, EventService
 from api import PermissionDeniedException
-from schemas import VarSymbolCreateUpdate, VarSymbolDelete, Event, \
-    ClubAccessSystemRequest
+from schemas import (
+    VarSymbolCreateUpdate,
+    VarSymbolDelete,
+    Event,
+    ClubAccessSystemRequest,
+)
 from core import settings
 from .docs import fastapi_docs
 
 router = APIRouter(
-    prefix='/access_card_system',
-    tags=[fastapi_docs.ACCESS_CARD_SYSTEM_TAG["name"]]
+    prefix="/access_card_system", tags=[fastapi_docs.ACCESS_CARD_SYSTEM_TAG["name"]]
 )
 
 
@@ -29,12 +33,11 @@ def send_request(data: Dict[str, Any]) -> Dict[str, Any]:
     """
     headers = {
         "Content-Type": "application/json",
-        "Api-Key": settings.DORMITORY_ACCESS_SYSTEM_API_KEY
+        "Api-Key": settings.DORMITORY_ACCESS_SYSTEM_API_KEY,
     }
 
     response = requests.post(
-        settings.DORMITORY_ACCESS_SYSTEM_API_URL,
-        json=data, headers=headers, timeout=5
+        settings.DORMITORY_ACCESS_SYSTEM_API_URL, json=data, headers=headers, timeout=5
     )
 
     if response.status_code != 200:
@@ -43,16 +46,17 @@ def send_request(data: Dict[str, Any]) -> Dict[str, Any]:
     return response.json()
 
 
-@router.post("/external_authorize",
-             responses={
-                 **PermissionDeniedException.RESPONSE,
-             },
-             status_code=status.HTTP_201_CREATED,
-             )
+@router.post(
+    "/external_authorize",
+    responses={
+        **PermissionDeniedException.RESPONSE,
+    },
+    status_code=status.HTTP_201_CREATED,
+)
 async def reservation_access_authorize(
-        service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
-        event_service: Annotated[EventService, Depends(EventService)],
-        access_request: ClubAccessSystemRequest
+    service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
+    event_service: Annotated[EventService, Depends(EventService)],
+    access_request: ClubAccessSystemRequest,
 ) -> Any:
     """
     Endpoint for external access authorization.
@@ -76,8 +80,8 @@ async def reservation_access_authorize(
 # Car symbol for testing: 2220015516
 # @router.post("/add_var_symbol")
 async def add_var_symbol(
-        service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
-        access_body: VarSymbolCreateUpdate
+    service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
+    access_body: VarSymbolCreateUpdate,
 ):
     """
     Add or update a variable symbol in the access group.
@@ -93,8 +97,8 @@ async def add_var_symbol(
 
 # @router.delete("/del_var_symbol")
 async def del_var_symbol(
-        service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
-        access_body: VarSymbolDelete,
+    service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
+    access_body: VarSymbolDelete,
 ):
     """
     Delete a variable symbol from the access group.
@@ -110,7 +114,7 @@ async def del_var_symbol(
 
 # @router.get("/get_groups_for_use")
 async def get_groups_for_use(
-        service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
+    service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
 ):
     """
     Get the list of available groups for the API key.
@@ -124,8 +128,8 @@ async def get_groups_for_use(
 
 # @router.get("/get_access_var_symbol")
 async def get_access_var_symbol(
-        service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
-        var_symbol: str,
+    service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
+    var_symbol: str,
 ):
     """
     Get the list of groups for a given variable symbol.
@@ -141,8 +145,8 @@ async def get_access_var_symbol(
 
 # @router.get("/get_access_group")
 async def get_access_group(
-        service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
-        group: str,
+    service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
+    group: str,
 ):
     """
     Get the list of variable symbols for a given group.
@@ -157,8 +161,8 @@ async def get_access_group(
 
 
 async def add_or_update_access_to_reservation_areas(
-        service_event: Annotated[EventService, Depends(EventService)],
-        event: Event,
+    service_event: Annotated[EventService, Depends(EventService)],
+    event: Event,
 ) -> Any:
     """
     Add or update access control entries for a reservation event.
@@ -186,7 +190,7 @@ async def add_or_update_access_to_reservation_areas(
                 "varsymbol": var_symbol,
                 "skupina": reservation_service.access_group,
                 "platnostod": valid_from,
-                "platnostdo": valid_to
+                "platnostdo": valid_to,
             }
             data_list.append(access_body)
 
@@ -197,7 +201,7 @@ async def add_or_update_access_to_reservation_areas(
                     "varsymbol": var_symbol,
                     "skupina": mini_service.access_group,
                     "platnostod": valid_from,
-                    "platnostdo": valid_to
+                    "platnostdo": valid_to,
                 }
                 data_list.append(access_body)
 
@@ -208,8 +212,8 @@ async def add_or_update_access_to_reservation_areas(
 
 
 async def delete_access_to_reservation_areas(
-        service_event: Annotated[EventService, Depends(EventService)],
-        event: Event,
+    service_event: Annotated[EventService, Depends(EventService)],
+    event: Event,
 ) -> Any:
     """
     Delete access control entries for a reservation event.

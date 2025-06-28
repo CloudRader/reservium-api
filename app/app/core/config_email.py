@@ -1,4 +1,5 @@
 """Email config."""
+
 from fastapi_mail import ConnectionConfig
 from core import settings
 

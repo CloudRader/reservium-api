@@ -1,4 +1,5 @@
 """DTO schemes for ReservationService entity."""
+
 from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
@@ -8,6 +9,7 @@ from schemas import MiniService, Calendar
 
 class ReservationServiceBase(BaseModel):
     """Shared properties of ReservationService."""
+
     web: str | None = None
     contact_mail: str | None = None
     public: bool | None = None
@@ -18,18 +20,21 @@ class ReservationServiceBase(BaseModel):
 
 class ReservationServiceCreate(ReservationServiceBase):
     """Properties to receive via API on creation."""
+
     name: str
     alias: str = Field(max_length=6)
 
 
 class ReservationServiceUpdate(ReservationServiceBase):
     """Properties to receive via API on update."""
+
     name: str | None = None
     alias: str | None = Field(None, max_length=6)
 
 
 class ReservationServiceInDBBase(ReservationServiceBase):
     """Base model for reservation service in database."""
+
     id: UUID
     deleted_at: Optional[datetime] = None
     name: str
@@ -41,6 +46,7 @@ class ReservationServiceInDBBase(ReservationServiceBase):
     # reason: Config class only needs to set orm_mode to True.
     class Config:
         """Config class for database mini service model."""
+
         from_attributes = True
 
 

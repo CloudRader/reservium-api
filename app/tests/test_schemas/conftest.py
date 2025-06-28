@@ -1,6 +1,7 @@
 """
 Conftest for testing schema
 """
+
 import pytest
 from schemas import Rules
 
@@ -24,5 +25,5 @@ def valid_rules():
         max_reservation_hours=4,
         in_advance_hours=2,
         in_advance_minutes=30,
-        in_prior_days=7
+        in_prior_days=7,
     )

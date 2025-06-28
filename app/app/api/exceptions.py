@@ -1,6 +1,7 @@
 """
 Package for App Exceptions.
 """
+
 from typing import Any
 from enum import Enum
 from uuid import UUID
@@ -11,11 +12,13 @@ from pydantic import BaseModel
 
 class Message(BaseModel):
     """Model for response message."""
+
     message: str
 
 
 class Entity(Enum):
     """Enum for entity names."""
+
     USER = "User"
     CALENDAR = "Calendar"
     EVENT = "Event"
@@ -34,12 +37,7 @@ def get_exception_response_detail(status_code: int, desc: str) -> dict:
 
     :return dict: Exception response detail.
     """
-    return {
-        status_code: {
-            "model": Message,
-            "description": desc
-        }
-    }
+    return {status_code: {"model": Message, "description": desc}}
 
 
 class BaseAppException(Exception):
@@ -50,9 +48,8 @@ class BaseAppException(Exception):
     RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
 
     def __init__(
-            self, message: str | None = None,
-            status_code: int | None = None,
-            **kwargs: Any):
+        self, message: str | None = None, status_code: int | None = None, **kwargs: Any
+    ):
         self.message = message or self.DESCRIPTION
         self.status_code = status_code or self.STATUS_CODE
         self.details = kwargs  # Extra context if needed
@@ -97,9 +94,7 @@ class PermissionDeniedException(BaseAppException):
 
     def __init__(self, message: str | None = None, **kwargs):
         super().__init__(
-            message=message or self.DESCRIPTION,
-            status_code=self.STATUS_CODE,
-            **kwargs
+            message=message or self.DESCRIPTION, status_code=self.STATUS_CODE, **kwargs
         )
 
 
@@ -114,9 +109,7 @@ class UnauthorizedException(BaseAppException):
 
     def __init__(self, message: str | None = None, **kwargs):
         super().__init__(
-            message=message or self.DESCRIPTION,
-            status_code=self.STATUS_CODE,
-            **kwargs
+            message=message or self.DESCRIPTION, status_code=self.STATUS_CODE, **kwargs
         )
 
 

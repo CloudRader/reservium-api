@@ -1,6 +1,7 @@
 """
 This module defines an abstract base class AbstractEmailService that work with Email.
 """
+
 import shutil
 import os
 
@@ -21,8 +22,7 @@ class AbstractEmailService(ABC):
 
     @abstractmethod
     def prepare_registration_form(
-            self, registration_form: RegistrationFormCreate,
-            full_name: User
+        self, registration_form: RegistrationFormCreate, full_name: User
     ) -> Any:
         """
         Preparing registration form in pdf for sending to head of the dormitory.
@@ -39,11 +39,12 @@ class EmailService(AbstractEmailService):
     """
 
     def prepare_registration_form(
-            self, registration_form: RegistrationFormCreate,
-            full_name: str
+        self, registration_form: RegistrationFormCreate, full_name: str
     ) -> EmailCreate:
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        original_pdf_path = os.path.join(base_dir, '..', 'templates', 'event_registration.pdf')
+        original_pdf_path = os.path.join(
+            base_dir, "..", "templates", "event_registration.pdf"
+        )
         output_path = "/tmp/event_registration.pdf"
 
         # Make a copy of the original PDF
@@ -72,7 +73,7 @@ class EmailService(AbstractEmailService):
                 "space": registration_form.space,
                 "other_spaces": ", ".join(registration_form.other_space or []),
                 "today_date": datetime.today().strftime("%d/%m/%Y"),
-            }
+            },
         )
 
         # Save the filled PDF
@@ -82,10 +83,8 @@ class EmailService(AbstractEmailService):
         email_create = EmailCreate(
             email=[registration_form.email, registration_form.manager_contact_mail],
             subject="Event Registration",
-            body=(
-                f"Request to reserve an event for a member {full_name}"
-            ),
-            attachment=output_path
+            body=(f"Request to reserve an event for a member {full_name}"),
+            attachment=output_path,
         )
 
         return email_create

@@ -1,6 +1,7 @@
 """
 Event ORM model and its dependencies.
 """
+
 from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
@@ -24,6 +25,7 @@ class EventState(Enum):
     - **confirmed** - The event is confirmed.
     - **canceled** - The event was previously scheduled but has been canceled.
     """
+
     NOT_APPROVED = "not_approved"
     UPDATE_REQUESTED = "update_requested"
     CONFIRMED = "confirmed"
@@ -49,18 +51,15 @@ class Event(Base, SoftDeleteMixin):
         SQLAlchemyEnum(EventState, name="event_state_enum"),
         nullable=False,
         default=EventState.NOT_APPROVED,
-        server_default=text("'NOT_APPROVED'")
+        server_default=text("'NOT_APPROVED'"),
     )
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"),
-                                         nullable=False)
-    calendar_id: Mapped[str] = mapped_column(ForeignKey("calendar.id"),
-                                             nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
+    calendar_id: Mapped[str] = mapped_column(ForeignKey("calendar.id"), nullable=False)
 
-    user: Mapped["User"] = relationship(
-        back_populates="events")
-    calendar: Mapped["Calendar"] = relationship(
-        back_populates="events")
+    user: Mapped["User"] = relationship(back_populates="events")
+    calendar: Mapped["Calendar"] = relationship(back_populates="events")
     additional_services: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=True)
+
 
 # pylint: enable=too-few-public-methods

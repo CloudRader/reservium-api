@@ -1,38 +1,48 @@
 """
 API controllers for calendars.
 """
+
 from typing import Any, Annotated, List
 from fastapi import APIRouter, Depends, Path, status, Body, Query
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from api import EntityNotFoundException, Entity, Message, fastapi_docs, \
-    auth_google, get_current_user, BaseAppException, PermissionDeniedException, \
-    UnauthorizedException
+from api import (
+    EntityNotFoundException,
+    Entity,
+    Message,
+    fastapi_docs,
+    auth_google,
+    get_current_user,
+    BaseAppException,
+    PermissionDeniedException,
+    UnauthorizedException,
+)
 from schemas import CalendarCreate, Calendar, CalendarUpdate, User
 from services import CalendarService
 
-router = APIRouter(
-    prefix='/calendars',
-    tags=[fastapi_docs.CALENDAR_TAG["name"]]
-)
+router = APIRouter(prefix="/calendars", tags=[fastapi_docs.CALENDAR_TAG["name"]])
 
 
 # pylint: disable=no-member
-@router.post("/create_calendar",
-             response_model=Calendar,
-             responses={
-                 404: {"model": Message,
-                       "description": "This calendar not exist in Google calendar."},
-                 **BaseAppException.RESPONSE,
-                 **PermissionDeniedException.RESPONSE,
-                 **UnauthorizedException.RESPONSE,
-             },
-             status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/create_calendar",
+    response_model=Calendar,
+    responses={
+        404: {
+            "model": Message,
+            "description": "This calendar not exist in Google calendar.",
+        },
+        **BaseAppException.RESPONSE,
+        **PermissionDeniedException.RESPONSE,
+        **UnauthorizedException.RESPONSE,
+    },
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_calendar(
-        service: Annotated[CalendarService, Depends(CalendarService)],
-        user: Annotated[User, Depends(get_current_user)],
-        calendar_create: CalendarCreate,
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    user: Annotated[User, Depends(get_current_user)],
+    calendar_create: CalendarCreate,
 ) -> Any:
     """
     Create calendar, only users with special roles can create calendar.
@@ -46,29 +56,33 @@ async def create_calendar(
     google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
     if calendar_create.id:
         try:
-            google_calendar_service.calendars(). \
-                get(calendarId=calendar_create.id).execute()
+            google_calendar_service.calendars().get(
+                calendarId=calendar_create.id
+            ).execute()
         except HttpError as exc:
-            raise BaseAppException("This calendar not exist in Google calendar.",
-                                   status_code=404) from exc
+            raise BaseAppException(
+                "This calendar not exist in Google calendar.", status_code=404
+            ) from exc
     else:
         try:
             calendar_body = {
-                'summary': calendar_create.reservation_type,  # Title of the new calendar
-                'timeZone': 'Europe/Prague',  # Set your desired timezone
+                "summary": calendar_create.reservation_type,  # Title of the new calendar
+                "timeZone": "Europe/Prague",  # Set your desired timezone
             }
-            created_calendar = (google_calendar_service.calendars().
-                                insert(body=calendar_body).execute())
-            calendar_create.id = created_calendar.get('id')
+            created_calendar = (
+                google_calendar_service.calendars().insert(body=calendar_body).execute()
+            )
+            calendar_create.id = created_calendar.get("id")
 
             rule = {
-                'role': 'reader',  # Role is 'reader' for read-only public access
-                'scope': {
-                    'type': 'default'  # 'default' means public access
-                }
+                "role": "reader",  # Role is 'reader' for read-only public access
+                "scope": {"type": "default"},  # 'default' means public access
             }
-            (google_calendar_service.acl().
-             insert(calendarId=calendar_create.id, body=rule).execute())
+            (
+                google_calendar_service.acl()
+                .insert(calendarId=calendar_create.id, body=rule)
+                .execute()
+            )
         except HttpError as exc:
             raise BaseAppException("Can't create calendar in Google Calendar.") from exc
 
@@ -78,20 +92,24 @@ async def create_calendar(
     return calendar
 
 
-@router.post("/create_calendars",
-             response_model=List[Calendar],
-             responses={
-                 404: {"model": Message,
-                       "description": "This calendar not exist in Google calendar."},
-                 **BaseAppException.RESPONSE,
-                 **PermissionDeniedException.RESPONSE,
-                 **UnauthorizedException.RESPONSE,
-             },
-             status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/create_calendars",
+    response_model=List[Calendar],
+    responses={
+        404: {
+            "model": Message,
+            "description": "This calendar not exist in Google calendar.",
+        },
+        **BaseAppException.RESPONSE,
+        **PermissionDeniedException.RESPONSE,
+        **UnauthorizedException.RESPONSE,
+    },
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_calendars(
-        service: Annotated[CalendarService, Depends(CalendarService)],
-        user: Annotated[User, Depends(get_current_user)],
-        calendars_create: List[CalendarCreate],
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    user: Annotated[User, Depends(get_current_user)],
+    calendars_create: List[CalendarCreate],
 ) -> Any:
     """
     Create calendars, only users with special roles can create calendar.
@@ -104,23 +122,23 @@ async def create_calendars(
     """
     calendars_result: List[Calendar] = []
     for calendar in calendars_create:
-        calendars_result.append(
-            await create_calendar(service, user, calendar)
-        )
+        calendars_result.append(await create_calendar(service, user, calendar))
 
     return calendars_result
 
 
-@router.get("/{calendar_id}",
-            response_model=Calendar,
-            responses={
-                **EntityNotFoundException.RESPONSE,
-            },
-            status_code=status.HTTP_200_OK)
+@router.get(
+    "/{calendar_id}",
+    response_model=Calendar,
+    responses={
+        **EntityNotFoundException.RESPONSE,
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def get_calendar(
-        service: Annotated[CalendarService, Depends(CalendarService)],
-        calendar_id: Annotated[str, Path()],
-        include_removed: bool = Query(False)
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    calendar_id: Annotated[str, Path()],
+    include_removed: bool = Query(False),
 ) -> Any:
     """
     Get calendar by its uuid.
@@ -138,15 +156,17 @@ async def get_calendar(
     return calendar
 
 
-@router.get("/",
-            response_model=List[Calendar],
-            responses={
-                **BaseAppException.RESPONSE,
-            },
-            status_code=status.HTTP_200_OK)
+@router.get(
+    "/",
+    response_model=List[Calendar],
+    responses={
+        **BaseAppException.RESPONSE,
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def get_all_calendars(
-        service: Annotated[CalendarService, Depends(CalendarService)],
-        include_removed: bool = Query(False)
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    include_removed: bool = Query(False),
 ) -> Any:
     """
     Get all calendars from database.
@@ -162,16 +182,18 @@ async def get_all_calendars(
     return calendars
 
 
-@router.get("/google_calendars/",
-            responses={
-                **BaseAppException.RESPONSE,
-                **PermissionDeniedException.RESPONSE,
-                **UnauthorizedException.RESPONSE,
-            },
-            status_code=status.HTTP_200_OK)
+@router.get(
+    "/google_calendars/",
+    responses={
+        **BaseAppException.RESPONSE,
+        **PermissionDeniedException.RESPONSE,
+        **UnauthorizedException.RESPONSE,
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def get_all_google_calendar_to_add(
-        service: Annotated[CalendarService, Depends(CalendarService)],
-        user: Annotated[User, Depends(get_current_user)],
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    user: Annotated[User, Depends(get_current_user)],
 ) -> Any:
     """
     Get Calendars from Google Calendar
@@ -191,19 +213,21 @@ async def get_all_google_calendar_to_add(
     return calendars
 
 
-@router.put("/{calendar_id}",
-            response_model=Calendar,
-            responses={
-                **EntityNotFoundException.RESPONSE,
-                **PermissionDeniedException.RESPONSE,
-                **UnauthorizedException.RESPONSE,
-            },
-            status_code=status.HTTP_200_OK)
+@router.put(
+    "/{calendar_id}",
+    response_model=Calendar,
+    responses={
+        **EntityNotFoundException.RESPONSE,
+        **PermissionDeniedException.RESPONSE,
+        **UnauthorizedException.RESPONSE,
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def update_calendar(
-        service: Annotated[CalendarService, Depends(CalendarService)],
-        user: Annotated[User, Depends(get_current_user)],
-        calendar_id: Annotated[str, Path()],
-        calendar_update: Annotated[CalendarUpdate, Body()],
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    user: Annotated[User, Depends(get_current_user)],
+    calendar_id: Annotated[str, Path()],
+    calendar_update: Annotated[CalendarUpdate, Body()],
 ) -> Any:
     """
     Update calendar with id equal to calendar_id,
@@ -222,18 +246,20 @@ async def update_calendar(
     return calendar
 
 
-@router.put("/retrieve_deleted/{calendar_id}",
-            response_model=Calendar,
-            responses={
-                **EntityNotFoundException.RESPONSE,
-                **PermissionDeniedException.RESPONSE,
-                **UnauthorizedException.RESPONSE,
-            },
-            status_code=status.HTTP_200_OK)
+@router.put(
+    "/retrieve_deleted/{calendar_id}",
+    response_model=Calendar,
+    responses={
+        **EntityNotFoundException.RESPONSE,
+        **PermissionDeniedException.RESPONSE,
+        **UnauthorizedException.RESPONSE,
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def retrieve_deleted_calendar(
-        service: Annotated[CalendarService, Depends(CalendarService)],
-        user: Annotated[User, Depends(get_current_user)],
-        calendar_id: Annotated[str, Path()]
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    user: Annotated[User, Depends(get_current_user)],
+    calendar_id: Annotated[str, Path()],
 ) -> Any:
     """
     Retrieve deleted calendar with uuid equal to calendar_id,
@@ -245,27 +271,27 @@ async def retrieve_deleted_calendar(
 
     :returns CalendarModel: the updated calendar.
     """
-    calendar = await service.retrieve_removed_object(
-        calendar_id, user
-    )
+    calendar = await service.retrieve_removed_object(calendar_id, user)
     if not calendar:
         raise EntityNotFoundException(Entity.RESERVATION_SERVICE, calendar_id)
     return calendar
 
 
-@router.delete("/{calendar_id}",
-               response_model=Calendar,
-               responses={
-                   **EntityNotFoundException.RESPONSE,
-                   **PermissionDeniedException.RESPONSE,
-                   **UnauthorizedException.RESPONSE,
-               },
-               status_code=status.HTTP_200_OK)
+@router.delete(
+    "/{calendar_id}",
+    response_model=Calendar,
+    responses={
+        **EntityNotFoundException.RESPONSE,
+        **PermissionDeniedException.RESPONSE,
+        **UnauthorizedException.RESPONSE,
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def delete_calendar(
-        service: Annotated[CalendarService, Depends(CalendarService)],
-        user: Annotated[User, Depends(get_current_user)],
-        calendar_id: Annotated[str, Path()],
-        hard_remove: bool = Query(False)
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    user: Annotated[User, Depends(get_current_user)],
+    calendar_id: Annotated[str, Path()],
+    hard_remove: bool = Query(False),
 ) -> Any:
     """
     Delete calendar with id equal to calendar_id,
@@ -284,14 +310,16 @@ async def delete_calendar(
     return calendar
 
 
-@router.get("/mini_services/{calendar_id}",
-            responses={
-                **EntityNotFoundException.RESPONSE,
-            },
-            status_code=status.HTTP_200_OK)
+@router.get(
+    "/mini_services/{calendar_id}",
+    responses={
+        **EntityNotFoundException.RESPONSE,
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def get_mini_services_by_calendar(
-        service: Annotated[CalendarService, Depends(CalendarService)],
-        calendar_id: Annotated[str, Path()]
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    calendar_id: Annotated[str, Path()],
 ) -> Any:
     """
     Get mini services by its calendar.
@@ -308,16 +336,18 @@ async def get_mini_services_by_calendar(
     return mini_services
 
 
-@router.get("/reservation_service/{reservation_service_id}",
-            response_model=List[Calendar],
-            responses={
-                **EntityNotFoundException.RESPONSE,
-            },
-            status_code=status.HTTP_200_OK)
+@router.get(
+    "/reservation_service/{reservation_service_id}",
+    response_model=List[Calendar],
+    responses={
+        **EntityNotFoundException.RESPONSE,
+    },
+    status_code=status.HTTP_200_OK,
+)
 async def get_calendars_by_reservation_service_id(
-        service: Annotated[CalendarService, Depends(CalendarService)],
-        reservation_service_id: Annotated[str, Path()],
-        include_removed: bool = Query(False)
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    reservation_service_id: Annotated[str, Path()],
+    include_removed: bool = Query(False),
 ) -> Any:
     """
     Get calendars by its reservation service id.
@@ -329,8 +359,9 @@ async def get_calendars_by_reservation_service_id(
     :return: Calendars with reservation service id equal
     to reservation service id or None if no such calendars exists.
     """
-    calendars = await service.get_by_reservation_service_id(reservation_service_id,
-                                                            include_removed)
+    calendars = await service.get_by_reservation_service_id(
+        reservation_service_id, include_removed
+    )
     if calendars is None:
         raise BaseAppException()
     return calendars

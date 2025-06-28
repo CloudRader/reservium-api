@@ -1,6 +1,7 @@
 """
 Tests for ReservationService Pydantic Schemas
 """
+
 from datetime import datetime, UTC
 from uuid import uuid4
 import pytest
@@ -29,7 +30,7 @@ def test_reservation_service_create_valid():
         alias="prjct",
         web="https://projector.com",
         contact_mail="support@projector.com",
-        public=True
+        public=True,
     )
     assert schema.name == "Projector Booking"
     assert schema.alias == "prjct"
@@ -53,9 +54,7 @@ def test_reservation_service_update_partial():
     """
     Test partial update of reservation service.
     """
-    update = ReservationServiceUpdate(
-        alias="media"
-    )
+    update = ReservationServiceUpdate(alias="media")
     assert update.alias == "media"
     assert update.name is None
     assert update.web is None
@@ -80,7 +79,7 @@ def test_reservation_service_in_db_base_schema(valid_rules):
         active_member_rules=valid_rules,
         manager_rules=valid_rules,
         reservation_service_id=service_id,
-        mini_services=["Bar"]
+        mini_services=["Bar"],
     )
     mini_service = MiniService(
         id=uuid4(),
@@ -94,7 +93,7 @@ def test_reservation_service_in_db_base_schema(valid_rules):
         alias="SOUND",
         deleted_at=now,
         calendars=[calendar],
-        mini_services=[mini_service]
+        mini_services=[mini_service],
     )
     assert schema.id == service_id
     assert schema.name == "Sound System"
@@ -123,10 +122,7 @@ def test_reservation_service_create_required_fields(field):
     """
     Test that omitting required fields raises validation error.
     """
-    data = {
-        "name": "SomeName",
-        "alias": "ALIAS"
-    }
+    data = {"name": "SomeName", "alias": "ALIAS"}
     del data[field]
     with pytest.raises(ValidationError):
         ReservationServiceCreate(**data)

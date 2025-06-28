@@ -1,6 +1,7 @@
 """
 Utils for API.
 """
+
 import datetime as dt
 from urllib.parse import urlparse, urlunparse
 from pytz import timezone
@@ -20,16 +21,20 @@ def modify_url_scheme(url: str, new_scheme: str) -> str:
 
     # Ensure the new scheme is used
     new_url = urlunparse(
-        (new_scheme, parsed_url.netloc, parsed_url.path, parsed_url.params,
-         parsed_url.query, parsed_url.fragment)
+        (
+            new_scheme,
+            parsed_url.netloc,
+            parsed_url.path,
+            parsed_url.params,
+            parsed_url.query,
+            parsed_url.fragment,
+        )
     )
     return new_url
 
 
 def control_collision(
-        google_calendar_service,
-        event_input: EventCreate,
-        calendar: Calendar
+    google_calendar_service, event_input: EventCreate, calendar: Calendar
 ) -> bool:
     """
     Check if there is already another reservation at that time.
@@ -48,16 +53,22 @@ def control_collision(
     collisions.append(calendar.id)
     if calendar.collision_with_calendar:
         for calendar_id in collisions:
-            check_collision.extend(get_events(google_calendar_service,
-                                              event_input.start_datetime,
-                                              event_input.end_datetime,
-                                              calendar_id))
+            check_collision.extend(
+                get_events(
+                    google_calendar_service,
+                    event_input.start_datetime,
+                    event_input.end_datetime,
+                    calendar_id,
+                )
+            )
 
-    if not check_collision_time(check_collision,
-                                event_input.start_datetime,
-                                event_input.end_datetime,
-                                calendar,
-                                google_calendar_service):
+    if not check_collision_time(
+        check_collision,
+        event_input.start_datetime,
+        event_input.end_datetime,
+        calendar,
+        google_calendar_service,
+    ):
         return False
     return True
 
@@ -79,20 +90,28 @@ def get_events(service, start_time, end_time, calendar_id):
     end_time_str = prague.localize(end_time).isoformat()
 
     # Call the Calendar API
-    events_result = service.events().list(
-        calendarId=calendar_id,
-        timeMin=start_time_str,
-        timeMax=end_time_str,
-        singleEvents=True,
-        orderBy='startTime',
-        timeZone='Europe/Prague'
-    ).execute()
-    return events_result.get('items', [])
+    events_result = (
+        service.events()
+        .list(
+            calendarId=calendar_id,
+            timeMin=start_time_str,
+            timeMax=end_time_str,
+            singleEvents=True,
+            orderBy="startTime",
+            timeZone="Europe/Prague",
+        )
+        .execute()
+    )
+    return events_result.get("items", [])
 
 
-def check_collision_time(check_collision, start_datetime,
-                         end_datetime, calendar: Calendar,
-                         google_calendar_service) -> bool:
+def check_collision_time(
+    check_collision,
+    start_datetime,
+    end_datetime,
+    calendar: Calendar,
+    google_calendar_service,
+) -> bool:
     """
     Check if there is already another reservation at that time.
 
@@ -105,9 +124,9 @@ def check_collision_time(check_collision, start_datetime,
     :return: Boolean indicating if here is already another reservation or not.
     """
     if not calendar.collision_with_itself:
-        collisions = get_events(google_calendar_service,
-                                start_datetime,
-                                end_datetime, calendar.id)
+        collisions = get_events(
+            google_calendar_service, start_datetime, end_datetime, calendar.id
+        )
         if len(collisions) > calendar.max_people:
             return False
 
@@ -119,19 +138,22 @@ def check_collision_time(check_collision, start_datetime,
 
     start_date = dt.datetime.fromisoformat(str(start_datetime))
     end_date = dt.datetime.fromisoformat(str(end_datetime))
-    start_date_event = dt.datetime.fromisoformat(str(check_collision[0]['start']['dateTime']))
-    end_date_event = dt.datetime.fromisoformat(str(check_collision[0]['end']['dateTime']))
+    start_date_event = dt.datetime.fromisoformat(
+        str(check_collision[0]["start"]["dateTime"])
+    )
+    end_date_event = dt.datetime.fromisoformat(
+        str(check_collision[0]["end"]["dateTime"])
+    )
 
-    if end_date_event == start_date.astimezone(timezone('Europe/Prague')) \
-            or start_date_event == end_date.astimezone(timezone('Europe/Prague')):
+    if end_date_event == start_date.astimezone(
+        timezone("Europe/Prague")
+    ) or start_date_event == end_date.astimezone(timezone("Europe/Prague")):
         return True
 
     return False
 
 
-def check_night_reservation(
-        user: User
-) -> bool:
+def check_night_reservation(user: User) -> bool:
     """
     Control if user have permission for night reservation.
 
@@ -157,10 +179,13 @@ def control_available_reservation_time(start_datetime, end_datetime) -> bool:
     start_time = start_datetime.time()
     end_time = end_datetime.time()
 
-    start_res_time = dt.datetime.strptime('08:00:00', '%H:%M:%S').time()
-    end_res_time = dt.datetime.strptime('22:00:00', '%H:%M:%S').time()
+    start_res_time = dt.datetime.strptime("08:00:00", "%H:%M:%S").time()
+    end_res_time = dt.datetime.strptime("22:00:00", "%H:%M:%S").time()
 
-    if start_time < start_res_time or end_time < start_res_time \
-            or end_time > end_res_time:
+    if (
+        start_time < start_res_time
+        or end_time < start_res_time
+        or end_time > end_res_time
+    ):
         return False
     return True

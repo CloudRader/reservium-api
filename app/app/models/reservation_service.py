@@ -1,6 +1,7 @@
 """
 Reservation service ORM model and its dependencies.
 """
+
 from typing import TYPE_CHECKING
 from sqlalchemy import Integer
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -21,6 +22,7 @@ class ReservationService(Base, SoftDeleteMixin):
     """
     Reservation service model to create and manipulate reservation service entity in the database.
     """
+
     __tablename__ = "reservation_service"
 
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
@@ -32,9 +34,14 @@ class ReservationService(Base, SoftDeleteMixin):
     room_id: Mapped[int] = mapped_column(nullable=True)
 
     calendars: Mapped[list["Calendar"]] = relationship(
-        back_populates="reservation_service", lazy="selectin")
+        back_populates="reservation_service", lazy="selectin"
+    )
     mini_services: Mapped[list["MiniService"]] = relationship(
-        back_populates="reservation_service", lazy="selectin")
-    lockers_id: Mapped[list[int]] = mapped_column(ARRAY(Integer), nullable=False, default=list)
+        back_populates="reservation_service", lazy="selectin"
+    )
+    lockers_id: Mapped[list[int]] = mapped_column(
+        ARRAY(Integer), nullable=False, default=list
+    )
+
 
 # pylint: enable=too-few-public-methods

@@ -1,6 +1,7 @@
 """
 DTO schemes for Event entity.
 """
+
 from datetime import datetime
 from typing import List, Any
 from pydantic import BaseModel, Field, EmailStr, field_validator
@@ -15,7 +16,9 @@ class NaiveDatetimeValidatorMixin:
     """
 
     @field_validator("start_datetime", "end_datetime", mode="before")
-    def check_naive_datetime(cls, value: Any) -> Any:  # pylint: disable=no-self-argument
+    def check_naive_datetime( # pylint: disable=no-self-argument
+        cls, value: Any
+    ) -> Any:
         """
         Validates that datetime values are naive (not timezone-aware).
 
@@ -46,11 +49,13 @@ class NaiveDatetimeValidatorMixin:
 
 class EventBase(BaseModel):
     """Shared properties of Event."""
+
     additional_services: List[str] = Field(default_factory=list)
 
 
 class EventCreate(NaiveDatetimeValidatorMixin, BaseModel):
     """Schema for creating an event from the reservation form."""
+
     start_datetime: datetime
     end_datetime: datetime
     purpose: str = Field(max_length=40)
@@ -62,6 +67,7 @@ class EventCreate(NaiveDatetimeValidatorMixin, BaseModel):
 
 class EventCreateToDb(EventBase):
     """Properties to receive via API on creation."""
+
     id: str
     start_datetime: datetime
     end_datetime: datetime
@@ -76,6 +82,7 @@ class EventCreateToDb(EventBase):
 
 class EventUpdate(EventBase):
     """Properties to receive via API on update."""
+
     purpose: str | None = None
     guests: int | None = None
     start_datetime: datetime | None = None
@@ -89,12 +96,14 @@ class EventUpdate(EventBase):
 
 class EventUpdateTime(NaiveDatetimeValidatorMixin, BaseModel):
     """Properties to receive via API on update reservation time."""
+
     start_datetime: datetime | None = None
     end_datetime: datetime | None = None
 
 
 class EventInDBBase(EventBase):
     """Base model for event in database."""
+
     id: str
     purpose: str
     guests: int
@@ -110,6 +119,7 @@ class EventInDBBase(EventBase):
     # reason: Config class only needs to set orm_mode to True.
     class Config:
         """Config class for database event model."""
+
         from_attributes = True
 
 
@@ -123,6 +133,7 @@ class EventInDB(EventInDBBase):
 
 class EventWithExtraDetails(BaseModel):
     """Extend properties of event to return via API."""
+
     event: Event
     reservation_type: str | None = None
     user_name: str | None = None

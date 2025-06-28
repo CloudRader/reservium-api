@@ -1,6 +1,7 @@
 """
 Module for testing reservation service ser.
 """
+
 import pytest
 from schemas import ReservationServiceUpdate
 from api import PermissionDeniedException
@@ -11,8 +12,9 @@ from api import PermissionDeniedException
 
 
 @pytest.mark.asyncio
-async def test_create_reservation_service(reservation_service,
-                                          reservation_service_create):
+async def test_create_reservation_service(
+    reservation_service, reservation_service_create
+):
     """
     Test creating a reservation service.
     """
@@ -25,9 +27,9 @@ async def test_create_reservation_service(reservation_service,
 
 
 @pytest.mark.asyncio
-async def test_create_reservation_service_no_permission(service_reservation_service,
-                                                        reservation_service_create,
-                                                        user_not_head):
+async def test_create_reservation_service_no_permission(
+    service_reservation_service, reservation_service_create, user_not_head
+):
     """
     Test creating a reservation service when the user doesn't have permission.
     """
@@ -38,8 +40,9 @@ async def test_create_reservation_service_no_permission(service_reservation_serv
 
 
 @pytest.mark.asyncio
-async def test_get_reservation_service(reservation_service,
-                                       service_reservation_service):
+async def test_get_reservation_service(
+    reservation_service, service_reservation_service
+):
     """
     Test getting a reservation service.
     """
@@ -52,8 +55,9 @@ async def test_get_reservation_service(reservation_service,
 
 
 @pytest.mark.asyncio
-async def test_get_reservation_service_by_name(reservation_service,
-                                               service_reservation_service):
+async def test_get_reservation_service_by_name(
+    reservation_service, service_reservation_service
+):
     """
     Test getting a reservation service by name.
     """
@@ -66,8 +70,9 @@ async def test_get_reservation_service_by_name(reservation_service,
 
 
 @pytest.mark.asyncio
-async def test_get_reservation_service_by_alias(reservation_service,
-                                                service_reservation_service):
+async def test_get_reservation_service_by_alias(
+    reservation_service, service_reservation_service
+):
     """
     Test getting a reservation service by alias.
     """
@@ -80,8 +85,9 @@ async def test_get_reservation_service_by_alias(reservation_service,
 
 
 @pytest.mark.asyncio
-async def test_get_public_reservation_service_empty(reservation_service,
-                                                    service_reservation_service):
+async def test_get_public_reservation_service_empty(
+    reservation_service, service_reservation_service
+):
     """
     Test getting public reservation services with empty list.
     """
@@ -91,8 +97,9 @@ async def test_get_public_reservation_service_empty(reservation_service,
 
 
 @pytest.mark.asyncio
-async def test_get_public_reservation_service(reservation_service,
-                                              service_reservation_service):
+async def test_get_public_reservation_service(
+    reservation_service, service_reservation_service
+):
     """
     Test getting public reservation services.
     """
@@ -107,15 +114,14 @@ async def test_get_public_reservation_service(reservation_service,
 
 
 @pytest.mark.asyncio
-async def test_update_reservation_service(service_reservation_service,
-                                          reservation_service,
-                                          user):
+async def test_update_reservation_service(
+    service_reservation_service, reservation_service, user
+):
     """
     Test updating an existing reservation service.
     """
     reservation_service_update = ReservationServiceUpdate(
-        name="Updated Game Room",
-        alias="ngame"
+        name="Updated Game Room", alias="ngame"
     )
 
     assert reservation_service_update.web is None
@@ -134,9 +140,9 @@ async def test_update_reservation_service(service_reservation_service,
 
 
 @pytest.mark.asyncio
-async def test_update_reservation_service_no_permission(service_reservation_service,
-                                                        reservation_service,
-                                                        user_not_head):
+async def test_update_reservation_service_no_permission(
+    service_reservation_service, reservation_service, user_not_head
+):
     """
     Test updating a reservation service when the user doesn't have permission.
     """
@@ -152,9 +158,9 @@ async def test_update_reservation_service_no_permission(service_reservation_serv
 
 
 @pytest.mark.asyncio
-async def test_soft_delete_reservation_service(service_reservation_service,
-                                               reservation_service,
-                                               user):
+async def test_soft_delete_reservation_service(
+    service_reservation_service, reservation_service, user
+):
     """
     Test soft deleting a reservation service.
     """
@@ -167,9 +173,9 @@ async def test_soft_delete_reservation_service(service_reservation_service,
 
 
 @pytest.mark.asyncio
-async def test_hard_delete_reservation_service(service_reservation_service,
-                                               reservation_service,
-                                               user):
+async def test_hard_delete_reservation_service(
+    service_reservation_service, reservation_service, user
+):
     """
     Test hard deleting a reservation service.
     """
@@ -182,9 +188,9 @@ async def test_hard_delete_reservation_service(service_reservation_service,
 
 
 @pytest.mark.asyncio
-async def test_delete_reservation_service_no_permission(service_reservation_service,
-                                                        reservation_service,
-                                                        user_not_head):
+async def test_delete_reservation_service_no_permission(
+    service_reservation_service, reservation_service, user_not_head
+):
     """
     Test deleting a reservation service when the user doesn't have permission.
     """

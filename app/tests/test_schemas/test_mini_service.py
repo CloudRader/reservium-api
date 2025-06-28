@@ -1,6 +1,7 @@
 """
 Tests for MiniService Pydantic Schemas
 """
+
 from datetime import datetime, UTC
 from uuid import uuid4
 import pytest
@@ -22,10 +23,7 @@ def test_mini_service_create_valid():
     Test creating a mini service with valid data.
     """
     service_id = uuid4()
-    schema = MiniServiceCreate(
-        reservation_service_id=service_id,
-        name="Media Setup"
-    )
+    schema = MiniServiceCreate(reservation_service_id=service_id, name="Media Setup")
     assert schema.name == "Media Setup"
     assert schema.reservation_service_id == service_id
 

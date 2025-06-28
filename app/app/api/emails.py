@@ -1,6 +1,7 @@
 """
 API controllers for emails.
 """
+
 from typing import Any, Annotated
 import os
 
@@ -9,23 +10,16 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from fastapi import APIRouter, status, Depends
 from api import get_current_token, get_request
-from schemas import EmailCreate, RegistrationFormCreate, UserIS, User, Event, \
-    EmailMeta
+from schemas import EmailCreate, RegistrationFormCreate, UserIS, User, Event, EmailMeta
 from models import ReservationServiceModel, CalendarModel
 from services import EmailService, EventService
 from core import email_connection
 from .docs import fastapi_docs
 
-router = APIRouter(
-    prefix='/emails',
-    tags=[fastapi_docs.EMAIL_TAG["name"]]
-)
+router = APIRouter(prefix="/emails", tags=[fastapi_docs.EMAIL_TAG["name"]])
 
 template_dir = Path(__file__).parent.parent / "templates" / "email"
-env = Environment(
-    loader=FileSystemLoader(template_dir),
-    autoescape=select_autoescape()
-)
+env = Environment(loader=FileSystemLoader(template_dir), autoescape=select_autoescape())
 
 
 def render_email_template(template_name: str, context: dict) -> str:
@@ -40,13 +34,14 @@ def render_email_template(template_name: str, context: dict) -> str:
     return template.render(context)
 
 
-@router.post("/send_registration_form",
-             status_code=status.HTTP_201_CREATED,
-             )
+@router.post(
+    "/send_registration_form",
+    status_code=status.HTTP_201_CREATED,
+)
 async def send_registration_form(
-        service: Annotated[EmailService, Depends(EmailService)],
-        token: Annotated[Any, Depends(get_current_token)],
-        registration_form: RegistrationFormCreate
+    service: Annotated[EmailService, Depends(EmailService)],
+    token: Annotated[Any, Depends(get_current_token)],
+    registration_form: RegistrationFormCreate,
 ) -> Any:
     """
     Sends email with pdf attachment with reservation request to
@@ -70,9 +65,7 @@ async def send_registration_form(
     return {"message": "Registration form has been sent"}
 
 
-async def send_email(
-        email_create: EmailCreate
-) -> Any:
+async def send_email(email_create: EmailCreate) -> Any:
     """
     Sends an email asynchronously.
 
@@ -88,7 +81,7 @@ async def send_email(
         recipients=email_create.email,  # List of recipients
         body=email_create.body,
         subtype=MessageType.plain,
-        attachments=[email_create.attachment] if email_create.attachment else []
+        attachments=[email_create.attachment] if email_create.attachment else [],
     )
 
     fm = FastMail(email_connection)
@@ -102,9 +95,9 @@ async def send_email(
 
 
 async def preparing_email(
-        service_event: Annotated[EventService, Depends(EventService)],
-        event: Event,
-        email_meta: EmailMeta
+    service_event: Annotated[EventService, Depends(EventService)],
+    event: Event,
+    email_meta: EmailMeta,
 ) -> Any:
     """
     Prepares and sends both member and manager information email based on an event.
@@ -115,7 +108,9 @@ async def preparing_email(
     :return: Dictionary confirming the emails have been sent.
     """
     calendar = await service_event.get_calendar_of_this_event(event)
-    reservation_service = await service_event.get_reservation_service_of_this_event(event)
+    reservation_service = await service_event.get_reservation_service_of_this_event(
+        event
+    )
     user = await service_event.get_user_of_this_event(event)
 
     context = construct_body_context(
@@ -132,16 +127,18 @@ async def preparing_email(
     template_for_manager = f"{email_meta.template_name}_manager.txt"
     body = render_email_template(template_for_manager, context)
     email_subject = f"[Reservation Alert] {email_meta.subject}"
-    email_create = construct_email(reservation_service.contact_mail, email_subject, body)
+    email_create = construct_email(
+        reservation_service.contact_mail, email_subject, body
+    )
     await send_email(email_create)
 
     return {"message": "Emails has been sent successfully"}
 
 
 def construct_email(
-        send_to_email: str,
-        subject: str,
-        body: str,
+    send_to_email: str,
+    subject: str,
+    body: str,
 ) -> EmailCreate:
     """
     Constructing the schema of the email .
@@ -161,11 +158,11 @@ def construct_email(
 
 
 def construct_body_context(
-        event: Event,
-        user: User,
-        reservation_service: ReservationServiceModel,
-        calendar: CalendarModel,
-        reason: str,
+    event: Event,
+    user: User,
+    reservation_service: ReservationServiceModel,
+    calendar: CalendarModel,
+    reason: str,
 ) -> dict:
     """
     Constructs a dictionary of context variables to render an email template.
@@ -199,11 +196,7 @@ def construct_body_context(
     return context
 
 
-def create_email_meta(
-        template_name: str,
-        subject: str,
-        reason: str = ""
-) -> EmailMeta:
+def create_email_meta(template_name: str, subject: str, reason: str = "") -> EmailMeta:
     """
     Constructs an EmailMeta object from parameters.
 

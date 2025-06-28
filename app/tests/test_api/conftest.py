@@ -1,12 +1,12 @@
 """
 Conftest for testing api
 """
+
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 
-from schemas import UserIS, UserCreate, ReservationServiceCreate, \
-    Zone, Room
+from schemas import UserIS, UserCreate, ReservationServiceCreate, Zone, Room
 from crud import CRUDUser, CRUDReservationService
 from app.main import app
 
@@ -20,6 +20,7 @@ from app.main import app
 
 # pylint: disable=import-outside-toplevel
 # reason: circular import issue
+
 
 @pytest.fixture
 def user_crud(async_session):
@@ -43,6 +44,7 @@ async def user_service(shared_session):
     Returns a UserService instance using the shared test session.
     """
     from services import UserService
+
     return UserService(db=shared_session)
 
 
@@ -52,6 +54,7 @@ async def usual_user_service(async_session):
     Returns a UserService instance using the isolated async test session.
     """
     from services import UserService
+
     return UserService(db=async_session)
 
 
@@ -61,6 +64,7 @@ async def reservation_service_service(shared_session):
     Returns a ReservationServiceService instance using the shared test session.
     """
     from services import ReservationServiceService
+
     return ReservationServiceService(db=shared_session)
 
 
@@ -70,8 +74,11 @@ async def client(user_service, reservation_service_service):
     Provides a test HTTP client with overridden dependencies.
     """
     from services import UserService, ReservationServiceService
+
     app.dependency_overrides[UserService] = lambda: user_service
-    app.dependency_overrides[ReservationServiceService] = lambda: reservation_service_service
+    app.dependency_overrides[ReservationServiceService] = (
+        lambda: reservation_service_service
+    )
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
@@ -110,12 +117,7 @@ def zone_data_from_is() -> Zone:
     """
     Return new Zone schema.
     """
-    return Zone(
-        alias="game",
-        id=21,
-        name="test.name",
-        note="some.note"
-    )
+    return Zone(alias="game", id=21, name="test.name", note="some.note")
 
 
 @pytest.fixture()
@@ -142,7 +144,7 @@ async def user(user_crud):
         username="test_user",
         active_member=True,
         section_head=True,
-        roles=["testa", "sgrill"]
+        roles=["testa", "sgrill"],
     )
 
     user = await user_crud.create(user_data)
@@ -159,11 +161,14 @@ async def reservation_service(reservation_service_crud):
         alias="game",
         web="https://herna.cool.go.com",
         contact_mail="game@buk.ok.sh.com",
-        public=False
+        public=False,
     )
 
-    reservation_service = await reservation_service_crud.create(reservation_service_data)
+    reservation_service = await reservation_service_crud.create(
+        reservation_service_data
+    )
     return reservation_service
+
 
 # @pytest_asyncio.fixture
 # async def authorized_client(client: AsyncClient, user) -> AsyncClient:

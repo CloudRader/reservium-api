@@ -1,6 +1,7 @@
 """
 Module for testing user model
 """
+
 from models import UserModel
 import sqlalchemy
 import pytest
@@ -80,9 +81,7 @@ async def test_list_users(async_session):
     async_session.add_all(users)
     await async_session.commit()
 
-    result = (await async_session.execute(
-        sqlalchemy.select(UserModel)
-    )).scalars().all()
+    result = (await async_session.execute(sqlalchemy.select(UserModel))).scalars().all()
 
     assert len(result) == 2
     usernames = [u.username for u in result]

@@ -1,6 +1,7 @@
 """
 Calendar ORM model and its dependencies.
 """
+
 from typing import Type, Any, TYPE_CHECKING
 import json
 from sqlalchemy import String, ForeignKey
@@ -16,12 +17,14 @@ if TYPE_CHECKING:
     from models.reservation_service import ReservationService
     from models.event import Event
 
+
 # pylint: disable=too-many-ancestors
 class RulesType(TypeDecorator):
     """
     Custom SQLAlchemy type to handle the serialization and deserialization of
     the `Rules` Pydantic model to and from JSON.
     """
+
     impl = TEXT
 
     @property
@@ -67,21 +70,29 @@ class Calendar(Base, SoftDeleteMixin):
     reservation_type: Mapped[str] = mapped_column(unique=True, nullable=False)
     color: Mapped[str] = mapped_column(default="#05baf5", nullable=False)
     max_people: Mapped[int] = mapped_column(default=0, nullable=False)
-    more_than_max_people_with_permission: Mapped[bool] = mapped_column(nullable=False, default=True)
+    more_than_max_people_with_permission: Mapped[bool] = mapped_column(
+        nullable=False, default=True
+    )
     collision_with_itself: Mapped[bool] = mapped_column(default=False, nullable=False)
-    collision_with_calendar: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=True)
+    collision_with_calendar: Mapped[list[str]] = mapped_column(
+        ARRAY(String), nullable=True
+    )
 
     club_member_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=True)
     active_member_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
     manager_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
 
-    reservation_service_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True),
-                                                         ForeignKey("reservation_service.id"))
+    reservation_service_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("reservation_service.id")
+    )
 
     reservation_service: Mapped["ReservationService"] = relationship(
-        back_populates="calendars")
+        back_populates="calendars"
+    )
     events: Mapped[list["Event"]] = relationship(
-        back_populates="calendar", lazy="selectin")
+        back_populates="calendar", lazy="selectin"
+    )
     mini_services: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=True)
+
 
 # pylint: enable=too-few-public-methods

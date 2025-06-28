@@ -1,6 +1,7 @@
 """
 Module for testing calendar model
 """
+
 import pytest
 import sqlalchemy
 from models import CalendarModel
@@ -11,8 +12,7 @@ from models import CalendarModel
 
 
 @pytest.mark.asyncio
-async def test_create_calendar(test_calendar,
-                               test_reservation_service):
+async def test_create_calendar(test_calendar, test_reservation_service):
     """
     Test creating a calendar.
     """
@@ -58,9 +58,9 @@ async def test_delete_calendar(async_session, test_calendar):
 
 
 @pytest.mark.asyncio
-async def test_list_calendars(async_session,
-                              rules_club_member,
-                              test_reservation_service):
+async def test_list_calendars(
+    async_session, rules_club_member, test_reservation_service
+):
     """
     Test listing multiple calendars.
     """
@@ -78,7 +78,7 @@ async def test_list_calendars(async_session,
             active_member_rules=rules_club_member,
             manager_rules=rules_club_member,
             reservation_service_id=test_reservation_service.id,
-            mini_services=["Board Games"]
+            mini_services=["Board Games"],
         ),
         CalendarModel(
             id="test_calendar_type2@google.com",
@@ -92,15 +92,15 @@ async def test_list_calendars(async_session,
             active_member_rules=rules_club_member,
             manager_rules=rules_club_member,
             reservation_service_id=test_reservation_service.id,
-            mini_services=["Consoles"]
+            mini_services=["Consoles"],
         ),
     ]
     async_session.add_all(calendars)
     await async_session.commit()
 
-    result = (await async_session.execute(
-        sqlalchemy.select(CalendarModel)
-    )).scalars().all()
+    result = (
+        (await async_session.execute(sqlalchemy.select(CalendarModel))).scalars().all()
+    )
 
     assert len(result) >= 2
     reservation_types = [c.reservation_type for c in result]

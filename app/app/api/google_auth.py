@@ -1,6 +1,7 @@
 """
 API controllers for authorisation in google.
 """
+
 import os.path
 
 from google.auth.transport.requests import Request
@@ -27,17 +28,20 @@ def auth_google(creds):
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_config({
-                "installed": {
-                    "client_id": settings.GOOGLE_CLIENT_ID,
-                    "project_id": settings.GOOGLE_PROJECT_ID,
-                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                    "token_uri": "https://oauth2.googleapis.com/token",
-                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                    "client_secret": settings.GOOGLE_CLIENT_SECRET,
-                    "redirect_uris": ["http://localhost"],
-                }
-            }, settings.GOOGLE_SCOPES)
+            flow = InstalledAppFlow.from_client_config(
+                {
+                    "installed": {
+                        "client_id": settings.GOOGLE_CLIENT_ID,
+                        "project_id": settings.GOOGLE_PROJECT_ID,
+                        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                        "token_uri": "https://oauth2.googleapis.com/token",
+                        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                        "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                        "redirect_uris": ["http://localhost"],
+                    }
+                },
+                settings.GOOGLE_SCOPES,
+            )
             creds = flow.run_local_server(port=0)
 
         with open("token.json", "w", encoding="utf-8") as token:

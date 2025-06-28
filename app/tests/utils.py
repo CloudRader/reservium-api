@@ -1,6 +1,7 @@
 """
 Utils for test package.
 """
+
 from typing import Any
 
 from db import Base

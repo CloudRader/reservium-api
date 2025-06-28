@@ -1,6 +1,7 @@
 """
 Module for testing mini service ser.
 """
+
 import pytest
 from schemas import MiniServiceUpdate
 from api import PermissionDeniedException
@@ -11,21 +12,22 @@ from api import PermissionDeniedException
 
 
 @pytest.mark.asyncio
-async def test_create_mini_service(mini_service,
-                                   mini_service_create):
+async def test_create_mini_service(mini_service, mini_service_create):
     """
     Test creating a mini service.
     """
     assert mini_service is not None
     assert mini_service.name == mini_service_create.name
-    assert (mini_service.reservation_service_id ==
-            mini_service_create.reservation_service_id)
+    assert (
+        mini_service.reservation_service_id
+        == mini_service_create.reservation_service_id
+    )
 
 
 @pytest.mark.asyncio
-async def test_create_mini_service_no_permission(service_mini_service,
-                                                 mini_service_create,
-                                                 user_not_head):
+async def test_create_mini_service_no_permission(
+    service_mini_service, mini_service_create, user_not_head
+):
     """
     Test creating a mini service when the user doesn't have permission.
     """
@@ -36,38 +38,35 @@ async def test_create_mini_service_no_permission(service_mini_service,
 
 
 @pytest.mark.asyncio
-async def test_get_mini_service(service_mini_service,
-                                mini_service):
+async def test_get_mini_service(service_mini_service, mini_service):
     """
     Test getting a mini service.
     """
-    get_mini_service = await service_mini_service.get(
-        mini_service.id
-    )
+    get_mini_service = await service_mini_service.get(mini_service.id)
     assert get_mini_service is not None
     assert get_mini_service.name == mini_service.name
-    assert (get_mini_service.reservation_service_id ==
-            mini_service.reservation_service_id)
+    assert (
+        get_mini_service.reservation_service_id == mini_service.reservation_service_id
+    )
 
 
 @pytest.mark.asyncio
-async def test_get_mini_service_by_name(mini_service,
-                                        service_mini_service):
+async def test_get_mini_service_by_name(mini_service, service_mini_service):
     """
     Test getting a mini service by name.
     """
-    get_mini_service = await service_mini_service.get_by_name(
-        mini_service.name
-    )
+    get_mini_service = await service_mini_service.get_by_name(mini_service.name)
     assert get_mini_service is not None
     assert get_mini_service.name == mini_service.name
-    assert (get_mini_service.reservation_service_id ==
-            mini_service.reservation_service_id)
+    assert (
+        get_mini_service.reservation_service_id == mini_service.reservation_service_id
+    )
 
 
 @pytest.mark.asyncio
-async def test_get_mini_services_by_reservation_service_id(mini_service,
-                                                           service_mini_service):
+async def test_get_mini_services_by_reservation_service_id(
+    mini_service, service_mini_service
+):
     """
     Test getting a mini service by reservation service id.
     """
@@ -76,14 +75,14 @@ async def test_get_mini_services_by_reservation_service_id(mini_service,
     )
     assert get_mini_services != []
     assert get_mini_services[0].name == mini_service.name
-    assert (get_mini_services[0].reservation_service_id ==
-            mini_service.reservation_service_id)
+    assert (
+        get_mini_services[0].reservation_service_id
+        == mini_service.reservation_service_id
+    )
 
 
 @pytest.mark.asyncio
-async def test_update_mini_service(service_mini_service,
-                                   mini_service,
-                                   user):
+async def test_update_mini_service(service_mini_service, mini_service, user):
     """
     Test updating an existing mini service.
     """
@@ -101,9 +100,9 @@ async def test_update_mini_service(service_mini_service,
 
 
 @pytest.mark.asyncio
-async def test_update_mini_service_no_permission(service_mini_service,
-                                                 mini_service,
-                                                 user_not_head):
+async def test_update_mini_service_no_permission(
+    service_mini_service, mini_service, user_not_head
+):
     """
     Test updating a mini service when the user doesn't have permission.
     """
@@ -118,9 +117,7 @@ async def test_update_mini_service_no_permission(service_mini_service,
 
 
 @pytest.mark.asyncio
-async def test_soft_delete_mini_service(service_mini_service,
-                                        mini_service,
-                                        user):
+async def test_soft_delete_mini_service(service_mini_service, mini_service, user):
     """
     Test soft deleting a mini service.
     """
@@ -133,9 +130,7 @@ async def test_soft_delete_mini_service(service_mini_service,
 
 
 @pytest.mark.asyncio
-async def test_hard_delete_mini_service(service_mini_service,
-                                        mini_service,
-                                        user):
+async def test_hard_delete_mini_service(service_mini_service, mini_service, user):
     """
     Test hard deleting a mini service.
     """
@@ -148,9 +143,9 @@ async def test_hard_delete_mini_service(service_mini_service,
 
 
 @pytest.mark.asyncio
-async def test_delete_mini_service_no_permission(service_mini_service,
-                                                 mini_service,
-                                                 user_not_head):
+async def test_delete_mini_service_no_permission(
+    service_mini_service, mini_service, user_not_head
+):
     """
     Test deleting a mini service when the user doesn't have permission.
     """
@@ -161,9 +156,9 @@ async def test_delete_mini_service_no_permission(service_mini_service,
 
 
 @pytest.mark.asyncio
-async def test_retrieve_soft_removed_mini_service(service_mini_service,
-                                                  mini_service,
-                                                  user):
+async def test_retrieve_soft_removed_mini_service(
+    service_mini_service, mini_service, user
+):
     """
     Test restoring soft deleted mini service.
     """

@@ -2,6 +2,7 @@
 Fixtures for setting up and tearing down the test PostgreSQL database using testcontainers.
 Provides async sessions for tests, with schema management.
 """
+
 from urllib.parse import urlparse, urlunparse
 
 import pytest_asyncio

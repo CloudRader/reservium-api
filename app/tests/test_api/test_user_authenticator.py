@@ -1,11 +1,17 @@
 """
 Module for testing user authenticator api
 """
+
 from unittest.mock import AsyncMock, patch, MagicMock
 import pytest
 from fastapi import HTTPException, status
-from api import get_oauth_session, get_request, authenticate_user, \
-    get_current_token, get_current_user
+from api import (
+    get_oauth_session,
+    get_request,
+    authenticate_user,
+    get_current_token,
+    get_current_user,
+)
 
 
 # pylint: disable=redefined-outer-name
@@ -18,6 +24,7 @@ class DummyRequest:
     """
     Dummy request object for testing session-based access.
     """
+
     def __init__(self, session_data):
         self.session = session_data
 
@@ -49,8 +56,9 @@ async def test_get_request_success(mock_get):
 
 @pytest.mark.asyncio
 @patch("api.user_authenticator.get_request")
-async def test_authenticate_user(mock_get_request, user_data_from_is,
-                                 room_data_from_is):
+async def test_authenticate_user(
+    mock_get_request, user_data_from_is, room_data_from_is
+):
     """
     Test user authentication flow with mocked data from identity service.
     """
@@ -62,7 +70,7 @@ async def test_authenticate_user(mock_get_request, user_data_from_is,
         user_data_from_is.model_dump(),  # /users/me
         [],  # /user_roles/mine
         [],  # /services/mine
-        room_data_from_is.model_dump() # /rooms/mine
+        room_data_from_is.model_dump(),  # /rooms/mine
     ]
 
     user = await authenticate_user(mock_user_service, token="dummy")
@@ -100,10 +108,9 @@ async def test_get_current_user_success(mock_get_request, user_data_from_is):
 
     mock_get_request.return_value = user_data_from_is.model_dump()
 
-    request = DummyRequest({
-        "user_username": "user1",
-        "oauth_token": {"access_token": "abc"}
-    })
+    request = DummyRequest(
+        {"user_username": "user1", "oauth_token": {"access_token": "abc"}}
+    )
 
     user = await get_current_user(mock_user_service, request)
     assert user["username"] == "user1"

@@ -3,6 +3,7 @@ This module defines the CRUD operations for the User model, including an
 abstract base class (AbstractCRUDUser) and a concrete implementation (CRUDUser)
 using SQLAlchemy.
 """
+
 from abc import ABC, abstractmethod
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,11 +14,7 @@ from schemas import UserCreate, UserUpdate
 from crud import CRUDBase
 
 
-class AbstractCRUDUser(CRUDBase[
-                           UserModel,
-                           UserCreate,
-                           UserUpdate
-                       ], ABC):
+class AbstractCRUDUser(CRUDBase[UserModel, UserCreate, UserUpdate], ABC):
     """
     Abstract class for CRUD operations specific to the User model.
     It extends the generic CRUDBase class and defines additional abstract methods

@@ -1,6 +1,7 @@
 """
 Module for testing mini service model
 """
+
 import uuid
 from models import MiniServiceModel
 import sqlalchemy
@@ -12,9 +13,9 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_create_mini_service(test_mini_service,
-                                   create_mini_service_uuid,
-                                   create_reservation_service_uuid):
+async def test_create_mini_service(
+    test_mini_service, create_mini_service_uuid, create_reservation_service_uuid
+):
     """
     Test creating mini service model.
     """
@@ -64,20 +65,22 @@ async def test_list_mini_services(async_session, test_reservation_service):
         MiniServiceModel(
             id=uuid.uuid4(),
             name="Mini A",
-            reservation_service_id=test_reservation_service.id
+            reservation_service_id=test_reservation_service.id,
         ),
         MiniServiceModel(
             id=uuid.uuid4(),
             name="Mini B",
-            reservation_service_id=test_reservation_service.id
+            reservation_service_id=test_reservation_service.id,
         ),
     ]
     async_session.add_all(services)
     await async_session.commit()
 
-    result = (await async_session.execute(
-        sqlalchemy.select(MiniServiceModel)
-    )).scalars().all()
+    result = (
+        (await async_session.execute(sqlalchemy.select(MiniServiceModel)))
+        .scalars()
+        .all()
+    )
 
     assert len(result) == 2
     names = [s.name for s in result]

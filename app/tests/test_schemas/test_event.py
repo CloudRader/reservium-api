@@ -1,6 +1,7 @@
 """
 Tests for MiniService Pydantic Schemas
 """
+
 import pytest
 from pydantic import ValidationError
 from models import EventState
@@ -91,17 +92,20 @@ def test_event_schema_extends_base():
     assert schema.purpose == "Birthday party"
 
 
-@pytest.mark.parametrize("field", [
-    "id",
-    "purpose",
-    "guests",
-    "email",
-    "start_datetime",
-    "end_datetime",
-    "event_state",
-    "user_id",
-    "calendar_id",
-])
+@pytest.mark.parametrize(
+    "field",
+    [
+        "id",
+        "purpose",
+        "guests",
+        "email",
+        "start_datetime",
+        "end_datetime",
+        "event_state",
+        "user_id",
+        "calendar_id",
+    ],
+)
 def test_event_create_required_fields(field):
     """
     Test that omitting required fields raises validation error.

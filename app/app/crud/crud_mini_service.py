@@ -3,6 +3,7 @@ This module defines the CRUD operations for the MiniService model, including an
 abstract base class (AbstractCRUDMiniService) and a concrete implementation (CRUDMiniService)
 using SQLAlchemy.
 """
+
 from abc import ABC, abstractmethod
 from uuid import UUID
 
@@ -14,11 +15,9 @@ from schemas import MiniServiceCreate, MiniServiceUpdate
 from crud import CRUDBase
 
 
-class AbstractCRUDMiniService(CRUDBase[
-                                  MiniServiceModel,
-                                  MiniServiceCreate,
-                                  MiniServiceUpdate
-                              ], ABC):
+class AbstractCRUDMiniService(
+    CRUDBase[MiniServiceModel, MiniServiceCreate, MiniServiceUpdate], ABC
+):
     """
     Abstract class for CRUD operations specific to the MiniService model.
     It extends the generic CRUDBase class and defines additional abstract methods
@@ -26,8 +25,9 @@ class AbstractCRUDMiniService(CRUDBase[
     """
 
     @abstractmethod
-    async def get_by_name(self, name: str,
-                          include_removed: bool = False) -> MiniServiceModel | None:
+    async def get_by_name(
+        self, name: str, include_removed: bool = False
+    ) -> MiniServiceModel | None:
         """
         Retrieves a Calendar instance by its name.
 
@@ -39,8 +39,7 @@ class AbstractCRUDMiniService(CRUDBase[
 
     @abstractmethod
     async def get_by_room_id(
-            self, room_id: int,
-            include_removed: bool = False
+        self, room_id: int, include_removed: bool = False
     ) -> MiniServiceModel | None:
         """
         Retrieves a Mini Service instance by its room id.
@@ -53,7 +52,7 @@ class AbstractCRUDMiniService(CRUDBase[
 
     @abstractmethod
     async def get_names_by_reservation_service_id(
-            self, reservation_service_id: UUID
+        self, reservation_service_id: UUID
     ) -> list[str]:
         """
         Retrieves all names from all Mini Services
@@ -75,8 +74,9 @@ class CRUDMiniService(AbstractCRUDMiniService):
     def __init__(self, db: AsyncSession):
         super().__init__(MiniServiceModel, db)
 
-    async def get_by_name(self, name: str,
-                          include_removed: bool = False) -> MiniServiceModel | None:
+    async def get_by_name(
+        self, name: str, include_removed: bool = False
+    ) -> MiniServiceModel | None:
         stmt = select(self.model).where(self.model.name == name)
         if include_removed:
             stmt = stmt.execution_options(include_deleted=True)
@@ -84,8 +84,7 @@ class CRUDMiniService(AbstractCRUDMiniService):
         return result.scalar_one_or_none()
 
     async def get_by_room_id(
-            self, room_id: int,
-            include_removed: bool = False
+        self, room_id: int, include_removed: bool = False
     ) -> MiniServiceModel | None:
         stmt = select(self.model).where(self.model.room_id == room_id)
         if include_removed:
@@ -94,7 +93,7 @@ class CRUDMiniService(AbstractCRUDMiniService):
         return result.scalar_one_or_none()
 
     async def get_names_by_reservation_service_id(
-            self, reservation_service_id: UUID
+        self, reservation_service_id: UUID
     ) -> list[str]:
         stmt = select(self.model.name).where(
             self.model.reservation_service_id == reservation_service_id
