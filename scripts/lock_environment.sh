@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-set -e # stop script execution after failure of any command
+set -e  # stop script execution after failure of any command
 
-env_file_path="environment-dev.yml"
-lock_file_path="conda-lock.yml"
+# Lock dependencies based on pyproject.toml (generate or update poetry.lock)
+poetry lock
 
-conda-lock -f $env_file_path --lockfile $lock_file_path --platform=linux-aarch64
+# Optional: install the locked dependencies
+poetry install
