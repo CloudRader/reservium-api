@@ -41,4 +41,4 @@ fi
 # get additional args
 mypy_args+=("$@")
 
-mypy "${mypy_args[@]}"
+poetry run mypy "${mypy_args[@]}"

@@ -45,4 +45,4 @@ if [ $USE_FAIL_UNDER -eq 1 ]; then
   pylint_args+=("--fail-under=$FAIL_UNDER_LIMIT")
 fi
 
-pylint "${pylint_args[@]}"
+poetry run pylint "${pylint_args[@]}"

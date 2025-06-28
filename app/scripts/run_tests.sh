@@ -38,16 +38,16 @@ done
 cd tests
 if [ $GENERATE_COVERAGE_REPORT -eq 1 ]; then
   if [ $USE_FAIL_UNDER -eq 1 ]; then
-    pytest --cov=$src_dir --cov-report=term --cov-branch --cov-report=html:coverage --cov-report=xml:coverage.xml --cov-fail-under="$COVERAGE_LIMIT_PERCENTAGE"
+    poetry run pytest --cov=$src_dir --cov-report=term --cov-branch --cov-report=html:coverage --cov-report=xml:coverage.xml --cov-fail-under="$COVERAGE_LIMIT_PERCENTAGE"
   else
-    pytest --cov=$src_dir --cov-report=term --cov-branch --cov-report=html:coverage --cov-report=xml:coverage.xml
+    poetry run pytest --cov=$src_dir --cov-report=term --cov-branch --cov-report=html:coverage --cov-report=xml:coverage.xml
   fi
 elif [ $RUN_COVERAGE -eq 1 ]; then
   if [ $USE_FAIL_UNDER -eq 1 ]; then
-    pytest --cov=$src_dir --cov-report=term --cov-branch --cov-fail-under="$COVERAGE_LIMIT_PERCENTAGE"
+    poetry run pytest --cov=$src_dir --cov-report=term --cov-branch --cov-fail-under="$COVERAGE_LIMIT_PERCENTAGE"
   else
-    pytest --cov=$src_dir --cov-report=term --cov-branch
+    poetry run pytest --cov=$src_dir --cov-report=term --cov-branch
   fi
 else
-  pytest
+  poetry run pytest
 fi
