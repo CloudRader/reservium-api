@@ -8,6 +8,7 @@ from .event import Event as EventModel, EventState
 from .mini_service import MiniService as MiniServiceModel
 from .reservation_service import ReservationService as ReservationServiceModel
 from .soft_delete_mixin import SoftDeleteMixin
+from .calendar_mini_service_association import CalendarMiniServiceAssociationTable
 
 __all__ = [
     "UserModel",
@@ -18,4 +19,5 @@ __all__ = [
     "ReservationServiceModel",
     "SoftDeleteMixin",
     "RulesType",
+    "CalendarMiniServiceAssociationTable",
 ]

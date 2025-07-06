@@ -16,6 +16,7 @@ from models.soft_delete_mixin import SoftDeleteMixin
 if TYPE_CHECKING:
     from models.reservation_service import ReservationService
     from models.event import Event
+    from models.mini_service import MiniService
 
 
 # pylint: disable=too-many-ancestors
@@ -92,7 +93,11 @@ class Calendar(Base, SoftDeleteMixin):
     events: Mapped[list["Event"]] = relationship(
         back_populates="calendar", lazy="selectin"
     )
-    mini_services: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=True)
+    mini_services: Mapped[list["MiniService"]] = relationship(
+        secondary="calendar_mini_service_association",
+        back_populates="calendars",
+        lazy="selectin",
+    )
 
 
 # pylint: enable=too-few-public-methods

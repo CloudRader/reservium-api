@@ -12,6 +12,7 @@ from models.soft_delete_mixin import SoftDeleteMixin
 
 if TYPE_CHECKING:
     from models.reservation_service import ReservationService
+    from models.calendar import Calendar
 
 
 # pylint: disable=too-few-public-methods
@@ -28,7 +29,7 @@ class MiniService(Base, SoftDeleteMixin):
         UniqueConstraint("access_group", name="uq_mini_service_access_group"),
     )
 
-    name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False)
     access_group: Mapped[str] = mapped_column(nullable=True)
     room_id: Mapped[int] = mapped_column(nullable=True)
     reservation_service_id: Mapped[UUID] = mapped_column(
@@ -37,6 +38,11 @@ class MiniService(Base, SoftDeleteMixin):
 
     reservation_service: Mapped["ReservationService"] = relationship(
         back_populates="mini_services"
+    )
+    calendars: Mapped[list["Calendar"]] = relationship(
+        secondary="calendar_mini_service_association",
+        back_populates="mini_services",
+        lazy="selectin",
     )
     lockers_id: Mapped[list[int]] = mapped_column(
         ARRAY(Integer), nullable=False, default=list

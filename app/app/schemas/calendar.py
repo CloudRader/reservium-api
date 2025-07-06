@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
 from pydantic import BaseModel, Field
+from schemas.mini_service import MiniService
 
 
 class Rules(BaseModel):
@@ -24,7 +25,7 @@ class CalendarBase(BaseModel):
     id: str | None = None
     collision_with_calendar: List[str] = Field(default_factory=list)
     more_than_max_people_with_permission: bool | None = None
-    mini_services: List[str] = Field(default_factory=list)
+    mini_services: List[MiniService] = Field(default_factory=list)
     color: str | None = None
 
 
@@ -50,7 +51,7 @@ class CalendarUpdate(CalendarBase):
     club_member_rules: Rules | None = None
     active_member_rules: Rules | None = None
     manager_rules: Rules | None = None
-    mini_services: List[str] = Field(default_factory=list)
+    mini_services_id: List[UUID] | None = None
 
 
 class CalendarInDBBase(CalendarBase):

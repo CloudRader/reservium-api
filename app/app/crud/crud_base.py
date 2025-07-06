@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 from typing import TypeVar, Generic, Type, Any
 from uuid import UUID
 
-from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -162,14 +161,12 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         if db_obj is None or obj_in is None:
             return None
 
-        db_obj_data = jsonable_encoder(db_obj)
         update_data = (
             obj_in if isinstance(obj_in, dict) else obj_in.dict(exclude_unset=True)
         )
 
-        for field in db_obj_data:
-            if field in update_data:
-                setattr(db_obj, field, update_data[field])
+        for field, value in update_data.items():
+            setattr(db_obj, field, value)
 
         self.db.add(db_obj)
         await self.db.commit()

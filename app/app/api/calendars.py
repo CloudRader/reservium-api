@@ -322,7 +322,7 @@ async def get_mini_services_by_calendar(
     calendar_id: Annotated[str, Path()],
 ) -> Any:
     """
-    Get mini services by its calendar.
+    Get mini services by its calendar (DEPRECATED!!!).
 
     :param service: Calendar service.
     :param calendar_id: id of the calendar.

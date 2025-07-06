@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from models import CalendarModel
+from models import CalendarModel, MiniServiceModel
 from schemas import CalendarCreate, CalendarUpdate
 
 from crud import CRUDBase
@@ -36,6 +36,20 @@ class AbstractCRUDCalendar(
         :return: The Calendar instance if found, None otherwise.
         """
 
+    @abstractmethod
+    async def update_mini_services(
+        self, calendar: CalendarModel | None, mini_services: list[MiniServiceModel]
+    ) -> CalendarModel | None:
+        """
+        Update the list of mini services associated with a given calendar.
+
+        :param calendar: The calendar instance to update. If None, the method returns None.
+        :param mini_services: A list of mini service model instances to associate with the calendar.
+
+        :return: The updated calendar instance with the new mini services,
+                 or None if the input calendar is None.
+        """
+
 
 class CRUDCalendar(AbstractCRUDCalendar):
     """
@@ -55,3 +69,15 @@ class CRUDCalendar(AbstractCRUDCalendar):
             stmt = stmt.execution_options(include_deleted=True)
         result = await self.db.execute(stmt)
         return result.scalars().first()
+
+    async def update_mini_services(
+        self, calendar: CalendarModel | None, mini_services: list[MiniServiceModel]
+    ) -> CalendarModel | None:
+        if calendar is None:
+            return None
+        calendar.mini_services = mini_services
+
+        self.db.add(calendar)
+        await self.db.commit()
+        await self.db.refresh(calendar)
+        return calendar

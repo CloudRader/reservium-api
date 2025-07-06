@@ -151,6 +151,20 @@ class AbstractCalendarService(
         to reservation service id or None if no such calendars exists.
         """
 
+    @abstractmethod
+    async def update_mini_services(
+        self, calendar: CalendarModel | None, mini_services_id: list[UUID] | None
+    ) -> CalendarModel | None:
+        """
+        Update the list of mini services associated with a given calendar.
+
+        :param calendar: The calendar instance to update. If None, the method returns None.
+        :param mini_services_id: A list of mini services id to associate with the calendar.
+
+        :return: The updated calendar instance with the new mini services,
+                 or None if the input calendar is None.
+        """
+
 
 class CalendarService(AbstractCalendarService):
     """
@@ -185,18 +199,18 @@ class CalendarService(AbstractCalendarService):
                 f"You must be the {reservation_service.name} manager to create calendars."
             )
 
-        if calendar_create.mini_services:
-            for mini_service in calendar_create.mini_services:
-                if (
-                    mini_service
-                    not in await self.mini_service_crud.get_names_by_reservation_service_id(
-                        reservation_service.id
-                    )
-                ):
-                    raise BaseAppException(
-                        "These mini services do not exist in the db "
-                        "that you want to add to this calendar."
-                    )
+        # if calendar_create.mini_services_id:
+        #     for mini_service_id in calendar_create.mini_services_id:
+        #         if (
+        #             mini_service_id
+        #             not in await self.mini_service_crud.get_ids_by_reservation_service_id(
+        #                 reservation_service.id
+        #             )
+        #         ):
+        #             raise BaseAppException(
+        #                 "These mini services do not exist in the db "
+        #                 "that you want to add to this calendar."
+        #             )
 
         if calendar_create.collision_with_calendar is not None:
             for collision in calendar_create.collision_with_calendar:
@@ -240,6 +254,9 @@ class CalendarService(AbstractCalendarService):
                 f"You must be the {reservation_service.name} manager to create calendars."
             )
 
+        await self.update_mini_services(
+            calendar_to_update, calendar_update.mini_services_id
+        )
         return await self.update(calendar_id, calendar_update)
 
     async def retrieve_removed_object(
@@ -334,7 +351,11 @@ class CalendarService(AbstractCalendarService):
         if calendar is None:
             return None
 
-        return calendar.mini_services
+        mini_services_name = []
+        for mini_service in calendar.mini_services:
+            mini_services_name.append(mini_service.name)
+
+        return mini_services_name
 
     async def get_reservation_service_of_this_calendar(
         self, reservation_service_id: UUID
@@ -354,3 +375,19 @@ class CalendarService(AbstractCalendarService):
         return await self.crud.get_by_reservation_service_id(
             reservation_service_id, include_removed
         )
+
+    async def update_mini_services(
+        self, calendar: CalendarModel | None, mini_services_id: list[UUID] | None
+    ) -> CalendarModel | None:
+        if mini_services_id is None:
+            return calendar
+        mini_services = []
+        for mini_service_id in mini_services_id:
+            mini_service = await self.mini_service_crud.get(mini_service_id)
+            if mini_service is None:
+                raise BaseAppException(
+                    "These mini services do not exist in the db "
+                    "that you want to change to this calendar."
+                )
+            mini_services.append(mini_service)
+        return await self.crud.update_mini_services(calendar, mini_services)
