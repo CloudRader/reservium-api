@@ -59,7 +59,7 @@ async def test_delete_calendar(async_session, test_calendar):
 
 @pytest.mark.asyncio
 async def test_list_calendars(
-    async_session, rules_club_member, test_reservation_service
+    async_session, rules_club_member, test_reservation_service, test_mini_service
 ):
     """
     Test listing multiple calendars.
@@ -78,7 +78,7 @@ async def test_list_calendars(
             active_member_rules=rules_club_member,
             manager_rules=rules_club_member,
             reservation_service_id=test_reservation_service.id,
-            mini_services=["Board Games"],
+            mini_services=[test_mini_service],
         ),
         CalendarModel(
             id="test_calendar_type2@google.com",
@@ -92,7 +92,7 @@ async def test_list_calendars(
             active_member_rules=rules_club_member,
             manager_rules=rules_club_member,
             reservation_service_id=test_reservation_service.id,
-            mini_services=["Consoles"],
+            mini_services=[test_mini_service],
         ),
     ]
     async_session.add_all(calendars)

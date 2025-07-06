@@ -79,7 +79,7 @@ def test_reservation_service_in_db_base_schema(valid_rules):
         active_member_rules=valid_rules,
         manager_rules=valid_rules,
         reservation_service_id=service_id,
-        mini_services=["Bar"],
+        # mini_services=["Bar"],
     )
     mini_service = MiniService(
         id=uuid4(),

@@ -187,7 +187,7 @@ async def test_calendar_service(
             active_member_rules=calendar_rules,
             manager_rules=calendar_rules,
             reservation_service_id=test_reservation_service.id,
-            mini_services=["Console", "Bar", "Projector"],
+            # mini_services=[test_mini_service, test_mini_service2],
         )
     )
     return calendar

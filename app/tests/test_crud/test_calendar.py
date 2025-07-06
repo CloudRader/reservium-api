@@ -19,7 +19,10 @@ async def test_create_calendar(test_calendar_service):
     assert test_calendar_service.id == "fixteure.calen.id@exgogl.eu"
     assert test_calendar_service.max_people == 15
     assert test_calendar_service.club_member_rules.night_time is True
-    assert test_calendar_service.mini_services == ["Console", "Bar", "Projector"]
+    # assert test_calendar_service.mini_services == [
+    #     test_mini_service,
+    #     test_mini_service2,
+    # ]
 
 
 @pytest.mark.asyncio

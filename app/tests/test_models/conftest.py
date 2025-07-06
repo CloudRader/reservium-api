@@ -110,7 +110,9 @@ def rules_club_member() -> Rules:
 
 @pytest.mark.asyncio
 @pytest_asyncio.fixture
-async def test_calendar(async_session, rules_club_member, test_reservation_service):
+async def test_calendar(
+    async_session, rules_club_member, test_reservation_service, test_mini_service
+):
     """
     Creates and returns a sample calendar for testing.
     """
@@ -126,7 +128,7 @@ async def test_calendar(async_session, rules_club_member, test_reservation_servi
         active_member_rules=rules_club_member,
         manager_rules=rules_club_member,
         reservation_service_id=test_reservation_service.id,
-        mini_services=["Bar"],
+        mini_services=[test_mini_service],
     )
     async_session.add(calendar)
     await async_session.commit()
