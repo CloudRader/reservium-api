@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path=".env.dev")
+load_dotenv(dotenv_path=".env.template")
 load_dotenv(dotenv_path=".env.secret")
 
 # pylint: disable=wrong-import-position
@@ -48,7 +48,7 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-config.set_main_option("sqlalchemy.url", str(settings.POSTGRES_DATABASE_URI))
+config.set_main_option("sqlalchemy.url", str(settings.DB.POSTGRES_DATABASE_URI))
 
 
 def render_item(type_, obj, autogen_context):  # pylint: disable=unused-argument

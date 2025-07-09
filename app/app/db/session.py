@@ -28,7 +28,7 @@ class DatabaseSession:
 
     def __init__(self):
         self.engine = create_async_engine(
-            url=str(settings.POSTGRES_DATABASE_URI), pool_pre_ping=True
+            url=str(settings.DB.POSTGRES_DATABASE_URI), pool_pre_ping=True
         )
         self.session_factory = async_sessionmaker(
             bind=self.engine, autoflush=False, autocommit=False, expire_on_commit=False

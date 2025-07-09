@@ -22,6 +22,7 @@ from api import (
     access_card_system,
 )
 from core import settings
+
 # import os
 #
 # os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # for local testing
@@ -80,10 +81,10 @@ app.add_middleware(
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
-        host=settings.APP_SERVER_HOST,
-        port=settings.APP_SERVER_PORT,
-        reload=settings.APP_SERVER_USE_RELOAD,
-        proxy_headers=settings.APP_SERVER_USE_PROXY_HEADERS,
+        host=settings.RUN.SERVER_HOST,
+        port=settings.RUN.SERVER_PORT,
+        reload=settings.RUN.SERVER_USE_RELOAD,
+        proxy_headers=settings.RUN.SERVER_USE_PROXY_HEADERS,
         # ssl_keyfile="certification/key.pem",  # for local testing
         # ssl_certfile="certification/cert.pem",
     )

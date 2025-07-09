@@ -25,7 +25,7 @@ def get_oauth_session():
     :return: OAuth2Session.
     """
     return OAuth2Session(
-        client_id=settings.CLIENT_ID, redirect_uri=settings.REDIRECT_URI
+        client_id=settings.IS.CLIENT_ID, redirect_uri=settings.IS.REDIRECT_URI
     )
 
 
@@ -38,7 +38,7 @@ async def get_request(token: str, request: str):
 
     :return: The JSON response from the API.
     """
-    info_endpoint = settings.IS_SCOPES + request
+    info_endpoint = settings.IS.SCOPES + request
 
     async with httpx.AsyncClient() as client:
         response = await client.get(

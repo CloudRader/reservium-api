@@ -33,11 +33,11 @@ def send_request(data: Dict[str, Any]) -> Dict[str, Any]:
     """
     headers = {
         "Content-Type": "application/json",
-        "Api-Key": settings.DORMITORY_ACCESS_SYSTEM_API_KEY,
+        "Api-Key": settings.DORMITORY_ACCESS_SYSTEM.API_KEY,
     }
 
     response = requests.post(
-        settings.DORMITORY_ACCESS_SYSTEM_API_URL, json=data, headers=headers, timeout=5
+        settings.DORMITORY_ACCESS_SYSTEM.API_URL, json=data, headers=headers, timeout=5
     )
 
     if response.status_code != 200:

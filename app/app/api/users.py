@@ -29,7 +29,7 @@ async def login_local_dev(request: Request):
     This endpoint for local authorization.
     """
     authorization_url = (
-        f"{settings.IS_OAUTH}/authorize?client_id={settings.CLIENT_ID}"
+        f"{settings.IS.OAUTH}/authorize?client_id={settings.IS.CLIENT_ID}"
         "&response_type=code&scope=location"  # Include the "location" scope
     )
     oauth = get_oauth_session()
@@ -44,7 +44,7 @@ async def login(request: Request):
     Authenticate a user, construct authorization URL and sent it for authorization.
     """
     authorization_url = (
-        f"{settings.IS_OAUTH}/authorize?client_id={settings.CLIENT_ID}"
+        f"{settings.IS.OAUTH}/authorize?client_id={settings.IS.CLIENT_ID}"
         "&response_type=code&scope=location"  # Include the "location" scope
     )
     oauth = get_oauth_session()
