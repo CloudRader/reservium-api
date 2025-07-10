@@ -25,6 +25,7 @@ google-auth = "^2.40.2"
 google-auth-oauthlib = "^1.2.2"
 google-api-python-client = "^2.170.0"
 python-dateutil = "^2.9.0.post0"
+orjson = "^3.10.18"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -6,6 +6,7 @@ In other words it is an entry point of the application.
 from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import ORJSONResponse
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -50,6 +51,7 @@ app: FastAPI = FastAPI(
     version=fastapi_docs.VERSION,
     openapi_tags=fastapi_docs.get_tags_metadata(),
     lifespan=startup_event,
+    default_response_class=ORJSONResponse,
 )
 app.include_router(users.router)
 app.include_router(events.router)
