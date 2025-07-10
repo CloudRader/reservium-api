@@ -25,9 +25,6 @@ class MiniService(Base, SoftDeleteMixin):
     """
 
     __tablename__ = "mini_service"
-    __table_args__ = (
-        UniqueConstraint("access_group", name="uq_mini_service_access_group"),
-    )
 
     name: Mapped[str] = mapped_column(nullable=False)
     access_group: Mapped[str] = mapped_column(nullable=True)

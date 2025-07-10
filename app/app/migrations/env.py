@@ -17,7 +17,7 @@ from alembic import context
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=".env.template")
-load_dotenv(dotenv_path=".env.secret")
+load_dotenv(dotenv_path=".env", override=True)
 
 # pylint: disable=wrong-import-position
 # pylint: disable=unused-wildcard-import

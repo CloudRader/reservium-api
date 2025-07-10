@@ -18,11 +18,7 @@ class CalendarMiniServiceAssociationTable(Base):
     """
 
     __tablename__ = "calendar_mini_service_association"
-    __table_args__ = (
-        UniqueConstraint(
-            "calendar_id", "mini_service_id", name="idx_uq_calendar_mini_service"
-        ),
-    )
+    __table_args__ = (UniqueConstraint("calendar_id", "mini_service_id"),)
 
     calendar_id: Mapped[str] = mapped_column(ForeignKey("calendar.id"))
     mini_service_id: Mapped[UUID] = mapped_column(ForeignKey("mini_service.id"))

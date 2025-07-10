@@ -71,8 +71,8 @@ async def callback(
 
     try:
         token = oauth.fetch_token(
-            settings.IS_OAUTH_TOKEN,
-            client_secret=settings.CLIENT_SECRET,
+            settings.IS.OAUTH_TOKEN,
+            client_secret=settings.IS.CLIENT_SECRET,
             authorization_response=authorization_response_url,
         )
     except Exception as exc:

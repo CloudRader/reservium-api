@@ -4,8 +4,10 @@ Module with SQLAlchemy base class used to create other models from this Base cla
 
 from uuid import UUID, uuid4
 
+from sqlalchemy import MetaData
 from sqlalchemy.orm import declared_attr, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID as pgUUID
+from core import settings
 
 
 # Base class is managed by SQLAlchemy and doesn't need more public methods
@@ -17,6 +19,8 @@ class Base(DeclarativeBase):
     """
 
     __abstract__ = True
+
+    metadata = MetaData(naming_convention=settings.DB.NAMING_CONVENTION)
 
     id: Mapped[UUID] = mapped_column(
         pgUUID(as_uuid=True), primary_key=True, default=uuid4
