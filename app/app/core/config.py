@@ -1,8 +1,14 @@
 """Config."""
 
+import logging
+from typing import Literal
 from pydantic import PostgresDsn, BaseModel
 from pydantic_settings import BaseSettings
 from .utils import get_env_file_path
+
+LOG_DEFAULT_FORMAT = (
+    "[%(asctime)s.%(msecs)03d] %(module)20s:%(lineno)-4d %(levelname)-7s - %(message)s"
+)
 
 
 class RunConfig(BaseModel):
@@ -12,6 +18,57 @@ class RunConfig(BaseModel):
     SERVER_PORT: int
     SERVER_USE_RELOAD: bool
     SERVER_USE_PROXY_HEADERS: bool
+    USE_GUNICORN: bool
+    WORKERS: int
+    TIMEOUT: int
+
+
+class LoggingConfig(BaseModel):
+    """Config for logging."""
+
+    LOG_LEVEL: Literal[
+        "debug",
+        "info",
+        "warning",
+        "error",
+        "critical",
+    ] = "info"
+    LOG_FORMAT: str = LOG_DEFAULT_FORMAT
+    DATE_FORMAT: str = "%Y-%m-%d %H:%M:%S"
+
+    @property
+    def LOG_CONFIG(self) -> dict:  # pylint: disable=invalid-name
+        """
+        Returns a dictionary-compatible configuration for Python's logging module.
+        """
+        return {
+            "version": 1,
+            "disable_existing_loggers": False,
+            "formatters": {
+                "default": {
+                    "format": self.LOG_FORMAT,
+                    "datefmt": self.DATE_FORMAT,
+                },
+            },
+            "handlers": {
+                "default": {
+                    "formatter": "default",
+                    "class": "logging.StreamHandler",
+                },
+            },
+            "root": {
+                "handlers": ["default"],
+                "level": self.LOG_LEVEL.upper(),
+            },
+        }
+
+    @property
+    def LOG_LEVEL_VALUE(self) -> int:  # pylint: disable=invalid-name
+        """
+        Converts the LOG_LEVEL string to its corresponding integer value
+        as expected by the logging module.
+        """
+        return logging.getLevelNamesMapping()[self.LOG_LEVEL.upper()]
 
 
 class DatabaseConfig(BaseModel):
@@ -94,9 +151,11 @@ class Settings(BaseSettings):
     """Settings class."""
 
     APP_NAME: str
+    CLUB_NAME: str
     SECRET_KEY: str
 
     RUN: RunConfig
+    LOGGING: LoggingConfig = LoggingConfig()
     DB: DatabaseConfig
     MAIL: MailConfig
     IS: ISConfig

@@ -3,7 +3,7 @@ Mini service ORM model and its dependencies.
 """
 
 from typing import TYPE_CHECKING
-from sqlalchemy import ForeignKey, Integer, UniqueConstraint
+from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
