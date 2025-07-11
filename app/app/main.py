@@ -3,8 +3,8 @@ Module to run FastAPI application, where API routers are connecting application 
 In other words it is an entry point of the application.
 """
 
+import logging
 from contextlib import asynccontextmanager
-import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from starlette.middleware.cors import CORSMiddleware
@@ -22,11 +22,19 @@ from api import (
     app_exception_handler,
     access_card_system,
 )
-from core import settings
+from core import settings, uvicorn_run, guvicorn_run
 
 # import os
 #
 # os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # for local testing
+
+logging.basicConfig(
+    level=settings.LOGGING.LOG_LEVEL_VALUE,
+    format=settings.LOGGING.LOG_FORMAT,
+)
+
+
+logger = logging.getLogger(__name__)
 
 
 # pylint: disable=unused-argument
@@ -37,9 +45,9 @@ async def startup_event(fast_api_app: FastAPI):
     Is called on the application startup, before it is ready to accept requests.
     Is used for app initialization, like here it is creating db tables if they are not created.
     """
-    print(f"Starting {settings.APP_NAME}.")
+    logger.info("Starting %s.", settings.APP_NAME)
     yield
-    print(f"Shutting down {settings.APP_NAME}.")
+    logger.info("Shutting down %s.", settings.APP_NAME)
 
 
 # pylint: enable=unused-argument
@@ -81,12 +89,6 @@ app.add_middleware(
 )
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host=settings.RUN.SERVER_HOST,
-        port=settings.RUN.SERVER_PORT,
-        reload=settings.RUN.SERVER_USE_RELOAD,
-        proxy_headers=settings.RUN.SERVER_USE_PROXY_HEADERS,
-        # ssl_keyfile="certification/key.pem",  # for local testing
-        # ssl_certfile="certification/cert.pem",
-    )
+    if settings.RUN.USE_GUNICORN:
+        guvicorn_run(app)
+    uvicorn_run()
