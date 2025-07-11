@@ -29,4 +29,4 @@ The user has been informed of the decision along with the provided reason for th
 No further action is required.
 
 With coordination,
-Your Club Buben Reservation System
+Your Club {{ club_name }} Reservation System

@@ -2,15 +2,17 @@
 Package for API Documentation.
 """
 
+from core import settings
+
 
 # pylint: disable=too-few-public-methods
 # reason: no more public methods needed.
 class FastApiDocs:
     """Information for fastapi documentation."""
 
-    NAME = "Reservation System of the Buben Club"
+    NAME = f"Reservation System of the {settings.CLUB_NAME} Club"
     DESCRIPTION = (
-        "Reservation System of the Buben Club API is "
+        f"Reservation System of the {settings.CLUB_NAME} Club API is "
         "a REST API that offers you an access to our "
         "application!"
     )

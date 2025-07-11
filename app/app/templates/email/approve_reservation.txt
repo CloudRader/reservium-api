@@ -40,4 +40,4 @@ Additionals: {{ additionals }}
 We’d love to hear how we can improve your experience! Feel free to share your suggestions—your feedback helps us grow.
 
 With appreciation,
-Your Club Buben Team
+Your Club {{ club_name }} Team

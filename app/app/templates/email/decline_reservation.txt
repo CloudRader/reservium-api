@@ -31,4 +31,4 @@ Additionals: {{ additionals }}
 If you have any questions or need clarification, feel free to reach out to our managers at {{ manager_email }}.
 
 With appreciation,
-Your Club Buben Team
+Your Club {{ club_name }} Team

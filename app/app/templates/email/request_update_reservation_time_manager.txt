@@ -34,4 +34,4 @@ Additionals: {{ additionals }}
 	•	You can review the original reservation details and make a decision in the reservation system.
 
 With coordination,
-Your Club Buben Reservation System
+Your Club {{ club_name }} Reservation System

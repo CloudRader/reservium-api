@@ -1,5 +1,5 @@
 """
-API controllers for authorisation in IS(Information System of the Buben club)
+API controllers for authorisation in IS(Information System of the club)
 and users itself.
 """
 

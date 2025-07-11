@@ -36,4 +36,4 @@ The user has been informed to:
 	•	Respect space usage rules to avoid future booking restrictions.
 
 With coordination,
-Your Club Buben Reservation System
+Your Club {{ club_name }} Reservation System

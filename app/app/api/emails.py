@@ -13,7 +13,7 @@ from api import get_current_token, get_request
 from schemas import EmailCreate, RegistrationFormCreate, UserIS, User, Event, EmailMeta
 from models import ReservationServiceModel, CalendarModel
 from services import EmailService, EventService
-from core import email_connection
+from core import email_connection, settings
 from .docs import fastapi_docs
 
 router = APIRouter(prefix="/emails", tags=[fastapi_docs.EMAIL_TAG["name"]])
@@ -191,6 +191,7 @@ def construct_body_context(
         "manager_email": reservation_service.contact_mail,
         "reservation_service": reservation_service.name,
         "reason": reason,
+        "club_name": settings.CLUB_NAME,
     }
 
     return context
