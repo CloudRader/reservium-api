@@ -22,10 +22,10 @@ class GunicornLogger(Logger):
         self._set_handler(
             log=self.access_log,
             output=cfg.accesslog,
-            fmt=Formatter(fmt=settings.logging.log_format),
+            fmt=Formatter(fmt=settings.LOGGING.LOG_FORMAT),
         )
         self._set_handler(
             log=self.error_log,
             output=cfg.errorlog,
-            fmt=Formatter(fmt=settings.logging.log_format),
+            fmt=Formatter(fmt=settings.LOGGING.LOG_FORMAT),
         )

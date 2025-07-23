@@ -8,6 +8,10 @@ from core import settings
 from core.gunicorn.application import Application
 from core.gunicorn.app_options import get_app_options
 
+# import os
+#
+# os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # for local testing
+
 
 def guvicorn_run(app: FastAPI):
     """
@@ -36,6 +40,6 @@ def uvicorn_run():
         reload=settings.RUN.SERVER_USE_RELOAD,
         proxy_headers=settings.RUN.SERVER_USE_PROXY_HEADERS,
         log_config=settings.LOGGING.LOG_CONFIG,
-        # ssl_keyfile="certification/key.pem",
+        # ssl_keyfile="certification/key.pem",  # for local testing
         # ssl_certfile="certification/cert.pem",
     )

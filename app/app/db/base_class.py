@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import MetaData
 from sqlalchemy.orm import declared_attr, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID as pgUUID
+
 from core import settings
 
 
