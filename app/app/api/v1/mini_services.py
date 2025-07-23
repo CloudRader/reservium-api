@@ -18,9 +18,7 @@ from api import (
 from schemas import MiniServiceCreate, MiniServiceUpdate, MiniService, User
 from services import MiniServiceService
 
-router = APIRouter(
-    prefix="/mini_services", tags=[fastapi_docs.MINI_SERVICE_TAG["name"]]
-)
+router = APIRouter(tags=[fastapi_docs.MINI_SERVICE_TAG["name"]])
 
 
 @router.post(

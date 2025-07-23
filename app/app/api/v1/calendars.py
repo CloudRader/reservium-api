@@ -21,7 +21,7 @@ from api import (
 from schemas import CalendarCreate, Calendar, CalendarUpdate, User
 from services import CalendarService
 
-router = APIRouter(prefix="/calendars", tags=[fastapi_docs.CALENDAR_TAG["name"]])
+router = APIRouter(tags=[fastapi_docs.CALENDAR_TAG["name"]])
 
 
 # pylint: disable=no-member

@@ -47,18 +47,8 @@ def create_app():  # -> FastAPI:
 
     :return: A fully configured FastAPI app instance.
     """
-    from api import (
-        users,
-        events,
-        calendars,
-        mini_services,
-        reservation_services,
-        fastapi_docs,
-        emails,
-        BaseAppException,
-        app_exception_handler,
-        access_card_system,
-    )
+    from api import fastapi_docs, BaseAppException, app_exception_handler
+    from api.routers import router
 
     app = FastAPI(
         title=fastapi_docs.NAME,
@@ -69,13 +59,7 @@ def create_app():  # -> FastAPI:
         default_response_class=ORJSONResponse,
     )
 
-    app.include_router(users.router)
-    app.include_router(events.router)
-    app.include_router(reservation_services.router)
-    app.include_router(calendars.router)
-    app.include_router(mini_services.router)
-    app.include_router(emails.router)
-    app.include_router(access_card_system.router)
+    app.include_router(router)
 
     app.add_exception_handler(BaseAppException, app_exception_handler)
 

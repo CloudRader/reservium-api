@@ -25,9 +25,7 @@ from schemas import (
 )
 from services import ReservationServiceService, UserService
 
-router = APIRouter(
-    prefix="/reservation_services", tags=[fastapi_docs.RESERVATION_SERVICE_TAG["name"]]
-)
+router = APIRouter(tags=[fastapi_docs.RESERVATION_SERVICE_TAG["name"]])
 
 
 @router.post(

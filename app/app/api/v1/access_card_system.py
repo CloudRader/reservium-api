@@ -8,6 +8,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 
 from services import AccessCardSystemService, EventService
 from api import PermissionDeniedException
+from api.docs import fastapi_docs
 from schemas import (
     VarSymbolCreateUpdate,
     VarSymbolDelete,
@@ -15,11 +16,8 @@ from schemas import (
     ClubAccessSystemRequest,
 )
 from core import settings
-from .docs import fastapi_docs
 
-router = APIRouter(
-    prefix="/access_card_system", tags=[fastapi_docs.ACCESS_CARD_SYSTEM_TAG["name"]]
-)
+router = APIRouter(tags=[fastapi_docs.ACCESS_CARD_SYSTEM_TAG["name"]])
 
 
 def send_request(data: Dict[str, Any]) -> Dict[str, Any]:

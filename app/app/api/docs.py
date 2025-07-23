@@ -18,8 +18,12 @@ class FastApiDocs:
     )
     VERSION = "1.0.0"
     AUTHORISATION_TAG = {
-        "name": "users",
+        "name": "auth",
         "description": "Authorisation in IS.",
+    }
+    USER_TAG = {
+        "name": "users",
+        "description": "Operations with users.",
     }
     RESERVATION_SERVICE_TAG = {
         "name": "reservation services",
@@ -50,6 +54,7 @@ class FastApiDocs:
         """Get tags metadata."""
         return [
             self.AUTHORISATION_TAG,
+            self.USER_TAG,
             self.RESERVATION_SERVICE_TAG,
             self.CALENDAR_TAG,
             self.MINI_SERVICE_TAG,

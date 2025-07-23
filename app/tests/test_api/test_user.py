@@ -18,7 +18,7 @@ async def test_get_auth_code(client: AsyncClient):
     """
     Fixture to initiate the login process and get the auth code.
     """
-    auth_code = await client.get("/users/login")
+    auth_code = await client.get("/v1/auth/login")
     assert auth_code.status_code == status.HTTP_200_OK
 
 
@@ -27,7 +27,7 @@ async def test_get_all_users_empty(client: AsyncClient):
     """
     Test that /users/ returns 404 when there are no users in the database.
     """
-    response = await client.get("/users/")
+    response = await client.get("/v1/users/")
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {"message": "No users in db."}
 
@@ -37,13 +37,13 @@ async def test_logout(client: AsyncClient):
     """
     Test that /users/logout logs out the user correctly.
     """
-    response = await client.get("/users/logout")
+    response = await client.get("/v1/auth/logout")
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {"message": "Logged out"}
 
 
 @pytest.mark.asyncio
-@patch("api.users.get_oauth_session")
+@patch("api.v1.auth.get_oauth_session")
 async def test_login(mock_get_oauth, client: AsyncClient):
     """
     Test that /users/login redirects to an OAuth authorization URL.
@@ -54,14 +54,14 @@ async def test_login(mock_get_oauth, client: AsyncClient):
         "fake_state",
     )
 
-    response = await client.get("/users/login")
+    response = await client.get("/v1/auth/login")
     assert response.status_code == status.HTTP_200_OK
     assert response.json().startswith("https://fake-auth-url")
 
 
 @pytest.mark.asyncio
-@patch("api.users.get_oauth_session")
-@patch("api.users.authenticate_user", new_callable=AsyncMock)
+@patch("api.v1.auth.get_oauth_session")
+@patch("api.v1.auth.authenticate_user", new_callable=AsyncMock)
 async def test_callback_success(
     mock_authenticate_user, mock_get_oauth, client: AsyncClient
 ):
@@ -75,6 +75,6 @@ async def test_callback_success(
     mock_session.fetch_token.return_value = fake_token
     mock_authenticate_user.return_value = fake_user
 
-    response = await client.get("/users/callback?code=1234")
+    response = await client.get("/v1/auth/callback?code=1234")
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {"username": "mocked_user", "token_type": "bearer"}

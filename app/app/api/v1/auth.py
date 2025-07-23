@@ -1,25 +1,22 @@
 """
-API controllers for authorisation in IS(Information System of the club)
-and users itself.
+API controllers for authorisation in IS(Information System of the club).
 """
 
-from typing import Annotated, Any, List
+from typing import Annotated, Any
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from services import UserService
 from api import (
     authenticate_user,
     fastapi_docs,
     get_oauth_session,
-    get_current_user,
     modify_url_scheme,
 )
-from schemas import User
 from core import settings
 
 app = FastAPI()
 
-router = APIRouter(prefix="/users", tags=[fastapi_docs.AUTHORISATION_TAG["name"]])
+router = APIRouter(tags=[fastapi_docs.AUTHORISATION_TAG["name"]])
 
 
 @router.get("/login_dev")
@@ -89,38 +86,6 @@ async def callback(
     request.session["user_username"] = user.username
 
     return {"username": user.username, "token_type": "bearer"}
-
-
-@router.get("/me", response_model=User)
-async def get_user(current_user: Annotated[User, Depends(get_current_user)]) -> Any:
-    """
-    Get currently authenticated user.
-
-    :param current_user: Current user.
-
-    :return: Current user.
-    """
-    return current_user
-
-
-@router.get("/", response_model=List[User])
-async def get_all_users(
-    user_service: Annotated[UserService, Depends(UserService)],
-) -> Any:
-    """
-    Get all users.
-
-    :param user_service: User service.
-
-    :return: All users in database.
-    """
-    users = await user_service.get_all()
-    if not users:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"message": "No users in db."},
-        )
-    return users
 
 
 @router.get("/logout")

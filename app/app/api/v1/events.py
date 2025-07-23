@@ -35,13 +35,12 @@ from api import (
     PermissionDeniedException,
     UnauthorizedException,
     BaseAppException,
-    preparing_email,
-    create_email_meta,
 )
+from api.v1.emails import preparing_email, create_email_meta
 
 # from api import add_or_update_access_to_reservation_areas, delete_access_to_reservation_areas
 
-router = APIRouter(prefix="/events", tags=[fastapi_docs.EVENT_TAG["name"]])
+router = APIRouter(tags=[fastapi_docs.EVENT_TAG["name"]])
 
 
 # pylint: disable=no-member
