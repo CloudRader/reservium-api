@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
 from pydantic import BaseModel, Field
-from schemas import MiniService, Calendar
+from core.schemas import MiniService, Calendar
 
 
 class ReservationServiceBase(BaseModel):

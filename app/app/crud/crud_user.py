@@ -8,8 +8,8 @@ from abc import ABC, abstractmethod
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from models import UserModel
-from schemas import UserCreate, UserUpdate
+from core.models import UserModel
+from core.schemas import UserCreate, UserUpdate
 
 from crud import CRUDBase
 

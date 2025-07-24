@@ -6,7 +6,7 @@ from datetime import datetime, UTC
 from uuid import uuid4
 import pytest
 from pydantic import ValidationError
-from schemas.reservation_service import (
+from core.schemas.reservation_service import (
     ReservationServiceCreate,
     ReservationServiceUpdate,
     ReservationServiceInDBBase,
@@ -14,7 +14,7 @@ from schemas.reservation_service import (
 )
 
 # Dummy mini service and calendar references
-from schemas import MiniService, Calendar
+from core.schemas import MiniService, Calendar
 
 
 # pylint: disable=redefined-outer-name

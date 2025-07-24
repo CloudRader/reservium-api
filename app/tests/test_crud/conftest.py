@@ -5,7 +5,7 @@ Conftest for testing crud
 import pytest
 import pytest_asyncio
 from crud import CRUDUser, CRUDReservationService, CRUDMiniService, CRUDCalendar
-from schemas import (
+from core.schemas import (
     UserCreate,
     ReservationServiceCreate,
     MiniServiceCreate,

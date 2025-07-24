@@ -3,7 +3,7 @@ Module for testing calendar service crud
 """
 
 import pytest
-from schemas import CalendarUpdate
+from core.schemas import CalendarUpdate
 
 
 # pylint: disable=redefined-outer-name

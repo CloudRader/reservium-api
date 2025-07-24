@@ -6,7 +6,7 @@ from datetime import datetime, UTC
 from uuid import uuid4
 import pytest
 from pydantic import ValidationError
-from schemas.mini_service import (
+from core.schemas.mini_service import (
     MiniServiceCreate,
     MiniServiceUpdate,
     MiniServiceInDBBase,

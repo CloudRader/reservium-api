@@ -3,7 +3,7 @@ Module for testing reservation service ser.
 """
 
 import pytest
-from schemas import ReservationServiceUpdate
+from core.schemas import ReservationServiceUpdate
 from api import PermissionDeniedException
 
 

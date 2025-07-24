@@ -7,10 +7,10 @@ from typing import Annotated
 from abc import ABC, abstractmethod
 
 from fastapi import Depends
-from db import db_session
+from core import db_session
+from core.schemas import VarSymbolCreateUpdate, VarSymbolDelete, ClubAccessSystemRequest
 from api import PermissionDeniedException
 from services import EventService
-from schemas import VarSymbolCreateUpdate, VarSymbolDelete, ClubAccessSystemRequest
 from crud import CRUDEvent, CRUDUser, CRUDReservationService, CRUDMiniService
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -7,7 +7,7 @@ from typing import Annotated, Any
 from fastapi import HTTPException, status, Depends, Request
 from requests_oauthlib import OAuth2Session
 from services import UserService
-from schemas import UserIS, RoleList, ServiceList, Room
+from core.schemas import UserIS, RoleList, ServiceList, Room
 from core import settings
 
 import httpx

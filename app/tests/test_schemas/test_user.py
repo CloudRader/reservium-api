@@ -5,7 +5,7 @@ Tests for User Pydantic Schemas
 from datetime import datetime
 import pytest
 from pydantic import ValidationError
-from schemas.user import UserCreate, UserUpdate, UserInDBBase, User
+from core.schemas.user import UserCreate, UserUpdate, UserInDBBase, User
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest

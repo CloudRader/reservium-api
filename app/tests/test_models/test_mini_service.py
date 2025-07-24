@@ -3,7 +3,7 @@ Module for testing mini service model
 """
 
 import uuid
-from models import MiniServiceModel
+from core.models import MiniServiceModel
 import sqlalchemy
 import pytest
 

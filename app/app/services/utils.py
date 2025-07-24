@@ -5,8 +5,8 @@ Utils for services.
 import datetime as dt
 from pytz import timezone
 
-from models import CalendarModel, ReservationServiceModel
-from schemas import Rules, EventCreate, ServiceValidity, User
+from core.models import CalendarModel, ReservationServiceModel
+from core.schemas import Rules, EventCreate, ServiceValidity, User
 
 
 def first_standard_check(

@@ -22,11 +22,11 @@ load_dotenv(dotenv_path=".env", override=True)
 # pylint: disable=wrong-import-position
 # pylint: disable=unused-wildcard-import
 # pylint: disable=wildcard-import
-from models import *
+from core.models import *
+from core import settings
 
 # pylint: enable=wildcard-import
-from db import Base
-from core import settings
+from core.models.base_class import Base
 
 # pylint: enable=wrong-import-position
 

@@ -6,13 +6,13 @@ from typing import Annotated
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from db import db_session
+from core import db_session
+from core.models import MiniServiceModel
+from core.schemas import MiniServiceCreate, MiniServiceUpdate, CalendarUpdate, User
 from fastapi import Depends
 from api import BaseAppException, PermissionDeniedException
 from crud import CRUDMiniService, CRUDCalendar, CRUDReservationService
 from services import CrudServiceBase
-from models import MiniServiceModel
-from schemas import MiniServiceCreate, MiniServiceUpdate, CalendarUpdate, User
 from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -15,7 +15,7 @@ from api import (
     PermissionDeniedException,
     UnauthorizedException,
 )
-from schemas import MiniServiceCreate, MiniServiceUpdate, MiniService, User
+from core.schemas import MiniServiceCreate, MiniServiceUpdate, MiniService, User
 from services import MiniServiceService
 
 router = APIRouter(tags=[fastapi_docs.MINI_SERVICE_TAG["name"]])

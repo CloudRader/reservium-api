@@ -5,9 +5,9 @@ This module provides fixtures for test services
 import pytest
 import pytest_asyncio
 
-from models.event import EventState
-from models.reservation_service import ReservationService
-from schemas import (
+from core.models.event import EventState
+from core.models.reservation_service import ReservationService
+from core.schemas import (
     UserIS,
     LimitObject,
     Role,

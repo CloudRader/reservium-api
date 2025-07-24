@@ -10,8 +10,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from fastapi import APIRouter, Depends, status, Path, Body, Query
 from fastapi.responses import JSONResponse
-from models import EventState
-from schemas import (
+from core.models import EventState
+from core.schemas import (
     EventCreate,
     ServiceList,
     User,

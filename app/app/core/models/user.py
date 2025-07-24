@@ -6,11 +6,11 @@ from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from db.base_class import Base
-from models.soft_delete_mixin import SoftDeleteMixin
+from core.models.base_class import Base
+from core.models.soft_delete_mixin import SoftDeleteMixin
 
 if TYPE_CHECKING:
-    from models.event import Event
+    from core.models.event import Event
 
 
 # pylint: disable=too-few-public-methods

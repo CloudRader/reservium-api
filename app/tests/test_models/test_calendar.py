@@ -4,7 +4,7 @@ Module for testing calendar model
 
 import pytest
 import sqlalchemy
-from models import CalendarModel
+from core.models import CalendarModel
 
 
 # pylint: disable=redefined-outer-name

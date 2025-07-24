@@ -9,7 +9,7 @@ import pytest_asyncio
 from testcontainers.postgres import PostgresContainer
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
-from db import Base
+from core.models.base_class import Base
 
 
 # pylint: disable=redefined-outer-name

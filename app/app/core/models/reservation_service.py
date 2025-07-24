@@ -6,12 +6,12 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Integer
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from db.base_class import Base
-from models.soft_delete_mixin import SoftDeleteMixin
+from core.models.base_class import Base
+from core.models.soft_delete_mixin import SoftDeleteMixin
 
 if TYPE_CHECKING:
-    from models.calendar import Calendar
-    from models.mini_service import MiniService
+    from core.models.calendar import Calendar
+    from core.models.mini_service import MiniService
 
 
 # pylint: disable=too-few-public-methods

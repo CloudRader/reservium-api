@@ -3,7 +3,7 @@ Module for testing reservation service crud
 """
 
 import pytest
-from schemas import ReservationServiceUpdate
+from core.schemas import ReservationServiceUpdate
 
 
 # pylint: disable=redefined-outer-name

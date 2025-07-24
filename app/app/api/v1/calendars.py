@@ -18,7 +18,7 @@ from api import (
     PermissionDeniedException,
     UnauthorizedException,
 )
-from schemas import CalendarCreate, Calendar, CalendarUpdate, User
+from core.schemas import CalendarCreate, Calendar, CalendarUpdate, User
 from services import CalendarService
 
 router = APIRouter(tags=[fastapi_docs.CALENDAR_TAG["name"]])

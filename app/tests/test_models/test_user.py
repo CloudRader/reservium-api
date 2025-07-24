@@ -2,7 +2,7 @@
 Module for testing user model
 """
 
-from models import UserModel
+from core.models import UserModel
 import sqlalchemy
 import pytest
 

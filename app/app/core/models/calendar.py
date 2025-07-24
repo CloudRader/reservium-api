@@ -8,15 +8,15 @@ from sqlalchemy import String, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import mapped_column, relationship, Mapped
 from sqlalchemy.types import TypeDecorator, TEXT
-from db.base_class import Base
-from schemas.calendar import Rules
-from models.soft_delete_mixin import SoftDeleteMixin
+from core.schemas.calendar import Rules
+from core.models.base_class import Base
+from core.models.soft_delete_mixin import SoftDeleteMixin
 
 
 if TYPE_CHECKING:
-    from models.reservation_service import ReservationService
-    from models.event import Event
-    from models.mini_service import MiniService
+    from core.models.reservation_service import ReservationService
+    from core.models.event import Event
+    from core.models.mini_service import MiniService
 
 
 # pylint: disable=too-many-ancestors

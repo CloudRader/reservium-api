@@ -3,7 +3,7 @@ Module for testing reservation service model
 """
 
 import uuid
-from models import ReservationServiceModel
+from core.models import ReservationServiceModel
 import sqlalchemy
 import pytest
 

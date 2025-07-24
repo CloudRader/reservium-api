@@ -5,7 +5,7 @@ DTO schemes for User entity.
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, Field
-from schemas.event import Event
+from core.schemas.event import Event
 
 
 class UserBase(BaseModel):

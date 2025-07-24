@@ -5,9 +5,9 @@ Module for testing email service.
 import datetime as dt
 import pytest
 
-from models import EventState
+from core.models import EventState
+from core.schemas import EventUpdate
 from api import BaseAppException
-from schemas import EventUpdate
 
 
 # pylint: disable=redefined-outer-name

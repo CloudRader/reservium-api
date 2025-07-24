@@ -9,7 +9,7 @@ from typing import Any
 from datetime import datetime
 from abc import ABC, abstractmethod
 
-from schemas import RegistrationFormCreate, User, EmailCreate
+from core.schemas import RegistrationFormCreate, User, EmailCreate
 from pypdf import PdfReader, PdfWriter
 
 

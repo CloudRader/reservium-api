@@ -3,7 +3,7 @@ Module for testing user service
 """
 
 import pytest
-from schemas import UserCreate
+from core.schemas import UserCreate
 
 
 # pylint: disable=redefined-outer-name

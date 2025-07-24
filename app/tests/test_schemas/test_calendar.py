@@ -6,7 +6,7 @@ from datetime import datetime, UTC
 from uuid import uuid4
 import pytest
 from pydantic import ValidationError
-from schemas.calendar import (
+from core.schemas.calendar import (
     Rules,
     CalendarCreate,
     CalendarUpdate,

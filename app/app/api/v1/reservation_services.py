@@ -17,7 +17,7 @@ from api import (
     PermissionDeniedException,
     UnauthorizedException,
 )
-from schemas import (
+from core.schemas import (
     ReservationServiceCreate,
     ReservationServiceUpdate,
     ReservationService,

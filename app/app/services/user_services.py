@@ -6,11 +6,19 @@ from typing import Annotated
 from abc import ABC, abstractmethod
 
 from fastapi import Depends
-from db import db_session
+from core import db_session
+from core.models import UserModel
+from core.schemas import (
+    UserCreate,
+    UserUpdate,
+    User,
+    UserIS,
+    Role,
+    ServiceValidity,
+    Room,
+)
 from crud import CRUDUser, CRUDReservationService
 from services import CrudServiceBase
-from models import UserModel
-from schemas import UserCreate, UserUpdate, User, UserIS, Role, ServiceValidity, Room
 from sqlalchemy.ext.asyncio import AsyncSession
 
 

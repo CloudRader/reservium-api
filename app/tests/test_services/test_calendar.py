@@ -3,7 +3,7 @@ Module for testing mini service ser.
 """
 
 import pytest
-from schemas import CalendarUpdate
+from core.schemas import CalendarUpdate
 from api import PermissionDeniedException, BaseAppException
 
 

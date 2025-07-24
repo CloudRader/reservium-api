@@ -3,7 +3,7 @@ Module for testing user crud
 """
 
 import pytest
-from schemas import UserUpdate
+from core.schemas import UserUpdate
 
 
 # pylint: disable=redefined-outer-name

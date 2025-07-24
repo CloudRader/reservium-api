@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
 from pydantic import BaseModel, Field
-from schemas.mini_service import MiniService
+from core.schemas.mini_service import MiniService
 
 
 class Rules(BaseModel):

@@ -9,8 +9,8 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from models import MiniServiceModel
-from schemas import MiniServiceCreate, MiniServiceUpdate
+from core.models import MiniServiceModel
+from core.schemas import MiniServiceCreate, MiniServiceUpdate
 
 from crud import CRUDBase
 

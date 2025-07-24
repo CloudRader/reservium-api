@@ -7,12 +7,12 @@ from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from db.base_class import Base
-from models.soft_delete_mixin import SoftDeleteMixin
+from core.models.base_class import Base
+from core.models.soft_delete_mixin import SoftDeleteMixin
 
 if TYPE_CHECKING:
-    from models.reservation_service import ReservationService
-    from models.calendar import Calendar
+    from core.models.reservation_service import ReservationService
+    from core.models.calendar import Calendar
 
 
 # pylint: disable=too-few-public-methods

@@ -6,24 +6,14 @@ import datetime as dt
 from typing import Any, Annotated
 from abc import ABC, abstractmethod
 
-from models import (
+from core.models import (
     CalendarModel,
     EventModel,
     EventState,
     ReservationServiceModel,
     UserModel,
 )
-from services.utils import (
-    ready_event,
-    first_standard_check,
-    dif_days_res,
-    reservation_in_advance,
-)
-from services import CrudServiceBase
-from fastapi import Depends
-
-from api import BaseAppException, PermissionDeniedException
-from schemas import (
+from core.schemas import (
     EventCreate,
     User,
     ServiceValidity,
@@ -35,7 +25,17 @@ from schemas import (
     ReservationService,
     EventWithExtraDetails,
 )
-from db import db_session
+from core import db_session
+from services.utils import (
+    ready_event,
+    first_standard_check,
+    dif_days_res,
+    reservation_in_advance,
+)
+from services import CrudServiceBase
+from fastapi import Depends
+
+from api import BaseAppException, PermissionDeniedException
 from crud import CRUDReservationService, CRUDEvent, CRUDCalendar, CRUDUser
 from sqlalchemy.ext.asyncio import AsyncSession
 

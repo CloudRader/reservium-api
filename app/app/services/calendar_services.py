@@ -8,11 +8,11 @@ from uuid import UUID
 
 from fastapi import Depends
 from api import BaseAppException, PermissionDeniedException
-from db import db_session
+from core import db_session
+from core.models import CalendarModel, ReservationServiceModel
+from core.schemas import CalendarCreate, CalendarUpdate, User
 from crud import CRUDCalendar, CRUDReservationService, CRUDMiniService
 from services import CrudServiceBase
-from models import CalendarModel, ReservationServiceModel
-from schemas import CalendarCreate, CalendarUpdate, User
 from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 

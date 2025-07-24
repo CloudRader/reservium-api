@@ -4,8 +4,8 @@ Tests for MiniService Pydantic Schemas
 
 import pytest
 from pydantic import ValidationError
-from models import EventState
-from schemas.event import (
+from core.models import EventState
+from core.schemas.event import (
     EventCreateToDb,
     EventUpdate,
     EventInDBBase,

@@ -6,7 +6,7 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 
-from schemas import UserIS, UserCreate, ReservationServiceCreate, Zone, Room
+from core.schemas import UserIS, UserCreate, ReservationServiceCreate, Zone, Room
 from crud import CRUDUser, CRUDReservationService
 from app.main import app
 

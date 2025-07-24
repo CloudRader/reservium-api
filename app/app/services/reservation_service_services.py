@@ -7,13 +7,13 @@ from typing import Annotated
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from db import db_session
+from core import db_session
+from core.models import ReservationServiceModel
+from core.schemas import ReservationServiceCreate, ReservationServiceUpdate, User
 from fastapi import Depends
 from crud import CRUDReservationService, CRUDCalendar, CRUDMiniService
 from api import BaseAppException, PermissionDeniedException
 from services import CrudServiceBase
-from models import ReservationServiceModel
-from schemas import ReservationServiceCreate, ReservationServiceUpdate, User
 from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -11,10 +11,17 @@ from fastapi_mail import FastMail, MessageSchema, MessageType
 from fastapi import APIRouter, status, Depends
 from api import get_current_token, get_request
 from api.docs import fastapi_docs
-from schemas import EmailCreate, RegistrationFormCreate, UserIS, User, Event, EmailMeta
-from models import ReservationServiceModel, CalendarModel
-from services import EmailService, EventService
+from core.schemas import (
+    EmailCreate,
+    RegistrationFormCreate,
+    UserIS,
+    User,
+    Event,
+    EmailMeta,
+)
+from core.models import ReservationServiceModel, CalendarModel
 from core import email_connection, settings
+from services import EmailService, EventService
 
 router = APIRouter(prefix="/emails", tags=[fastapi_docs.EMAIL_TAG["name"]])
 

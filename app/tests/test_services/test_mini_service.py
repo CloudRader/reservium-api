@@ -3,7 +3,7 @@ Module for testing mini service ser.
 """
 
 import pytest
-from schemas import MiniServiceUpdate
+from core.schemas import MiniServiceUpdate
 from api import PermissionDeniedException
 
 

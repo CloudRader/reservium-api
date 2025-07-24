@@ -4,7 +4,7 @@ Utils for test package.
 
 from typing import Any
 
-from db import Base
+from core.models.base_class import Base
 
 
 def as_dict(model: Base) -> dict[str, Any]:

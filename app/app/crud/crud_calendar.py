@@ -8,8 +8,8 @@ from abc import ABC, abstractmethod
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from models import CalendarModel, MiniServiceModel
-from schemas import CalendarCreate, CalendarUpdate
+from core.models import CalendarModel, MiniServiceModel
+from core.schemas import CalendarCreate, CalendarUpdate
 
 from crud import CRUDBase
 

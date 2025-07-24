@@ -8,12 +8,12 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, String, Enum as SQLAlchemyEnum, text
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from db.base_class import Base
-from models.soft_delete_mixin import SoftDeleteMixin
+from core.models.base_class import Base
+from core.models.soft_delete_mixin import SoftDeleteMixin
 
 if TYPE_CHECKING:
-    from models.user import User
-    from models.calendar import Calendar
+    from core.models.user import User
+    from core.models.calendar import Calendar
 
 
 class EventState(Enum):

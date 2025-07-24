@@ -8,8 +8,8 @@ from abc import ABC, abstractmethod
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from models import ReservationServiceModel
-from schemas import ReservationServiceCreate, ReservationServiceUpdate
+from core.models import ReservationServiceModel
+from core.schemas import ReservationServiceCreate, ReservationServiceUpdate
 
 from crud import CRUDBase
 

@@ -5,7 +5,7 @@ Utils for API.
 import datetime as dt
 from urllib.parse import urlparse, urlunparse
 from pytz import timezone
-from schemas import User, Calendar, EventCreate
+from core.schemas import User, Calendar, EventCreate
 
 
 def modify_url_scheme(url: str, new_scheme: str) -> str:

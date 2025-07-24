@@ -10,7 +10,7 @@ from uuid import UUID
 from pydantic import BaseModel
 from sqlalchemy import Row
 
-from db import Base
+from core.models.base_class import Base
 from crud import CRUDBase
 
 Model = TypeVar("Model", bound=Base)

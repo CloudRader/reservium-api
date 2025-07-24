@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db import Base
+from core.models.base_class import Base
 
 Model = TypeVar("Model", bound=Base)
 CreateSchema = TypeVar("CreateSchema", bound=BaseModel)

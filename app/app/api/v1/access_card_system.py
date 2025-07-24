@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from services import AccessCardSystemService, EventService
 from api import PermissionDeniedException
 from api.docs import fastapi_docs
-from schemas import (
+from core.schemas import (
     VarSymbolCreateUpdate,
     VarSymbolDelete,
     Event,

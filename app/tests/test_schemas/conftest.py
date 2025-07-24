@@ -3,7 +3,7 @@ Conftest for testing schema
 """
 
 import pytest
-from schemas import Rules
+from core.schemas import Rules
 
 
 # pylint: disable=redefined-outer-name

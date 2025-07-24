@@ -10,7 +10,7 @@ from api import (
     fastapi_docs,
     get_current_user,
 )
-from schemas import User
+from core.schemas import User
 
 app = FastAPI()
 

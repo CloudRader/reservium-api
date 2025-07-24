@@ -5,8 +5,13 @@ Conftest for testing model
 import uuid
 import pytest
 import pytest_asyncio
-from models import UserModel, ReservationServiceModel, MiniServiceModel, CalendarModel
-from schemas import Rules
+from core.models import (
+    UserModel,
+    ReservationServiceModel,
+    MiniServiceModel,
+    CalendarModel,
+)
+from core.schemas import Rules
 
 
 # pylint: disable=redefined-outer-name

@@ -3,7 +3,7 @@ Module for testing mini service crud
 """
 
 import pytest
-from schemas import MiniServiceUpdate
+from core.schemas import MiniServiceUpdate
 
 
 # pylint: disable=redefined-outer-name
