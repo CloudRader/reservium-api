@@ -12,8 +12,7 @@ from api import (
     fastapi_docs,
     get_current_user,
     BaseAppException,
-    PermissionDeniedException,
-    UnauthorizedException,
+    ERROR_RESPONSES,
 )
 from core.schemas import MiniServiceCreate, MiniServiceUpdate, MiniService, User
 from services import MiniServiceService
@@ -24,11 +23,7 @@ router = APIRouter(tags=[fastapi_docs.MINI_SERVICE_TAG["name"]])
 @router.post(
     "/create_mini_service",
     response_model=MiniService,
-    responses={
-        **BaseAppException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_201_CREATED,
 )
 async def create_mini_service(
@@ -54,11 +49,7 @@ async def create_mini_service(
 @router.post(
     "/create_mini_services",
     response_model=List[MiniService],
-    responses={
-        **BaseAppException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_201_CREATED,
 )
 async def create_mini_services(
@@ -87,9 +78,7 @@ async def create_mini_services(
 @router.get(
     "/{mini_service_id}",
     response_model=MiniService,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["404"],
     status_code=status.HTTP_200_OK,
 )
 async def get_mini_service(
@@ -116,9 +105,7 @@ async def get_mini_service(
 @router.get(
     "/",
     response_model=List[MiniService],
-    responses={
-        **BaseAppException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )
 async def get_mini_services(
@@ -142,11 +129,7 @@ async def get_mini_services(
 @router.put(
     "/{mini_service_id}",
     response_model=MiniService,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def update_mini_service(
@@ -177,11 +160,7 @@ async def update_mini_service(
 @router.put(
     "/retrieve_deleted/{mini_service_id}",
     response_model=MiniService,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def retrieve_deleted_reservation_service(
@@ -208,11 +187,7 @@ async def retrieve_deleted_reservation_service(
 @router.delete(
     "/{mini_service_id}",
     response_model=MiniService,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def delete_mini_service(
@@ -241,9 +216,7 @@ async def delete_mini_service(
 @router.get(
     "/name/{name}",
     response_model=MiniService,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["404"],
     status_code=status.HTTP_200_OK,
 )
 async def get_mini_services_by_name(
@@ -270,9 +243,7 @@ async def get_mini_services_by_name(
 @router.get(
     "/reservation_service/{reservation_service_id}",
     response_model=List[MiniService],
-    responses={
-        **EntityNotFoundException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["404"],
     status_code=status.HTTP_200_OK,
 )
 async def get_mini_services_by_reservation_service_id(

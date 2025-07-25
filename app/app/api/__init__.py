@@ -12,6 +12,7 @@ from .exceptions import (
     BaseAppException,
     PermissionDeniedException,
     UnauthorizedException,
+    ERROR_RESPONSES,
 )
 from .utils import (
     control_collision,
@@ -40,6 +41,7 @@ __all__ = [
     "app_exception_handler",
     "PermissionDeniedException",
     "UnauthorizedException",
+    "ERROR_RESPONSES",
     # Utils
     "control_collision",
     "check_night_reservation",

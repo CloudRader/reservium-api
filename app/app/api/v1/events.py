@@ -32,9 +32,8 @@ from api import (
     control_available_reservation_time,
     EntityNotFoundException,
     Entity,
-    PermissionDeniedException,
-    UnauthorizedException,
     BaseAppException,
+    ERROR_RESPONSES,
 )
 from api.v1.emails import preparing_email, create_email_meta
 
@@ -49,9 +48,7 @@ router = APIRouter(tags=[fastapi_docs.EVENT_TAG["name"]])
 # understood by static code analysis tools like pylint.
 @router.post(
     "/create_event",
-    responses={
-        **EntityNotFoundException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["404"],
     status_code=status.HTTP_201_CREATED,
 )
 async def create_event(
@@ -163,9 +160,7 @@ async def create_event(
 @router.get(
     "/user/{user_id}",
     response_model=List[EventWithExtraDetails],
-    responses={
-        **EntityNotFoundException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )
 async def get_events_by_user_id(
@@ -190,9 +185,7 @@ async def get_events_by_user_id(
 @router.get(
     "/state/reservation_service/{reservation_service_alias}",
     response_model=List[EventWithExtraDetails],
-    responses={
-        **EntityNotFoundException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )
 async def get_by_event_state_by_reservation_service_alias(
@@ -221,11 +214,7 @@ async def get_by_event_state_by_reservation_service_alias(
 @router.put(
     "/approve_update_reservation_time/{event_id}",
     response_model=Event,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def approve_update_reservation_time(
@@ -323,11 +312,7 @@ async def approve_update_reservation_time(
 @router.put(
     "/request_update_reservation_time/{event_id}",
     response_model=Event,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def request_update_reservation_time(
@@ -367,11 +352,7 @@ async def request_update_reservation_time(
 @router.delete(
     "/{event_id}",
     response_model=Event,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_200_OK,
 )
 async def cancel_reservation(
@@ -423,19 +404,17 @@ async def cancel_reservation(
         return event
 
     except HttpError as exc:
-        raise BaseAppException(
-            "This event does not exist in Google Calendar.", status_code=404
+        raise EntityNotFoundException(
+            entity=Entity.EVENT,
+            entity_id=event_id,
+            message="This event does not exist in Google Calendar.",
         ) from exc
 
 
 @router.put(
     "/approve_event/{event_id}",
     response_model=Event,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_200_OK,
 )
 async def approve_reservation(
@@ -512,6 +491,8 @@ async def approve_reservation(
         return event
 
     except HttpError as exc:
-        raise BaseAppException(
-            "This event does not exist in Google Calendar.", status_code=404
+        raise EntityNotFoundException(
+            entity=Entity.EVENT,
+            entity_id=event_id,
+            message="This event does not exist in Google Calendar.",
         ) from exc

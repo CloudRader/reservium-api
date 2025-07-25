@@ -45,7 +45,6 @@ class BaseAppException(Exception):
 
     STATUS_CODE: int = status.HTTP_400_BAD_REQUEST
     DESCRIPTION: str = "An error occurred."
-    RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
 
     def __init__(
         self, message: str | None = None, status_code: int | None = None, **kwargs: Any
@@ -60,6 +59,11 @@ class BaseAppException(Exception):
             status_code=self.status_code,
             content={"message": self.message, **self.details},
         )
+
+    @classmethod
+    def response(cls) -> dict:
+        """Return OpenAPI response documentation for this exception."""
+        return get_exception_response_detail(cls.STATUS_CODE, cls.DESCRIPTION)
 
 
 def app_exception_handler(request: Request, exc: BaseAppException) -> JSONResponse:
@@ -76,11 +80,24 @@ class EntityNotFoundException(BaseAppException):
 
     STATUS_CODE = status.HTTP_404_NOT_FOUND
     DESCRIPTION = "Entity not found."
-    RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
 
-    def __init__(self, entity: Entity, entity_id: UUID | str | int):
-        message = f"Entity {entity.value} with id {entity_id} was not found."
-        super().__init__(message=message, entity=entity.value, entity_id=entity_id)
+    def __init__(
+        self,
+        entity: Entity,
+        entity_id: UUID | str | int,
+        message: str | None = None,
+        **kwargs: Any,
+    ):
+        final_message = (
+            message or f"Entity {entity.value} with id {entity_id} was not found."
+        )
+        super().__init__(
+            message=final_message,
+            status_code=self.STATUS_CODE,
+            entity=entity.value,
+            entity_id=entity_id,
+            **kwargs,
+        )
 
 
 class PermissionDeniedException(BaseAppException):
@@ -90,7 +107,6 @@ class PermissionDeniedException(BaseAppException):
 
     STATUS_CODE = status.HTTP_403_FORBIDDEN
     DESCRIPTION = "User does not have the required permissions."
-    RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
 
     def __init__(self, message: str | None = None, **kwargs):
         super().__init__(
@@ -105,7 +121,6 @@ class UnauthorizedException(BaseAppException):
 
     STATUS_CODE = status.HTTP_401_UNAUTHORIZED
     DESCRIPTION = "There's some kind of authorization problem."
-    RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
 
     def __init__(self, message: str | None = None, **kwargs):
         super().__init__(
@@ -120,7 +135,6 @@ class MethodNotAllowedException(BaseAppException):
 
     STATUS_CODE = status.HTTP_405_METHOD_NOT_ALLOWED
     DESCRIPTION = "Method not allowed."
-    RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
 
     def __init__(self, entity: Entity, request: Request):
         message = f"Method {request.method} is not allowed for entity {entity.value}"
@@ -134,8 +148,31 @@ class NotImplementedException(BaseAppException):
 
     STATUS_CODE = status.HTTP_501_NOT_IMPLEMENTED
     DESCRIPTION = "Method not implemented."
-    RESPONSE = get_exception_response_detail(STATUS_CODE, DESCRIPTION)
 
     def __init__(self):
         message = self.DESCRIPTION
         super().__init__(message=message)
+
+
+ERROR_RESPONSES = {
+    "400": {
+        **BaseAppException.response(),
+    },
+    "403": {
+        **PermissionDeniedException.response(),
+    },
+    "404": {
+        **EntityNotFoundException.response(),
+    },
+    "400_401_403": {
+        **BaseAppException.response(),
+        **UnauthorizedException.response(),
+        **PermissionDeniedException.response(),
+    },
+    "400_401_403_404": {
+        **BaseAppException.response(),
+        **UnauthorizedException.response(),
+        **PermissionDeniedException.response(),
+        **EntityNotFoundException.response(),
+    },
+}

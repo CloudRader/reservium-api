@@ -7,7 +7,7 @@ import requests
 from fastapi import APIRouter, HTTPException, Depends, status
 
 from services import AccessCardSystemService, EventService
-from api import PermissionDeniedException
+from api import ERROR_RESPONSES
 from api.docs import fastapi_docs
 from core.schemas import (
     VarSymbolCreateUpdate,
@@ -46,9 +46,7 @@ def send_request(data: Dict[str, Any]) -> Dict[str, Any]:
 
 @router.post(
     "/external_authorize",
-    responses={
-        **PermissionDeniedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["403"],
     status_code=status.HTTP_201_CREATED,
 )
 async def reservation_access_authorize(

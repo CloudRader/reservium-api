@@ -10,13 +10,11 @@ from googleapiclient.errors import HttpError
 from api import (
     EntityNotFoundException,
     Entity,
-    Message,
     fastapi_docs,
     auth_google,
     get_current_user,
     BaseAppException,
-    PermissionDeniedException,
-    UnauthorizedException,
+    ERROR_RESPONSES,
 )
 from core.schemas import CalendarCreate, Calendar, CalendarUpdate, User
 from services import CalendarService
@@ -28,15 +26,7 @@ router = APIRouter(tags=[fastapi_docs.CALENDAR_TAG["name"]])
 @router.post(
     "/create_calendar",
     response_model=Calendar,
-    responses={
-        404: {
-            "model": Message,
-            "description": "This calendar not exist in Google calendar.",
-        },
-        **BaseAppException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_201_CREATED,
 )
 async def create_calendar(
@@ -60,8 +50,10 @@ async def create_calendar(
                 calendarId=calendar_create.id
             ).execute()
         except HttpError as exc:
-            raise BaseAppException(
-                "This calendar not exist in Google calendar.", status_code=404
+            raise EntityNotFoundException(
+                entity=Entity.CALENDAR,
+                entity_id=calendar_create.id,
+                message="The calendar does not exist in Google Calendar.",
             ) from exc
     else:
         try:
@@ -95,15 +87,7 @@ async def create_calendar(
 @router.post(
     "/create_calendars",
     response_model=List[Calendar],
-    responses={
-        404: {
-            "model": Message,
-            "description": "This calendar not exist in Google calendar.",
-        },
-        **BaseAppException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_201_CREATED,
 )
 async def create_calendars(
@@ -130,9 +114,7 @@ async def create_calendars(
 @router.get(
     "/{calendar_id}",
     response_model=Calendar,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["404"],
     status_code=status.HTTP_200_OK,
 )
 async def get_calendar(
@@ -159,9 +141,7 @@ async def get_calendar(
 @router.get(
     "/",
     response_model=List[Calendar],
-    responses={
-        **BaseAppException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )
 async def get_all_calendars(
@@ -184,11 +164,7 @@ async def get_all_calendars(
 
 @router.get(
     "/google_calendars/",
-    responses={
-        **BaseAppException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def get_all_google_calendar_to_add(
@@ -216,11 +192,7 @@ async def get_all_google_calendar_to_add(
 @router.put(
     "/{calendar_id}",
     response_model=Calendar,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def update_calendar(
@@ -249,11 +221,7 @@ async def update_calendar(
 @router.put(
     "/retrieve_deleted/{calendar_id}",
     response_model=Calendar,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def retrieve_deleted_calendar(
@@ -280,11 +248,7 @@ async def retrieve_deleted_calendar(
 @router.delete(
     "/{calendar_id}",
     response_model=Calendar,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def delete_calendar(
@@ -312,9 +276,7 @@ async def delete_calendar(
 
 @router.get(
     "/mini_services/{calendar_id}",
-    responses={
-        **EntityNotFoundException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["404"],
     status_code=status.HTTP_200_OK,
 )
 async def get_mini_services_by_calendar(
@@ -339,9 +301,7 @@ async def get_mini_services_by_calendar(
 @router.get(
     "/reservation_service/{reservation_service_id}",
     response_model=List[Calendar],
-    responses={
-        **EntityNotFoundException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )
 async def get_calendars_by_reservation_service_id(

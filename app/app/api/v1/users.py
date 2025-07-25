@@ -29,7 +29,12 @@ async def get_user(current_user: Annotated[User, Depends(get_current_user)]) -> 
     return current_user
 
 
-@router.get("/", response_model=List[User])
+@router.get(
+    "/",
+    response_model=List[User],
+    # responses=ERROR_RESPONSES["404"],
+    status_code=status.HTTP_200_OK,
+)
 async def get_all_users(
     user_service: Annotated[UserService, Depends(UserService)],
 ) -> Any:

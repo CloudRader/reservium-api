@@ -14,8 +14,7 @@ from api import (
     get_current_user,
     authenticate_user,
     get_current_token,
-    PermissionDeniedException,
-    UnauthorizedException,
+    ERROR_RESPONSES,
 )
 from core.schemas import (
     ReservationServiceCreate,
@@ -32,11 +31,7 @@ router = APIRouter(tags=[fastapi_docs.RESERVATION_SERVICE_TAG["name"]])
     "/create_reservation_service",
     response_model=ReservationService,
     response_model_exclude={"calendars", "mini_services"},
-    responses={
-        **BaseAppException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_201_CREATED,
 )
 async def create_reservation_service(
@@ -70,11 +65,7 @@ async def create_reservation_service(
 @router.post(
     "/create_reservation_services",
     response_model=List[ReservationService],
-    responses={
-        **BaseAppException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_201_CREATED,
 )
 async def create_reservation_services(
@@ -111,9 +102,7 @@ async def create_reservation_services(
 @router.get(
     "/{reservation_service_id}",
     response_model=ReservationService,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["404"],
     status_code=status.HTTP_200_OK,
 )
 async def get_reservation_service(
@@ -142,9 +131,7 @@ async def get_reservation_service(
 @router.get(
     "/",
     response_model=List[ReservationService],
-    responses={
-        **BaseAppException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )
 async def get_reservation_services(
@@ -176,9 +163,7 @@ async def get_reservation_services(
 @router.get(
     "/services/public",
     response_model=List[ReservationService],
-    responses={
-        **BaseAppException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )
 async def get_public_reservation_services(
@@ -201,11 +186,7 @@ async def get_public_reservation_services(
 @router.put(
     "/{reservation_service_id}",
     response_model=ReservationService,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def update_reservation_service(
@@ -238,11 +219,7 @@ async def update_reservation_service(
 @router.put(
     "/retrieve_deleted/{reservation_service_id}",
     response_model=ReservationService,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def retrieve_deleted_reservation_service(
@@ -273,11 +250,7 @@ async def retrieve_deleted_reservation_service(
 @router.delete(
     "/{reservation_service_id}",
     response_model=ReservationService,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-        **PermissionDeniedException.RESPONSE,
-        **UnauthorizedException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def delete_reservation_service(
@@ -310,9 +283,7 @@ async def delete_reservation_service(
 @router.get(
     "/name/{name}",
     response_model=ReservationService,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["404"],
     status_code=status.HTTP_200_OK,
 )
 async def get_reservation_service_by_name(
@@ -339,9 +310,7 @@ async def get_reservation_service_by_name(
 @router.get(
     "/alias/{alias}",
     response_model=ReservationService,
-    responses={
-        **EntityNotFoundException.RESPONSE,
-    },
+    responses=ERROR_RESPONSES["404"],
     status_code=status.HTTP_200_OK,
 )
 async def get_reservation_service_by_alias(
