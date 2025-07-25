@@ -14,12 +14,20 @@ from fastapi import status
 
 
 @pytest.mark.asyncio
-async def test_get_auth_code(client: AsyncClient):
+@patch("api.v1.auth.get_oauth_session")
+async def test_get_auth_code(mock_get_oauth, client: AsyncClient):
     """
-    Fixture to initiate the login process and get the auth code.
+    Test that /auth/login returns an authorization URL without hitting real OAuth server.
     """
-    auth_code = await client.get("/v1/auth/login")
-    assert auth_code.status_code == status.HTTP_200_OK
+    mock_session = mock_get_oauth.return_value
+    mock_session.authorization_url.return_value = (
+        "https://fake-auth-url",
+        "fake_state",
+    )
+    response = await client.get("/v1/auth/login")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == "https://fake-auth-url"
 
 
 @pytest.mark.asyncio
