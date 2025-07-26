@@ -2,12 +2,11 @@
 Module for testing user api
 """
 
-from unittest.mock import patch, AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
-from httpx import AsyncClient
 from fastapi import status
-
+from httpx import AsyncClient
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest

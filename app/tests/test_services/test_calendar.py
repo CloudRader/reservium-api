@@ -3,9 +3,8 @@ Module for testing mini service ser.
 """
 
 import pytest
+from api import BaseAppError, PermissionDeniedError
 from core.schemas import CalendarUpdate
-from api import PermissionDeniedException, BaseAppException
-
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
@@ -29,7 +28,7 @@ async def test_create_calendar_no_permission(
     """
     Test creating a mini service when the user doesn't have permission.
     """
-    with pytest.raises(PermissionDeniedException):
+    with pytest.raises(PermissionDeniedError):
         await service_calendar.create_calendar(calendar_create, user_not_head)
 
 
@@ -41,7 +40,7 @@ async def test_create_calendar_collision_not_found(
     Test that creating a calendar with a non-existent collision calendar raises an error.
     """
     calendar_create.collision_with_calendar = ["non-existent-calendar-id"]
-    with pytest.raises(BaseAppException):
+    with pytest.raises(BaseAppError):
         await service_calendar.create_calendar(calendar_create, user)
 
 
@@ -53,7 +52,7 @@ async def test_create_calendar_with_existing_reservation_type(
     Test that creating a calendar with an already existing reservation type raises an error.
     """
     await service_calendar.create_calendar(calendar_create, user)
-    with pytest.raises(BaseAppException):
+    with pytest.raises(BaseAppError):
         await service_calendar.create_calendar(calendar_create, user)
 
 
@@ -143,7 +142,7 @@ async def test_update_mini_service_no_permission(
         reservation_type="Updated Galambula",
     )
 
-    with pytest.raises(PermissionDeniedException):
+    with pytest.raises(PermissionDeniedError):
         await service_calendar.update_calendar(
             calendar.id, calendar_update, user_not_head
         )
@@ -180,7 +179,7 @@ async def test_delete_calendar_no_permission(service_calendar, calendar, user_no
     """
     Test deleting a calendar when the user doesn't have permission.
     """
-    with pytest.raises(PermissionDeniedException):
+    with pytest.raises(PermissionDeniedError):
         await service_calendar.delete_calendar(
             calendar.id, user_not_head, hard_remove=False
         )
@@ -218,7 +217,7 @@ async def test_retrieve_non_deleted_calendar(service_calendar, calendar, user):
     """
     Test retrieving a calendar that hasn't been softly deleted.
     """
-    with pytest.raises(BaseAppException):
+    with pytest.raises(BaseAppError):
         await service_calendar.retrieve_removed_object(calendar.id, user)
 
 

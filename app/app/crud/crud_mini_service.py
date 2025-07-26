@@ -7,12 +7,11 @@ using SQLAlchemy.
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import MiniServiceModel
 from core.schemas import MiniServiceCreate, MiniServiceUpdate
-
 from crud import CRUDBase
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AbstractCRUDMiniService(

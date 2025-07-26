@@ -2,20 +2,20 @@
 Tests for ReservationService Pydantic Schemas
 """
 
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from uuid import uuid4
+
 import pytest
-from pydantic import ValidationError
-from core.schemas.reservation_service import (
-    ReservationServiceCreate,
-    ReservationServiceUpdate,
-    ReservationServiceInDBBase,
-    ReservationService,
-)
 
 # Dummy mini service and calendar references
-from core.schemas import MiniService, Calendar
-
+from core.schemas import Calendar, MiniService
+from core.schemas.reservation_service import (
+    ReservationService,
+    ReservationServiceCreate,
+    ReservationServiceInDBBase,
+    ReservationServiceUpdate,
+)
+from pydantic import ValidationError
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest

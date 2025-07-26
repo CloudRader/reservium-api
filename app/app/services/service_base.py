@@ -4,14 +4,13 @@ for services that implement CRUD operations on objects
 """
 
 from abc import ABC, abstractmethod
-from typing import TypeVar, Generic
+from typing import Generic, TypeVar
 from uuid import UUID
-
-from pydantic import BaseModel
-from sqlalchemy import Row
 
 from core.models.base_class import Base
 from crud import CRUDBase
+from pydantic import BaseModel
+from sqlalchemy import Row
 
 Model = TypeVar("Model", bound=Base)
 Crud = TypeVar("Crud", bound=CRUDBase)

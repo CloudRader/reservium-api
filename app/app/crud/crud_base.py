@@ -5,14 +5,13 @@ for handling common database operations with SQLAlchemy and FastAPI.
 
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import TypeVar, Generic, Type, Any
+from typing import Any, Generic, Type, TypeVar
 from uuid import UUID
 
+from core.models.base_class import Base
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from core.models.base_class import Base
 
 Model = TypeVar("Model", bound=Base)
 CreateSchema = TypeVar("CreateSchema", bound=BaseModel)

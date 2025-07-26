@@ -2,26 +2,26 @@
 API controllers for reservation services.
 """
 
-from typing import Any, Annotated, List
+from typing import Annotated, Any, List
 from uuid import UUID
-from fastapi import APIRouter, Depends, Path, status, Body, Query
 
 from api import (
-    EntityNotFoundException,
-    Entity,
-    fastapi_docs,
-    BaseAppException,
-    get_current_user,
-    authenticate_user,
-    get_current_token,
     ERROR_RESPONSES,
+    BaseAppError,
+    Entity,
+    EntityNotFoundError,
+    authenticate_user,
+    fastapi_docs,
+    get_current_token,
+    get_current_user,
 )
 from core.schemas import (
+    ReservationService,
     ReservationServiceCreate,
     ReservationServiceUpdate,
-    ReservationService,
     User,
 )
+from fastapi import APIRouter, Body, Depends, Path, Query, status
 from services import ReservationServiceService, UserService
 
 router = APIRouter(tags=[fastapi_docs.RESERVATION_SERVICE_TAG["name"]])
@@ -57,7 +57,7 @@ async def create_reservation_service(
         reservation_service_create, user
     )
     if not reservation_service:
-        raise BaseAppException()
+        raise BaseAppError()
     await authenticate_user(user_service, token)
     return reservation_service
 
@@ -122,9 +122,7 @@ async def get_reservation_service(
     """
     reservation_service = await service.get(reservation_service_id, include_removed)
     if not reservation_service:
-        raise EntityNotFoundException(
-            Entity.RESERVATION_SERVICE, reservation_service_id
-        )
+        raise EntityNotFoundError(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service
 
 
@@ -156,7 +154,7 @@ async def get_reservation_services(
     else:
         reservation_service = await service.get_public_services()
     if reservation_service is None:
-        raise BaseAppException()
+        raise BaseAppError()
     return reservation_service
 
 
@@ -179,7 +177,7 @@ async def get_public_reservation_services(
     """
     reservation_service = await service.get_public_services()
     if reservation_service is None:
-        raise BaseAppException()
+        raise BaseAppError()
     return reservation_service
 
 
@@ -210,9 +208,7 @@ async def update_reservation_service(
         reservation_service_id, reservation_service_update, user
     )
     if not reservation_service:
-        raise EntityNotFoundException(
-            Entity.RESERVATION_SERVICE, reservation_service_id
-        )
+        raise EntityNotFoundError(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service
 
 
@@ -241,9 +237,7 @@ async def retrieve_deleted_reservation_service(
         reservation_service_id, user
     )
     if not reservation_service:
-        raise EntityNotFoundException(
-            Entity.RESERVATION_SERVICE, reservation_service_id
-        )
+        raise EntityNotFoundError(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service
 
 
@@ -274,9 +268,7 @@ async def delete_reservation_service(
         reservation_service_id, user, hard_remove
     )
     if not reservation_service:
-        raise EntityNotFoundException(
-            Entity.RESERVATION_SERVICE, reservation_service_id
-        )
+        raise EntityNotFoundError(Entity.RESERVATION_SERVICE, reservation_service_id)
     return reservation_service
 
 
@@ -303,7 +295,7 @@ async def get_reservation_service_by_name(
     """
     reservation_service = await service.get_by_name(name, include_removed)
     if not reservation_service:
-        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, name)
+        raise EntityNotFoundError(Entity.RESERVATION_SERVICE, name)
     return reservation_service
 
 
@@ -330,5 +322,5 @@ async def get_reservation_service_by_alias(
     """
     reservation_service = await service.get_by_alias(alias, include_removed)
     if not reservation_service:
-        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, alias)
+        raise EntityNotFoundError(Entity.RESERVATION_SERVICE, alias)
     return reservation_service

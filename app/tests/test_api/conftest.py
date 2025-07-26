@@ -4,12 +4,11 @@ Conftest for testing api
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
+from core.schemas import ReservationServiceCreate, Room, UserCreate, UserIS, Zone
+from crud import CRUDReservationService, CRUDUser
+from httpx import ASGITransport, AsyncClient
 
-from core.schemas import UserIS, UserCreate, ReservationServiceCreate, Zone, Room
-from crud import CRUDUser, CRUDReservationService
 from app.main import app
-
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
@@ -73,7 +72,7 @@ async def client(user_service, reservation_service_service):
     """
     Provides a test HTTP client with overridden dependencies.
     """
-    from services import UserService, ReservationServiceService
+    from services import ReservationServiceService, UserService
 
     app.dependency_overrides[UserService] = lambda: user_service
     app.dependency_overrides[ReservationServiceService] = (

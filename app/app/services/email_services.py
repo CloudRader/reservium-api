@@ -2,14 +2,13 @@
 This module defines an abstract base class AbstractEmailService that work with Email.
 """
 
-import shutil
 import os
-
-from typing import Any
-from datetime import datetime
+import shutil
 from abc import ABC, abstractmethod
+from datetime import datetime
+from typing import Any
 
-from core.schemas import RegistrationFormCreate, User, EmailCreate
+from core.schemas import EmailCreate, RegistrationFormCreate, User
 from pypdf import PdfReader, PdfWriter
 
 

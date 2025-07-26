@@ -6,7 +6,6 @@ import pytest
 import sqlalchemy
 from core.models import CalendarModel
 
-
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
 

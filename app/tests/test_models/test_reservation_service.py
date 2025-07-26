@@ -3,10 +3,10 @@ Module for testing reservation service model
 """
 
 import uuid
-from core.models import ReservationServiceModel
-import sqlalchemy
-import pytest
 
+import pytest
+import sqlalchemy
+from core.models import ReservationServiceModel
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest

@@ -3,16 +3,16 @@ This module defines an abstract base class AbstractReservationServiceService
 that work with Reservation Service
 """
 
-from typing import Annotated
 from abc import ABC, abstractmethod
+from typing import Annotated
 from uuid import UUID
 
+from api import BaseAppError, PermissionDeniedError
 from core import db_session
 from core.models import ReservationServiceModel
 from core.schemas import ReservationServiceCreate, ReservationServiceUpdate, User
+from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService
 from fastapi import Depends
-from crud import CRUDReservationService, CRUDCalendar, CRUDMiniService
-from api import BaseAppException, PermissionDeniedException
 from services import CrudServiceBase
 from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -169,16 +169,12 @@ class ReservationServiceService(AbstractReservationServiceService):
         self, reservation_service_create: ReservationServiceCreate, user: User
     ) -> ReservationServiceModel | None:
         if await self.crud.get_by_name(reservation_service_create.name, True):
-            raise BaseAppException(
-                "A reservation service with this name already exist."
-            )
+            raise BaseAppError("A reservation service with this name already exist.")
         if await self.crud.get_by_alias(reservation_service_create.alias, True):
-            raise BaseAppException(
-                "A reservation service with this alias already exist."
-            )
+            raise BaseAppError("A reservation service with this alias already exist.")
 
         if not user.section_head:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 "You must be the head of PS to create services."
             )
 
@@ -191,7 +187,7 @@ class ReservationServiceService(AbstractReservationServiceService):
         user: User,
     ) -> ReservationServiceModel | None:
         if not user.section_head:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 "You must be the head of PS to update services."
             )
 
@@ -201,7 +197,7 @@ class ReservationServiceService(AbstractReservationServiceService):
         self, uuid: UUID | str | int | None, user: User
     ) -> ReservationServiceModel | None:
         if not user.section_head:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 "You must be the head of PS to retrieve removed services."
             )
 
@@ -211,7 +207,7 @@ class ReservationServiceService(AbstractReservationServiceService):
         self, uuid: UUID, user: User, hard_remove: bool = False
     ) -> ReservationServiceModel | None:
         if not user.section_head:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 "You must be the head of PS to delete services."
             )
 

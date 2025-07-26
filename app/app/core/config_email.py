@@ -1,7 +1,7 @@
 """Email config."""
 
-from fastapi_mail import ConnectionConfig
 from core import settings
+from fastapi_mail import ConnectionConfig
 
 email_connection = ConnectionConfig(
     MAIL_USERNAME=settings.MAIL.USERNAME,

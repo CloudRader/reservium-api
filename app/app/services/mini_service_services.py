@@ -2,16 +2,16 @@
 This module defines an abstract base class AbstractMiniServiceService that work with Mini Service
 """
 
-from typing import Annotated
 from abc import ABC, abstractmethod
+from typing import Annotated
 from uuid import UUID
 
+from api import BaseAppError, PermissionDeniedError
 from core import db_session
 from core.models import MiniServiceModel
-from core.schemas import MiniServiceCreate, MiniServiceUpdate, CalendarUpdate, User
+from core.schemas import CalendarUpdate, MiniServiceCreate, MiniServiceUpdate, User
+from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService
 from fastapi import Depends
-from api import BaseAppException, PermissionDeniedException
-from crud import CRUDMiniService, CRUDCalendar, CRUDReservationService
 from services import CrudServiceBase
 from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -142,18 +142,16 @@ class MiniServiceService(AbstractMiniServiceService):
         self, mini_service_create: MiniServiceCreate, user: User
     ) -> MiniServiceModel | None:
         if await self.crud.get_by_name(mini_service_create.name, True):
-            raise BaseAppException(
-                "A reservation service with this name already exist."
-            )
+            raise BaseAppError("A reservation service with this name already exist.")
 
         reservation_service = await self.reservation_service_crud.get(
             mini_service_create.reservation_service_id
         )
 
         if reservation_service is None:
-            raise BaseAppException("A reservation service of mini service isn't exist.")
+            raise BaseAppError("A reservation service of mini service isn't exist.")
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to create mini services."
             )
 
@@ -172,9 +170,9 @@ class MiniServiceService(AbstractMiniServiceService):
         )
 
         if reservation_service is None:
-            raise BaseAppException("A reservation service of mini service isn't exist.")
+            raise BaseAppError("A reservation service of mini service isn't exist.")
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to update mini services."
             )
 
@@ -186,16 +184,16 @@ class MiniServiceService(AbstractMiniServiceService):
         mini_service = await self.crud.get(uuid, True)
 
         if mini_service.deleted_at is None:
-            raise BaseAppException("A mini service was not soft deleted.")
+            raise BaseAppError("A mini service was not soft deleted.")
 
         reservation_service = await self.reservation_service_crud.get(
             str(mini_service.reservation_service_id)
         )
 
         if reservation_service is None:
-            raise BaseAppException("A reservation service of mini service isn't exist.")
+            raise BaseAppError("A reservation service of mini service isn't exist.")
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to retrieve mini services."
             )
 
@@ -210,7 +208,7 @@ class MiniServiceService(AbstractMiniServiceService):
             return None
 
         if hard_remove and not user.section_head:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 "You must be the head of PS to totally delete mini services."
             )
 
@@ -219,9 +217,9 @@ class MiniServiceService(AbstractMiniServiceService):
         )
 
         if reservation_service is None:
-            raise BaseAppException("A reservation service of mini service isn't exist.")
+            raise BaseAppError("A reservation service of mini service isn't exist.")
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to delete mini services."
             )
 

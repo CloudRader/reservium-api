@@ -2,25 +2,25 @@
 API controllers for emails.
 """
 
-from typing import Any, Annotated
 import os
-
 from pathlib import Path
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-from fastapi_mail import FastMail, MessageSchema, MessageType
-from fastapi import APIRouter, status, Depends
+from typing import Annotated, Any
+
 from api import get_current_token, get_request
 from api.docs import fastapi_docs
+from core import email_connection, settings
+from core.models import CalendarModel, ReservationServiceModel
 from core.schemas import (
     EmailCreate,
-    RegistrationFormCreate,
-    UserIS,
-    User,
-    Event,
     EmailMeta,
+    Event,
+    RegistrationFormCreate,
+    User,
+    UserIS,
 )
-from core.models import ReservationServiceModel, CalendarModel
-from core import email_connection, settings
+from fastapi import APIRouter, Depends, status
+from fastapi_mail import FastMail, MessageSchema, MessageType
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from services import EmailService, EventService
 
 router = APIRouter(prefix="/emails", tags=[fastapi_docs.EMAIL_TAG["name"]])

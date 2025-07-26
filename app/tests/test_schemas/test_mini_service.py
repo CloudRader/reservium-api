@@ -2,17 +2,17 @@
 Tests for MiniService Pydantic Schemas
 """
 
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from uuid import uuid4
-import pytest
-from pydantic import ValidationError
-from core.schemas.mini_service import (
-    MiniServiceCreate,
-    MiniServiceUpdate,
-    MiniServiceInDBBase,
-    MiniService,
-)
 
+import pytest
+from core.schemas.mini_service import (
+    MiniService,
+    MiniServiceCreate,
+    MiniServiceInDBBase,
+    MiniServiceUpdate,
+)
+from pydantic import ValidationError
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest

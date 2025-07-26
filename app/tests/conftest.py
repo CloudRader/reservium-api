@@ -6,11 +6,9 @@ Provides async sessions for tests, with schema management.
 from urllib.parse import urlparse, urlunparse
 
 import pytest_asyncio
-from testcontainers.postgres import PostgresContainer
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-
 from core.models.base_class import Base
-
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from testcontainers.postgres import PostgresContainer
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest

@@ -3,9 +3,7 @@ API controllers for authorisation in IS(Information System of the club).
 """
 
 from typing import Annotated, Any
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, Request
-from fastapi.responses import RedirectResponse
-from services import UserService
+
 from api import (
     authenticate_user,
     fastapi_docs,
@@ -13,6 +11,9 @@ from api import (
     modify_url_scheme,
 )
 from core import settings
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, status
+from fastapi.responses import RedirectResponse
+from services import UserService
 
 app = FastAPI()
 

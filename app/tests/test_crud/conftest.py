@@ -4,15 +4,14 @@ Conftest for testing crud
 
 import pytest
 import pytest_asyncio
-from crud import CRUDUser, CRUDReservationService, CRUDMiniService, CRUDCalendar
 from core.schemas import (
-    UserCreate,
-    ReservationServiceCreate,
-    MiniServiceCreate,
     CalendarCreate,
+    MiniServiceCreate,
+    ReservationServiceCreate,
     Rules,
+    UserCreate,
 )
-
+from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService, CRUDUser
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest

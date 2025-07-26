@@ -5,15 +5,17 @@ Event ORM model and its dependencies.
 from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
-from sqlalchemy import ForeignKey, String, Enum as SQLAlchemyEnum, text
-from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.orm import relationship, Mapped, mapped_column
+
 from core.models.base_class import Base
 from core.models.soft_delete_mixin import SoftDeleteMixin
+from sqlalchemy import Enum as SQLAlchemyEnum
+from sqlalchemy import ForeignKey, String, text
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from core.models.user import User
     from core.models.calendar import Calendar
+    from core.models.user import User
 
 
 class EventState(Enum):

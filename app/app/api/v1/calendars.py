@@ -2,19 +2,19 @@
 API controllers for calendars.
 """
 
-from typing import Any, Annotated, List
-from fastapi import APIRouter, Depends, Path, status, Body, Query
+from typing import Annotated, Any, List
 
 from api import (
-    EntityNotFoundException,
+    ERROR_RESPONSES,
+    BaseAppError,
     Entity,
+    EntityNotFoundError,
     fastapi_docs,
     get_current_user,
-    BaseAppException,
-    ERROR_RESPONSES,
 )
 from api.external_api.google.google_calendar_services import GoogleCalendarService
-from core.schemas import CalendarCreate, Calendar, CalendarUpdate, User
+from core.schemas import Calendar, CalendarCreate, CalendarUpdate, User
+from fastapi import APIRouter, Body, Depends, Path, Query, status
 from services import CalendarService
 
 router = APIRouter(tags=[fastapi_docs.CALENDAR_TAG["name"]])
@@ -55,7 +55,7 @@ async def create_calendar(
 
     calendar = await service.create_calendar(calendar_create, user)
     if not calendar:
-        raise BaseAppException()
+        raise BaseAppError()
     return calendar
 
 
@@ -115,7 +115,7 @@ async def get_calendar(
     """
     calendar = await service.get(calendar_id, include_removed)
     if not calendar:
-        raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
+        raise EntityNotFoundError(Entity.CALENDAR, calendar_id)
     return calendar
 
 
@@ -139,7 +139,7 @@ async def get_all_calendars(
     """
     calendars = await service.get_all(include_removed)
     if calendars is None:
-        raise BaseAppException()
+        raise BaseAppError()
     return calendars
 
 
@@ -169,7 +169,7 @@ async def get_all_google_calendar_to_add(
 
     calendars = await service.get_all_google_calendar_to_add(user, google_calendars)
     if calendars is None:
-        raise BaseAppException()
+        raise BaseAppError()
     return calendars
 
 
@@ -198,7 +198,7 @@ async def update_calendar(
     """
     calendar = await service.update_calendar(calendar_id, calendar_update, user)
     if not calendar:
-        raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
+        raise EntityNotFoundError(Entity.CALENDAR, calendar_id)
     return calendar
 
 
@@ -225,7 +225,7 @@ async def retrieve_deleted_calendar(
     """
     calendar = await service.retrieve_removed_object(calendar_id, user)
     if not calendar:
-        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, calendar_id)
+        raise EntityNotFoundError(Entity.RESERVATION_SERVICE, calendar_id)
     return calendar
 
 
@@ -254,7 +254,7 @@ async def delete_calendar(
     """
     calendar = await service.delete_calendar(calendar_id, user, hard_remove)
     if not calendar:
-        raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
+        raise EntityNotFoundError(Entity.CALENDAR, calendar_id)
     return calendar
 
 
@@ -278,7 +278,7 @@ async def get_mini_services_by_calendar(
     """
     mini_services = await service.get_mini_services_by_calendar(calendar_id)
     if mini_services is None:
-        raise EntityNotFoundException(Entity.CALENDAR, calendar_id)
+        raise EntityNotFoundError(Entity.CALENDAR, calendar_id)
     return mini_services
 
 
@@ -307,5 +307,5 @@ async def get_calendars_by_reservation_service_id(
         reservation_service_id, include_removed
     )
     if calendars is None:
-        raise BaseAppException()
+        raise BaseAppError()
     return calendars

@@ -2,22 +2,22 @@
 This module defines an abstract base class AbstractUserService that work with User
 """
 
-from typing import Annotated
 from abc import ABC, abstractmethod
+from typing import Annotated
 
-from fastapi import Depends
 from core import db_session
 from core.models import UserModel
 from core.schemas import (
-    UserCreate,
-    UserUpdate,
-    User,
-    UserIS,
     Role,
-    ServiceValidity,
     Room,
+    ServiceValidity,
+    User,
+    UserCreate,
+    UserIS,
+    UserUpdate,
 )
-from crud import CRUDUser, CRUDReservationService
+from crud import CRUDReservationService, CRUDUser
+from fastapi import Depends
 from services import CrudServiceBase
 from sqlalchemy.ext.asyncio import AsyncSession
 

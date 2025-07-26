@@ -4,8 +4,8 @@ In other words it is an entry point of the application.
 """
 
 import logging
-from core import settings, uvicorn_run, guvicorn_run, create_app
 
+from core import create_app, guvicorn_run, settings, uvicorn_run
 
 logging.basicConfig(
     level=settings.LOGGING.LOG_LEVEL_VALUE,

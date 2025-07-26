@@ -3,10 +3,10 @@ Module for testing mini service model
 """
 
 import uuid
-from core.models import MiniServiceModel
-import sqlalchemy
-import pytest
 
+import pytest
+import sqlalchemy
+from core.models import MiniServiceModel
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest

@@ -2,12 +2,13 @@
 User ORM model and its dependencies.
 """
 
-from typing import Optional, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
+
+from core.models.base_class import Base
+from core.models.soft_delete_mixin import SoftDeleteMixin
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from core.models.base_class import Base
-from core.models.soft_delete_mixin import SoftDeleteMixin
 
 if TYPE_CHECKING:
     from core.models.event import Event

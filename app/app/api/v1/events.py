@@ -2,41 +2,40 @@
 API controllers for events.
 """
 
-from typing import Any, Annotated, List
-from dateutil.parser import isoparse
-from pytz import timezone
+from typing import Annotated, Any, List
 
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from fastapi import APIRouter, Depends, status, Path, Body, Query
-from fastapi.responses import JSONResponse
+from api import (
+    ERROR_RESPONSES,
+    BaseAppError,
+    Entity,
+    EntityNotFoundError,
+    check_night_reservation,
+    control_available_reservation_time,
+    control_collision,
+    fastapi_docs,
+    get_current_token,
+    get_current_user,
+    get_request,
+)
+from api.external_api.google.google_auth import auth_google
+from api.v1.emails import create_email_meta, preparing_email
 from core.models import EventState
 from core.schemas import (
-    EventCreate,
-    ServiceList,
-    User,
     Event,
+    EventCreate,
     EventUpdate,
     EventUpdateTime,
     EventWithExtraDetails,
+    ServiceList,
+    User,
 )
-from services import EventService, CalendarService
-from api import (
-    get_request,
-    fastapi_docs,
-    get_current_user,
-    get_current_token,
-    control_collision,
-    check_night_reservation,
-    control_available_reservation_time,
-    EntityNotFoundException,
-    Entity,
-    BaseAppException,
-    ERROR_RESPONSES,
-)
-from api.external_api.google.google_auth import auth_google
-from api.v1.emails import preparing_email, create_email_meta
-
+from dateutil.parser import isoparse
+from fastapi import APIRouter, Body, Depends, Path, Query, status
+from fastapi.responses import JSONResponse
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from pytz import timezone
+from services import CalendarService, EventService
 
 router = APIRouter(tags=[fastapi_docs.EVENT_TAG["name"]])
 
@@ -72,7 +71,7 @@ async def create_event(
         event_create.reservation_type
     )
     if not calendar:
-        raise EntityNotFoundException(Entity.CALENDAR, event_create.reservation_type)
+        raise EntityNotFoundError(Entity.CALENDAR, event_create.reservation_type)
     reservation_service = (
         await calendar_service.get_reservation_service_of_this_calendar(
             calendar.reservation_service_id
@@ -175,7 +174,7 @@ async def get_events_by_user_id(
     """
     events = await service.get_by_user_id(user_id)
     if events is None:
-        raise BaseAppException()
+        raise BaseAppError()
     return events
 
 
@@ -204,7 +203,7 @@ async def get_by_event_state_by_reservation_service_alias(
         reservation_service_alias, event_state
     )
     if events is None:
-        raise BaseAppException()
+        raise BaseAppError()
     return events
 
 
@@ -236,7 +235,7 @@ async def approve_update_reservation_time(
     google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
     event: Event = await service.get(event_id)
     if not event:
-        raise EntityNotFoundException(Entity.EVENT, event_id)
+        raise EntityNotFoundError(Entity.EVENT, event_id)
     try:
         event_update: EventUpdate = EventUpdate(event_state=EventState.CONFIRMED)
         event_from_google_calendar = (
@@ -255,7 +254,7 @@ async def approve_update_reservation_time(
                 event_id, event_update, user
             )
             if not event_to_update:
-                raise EntityNotFoundException(Entity.EVENT, event_id)
+                raise EntityNotFoundError(Entity.EVENT, event_id)
 
             await preparing_email(
                 service,
@@ -271,7 +270,7 @@ async def approve_update_reservation_time(
                 event_id, event_update, user
             )
             if not event_to_update:
-                raise EntityNotFoundException(Entity.EVENT, event_id)
+                raise EntityNotFoundError(Entity.EVENT, event_id)
             prague = timezone("Europe/Prague")
             event_from_google_calendar["start"]["dateTime"] = prague.localize(
                 event.start_datetime
@@ -301,7 +300,7 @@ async def approve_update_reservation_time(
         return event_to_update
 
     except HttpError as exc:
-        raise BaseAppException(
+        raise BaseAppError(
             "Something went wrong, control updating data.",
         ) from exc
 
@@ -335,7 +334,7 @@ async def request_update_reservation_time(
         event_id, event_update, user
     )
     if not event:
-        raise EntityNotFoundException(Entity.EVENT, event_id)
+        raise EntityNotFoundError(Entity.EVENT, event_id)
     await preparing_email(
         service,
         event,
@@ -372,7 +371,7 @@ async def cancel_reservation(
     google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
     event = await service.cancel_event(event_id, user)
     if not event:
-        raise EntityNotFoundException(Entity.EVENT, event_id)
+        raise EntityNotFoundError(Entity.EVENT, event_id)
     try:
         google_calendar_service.events().delete(
             calendarId=event.calendar_id, eventId=event.id
@@ -401,7 +400,7 @@ async def cancel_reservation(
         return event
 
     except HttpError as exc:
-        raise EntityNotFoundException(
+        raise EntityNotFoundError(
             entity=Entity.EVENT,
             entity_id=event_id,
             message="This event does not exist in Google Calendar.",
@@ -437,11 +436,11 @@ async def approve_reservation(
     if approve:
         event = await service.confirm_event(event_id, user)
         if not event:
-            raise EntityNotFoundException(Entity.EVENT, event_id)
+            raise EntityNotFoundError(Entity.EVENT, event_id)
     else:
         event = await service.cancel_event(event_id, user)
         if not event:
-            raise EntityNotFoundException(Entity.EVENT, event_id)
+            raise EntityNotFoundError(Entity.EVENT, event_id)
     try:
         if approve:
             calendar = await service.get_calendar_of_this_event(event)
@@ -488,7 +487,7 @@ async def approve_reservation(
         return event
 
     except HttpError as exc:
-        raise EntityNotFoundException(
+        raise EntityNotFoundError(
             entity=Entity.EVENT,
             entity_id=event_id,
             message="This event does not exist in Google Calendar.",

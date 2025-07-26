@@ -5,7 +5,6 @@ Module for testing reservation service crud
 import pytest
 from core.schemas import ReservationServiceUpdate
 
-
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
 

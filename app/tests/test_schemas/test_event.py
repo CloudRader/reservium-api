@@ -3,15 +3,14 @@ Tests for MiniService Pydantic Schemas
 """
 
 import pytest
-from pydantic import ValidationError
 from core.models import EventState
 from core.schemas.event import (
-    EventCreateToDb,
-    EventUpdate,
-    EventInDBBase,
     Event,
+    EventCreateToDb,
+    EventInDBBase,
+    EventUpdate,
 )
-
+from pydantic import ValidationError
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest

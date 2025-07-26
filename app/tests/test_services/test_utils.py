@@ -3,17 +3,16 @@ Module for testing utils service
 """
 
 import datetime as dt
-import pytest
 
+import pytest
 from services.utils import (
-    description_of_event,
-    reservation_in_advance,
-    ready_event,
     control_res_in_advance_or_prior,
+    description_of_event,
     dif_days_res,
     first_standard_check,
+    ready_event,
+    reservation_in_advance,
 )
-
 
 # description_of_event, ready_event
 

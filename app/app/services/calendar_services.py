@@ -2,16 +2,16 @@
 This module defines an abstract base class AbstractCalendarService that work with Calendar
 """
 
-from typing import Annotated
 from abc import ABC, abstractmethod
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends
-from api import BaseAppException, PermissionDeniedException
+from api import BaseAppError, PermissionDeniedError
 from core import db_session
 from core.models import CalendarModel, ReservationServiceModel
 from core.schemas import CalendarCreate, CalendarUpdate, User
-from crud import CRUDCalendar, CRUDReservationService, CRUDMiniService
+from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService
+from fastapi import Depends
 from services import CrudServiceBase
 from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -182,20 +182,18 @@ class CalendarService(AbstractCalendarService):
         self, calendar_create: CalendarCreate, user: User
     ) -> CalendarModel | None:
         if await self.get(calendar_create.id, True):
-            raise BaseAppException("A calendar with this id already exist.")
+            raise BaseAppError("A calendar with this id already exist.")
         if await self.get_by_reservation_type(calendar_create.reservation_type, True):
-            raise BaseAppException(
-                "A calendar with this reservation type already exist."
-            )
+            raise BaseAppError("A calendar with this reservation type already exist.")
 
         reservation_service = await self.reservation_service_crud.get(
             calendar_create.reservation_service_id
         )
 
         if reservation_service is None:
-            raise BaseAppException("A reservation service of calendar isn't exist.")
+            raise BaseAppError("A reservation service of calendar isn't exist.")
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to create calendars."
             )
 
@@ -207,7 +205,7 @@ class CalendarService(AbstractCalendarService):
         #                 reservation_service.id
         #             )
         #         ):
-        #             raise BaseAppException(
+        #             raise BaseAppError(
         #                 "These mini services do not exist in the db "
         #                 "that you want to add to this calendar."
         #             )
@@ -216,7 +214,7 @@ class CalendarService(AbstractCalendarService):
             for collision in calendar_create.collision_with_calendar:
                 existing_calendar = await self.get(collision)
                 if existing_calendar is None:
-                    raise BaseAppException(
+                    raise BaseAppError(
                         "These calendar do not exist in the db "
                         "that you want to add to this calendar collision."
                     )
@@ -228,7 +226,7 @@ class CalendarService(AbstractCalendarService):
                     collision_with_calendar=list(collision_calendar_to_update)
                 )
                 if not await self.update(collision, update_exist_calendar):
-                    raise BaseAppException(
+                    raise BaseAppError(
                         "Failed to update collisions on the calendar "
                         f"with this id {collision}"
                     )
@@ -248,9 +246,9 @@ class CalendarService(AbstractCalendarService):
         )
 
         if reservation_service is None:
-            raise BaseAppException("A reservation service of calendar isn't exist.")
+            raise BaseAppError("A reservation service of calendar isn't exist.")
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to create calendars."
             )
 
@@ -265,16 +263,16 @@ class CalendarService(AbstractCalendarService):
         calendar = await self.get(uuid, True)
 
         if calendar.deleted_at is None:
-            raise BaseAppException("A calendar was not soft deleted.")
+            raise BaseAppError("A calendar was not soft deleted.")
 
         reservation_service = await self.reservation_service_crud.get(
             str(calendar.reservation_service_id)
         )
 
         if reservation_service is None:
-            raise BaseAppException("A reservation service of calendar isn't exist.")
+            raise BaseAppError("A reservation service of calendar isn't exist.")
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to create calendars."
             )
 
@@ -289,7 +287,7 @@ class CalendarService(AbstractCalendarService):
             return None
 
         if hard_remove and not user.section_head:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 "You must be the head of PS to totally delete calendars."
             )
 
@@ -298,9 +296,9 @@ class CalendarService(AbstractCalendarService):
         )
 
         if reservation_service is None:
-            raise BaseAppException("A reservation service of calendar isn't exist.")
+            raise BaseAppError("A reservation service of calendar isn't exist.")
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to create calendars."
             )
 
@@ -325,7 +323,7 @@ class CalendarService(AbstractCalendarService):
         self, user: User, google_calendars: list[dict]
     ) -> list[dict] | None:
         if not user.roles:
-            raise PermissionDeniedException()
+            raise PermissionDeniedError()
 
         new_calendar_candidates = []
 
@@ -385,7 +383,7 @@ class CalendarService(AbstractCalendarService):
         for mini_service_id in mini_services_id:
             mini_service = await self.mini_service_crud.get(mini_service_id)
             if mini_service is None:
-                raise BaseAppException(
+                raise BaseAppError(
                     "These mini services do not exist in the db "
                     "that you want to change to this calendar."
                 )

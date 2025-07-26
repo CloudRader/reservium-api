@@ -3,15 +3,15 @@ This module defines an abstract base class AbstractAccessCardSystem
 that work with Access Card System.
 """
 
-from typing import Annotated
 from abc import ABC, abstractmethod
+from typing import Annotated
 
-from fastapi import Depends
+from api import PermissionDeniedError
 from core import db_session
-from core.schemas import VarSymbolCreateUpdate, VarSymbolDelete, ClubAccessSystemRequest
-from api import PermissionDeniedException
+from core.schemas import ClubAccessSystemRequest, VarSymbolCreateUpdate, VarSymbolDelete
+from crud import CRUDEvent, CRUDMiniService, CRUDReservationService, CRUDUser
+from fastapi import Depends
 from services import EventService
-from crud import CRUDEvent, CRUDUser, CRUDReservationService, CRUDMiniService
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -114,7 +114,7 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
         user = await self.user_crud.get(access_request.uid)
 
         if user is None:
-            raise PermissionDeniedException("This user isn't exist in system.")
+            raise PermissionDeniedError("This user isn't exist in system.")
 
         reservation_service = await self.reservation_service_crud.get_by_room_id(
             access_request.room_id
@@ -124,7 +124,7 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
         )
 
         if (reservation_service is None) and (mini_service is None):
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 "This room associated with some service isn't exist "
                 "in system or use another access system"
             )
@@ -132,9 +132,7 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
         event = await service_event.get_current_event_for_user(user.id)
 
         if event is None:
-            raise PermissionDeniedException(
-                "No available reservation exists at this time."
-            )
+            raise PermissionDeniedError("No available reservation exists at this time.")
 
         if mini_service and (mini_service.name in event.additional_services):
             if access_request.device_id in mini_service.lockers_id:
@@ -156,7 +154,7 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
                 ):
                     return True
 
-        raise PermissionDeniedException(
+        raise PermissionDeniedError(
             "No matching reservation exists at this time for this rules."
         )
 

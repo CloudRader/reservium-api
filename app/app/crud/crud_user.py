@@ -6,12 +6,11 @@ using SQLAlchemy.
 
 from abc import ABC, abstractmethod
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from core.models import UserModel
 from core.schemas import UserCreate, UserUpdate
-
 from crud import CRUDBase
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AbstractCRUDUser(CRUDBase[UserModel, UserCreate, UserUpdate], ABC):

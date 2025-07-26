@@ -4,11 +4,10 @@ Module with SQLAlchemy base class used to create other models from this Base cla
 
 from uuid import UUID, uuid4
 
-from sqlalchemy import MetaData
-from sqlalchemy.orm import declared_attr, DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID as pgUUID
-
 from core import settings
+from sqlalchemy import MetaData
+from sqlalchemy.dialects.postgresql import UUID as pgUUID  # noqa: N811
+from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 
 
 # Base class is managed by SQLAlchemy and doesn't need more public methods
@@ -31,7 +30,7 @@ class Base(DeclarativeBase):
     # pylint: disable=no-self-argument
     # Generate __tablename__ automatically
     @declared_attr  # type: ignore
-    def __tablename__(cls) -> str:
+    def __tablename__(cls) -> str:  # noqa: N805
         return cls.__name__.lower()
 
     # pylint: enable=no-self-argument

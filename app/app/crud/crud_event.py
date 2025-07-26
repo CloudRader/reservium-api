@@ -4,16 +4,16 @@ abstract base class (AbstractCRUDEvent) and a concrete implementation (CRUDEvent
 using SQLAlchemy.
 """
 
-from datetime import datetime
 from abc import ABC, abstractmethod
+from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import select
-from sqlalchemy.orm import joinedload
-from sqlalchemy.ext.asyncio import AsyncSession
-from core.models import EventModel, EventState, CalendarModel
+from core.models import CalendarModel, EventModel, EventState
 from core.schemas import EventCreateToDb, EventUpdate
 from crud import CRUDBase
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 
 class AbstractCRUDEvent(CRUDBase[EventModel, EventCreateToDb, EventUpdate], ABC):

@@ -3,14 +3,15 @@ API controllers for users.
 """
 
 from typing import Annotated, Any, List
-from fastapi import FastAPI, APIRouter, Depends, status
-from fastapi.responses import JSONResponse
-from services import UserService
+
 from api import (
     fastapi_docs,
     get_current_user,
 )
 from core.schemas import User
+from fastapi import APIRouter, Depends, FastAPI, status
+from fastapi.responses import JSONResponse
+from services import UserService
 
 app = FastAPI()
 

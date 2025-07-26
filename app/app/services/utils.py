@@ -3,10 +3,10 @@ Utils for services.
 """
 
 import datetime as dt
-from pytz import timezone
 
 from core.models import CalendarModel, ReservationServiceModel
-from core.schemas import Rules, EventCreate, ServiceValidity, User
+from core.schemas import EventCreate, Rules, ServiceValidity, User
+from pytz import timezone
 
 
 def first_standard_check(

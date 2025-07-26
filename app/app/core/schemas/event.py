@@ -3,9 +3,10 @@ DTO schemes for Event entity.
 """
 
 from datetime import datetime
-from typing import List, Any
-from pydantic import BaseModel, Field, EmailStr, field_validator
+from typing import Any, List
+
 from core.models.event import EventState
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 # pylint: disable=too-few-public-methods
@@ -15,6 +16,7 @@ class NaiveDatetimeValidatorMixin:
     Mixin to validate that datetime fields are naive (i.e., without timezone info).
     """
 
+    @classmethod
     @field_validator("start_datetime", "end_datetime", mode="before")
     def check_naive_datetime(  # pylint: disable=no-self-argument
         cls, value: Any

@@ -5,7 +5,6 @@ Conftest for testing schema
 import pytest
 from core.schemas import Rules
 
-
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
 

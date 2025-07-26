@@ -5,7 +5,6 @@ Module for testing user service
 import pytest
 from core.schemas import UserCreate
 
-
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
 

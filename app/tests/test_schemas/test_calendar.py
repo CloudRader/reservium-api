@@ -2,18 +2,18 @@
 Tests for Calendar Pydantic Schemas
 """
 
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from uuid import uuid4
-import pytest
-from pydantic import ValidationError
-from core.schemas.calendar import (
-    Rules,
-    CalendarCreate,
-    CalendarUpdate,
-    CalendarInDBBase,
-    Calendar,
-)
 
+import pytest
+from core.schemas.calendar import (
+    Calendar,
+    CalendarCreate,
+    CalendarInDBBase,
+    CalendarUpdate,
+    Rules,
+)
+from pydantic import ValidationError
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest

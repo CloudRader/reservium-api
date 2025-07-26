@@ -5,10 +5,10 @@ Google Calendar API
 
 from abc import ABC, abstractmethod
 
+from api import BaseAppError, Entity, EntityNotFoundError
+from api.external_api.google.google_auth import auth_google
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from api import BaseAppException, EntityNotFoundException, Entity
-from api.external_api.google.google_auth import auth_google
 
 
 class AbstractGoogleCalendarService(ABC):
@@ -60,7 +60,7 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
         try:
             return self.service.calendars().get(calendarId=calendar_id).execute()
         except HttpError as exc:
-            raise EntityNotFoundException(
+            raise EntityNotFoundError(
                 entity=Entity.CALENDAR,
                 entity_id=calendar_id,
                 message="The calendar does not exist in Google Calendar.",
@@ -85,10 +85,10 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
 
             return created_calendar
         except HttpError as exc:
-            raise BaseAppException("Can't create calendar in Google Calendar.") from exc
+            raise BaseAppError("Can't create calendar in Google Calendar.") from exc
 
     async def get_all_calendars(self) -> list[dict]:
         try:
             return self.service.calendarList().list().execute().get("items", [])
         except HttpError as exc:
-            raise BaseAppException("Failed to list Google calendars.") from exc
+            raise BaseAppError("Failed to list Google calendars.") from exc

@@ -8,13 +8,12 @@ handles running migrations in both offline and online modes.
 import asyncio
 from logging.config import fileConfig
 
-from sqlalchemy import pool
-from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
-
 # pylint: disable=no-member
 from alembic import context
 from dotenv import load_dotenv
+from sqlalchemy import pool
+from sqlalchemy.engine import Connection
+from sqlalchemy.ext.asyncio import async_engine_from_config
 
 load_dotenv(dotenv_path=".env.template")
 load_dotenv(dotenv_path=".env", override=True)

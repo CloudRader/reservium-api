@@ -1,10 +1,11 @@
 """DTO schemes for ReservationService entity."""
 
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
 from uuid import UUID
+
+from core.schemas import Calendar, MiniService
 from pydantic import BaseModel, Field
-from core.schemas import MiniService, Calendar
 
 
 class ReservationServiceBase(BaseModel):

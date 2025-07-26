@@ -2,10 +2,11 @@
 Package for App Exceptions.
 """
 
-from typing import Any
 from enum import Enum
+from typing import Any
 from uuid import UUID
-from fastapi import status, Request
+
+from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -40,7 +41,7 @@ def get_exception_response_detail(status_code: int, desc: str) -> dict:
     return {status_code: {"model": Message, "description": desc}}
 
 
-class BaseAppException(Exception):
+class BaseAppError(Exception):
     """Base exception class for custom exceptions."""
 
     STATUS_CODE: int = status.HTTP_400_BAD_REQUEST
@@ -66,14 +67,14 @@ class BaseAppException(Exception):
         return get_exception_response_detail(cls.STATUS_CODE, cls.DESCRIPTION)
 
 
-def app_exception_handler(request: Request, exc: BaseAppException) -> JSONResponse:
+def app_exception_handler(request: Request, exc: BaseAppError) -> JSONResponse:
     """
-    Generic handler for BaseAppException.
+    Generic handler for BaseAppError.
     """
     return exc.to_response()
 
 
-class EntityNotFoundException(BaseAppException):
+class EntityNotFoundError(BaseAppError):
     """
     Exception for when entity is not found in database.
     """
@@ -100,7 +101,7 @@ class EntityNotFoundException(BaseAppException):
         )
 
 
-class PermissionDeniedException(BaseAppException):
+class PermissionDeniedError(BaseAppError):
     """
     Exception raised when a user does not have the required permissions.
     """
@@ -114,7 +115,7 @@ class PermissionDeniedException(BaseAppException):
         )
 
 
-class UnauthorizedException(BaseAppException):
+class UnauthorizedError(BaseAppError):
     """
     Exception raised when a user does not have the required permissions.
     """
@@ -128,7 +129,7 @@ class UnauthorizedException(BaseAppException):
         )
 
 
-class MethodNotAllowedException(BaseAppException):
+class MethodNotAllowedError(BaseAppError):
     """
     Exception for not allowed methods.
     """
@@ -141,7 +142,7 @@ class MethodNotAllowedException(BaseAppException):
         super().__init__(message=message, entity=entity.value)
 
 
-class NotImplementedException(BaseAppException):
+class NotImplementedFunctionError(BaseAppError):
     """
     Exception for when a functionality is not yet implemented.
     """
@@ -156,23 +157,23 @@ class NotImplementedException(BaseAppException):
 
 ERROR_RESPONSES = {
     "400": {
-        **BaseAppException.response(),
+        **BaseAppError.response(),
     },
     "403": {
-        **PermissionDeniedException.response(),
+        **PermissionDeniedError.response(),
     },
     "404": {
-        **EntityNotFoundException.response(),
+        **EntityNotFoundError.response(),
     },
     "400_401_403": {
-        **BaseAppException.response(),
-        **UnauthorizedException.response(),
-        **PermissionDeniedException.response(),
+        **BaseAppError.response(),
+        **UnauthorizedError.response(),
+        **PermissionDeniedError.response(),
     },
     "400_401_403_404": {
-        **BaseAppException.response(),
-        **UnauthorizedException.response(),
-        **PermissionDeniedException.response(),
-        **EntityNotFoundException.response(),
+        **BaseAppError.response(),
+        **UnauthorizedError.response(),
+        **PermissionDeniedError.response(),
+        **EntityNotFoundError.response(),
     },
 }

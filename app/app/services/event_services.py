@@ -3,9 +3,11 @@ This module defines an abstract base class AbstractEventService that work with E
 """
 
 import datetime as dt
-from typing import Any, Annotated
 from abc import ABC, abstractmethod
+from typing import Annotated, Any
 
+from api import BaseAppError, PermissionDeniedError
+from core import db_session
 from core.models import (
     CalendarModel,
     EventModel,
@@ -14,29 +16,26 @@ from core.models import (
     UserModel,
 )
 from core.schemas import (
-    EventCreate,
-    User,
-    ServiceValidity,
     Calendar,
+    Event,
+    EventCreate,
     EventCreateToDb,
     EventUpdate,
-    Event,
     EventUpdateTime,
-    ReservationService,
     EventWithExtraDetails,
+    ReservationService,
+    ServiceValidity,
+    User,
 )
-from core import db_session
+from crud import CRUDCalendar, CRUDEvent, CRUDReservationService, CRUDUser
+from fastapi import Depends
+from services import CrudServiceBase
 from services.utils import (
-    ready_event,
-    first_standard_check,
     dif_days_res,
+    first_standard_check,
+    ready_event,
     reservation_in_advance,
 )
-from services import CrudServiceBase
-from fastapi import Depends
-
-from api import BaseAppException, PermissionDeniedException
-from crud import CRUDReservationService, CRUDEvent, CRUDCalendar, CRUDUser
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -295,7 +294,7 @@ class EventService(AbstractEventService):
         )
 
         if not reservation_service:
-            raise BaseAppException(
+            raise BaseAppError(
                 "A reservation service with this alias isn't exist.", status_code=404
             )
 
@@ -310,19 +309,17 @@ class EventService(AbstractEventService):
         event: Event,
     ) -> ReservationServiceModel:
         if not event:
-            raise BaseAppException("This event does not exist in db.", status_code=404)
+            raise BaseAppError("This event does not exist in db.", status_code=404)
 
         calendar: Calendar = await self.calendar_crud.get(event.calendar_id)
         if not calendar:
-            raise BaseAppException(
-                "A calendar of this event isn't exist.", status_code=404
-            )
+            raise BaseAppError("A calendar of this event isn't exist.", status_code=404)
 
         reservation_service: ReservationService = (
             await self.reservation_service_crud.get(calendar.reservation_service_id)
         )
         if not reservation_service:
-            raise BaseAppException(
+            raise BaseAppError(
                 "A reservation service of this event isn't exist.", status_code=404
             )
 
@@ -333,13 +330,11 @@ class EventService(AbstractEventService):
         event: Event,
     ) -> CalendarModel:
         if not event:
-            raise BaseAppException("This event does not exist in db.", status_code=404)
+            raise BaseAppError("This event does not exist in db.", status_code=404)
 
         calendar: Calendar = await self.calendar_crud.get(event.calendar_id)
         if not calendar:
-            raise BaseAppException(
-                "A calendar of this event isn't exist.", status_code=404
-            )
+            raise BaseAppError("A calendar of this event isn't exist.", status_code=404)
 
         return calendar
 
@@ -348,12 +343,12 @@ class EventService(AbstractEventService):
         event: Event,
     ) -> UserModel:
         if not event:
-            raise BaseAppException("This event does not exist in db.", status_code=404)
+            raise BaseAppError("This event does not exist in db.", status_code=404)
 
         user = await self.user_crud.get(event.user_id)
 
         if not user:
-            raise BaseAppException("A user of this event isn't exist.", status_code=404)
+            raise BaseAppError("A user of this event isn't exist.", status_code=404)
 
         return user
 
@@ -369,14 +364,14 @@ class EventService(AbstractEventService):
             return None
 
         if event_to_update.event_state == EventState.CANCELED:
-            raise BaseAppException("You can't change canceled reservation.")
+            raise BaseAppError("You can't change canceled reservation.")
 
         reservation_service = await self.get_reservation_service_of_this_event(
             event_to_update
         )
 
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to update this event."
             )
 
@@ -391,15 +386,15 @@ class EventService(AbstractEventService):
             return None
 
         if event_to_update.start_datetime < dt.datetime.now():
-            raise BaseAppException(
+            raise BaseAppError(
                 "You cannot change the reservation time after it has started."
             )
 
         if event_to_update.event_state == EventState.CANCELED:
-            raise BaseAppException("You can't change canceled reservation.")
+            raise BaseAppError("You can't change canceled reservation.")
 
         if event_to_update.event_state == EventState.UPDATE_REQUESTED:
-            raise BaseAppException(
+            raise BaseAppError(
                 "You can't change reservation in state update requested."
             )
 
@@ -416,10 +411,10 @@ class EventService(AbstractEventService):
             return None
 
         if event.event_state == EventState.CANCELED:
-            raise BaseAppException("You can't cancel canceled reservation.")
+            raise BaseAppError("You can't cancel canceled reservation.")
 
         if event.start_datetime < dt.datetime.now():
-            raise BaseAppException(
+            raise BaseAppError(
                 "You cannot cancel the reservation after it has started."
             )
 
@@ -427,7 +422,7 @@ class EventService(AbstractEventService):
 
         if event.user_id != user.id:
             if reservation_service.alias not in user.roles:
-                raise PermissionDeniedException(
+                raise PermissionDeniedError(
                     "You do not have permission to cancel a "
                     "reservation made by another user."
                 )
@@ -442,7 +437,7 @@ class EventService(AbstractEventService):
             return None
 
         if event.event_state != EventState.NOT_APPROVED:
-            raise BaseAppException(
+            raise BaseAppError(
                 "You cannot approve a reservation that is not in the "
                 "'not approved' state."
             )
@@ -450,7 +445,7 @@ class EventService(AbstractEventService):
         reservation_service = await self.get_reservation_service_of_this_event(event)
 
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedException(
+            raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to approve this reservation."
             )
 

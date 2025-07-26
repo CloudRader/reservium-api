@@ -5,7 +5,6 @@ Module for testing mini service crud
 import pytest
 from core.schemas import MiniServiceUpdate
 
-
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
 

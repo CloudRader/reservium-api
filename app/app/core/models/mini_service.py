@@ -3,16 +3,16 @@ Mini service ORM model and its dependencies.
 """
 
 from typing import TYPE_CHECKING
-from sqlalchemy import ForeignKey, Integer
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from core.models.base_class import Base
 from core.models.soft_delete_mixin import SoftDeleteMixin
+from sqlalchemy import ForeignKey, Integer
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from core.models.reservation_service import ReservationService
     from core.models.calendar import Calendar
+    from core.models.reservation_service import ReservationService
 
 
 # pylint: disable=too-few-public-methods

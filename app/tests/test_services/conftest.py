@@ -4,31 +4,29 @@ This module provides fixtures for test services
 
 import pytest
 import pytest_asyncio
-
 from core.models.event import EventState
 from core.models.reservation_service import ReservationService
 from core.schemas import (
-    UserIS,
+    Calendar,
+    CalendarCreate,
+    Event,
+    EventCreate,
+    InformationFromIS,
     LimitObject,
+    MiniService,
+    MiniServiceCreate,
+    RegistrationFormCreate,
+    ReservationServiceCreate,
     Role,
+    Room,
+    Rules,
     Service,
     ServiceValidity,
-    ReservationServiceCreate,
     User,
     UserCreate,
-    RegistrationFormCreate,
-    MiniServiceCreate,
-    MiniService,
-    CalendarCreate,
-    Calendar,
-    Rules,
+    UserIS,
     Zone,
-    Room,
-    InformationFromIS,
-    EventCreate,
-    Event,
 )
-
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest

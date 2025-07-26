@@ -3,8 +3,9 @@ Custom Gunicorn logger setup module.
 """
 
 from logging import Formatter
-from gunicorn.glogging import Logger
+
 from core import settings
+from gunicorn.glogging import Logger
 
 
 class GunicornLogger(Logger):

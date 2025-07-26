@@ -2,8 +2,10 @@
 
 import logging
 from typing import Literal
-from pydantic import PostgresDsn, BaseModel
+
+from pydantic import BaseModel, PostgresDsn
 from pydantic_settings import BaseSettings
+
 from .utils import get_env_file_path
 
 LOG_DEFAULT_FORMAT = (
@@ -37,7 +39,7 @@ class LoggingConfig(BaseModel):
     DATE_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
     @property
-    def LOG_CONFIG(self) -> dict:  # pylint: disable=invalid-name
+    def LOG_CONFIG(self) -> dict:  # pylint: disable=invalid-name # noqa: N802
         """
         Returns a dictionary-compatible configuration for Python's logging module.
         """
@@ -63,7 +65,7 @@ class LoggingConfig(BaseModel):
         }
 
     @property
-    def LOG_LEVEL_VALUE(self) -> int:  # pylint: disable=invalid-name
+    def LOG_LEVEL_VALUE(self) -> int:  # pylint: disable=invalid-name # noqa: N802
         """
         Converts the LOG_LEVEL string to its corresponding integer value
         as expected by the logging module.
@@ -90,7 +92,7 @@ class DatabaseConfig(BaseModel):
     }
 
     @property
-    def POSTGRES_DATABASE_URI(self) -> str:  # pylint: disable=invalid-name
+    def POSTGRES_DATABASE_URI(self) -> str:  # pylint: disable=invalid-name # noqa: N802
         """
         Assemble database connection URI.
         """

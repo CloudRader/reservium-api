@@ -2,47 +2,47 @@
 Shortcuts to easily import schemes.
 """
 
-from .user import User, UserCreate, UserUpdate, UserInDB
+from .access_card_system import (
+    ClubAccessSystemRequest,
+    VarSymbolCreateUpdate,
+    VarSymbolDelete,
+)
+from .calendar import Calendar, CalendarCreate, CalendarInDBBase, CalendarUpdate, Rules
+from .data_is import (
+    InformationFromIS,
+    LimitObject,
+    Role,
+    RoleList,
+    Room,
+    Service,
+    ServiceList,
+    ServiceValidity,
+    UserIS,
+    Zone,
+)
+from .email import EmailCreate, EmailMeta, RegistrationFormCreate
 from .event import (
+    Event,
     EventCreate,
     EventCreateToDb,
-    EventUpdate,
-    Event,
     EventInDB,
+    EventUpdate,
     EventUpdateTime,
     EventWithExtraDetails,
 )
-from .data_is import (
-    UserIS,
-    RoleList,
-    Role,
-    ServiceList,
-    ServiceValidity,
-    InformationFromIS,
-    LimitObject,
-    Service,
-    Zone,
-    Room,
-)
-from .calendar import Calendar, CalendarCreate, CalendarUpdate, CalendarInDBBase, Rules
 from .mini_service import (
     MiniService,
     MiniServiceCreate,
-    MiniServiceUpdate,
     MiniServiceInDBBase,
+    MiniServiceUpdate,
 )
 from .reservation_service import (
     ReservationService,
     ReservationServiceCreate,
-    ReservationServiceUpdate,
     ReservationServiceInDBBase,
+    ReservationServiceUpdate,
 )
-from .email import EmailCreate, RegistrationFormCreate, EmailMeta
-from .access_card_system import (
-    VarSymbolCreateUpdate,
-    VarSymbolDelete,
-    ClubAccessSystemRequest,
-)
+from .user import User, UserCreate, UserInDB, UserUpdate
 
 __all__ = [
     "User",

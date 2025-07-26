@@ -4,13 +4,12 @@ App factory module for the FastAPI application.
 
 import logging
 from contextlib import asynccontextmanager
+
+from core import settings
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-
-from core import settings
-
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +46,7 @@ def create_app():  # -> FastAPI:
 
     :return: A fully configured FastAPI app instance.
     """
-    from api import fastapi_docs, BaseAppException, app_exception_handler
+    from api import BaseAppError, app_exception_handler, fastapi_docs
     from api.routers import router
 
     app = FastAPI(
@@ -61,7 +60,7 @@ def create_app():  # -> FastAPI:
 
     app.include_router(router)
 
-    app.add_exception_handler(BaseAppException, app_exception_handler)
+    app.add_exception_handler(BaseAppError, app_exception_handler)
 
     app.add_middleware(
         SessionMiddleware,

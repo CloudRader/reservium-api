@@ -3,9 +3,8 @@ Module for testing mini service ser.
 """
 
 import pytest
+from api import PermissionDeniedError
 from core.schemas import MiniServiceUpdate
-from api import PermissionDeniedException
-
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
@@ -31,7 +30,7 @@ async def test_create_mini_service_no_permission(
     """
     Test creating a mini service when the user doesn't have permission.
     """
-    with pytest.raises(PermissionDeniedException):
+    with pytest.raises(PermissionDeniedError):
         await service_mini_service.create_mini_service(
             mini_service_create, user_not_head
         )
@@ -110,7 +109,7 @@ async def test_update_mini_service_no_permission(
         name="Updated Bar",
     )
 
-    with pytest.raises(PermissionDeniedException):
+    with pytest.raises(PermissionDeniedError):
         await service_mini_service.update_mini_service(
             mini_service.id, mini_service_update, user_not_head
         )
@@ -149,7 +148,7 @@ async def test_delete_mini_service_no_permission(
     """
     Test deleting a mini service when the user doesn't have permission.
     """
-    with pytest.raises(PermissionDeniedException):
+    with pytest.raises(PermissionDeniedError):
         await service_mini_service.delete_mini_service(
             mini_service.id, user_not_head, hard_remove=False
         )

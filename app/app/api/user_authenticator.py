@@ -4,13 +4,12 @@ Module for authenticator functions.
 
 from typing import Annotated, Any
 
-from fastapi import HTTPException, status, Depends, Request
+import httpx
+from core import settings
+from core.schemas import RoleList, Room, ServiceList, UserIS
+from fastapi import Depends, HTTPException, Request, status
 from requests_oauthlib import OAuth2Session
 from services import UserService
-from core.schemas import UserIS, RoleList, ServiceList, Room
-from core import settings
-
-import httpx
 
 
 def get_oauth_session():

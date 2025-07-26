@@ -3,16 +3,16 @@ Conftest for testing model
 """
 
 import uuid
+
 import pytest
 import pytest_asyncio
 from core.models import (
-    UserModel,
-    ReservationServiceModel,
-    MiniServiceModel,
     CalendarModel,
+    MiniServiceModel,
+    ReservationServiceModel,
+    UserModel,
 )
 from core.schemas import Rules
-
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest

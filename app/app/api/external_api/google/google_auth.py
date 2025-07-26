@@ -4,10 +4,10 @@ API controllers for authorisation in google.
 
 import os.path
 
+from core import settings
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
-from core import settings
 
 
 def auth_google(creds):

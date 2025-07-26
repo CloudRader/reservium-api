@@ -5,7 +5,6 @@ Module for testing user crud
 import pytest
 from core.schemas import UserUpdate
 
-
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
 

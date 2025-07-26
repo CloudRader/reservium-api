@@ -2,17 +2,17 @@
 Module for testing user authenticator api
 """
 
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from fastapi import HTTPException, status
 from api import (
-    get_oauth_session,
-    get_request,
     authenticate_user,
     get_current_token,
     get_current_user,
+    get_oauth_session,
+    get_request,
 )
-
+from fastapi import HTTPException, status
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest

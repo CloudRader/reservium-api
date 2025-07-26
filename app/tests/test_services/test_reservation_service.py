@@ -3,9 +3,8 @@ Module for testing reservation service ser.
 """
 
 import pytest
+from api import PermissionDeniedError
 from core.schemas import ReservationServiceUpdate
-from api import PermissionDeniedException
-
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
@@ -33,7 +32,7 @@ async def test_create_reservation_service_no_permission(
     """
     Test creating a reservation service when the user doesn't have permission.
     """
-    with pytest.raises(PermissionDeniedException):
+    with pytest.raises(PermissionDeniedError):
         await service_reservation_service.create_reservation_service(
             reservation_service_create, user_not_head
         )
@@ -151,7 +150,7 @@ async def test_update_reservation_service_no_permission(
         alias="ngame",
     )
 
-    with pytest.raises(PermissionDeniedException):
+    with pytest.raises(PermissionDeniedError):
         await service_reservation_service.update_reservation_service(
             reservation_service.id, reservation_service_update, user_not_head
         )
@@ -194,7 +193,7 @@ async def test_delete_reservation_service_no_permission(
     """
     Test deleting a reservation service when the user doesn't have permission.
     """
-    with pytest.raises(PermissionDeniedException):
+    with pytest.raises(PermissionDeniedError):
         await service_reservation_service.delete_reservation_service(
             reservation_service.id, user_not_head, hard_remove=False
         )

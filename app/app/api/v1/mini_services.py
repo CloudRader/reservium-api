@@ -2,19 +2,19 @@
 API controllers for mini services.
 """
 
-from typing import Any, Annotated, List
+from typing import Annotated, Any, List
 from uuid import UUID
-from fastapi import APIRouter, Depends, Path, status, Body, Query
 
 from api import (
-    EntityNotFoundException,
+    ERROR_RESPONSES,
+    BaseAppError,
     Entity,
+    EntityNotFoundError,
     fastapi_docs,
     get_current_user,
-    BaseAppException,
-    ERROR_RESPONSES,
 )
-from core.schemas import MiniServiceCreate, MiniServiceUpdate, MiniService, User
+from core.schemas import MiniService, MiniServiceCreate, MiniServiceUpdate, User
+from fastapi import APIRouter, Body, Depends, Path, Query, status
 from services import MiniServiceService
 
 router = APIRouter(tags=[fastapi_docs.MINI_SERVICE_TAG["name"]])
@@ -42,7 +42,7 @@ async def create_mini_service(
     """
     mini_service = await service.create_mini_service(mini_service_create, user)
     if not mini_service:
-        raise BaseAppException()
+        raise BaseAppError()
     return mini_service
 
 
@@ -98,7 +98,7 @@ async def get_mini_service(
     """
     mini_service = await service.get(mini_service_id, include_removed)
     if not mini_service:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_id)
+        raise EntityNotFoundError(Entity.MINI_SERVICE, mini_service_id)
     return mini_service
 
 
@@ -122,7 +122,7 @@ async def get_mini_services(
     """
     mini_services = await service.get_all(include_removed)
     if mini_services is None:
-        raise BaseAppException()
+        raise BaseAppError()
     return mini_services
 
 
@@ -153,7 +153,7 @@ async def update_mini_service(
         mini_service_id, mini_service_update, user
     )
     if not mini_service:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_id)
+        raise EntityNotFoundError(Entity.MINI_SERVICE, mini_service_id)
     return mini_service
 
 
@@ -180,7 +180,7 @@ async def retrieve_deleted_reservation_service(
     """
     mini_service = await service.retrieve_removed_object(mini_service_id, user)
     if not mini_service:
-        raise EntityNotFoundException(Entity.RESERVATION_SERVICE, mini_service_id)
+        raise EntityNotFoundError(Entity.RESERVATION_SERVICE, mini_service_id)
     return mini_service
 
 
@@ -209,7 +209,7 @@ async def delete_mini_service(
     """
     mini_service = await service.delete_mini_service(mini_service_id, user, hard_remove)
     if not mini_service:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, mini_service_id)
+        raise EntityNotFoundError(Entity.MINI_SERVICE, mini_service_id)
     return mini_service
 
 
@@ -236,7 +236,7 @@ async def get_mini_services_by_name(
     """
     mini_service = await service.get_by_name(name, include_removed)
     if not mini_service:
-        raise EntityNotFoundException(Entity.MINI_SERVICE, name)
+        raise EntityNotFoundError(Entity.MINI_SERVICE, name)
     return mini_service
 
 
@@ -265,5 +265,5 @@ async def get_mini_services_by_reservation_service_id(
         reservation_service_id, include_removed
     )
     if mini_services is None:
-        raise BaseAppException()
+        raise BaseAppError()
     return mini_services

@@ -4,7 +4,6 @@ Module for testing email service.
 
 import pytest
 
-
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
 

@@ -2,20 +2,20 @@
 API controllers for authorisation in access card system.
 """
 
-from typing import Any, Dict, Annotated
-import requests
-from fastapi import APIRouter, HTTPException, Depends, status
+from typing import Annotated, Any, Dict
 
-from services import AccessCardSystemService, EventService
+import requests
 from api import ERROR_RESPONSES
 from api.docs import fastapi_docs
+from core import settings
 from core.schemas import (
+    ClubAccessSystemRequest,
+    Event,
     VarSymbolCreateUpdate,
     VarSymbolDelete,
-    Event,
-    ClubAccessSystemRequest,
 )
-from core import settings
+from fastapi import APIRouter, Depends, HTTPException, status
+from services import AccessCardSystemService, EventService
 
 router = APIRouter(tags=[fastapi_docs.ACCESS_CARD_SYSTEM_TAG["name"]])
 

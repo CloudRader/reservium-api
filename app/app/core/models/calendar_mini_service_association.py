@@ -3,9 +3,10 @@ Calendar nad Mini Service ORM model association.
 """
 
 from uuid import UUID
+
+from core.models.base_class import Base
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
-from core.models.base_class import Base
 
 
 # pylint: disable=too-few-public-methods

@@ -3,12 +3,11 @@ Module for testing email service.
 """
 
 import datetime as dt
-import pytest
 
+import pytest
+from api import BaseAppError
 from core.models import EventState
 from core.schemas import EventUpdate
-from api import BaseAppException
-
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
@@ -118,7 +117,7 @@ async def test_cancel_event_with_exception(service_event, event, user):
     """
     Test canceling an event when raise exception.
     """
-    with pytest.raises(BaseAppException):
+    with pytest.raises(BaseAppError):
         await service_event.cancel_event(event.id, user)
 
 

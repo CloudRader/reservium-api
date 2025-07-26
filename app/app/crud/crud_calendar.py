@@ -6,12 +6,11 @@ using SQLAlchemy.
 
 from abc import ABC, abstractmethod
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import CalendarModel, MiniServiceModel
 from core.schemas import CalendarCreate, CalendarUpdate
-
 from crud import CRUDBase
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AbstractCRUDCalendar(
