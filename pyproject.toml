@@ -38,6 +38,7 @@ dev = [
     "types-pytz>=2025.2.0.20250516",
     "types-python-dateutil>=2.9.0.20250516",
     "black>=25.1.0",
+    "ruff>=0.12.5",
 ]
 
 [tool.uv]
@@ -46,3 +47,16 @@ package = false
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+exclude = [".venv"]
+
+#ignore = ["E402", "F403"]
+
+src = ["app"]
+
+
+[tool.ruff.lint]
+select = ["E", "N"]
+#select = ["E", "F", "W", "I", "C90", "N", "B", "UP"]

@@ -20,13 +20,10 @@ load_dotenv(dotenv_path=".env.template")
 load_dotenv(dotenv_path=".env", override=True)
 
 # pylint: disable=wrong-import-position
-# pylint: disable=unused-wildcard-import
-# pylint: disable=wildcard-import
-from core.models import *
+# ruff: noqa: E402, F403
 from core import settings
-
-# pylint: enable=wildcard-import
 from core.models.base_class import Base
+from core.models.calendar import RulesType
 
 # pylint: enable=wrong-import-position
 
