@@ -54,7 +54,7 @@ config.set_main_option("sqlalchemy.url", str(settings.DB.POSTGRES_DATABASE_URI))
 def render_item(type_, obj, autogen_context):  # pylint: disable=unused-argument
     """Custom render function to support user-defined types like RulesType."""
     if isinstance(obj, RulesType):
-        autogen_context.imports.add("from models import RulesType")
+        autogen_context.imports.add("from core.models import RulesType")
         return "RulesType(length=sa.TEXT())"
     return False
 

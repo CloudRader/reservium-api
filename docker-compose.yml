@@ -18,7 +18,7 @@ services:
       dockerfile: Dockerfile
 #    image: darkrader/buk-reservation-backend-poetry:latest
     environment:
-      - POSTGRES_SERVER=db
+      - DB__POSTGRES_SERVER=db
     depends_on:
       - db
     restart: on-failure

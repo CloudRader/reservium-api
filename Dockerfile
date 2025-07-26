@@ -1,21 +1,40 @@
-# Build stage
-FROM python:3.12.6-bookworm
+FROM python:3.12 as build
 
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
+ENV HOME=/usr/src/app
+ENV VENV_PATH=$HOME/.venv
+ENV PATH="$VENV_PATH/bin:$PATH"
 
-WORKDIR /app
+RUN apt-get update && apt-get install -y curl \
+  && curl -LsSf https://astral.sh/uv/install.sh | sh
 
-RUN pip install --upgrade pip wheel "poetry==2.1.3"
+RUN mkdir -p $HOME
+WORKDIR $HOME
+RUN python -m venv $VENV_PATH
 
-RUN poetry config virtualenvs.create false
+COPY pyproject.toml uv.lock ./
+ENV UV=$HOME/.local/bin/uv
+RUN $UV pip install --no-cache-dir -r pyproject.toml && $UV sync
 
-COPY pyproject.toml poetry.lock ./
 
-RUN poetry install
+FROM python:3.12-slim as runtime
 
-COPY app/app/  ./
+ENV HOME=/usr/src/app
+ENV VENV_PATH=$HOME/.venv
+ENV PATH="$VENV_PATH/bin:$PATH"
 
-WORKDIR /app/app/app
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 
-CMD ["python", "main.py"]
+# non-root
+RUN useradd --uid 8001 --user-group --home-dir $HOME --create-home app
+USER 8001
+WORKDIR $HOME
+RUN mkdir output tmp
+
+COPY --from=build $VENV_PATH $VENV_PATH
+
+# copy source code
+COPY app ./
+
+WORKDIR $HOME/app
+
+ENTRYPOINT ["python", "main.py"]
