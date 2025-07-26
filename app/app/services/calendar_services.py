@@ -89,7 +89,7 @@ class AbstractCalendarService(
     async def get_all_google_calendar_to_add(
         self,
         user: User,
-        google_calendars: dict,
+        google_calendars: list[dict],
     ) -> list[dict] | None:
         """
         Retrieves a Calendars from Google calendars
@@ -322,18 +322,18 @@ class CalendarService(AbstractCalendarService):
         return await self.crud.soft_remove(calendar_id)
 
     async def get_all_google_calendar_to_add(
-        self, user: User, google_calendars: dict
+        self, user: User, google_calendars: list[dict]
     ) -> list[dict] | None:
         if not user.roles:
             raise PermissionDeniedException()
 
         new_calendar_candidates = []
 
-        for calendar in google_calendars.get("items", []):
+        for calendar in google_calendars:
             if calendar.get("accessRole") == "owner" and not calendar.get(
                 "primary", False
             ):
-                if await self.get(calendar.get("id", None)) is None:
+                if await self.get(calendar.get("id")) is None:
                     new_calendar_candidates.append(calendar)
 
         return new_calendar_candidates

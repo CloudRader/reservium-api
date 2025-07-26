@@ -228,14 +228,12 @@ async def test_get_all_google_calendar_to_add(service_calendar, user):
     Test getting all Google calendars that can be added by a user.
     """
     # Simulate the list of Google calendars
-    google_calendars_data = {
-        "items": [
-            {"id": "1", "accessRole": "owner", "primary": False},
-            {"id": "2", "accessRole": "reader", "primary": False},
-            {"id": "3", "accessRole": "owner", "primary": True},
-            {"id": "4", "accessRole": "owner", "primary": False},
-        ]
-    }
+    google_calendars_data = [
+        {"id": "1", "accessRole": "owner", "primary": False},
+        {"id": "2", "accessRole": "reader", "primary": False},
+        {"id": "3", "accessRole": "owner", "primary": True},
+        {"id": "4", "accessRole": "owner", "primary": False},
+    ]
     new_calendars = await service_calendar.get_all_google_calendar_to_add(
         user, google_calendars_data
     )

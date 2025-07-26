@@ -4,25 +4,22 @@ API controllers for calendars.
 
 from typing import Any, Annotated, List
 from fastapi import APIRouter, Depends, Path, status, Body, Query
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 
 from api import (
     EntityNotFoundException,
     Entity,
     fastapi_docs,
-    auth_google,
     get_current_user,
     BaseAppException,
     ERROR_RESPONSES,
 )
+from api.external_api.google.google_calendar_services import GoogleCalendarService
 from core.schemas import CalendarCreate, Calendar, CalendarUpdate, User
 from services import CalendarService
 
 router = APIRouter(tags=[fastapi_docs.CALENDAR_TAG["name"]])
 
 
-# pylint: disable=no-member
 @router.post(
     "/create_calendar",
     response_model=Calendar,
@@ -31,6 +28,9 @@ router = APIRouter(tags=[fastapi_docs.CALENDAR_TAG["name"]])
 )
 async def create_calendar(
     service: Annotated[CalendarService, Depends(CalendarService)],
+    google_calendar_service: Annotated[
+        GoogleCalendarService, Depends(GoogleCalendarService)
+    ],
     user: Annotated[User, Depends(get_current_user)],
     calendar_create: CalendarCreate,
 ) -> Any:
@@ -38,45 +38,20 @@ async def create_calendar(
     Create calendar, only users with special roles can create calendar.
 
     :param service: Calendar service.
+    :param google_calendar_service: Google Calendar service.
     :param user: User who make this request.
     :param calendar_create: Calendar Create schema.
 
     :returns CalendarModel: the created calendar.
     """
-    google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
     if calendar_create.id:
-        try:
-            google_calendar_service.calendars().get(
-                calendarId=calendar_create.id
-            ).execute()
-        except HttpError as exc:
-            raise EntityNotFoundException(
-                entity=Entity.CALENDAR,
-                entity_id=calendar_create.id,
-                message="The calendar does not exist in Google Calendar.",
-            ) from exc
+        await google_calendar_service.get_calendar(calendar_create.id)
     else:
-        try:
-            calendar_body = {
-                "summary": calendar_create.reservation_type,  # Title of the new calendar
-                "timeZone": "Europe/Prague",  # Set your desired timezone
-            }
-            created_calendar = (
-                google_calendar_service.calendars().insert(body=calendar_body).execute()
+        calendar_create.id = (
+            await google_calendar_service.create_calendar(
+                calendar_create.reservation_type
             )
-            calendar_create.id = created_calendar.get("id")
-
-            rule = {
-                "role": "reader",  # Role is 'reader' for read-only public access
-                "scope": {"type": "default"},  # 'default' means public access
-            }
-            (
-                google_calendar_service.acl()
-                .insert(calendarId=calendar_create.id, body=rule)
-                .execute()
-            )
-        except HttpError as exc:
-            raise BaseAppException("Can't create calendar in Google Calendar.") from exc
+        ).get("id")
 
     calendar = await service.create_calendar(calendar_create, user)
     if not calendar:
@@ -92,6 +67,9 @@ async def create_calendar(
 )
 async def create_calendars(
     service: Annotated[CalendarService, Depends(CalendarService)],
+    google_calendar_service: Annotated[
+        GoogleCalendarService, Depends(GoogleCalendarService)
+    ],
     user: Annotated[User, Depends(get_current_user)],
     calendars_create: List[CalendarCreate],
 ) -> Any:
@@ -99,6 +77,7 @@ async def create_calendars(
     Create calendars, only users with special roles can create calendar.
 
     :param service: Calendar service.
+    :param google_calendar_service: Google Calendar service.
     :param user: User who make this request.
     :param calendars_create: Calendars Create schema.
 
@@ -106,7 +85,9 @@ async def create_calendars(
     """
     calendars_result: List[Calendar] = []
     for calendar in calendars_create:
-        calendars_result.append(await create_calendar(service, user, calendar))
+        calendars_result.append(
+            await create_calendar(service, google_calendar_service, user, calendar)
+        )
 
     return calendars_result
 
@@ -169,6 +150,9 @@ async def get_all_calendars(
 )
 async def get_all_google_calendar_to_add(
     service: Annotated[CalendarService, Depends(CalendarService)],
+    google_calendar_service: Annotated[
+        GoogleCalendarService, Depends(GoogleCalendarService)
+    ],
     user: Annotated[User, Depends(get_current_user)],
 ) -> Any:
     """
@@ -176,12 +160,12 @@ async def get_all_google_calendar_to_add(
     that are candidates for additions
 
     :param service: Calendar service.
+    :param google_calendar_service: Google Calendar service.
     :param user: User who make this request.
 
     :returns list[dict]: candidate list for additions.
     """
-    google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
-    google_calendars = google_calendar_service.calendarList().list().execute()
+    google_calendars = await google_calendar_service.get_all_calendars()
 
     calendars = await service.get_all_google_calendar_to_add(user, google_calendars)
     if calendars is None:

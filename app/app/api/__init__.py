@@ -27,7 +27,8 @@ from .user_authenticator import (
     get_current_user,
     get_current_token,
 )
-from .google_auth import auth_google
+
+# from api.external_api.google.google_calendar_services import GoogleCalendarService
 from .docs import fastapi_docs
 
 __all__ = [
@@ -53,8 +54,6 @@ __all__ = [
     "authenticate_user",
     "get_current_user",
     "get_current_token",
-    # Google
-    "auth_google",
     # Docs
     "fastapi_docs",
 ]

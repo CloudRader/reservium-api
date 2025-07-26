@@ -26,7 +26,6 @@ from api import (
     fastapi_docs,
     get_current_user,
     get_current_token,
-    auth_google,
     control_collision,
     check_night_reservation,
     control_available_reservation_time,
@@ -35,17 +34,15 @@ from api import (
     BaseAppException,
     ERROR_RESPONSES,
 )
+from api.external_api.google.google_auth import auth_google
 from api.v1.emails import preparing_email, create_email_meta
 
-# from api import add_or_update_access_to_reservation_areas, delete_access_to_reservation_areas
 
 router = APIRouter(tags=[fastapi_docs.EVENT_TAG["name"]])
 
 
 # pylint: disable=no-member
-# reason: The googleapiclient.discovery.build function
-# dynamically creates the events attribute, which is not easily
-# understood by static code analysis tools like pylint.
+# reason: Dynamically generated attributes from googleapiclient are not visible to pylint.
 @router.post(
     "/create_event",
     responses=ERROR_RESPONSES["404"],
