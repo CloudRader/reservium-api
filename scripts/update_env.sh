@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 
 set -e
+set -x  # optional: print commands for debugging
 
-# Optional: configure Poetry
-poetry config virtualenvs.in-project false
+# Update the lockfile with latest allowed dependency versions
+uv lock --upgrade
 
-# Update all dependencies to the latest allowed versions
-poetry update
+# Sync the environment: install updated dependencies
+uv sync
 
-# (Optional) install those updated dependencies into the venv
-poetry install
-
-echo "Poetry dependencies updated and installed."
+echo "UV dependencies updated and installed."

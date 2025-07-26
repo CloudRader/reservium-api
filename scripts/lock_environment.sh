@@ -1,8 +1,16 @@
 #!/usr/bin/env bash
-set -e  # stop script execution after failure of any command
+set -e  # Exit on first error
 
-# Lock dependencies based on pyproject.toml (generate or update poetry.lock)
-poetry lock
+# Optional: explicitly create the virtual environment in `.venv`
+uv venv .venv
 
-# Optional: install the locked dependencies
-poetry install
+# Activate virtual environment
+source .venv/bin/activate
+
+# Lock dependencies (update uv.lock from pyproject.toml)
+uv pip compile pyproject.toml --output-file=uv.lock
+
+# Sync the virtual environment with the lock file
+uv sync
+
+echo "Environment ready using uv and uv.lock"

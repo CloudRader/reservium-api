@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
 
-set -e  # Exit immediately if a command exits with a non-zero status
+set -e  # Exit on error
 
-# Optional: set poetry environment name
-env_name="buk-reservation"
+env_name=".venv"  # Default venv directory name
 
-# Ensure poetry is available (optional check)
-if ! command -v poetry &> /dev/null; then
-    echo "Poetry is not installed. Please install it first."
+# Ensure uv is available
+if ! command -v uv &> /dev/null; then
+    echo "uv is not installed. Please install it first: https://github.com/astral-sh/uv"
     exit 1
 fi
 
-# Disable poetry creating virtualenvs in project dir (optional)
-poetry config virtualenvs.in-project false
+# Create the virtual environment if it doesn't exist
+if [ ! -d "$env_name" ]; then
+    echo "Creating virtual environment in $env_name"
+    uv venv "$env_name"
+else
+    echo "Virtual environment $env_name already exists"
+fi
 
-# Install dependencies from pyproject.toml and poetry.lock
-poetry install
+# Install dependencies from pyproject.toml and uv.lock
+uv sync
 
-echo "Environment '$env_name' created or updated using Poetry."
+echo "Environment '$env_name' is ready using uv."
