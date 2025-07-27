@@ -1,6 +1,4 @@
-"""
-Module for testing user model
-"""
+"""Module for testing user model."""
 
 import pytest
 import sqlalchemy
@@ -12,9 +10,7 @@ from core.models import UserModel
 
 @pytest.mark.asyncio
 async def test_create_user(test_user):
-    """
-    Test creating user model.
-    """
+    """Test creating user model."""
     assert test_user.id == 2142
     assert test_user.username == "TestUser"
     assert test_user.roles == ["Bar", "Consoles"]
@@ -22,9 +18,7 @@ async def test_create_user(test_user):
 
 @pytest.mark.asyncio
 async def test_get_user(async_session, test_user):
-    """
-    Test getting the user from the database.
-    """
+    """Test getting the user from the database."""
     db_obj = await async_session.get(UserModel, test_user.id)
     assert db_obj is not None
     assert db_obj.username == test_user.username
@@ -32,9 +26,7 @@ async def test_get_user(async_session, test_user):
 
 @pytest.mark.asyncio
 async def test_update_user(async_session, test_user):
-    """
-    Test updating the test user.
-    """
+    """Test updating the test user."""
     test_user.username = "CoolRader"
     await async_session.commit()
     await async_session.refresh(test_user)
@@ -43,9 +35,7 @@ async def test_update_user(async_session, test_user):
 
 @pytest.mark.asyncio
 async def test_delete_user(async_session, test_user):
-    """
-    Test deleting the test user.
-    """
+    """Test deleting the test user."""
     await async_session.delete(test_user)
     await async_session.commit()
     deleted = await async_session.get(UserModel, test_user.id)
@@ -54,9 +44,7 @@ async def test_delete_user(async_session, test_user):
 
 @pytest.mark.asyncio
 async def test_list_users(async_session):
-    """
-    Test listing multiple users.
-    """
+    """Test listing multiple users."""
     users = [
         UserModel(
             id=1,

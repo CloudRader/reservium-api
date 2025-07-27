@@ -1,6 +1,4 @@
-"""
-Conftest for testing api
-"""
+"""Conftest for testing api."""
 
 import pytest
 import pytest_asyncio
@@ -17,31 +15,22 @@ from app.main import app
 # reason: needed for testing; similar conftests are intentionally
 # separated by the model they belong to
 
-# pylint: disable=import-outside-toplevel
-# reason: circular import issue
-
 
 @pytest.fixture
 def user_crud(async_session):
-    """
-    Return user crud.
-    """
+    """Return user crud."""
     return CRUDUser(db=async_session)
 
 
 @pytest.fixture
 def reservation_service_crud(async_session):
-    """
-    Return reservation service crud.
-    """
+    """Return reservation service crud."""
     return CRUDReservationService(db=async_session)
 
 
 @pytest_asyncio.fixture
 async def user_service(shared_session):
-    """
-    Returns a UserService instance using the shared test session.
-    """
+    """Return a UserService instance using the shared test session."""
     from services import UserService
 
     return UserService(db=shared_session)
@@ -49,9 +38,7 @@ async def user_service(shared_session):
 
 @pytest_asyncio.fixture
 async def usual_user_service(async_session):
-    """
-    Returns a UserService instance using the isolated async test session.
-    """
+    """Return a UserService instance using the isolated async test session."""
     from services import UserService
 
     return UserService(db=async_session)
@@ -59,9 +46,7 @@ async def usual_user_service(async_session):
 
 @pytest_asyncio.fixture
 async def reservation_service_service(shared_session):
-    """
-    Returns a ReservationServiceService instance using the shared test session.
-    """
+    """Return a ReservationServiceService instance using the shared test session."""
     from services import ReservationServiceService
 
     return ReservationServiceService(db=shared_session)
@@ -69,9 +54,7 @@ async def reservation_service_service(shared_session):
 
 @pytest_asyncio.fixture
 async def client(user_service, reservation_service_service):
-    """
-    Provides a test HTTP client with overridden dependencies.
-    """
+    """Provide a test HTTP client with overridden dependencies."""
     from services import ReservationServiceService, UserService
 
     app.dependency_overrides[UserService] = lambda: user_service
@@ -86,9 +69,7 @@ async def client(user_service, reservation_service_service):
 
 @pytest.fixture()
 def user_data_from_is() -> UserIS:
-    """
-    Return new UserIS schema.
-    """
+    """Return new UserIS schema."""
     return UserIS(
         country="Czech Republic",
         created_at="2024-6-12",
@@ -113,17 +94,13 @@ def user_data_from_is() -> UserIS:
 
 @pytest.fixture()
 def zone_data_from_is() -> Zone:
-    """
-    Return new Zone schema.
-    """
+    """Return new Zone schema."""
     return Zone(alias="game", id=21, name="test.name", note="some.note")
 
 
 @pytest.fixture()
 def room_data_from_is(zone_data_from_is) -> Room:
-    """
-    Return new Room schema.
-    """
+    """Return new Room schema."""
     return Room(
         door_number="215",
         floor=2,
@@ -135,9 +112,7 @@ def room_data_from_is(zone_data_from_is) -> Room:
 
 @pytest_asyncio.fixture
 async def user(user_crud):
-    """
-    Creates and returns a user.
-    """
+    """Create and returns a user."""
     user_data = UserCreate(
         id=2142,
         username="test_user",
@@ -152,9 +127,7 @@ async def user(user_crud):
 
 @pytest_asyncio.fixture
 async def reservation_service(reservation_service_crud):
-    """
-    Creates and returns a reservation service.
-    """
+    """Create and returns a reservation service."""
     reservation_service_data = ReservationServiceCreate(
         name="Game Room",
         alias="game",

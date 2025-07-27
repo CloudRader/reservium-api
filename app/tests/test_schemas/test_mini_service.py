@@ -1,6 +1,4 @@
-"""
-Tests for MiniService Pydantic Schemas
-"""
+"""Tests for MiniService Pydantic Schemas."""
 
 from datetime import UTC, datetime
 from uuid import uuid4
@@ -19,9 +17,7 @@ from pydantic import ValidationError
 
 
 def test_mini_service_create_valid():
-    """
-    Test creating a mini service with valid data.
-    """
+    """Test creating a mini service with valid data."""
     service_id = uuid4()
     schema = MiniServiceCreate(reservation_service_id=service_id, name="Media Setup")
     assert schema.name == "Media Setup"
@@ -29,17 +25,13 @@ def test_mini_service_create_valid():
 
 
 def test_mini_service_update_partial():
-    """
-    Test updating mini service with partial data.
-    """
+    """Test updating mini service with partial data."""
     update = MiniServiceUpdate(name="New Name")
     assert update.name == "New Name"
 
 
 def test_mini_service_in_db_base_schema():
-    """
-    Test full mini service DB representation.
-    """
+    """Test full mini service DB representation."""
     service_id = uuid4()
     mini_id = uuid4()
     now = datetime.now(UTC)
@@ -58,9 +50,7 @@ def test_mini_service_in_db_base_schema():
 
 
 def test_mini_service_schema_extends_base():
-    """
-    Test that MiniService schema includes all base fields.
-    """
+    """Test that MiniService schema includes all base fields."""
     schema = MiniService(
         id=uuid4(),
         reservation_service_id=uuid4(),
@@ -74,9 +64,7 @@ def test_mini_service_schema_extends_base():
 
 @pytest.mark.parametrize("field", ["name", "reservation_service_id"])
 def test_mini_service_create_required_fields(field):
-    """
-    Test that omitting required fields raises validation error.
-    """
+    """Test that omitting required fields raises validation error."""
     data = {
         "name": "Basic MiniService",
         "reservation_service_id": uuid4(),

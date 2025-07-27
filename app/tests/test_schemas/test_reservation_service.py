@@ -1,6 +1,4 @@
-"""
-Tests for ReservationService Pydantic Schemas
-"""
+"""Tests for ReservationService Pydantic Schemas."""
 
 from datetime import UTC, datetime
 from uuid import uuid4
@@ -22,9 +20,7 @@ from pydantic import ValidationError
 
 
 def test_reservation_service_create_valid():
-    """
-    Test creating reservation service with valid data.
-    """
+    """Test creating reservation service with valid data."""
     schema = ReservationServiceCreate(
         name="Projector Booking",
         alias="prjct",
@@ -40,9 +36,7 @@ def test_reservation_service_create_valid():
 
 
 def test_reservation_service_create_alias_too_long():
-    """
-    Test that alias exceeding max length raises an error.
-    """
+    """Test that alias exceeding max length raises an error."""
     with pytest.raises(ValidationError):
         ReservationServiceCreate(
             name="TooLongAlias",
@@ -51,9 +45,7 @@ def test_reservation_service_create_alias_too_long():
 
 
 def test_reservation_service_update_partial():
-    """
-    Test partial update of reservation service.
-    """
+    """Test partial update of reservation service."""
     update = ReservationServiceUpdate(alias="media")
     assert update.alias == "media"
     assert update.name is None
@@ -62,9 +54,7 @@ def test_reservation_service_update_partial():
 
 
 def test_reservation_service_in_db_base_schema(valid_rules):
-    """
-    Test full DB representation of reservation service.
-    """
+    """Test full DB representation of reservation service."""
     service_id = uuid4()
     now = datetime.now(UTC)
     calendar = Calendar(
@@ -102,9 +92,7 @@ def test_reservation_service_in_db_base_schema(valid_rules):
 
 
 def test_reservation_service_schema_extends_base():
-    """
-    Test that ReservationService schema includes all base fields.
-    """
+    """Test that ReservationService schema includes all base fields."""
     service = ReservationService(
         id=uuid4(),
         name="Lighting",
@@ -119,9 +107,7 @@ def test_reservation_service_schema_extends_base():
 
 @pytest.mark.parametrize("field", ["name", "alias"])
 def test_reservation_service_create_required_fields(field):
-    """
-    Test that omitting required fields raises validation error.
-    """
+    """Test that omitting required fields raises validation error."""
     data = {"name": "SomeName", "alias": "ALIAS"}
     del data[field]
     with pytest.raises(ValidationError):

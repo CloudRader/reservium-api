@@ -1,5 +1,6 @@
 """
 Fixtures for setting up and tearing down the test PostgreSQL database using testcontainers.
+
 Provides async sessions for tests, with schema management.
 """
 
@@ -15,9 +16,7 @@ from testcontainers.postgres import PostgresContainer
 
 
 class TestDatabaseSession:
-    """
-    Manages async engine and session for PostgreSQL test container.
-    """
+    """Manages async engine and session for PostgreSQL test container."""
 
     def __init__(self, container: PostgresContainer):
         raw_url = str(container.get_connection_url())
@@ -44,22 +43,16 @@ class TestDatabaseSession:
     #     async with self.session_factory() as session:
     #         yield session
     async def get_session(self):
-        """
-        Opens and returns an async session.
-        """
+        """Open and return an async session."""
         return self.session_factory()
 
     async def create_schema(self):
-        """
-        Creates all tables from metadata.
-        """
+        """Create all tables from metadata."""
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
     async def drop_and_create_all(self):
-        """
-        Drops and recreates all tables from metadata.
-        """
+        """Drop and recreate all tables from metadata."""
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
@@ -67,9 +60,7 @@ class TestDatabaseSession:
 
 @pytest_asyncio.fixture(scope="session")
 async def pg_container():
-    """
-    Starts and yields a PostgreSQL container for the test session.
-    """
+    """Start and yield a PostgreSQL container for the test session."""
     container = PostgresContainer("postgres:15")
     container.start()
     try:
@@ -80,9 +71,7 @@ async def pg_container():
 
 @pytest_asyncio.fixture(scope="function")
 async def async_session(pg_container):
-    """
-    Provides a fresh database session for each test (with schema reset).
-    """
+    """Provide a fresh database session for each test (with schema reset)."""
     db_session = TestDatabaseSession(pg_container)
     await db_session.drop_and_create_all()
 
@@ -95,9 +84,7 @@ async def async_session(pg_container):
 
 @pytest_asyncio.fixture(scope="function")
 async def shared_session(pg_container):
-    """
-    Provides a shared schema for all tests, but new session each time.
-    """
+    """Provide a shared schema for all tests, but new session each time."""
     db_session = TestDatabaseSession(pg_container)
     await db_session.create_schema()
 

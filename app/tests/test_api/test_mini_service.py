@@ -1,3 +1,1 @@
-"""
-Module for testing mini service api
-"""
+"""Module for testing mini service api."""

@@ -1,6 +1,4 @@
-"""
-Module for testing utils service
-"""
+"""Module for testing utils service."""
 
 import datetime as dt
 
@@ -23,9 +21,7 @@ from services.utils import (
 
 @pytest.mark.asyncio
 def test_first_standard_check(services_data_from_is, reservation_service):
-    """
-    Test utils function in services.
-    """
+    """Test utils function in services."""
     start_time = dt.datetime.now() - dt.timedelta(hours=1)
     end_time = dt.datetime.now() + dt.timedelta(hours=4)
     result = first_standard_check(
@@ -56,9 +52,7 @@ def test_first_standard_check(services_data_from_is, reservation_service):
 
 @pytest.mark.asyncio
 def test_description_of_event(user, event_create_form):
-    """
-    Test utils function in services.
-    """
+    """Test utils function in services."""
     event_create_form.additional_services = ["Bar", "Console"]
     result = description_of_event(user, event_create_form)
     assert result is not None
@@ -67,9 +61,7 @@ def test_description_of_event(user, event_create_form):
 
 @pytest.mark.asyncio
 def test_ready_event(calendar, event_create_form, user):
-    """
-    Test utils function in services.
-    """
+    """Test utils function in services."""
     result = ready_event(calendar, event_create_form, user)
     assert result is not None
     assert isinstance(result, dict)
@@ -78,9 +70,7 @@ def test_ready_event(calendar, event_create_form, user):
 
 @pytest.mark.asyncio
 def test_control_res_in_advance(rules_schema):
-    """
-    Test utils function in services.
-    """
+    """Test utils function in services."""
     start_time = dt.datetime.now() + dt.timedelta(days=5)
     result = control_res_in_advance_or_prior(start_time, rules_schema, True)
     assert result is True
@@ -91,9 +81,7 @@ def test_control_res_in_advance(rules_schema):
 
 @pytest.mark.asyncio
 def test_reservation_in_advance(rules_schema):
-    """
-    Test utils function in services.
-    """
+    """Test utils function in services."""
     start_time = dt.datetime.now() + dt.timedelta(days=1)
     result = reservation_in_advance(start_time, rules_schema)
     assert result["message"] == (
@@ -117,9 +105,7 @@ def test_reservation_in_advance(rules_schema):
 
 @pytest.mark.asyncio
 def test_dif_days_res(rules_schema):
-    """
-    Test utils function in services.
-    """
+    """Test utils function in services."""
     start_time = dt.datetime.now()
     end_time = dt.datetime.now() + dt.timedelta(days=370)
     result = dif_days_res(start_time, end_time, rules_schema)

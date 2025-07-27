@@ -1,6 +1,4 @@
-"""
-Conftest for testing model
-"""
+"""Conftest for testing model."""
 
 import uuid
 
@@ -24,26 +22,20 @@ from core.schemas import Rules
 
 @pytest.fixture(scope="module")
 def create_reservation_service_uuid():
-    """
-    Fixture that create uuid.
-    """
+    """Fixture that create uuid."""
     return uuid.uuid4()
 
 
 @pytest.fixture(scope="module")
 def create_mini_service_uuid():
-    """
-    Fixture that create uuid.
-    """
+    """Fixture that create uuid."""
     return uuid.uuid4()
 
 
 @pytest.mark.asyncio
 @pytest_asyncio.fixture
 async def test_user(async_session):
-    """
-    Creates and returns a sample user for testing.
-    """
+    """Creates and returns a sample user for testing."""
     user = UserModel(
         id=2142,
         username="TestUser",
@@ -62,9 +54,7 @@ async def test_user(async_session):
 @pytest.mark.asyncio
 @pytest_asyncio.fixture
 async def test_reservation_service(async_session, create_reservation_service_uuid):
-    """
-    Creates and returns a sample reservation service for testing.
-    """
+    """Creates and returns a sample reservation service for testing."""
     reservation_service = ReservationServiceModel(
         id=create_reservation_service_uuid,
         name="Club Room",
@@ -84,9 +74,7 @@ async def test_reservation_service(async_session, create_reservation_service_uui
 async def test_mini_service(
     async_session, create_mini_service_uuid, test_reservation_service,
 ):
-    """
-    Creates and returns a sample reservation service for testing.
-    """
+    """Creates and returns a sample reservation service for testing."""
     mini_service = MiniServiceModel(
         id=create_mini_service_uuid,
         name="Bar",
@@ -100,9 +88,7 @@ async def test_mini_service(
 
 @pytest.fixture(scope="module")
 def rules_club_member() -> Rules:
-    """
-    Return rules schemas.
-    """
+    """Return rules schemas."""
     return Rules(
         night_time=False,
         reservation_without_permission=True,
@@ -118,9 +104,7 @@ def rules_club_member() -> Rules:
 async def test_calendar(
     async_session, rules_club_member, test_reservation_service, test_mini_service,
 ):
-    """
-    Creates and returns a sample calendar for testing.
-    """
+    """Creates and returns a sample calendar for testing."""
     calendar = CalendarModel(
         id="test_calendar@google.com",
         reservation_type="Entire Space",

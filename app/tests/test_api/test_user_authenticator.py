@@ -1,6 +1,4 @@
-"""
-Module for testing user authenticator api
-"""
+"""Module for testing user authenticator api."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -18,21 +16,15 @@ from fastapi import HTTPException, status
 # reason: using fixtures as variables is a standard for pytest
 
 
-# pylint: disable=too-few-public-methods
-# reason: It needs for testing
 class DummyRequest:
-    """
-    Dummy request object for testing session-based access.
-    """
+    """Dummy request object for testing session-based access."""
 
     def __init__(self, session_data):
         self.session = session_data
 
 
 def test_get_oauth_session():
-    """
-    Test that OAuth session is configured properly.
-    """
+    """Test that OAuth session is configured properly."""
     session = get_oauth_session()
     assert session.client_id is not None
     assert session.redirect_uri is not None
@@ -41,9 +33,7 @@ def test_get_oauth_session():
 @pytest.mark.asyncio
 @patch("api.user_authenticator.httpx.AsyncClient.get")
 async def test_get_request_success(mock_get):
-    """
-    Test successful HTTPX get request returns parsed JSON.
-    """
+    """Test successful HTTPX get request returns parsed JSON."""
     mock_response = MagicMock()
     mock_response.status_code = status.HTTP_200_OK
     mock_response.json.return_value = {"data": "ok"}
@@ -57,11 +47,11 @@ async def test_get_request_success(mock_get):
 @pytest.mark.asyncio
 @patch("api.user_authenticator.get_request")
 async def test_authenticate_user(
-    mock_get_request, user_data_from_is, room_data_from_is,
+    mock_get_request,
+    user_data_from_is,
+    room_data_from_is,
 ):
-    """
-    Test user authentication flow with mocked data from identity service.
-    """
+    """Test user authentication flow with mocked data from identity service."""
     mock_get_request.return_value = {"some": "response"}
     mock_user_service = AsyncMock()
     mock_user_service.create_user.return_value = "mocked_user"
@@ -79,9 +69,7 @@ async def test_authenticate_user(
 
 @pytest.mark.asyncio
 async def test_get_current_token_success():
-    """
-    Test extracting access token from request session.
-    """
+    """Test extracting access token from request session."""
     request = DummyRequest({"oauth_token": {"access_token": "abc"}})
     token = await get_current_token(request)
     assert token == "abc"
@@ -89,9 +77,7 @@ async def test_get_current_token_success():
 
 @pytest.mark.asyncio
 async def test_get_current_token_missing():
-    """
-    Test missing access token in session raises HTTPException.
-    """
+    """Test missing access token in session raises HTTPException."""
     request = DummyRequest({})
     with pytest.raises(HTTPException):
         await get_current_token(request)
@@ -100,9 +86,7 @@ async def test_get_current_token_missing():
 @pytest.mark.asyncio
 @patch("api.user_authenticator.get_request")
 async def test_get_current_user_success(mock_get_request, user_data_from_is):
-    """
-    Test retrieval of current user from session and database.
-    """
+    """Test retrieval of current user from session and database."""
     mock_user_service = AsyncMock()
     mock_user_service.get_by_username.return_value = {"id": 1, "username": "user1"}
 
@@ -118,9 +102,7 @@ async def test_get_current_user_success(mock_get_request, user_data_from_is):
 
 @pytest.mark.asyncio
 async def test_get_current_user_no_username():
-    """
-    Test that missing username in session raises HTTPException.
-    """
+    """Test that missing username in session raises HTTPException."""
     mock_user_service = AsyncMock()
     request = DummyRequest({})  # no session
     with pytest.raises(HTTPException):

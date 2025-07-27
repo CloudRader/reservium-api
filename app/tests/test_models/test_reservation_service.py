@@ -1,6 +1,4 @@
-"""
-Module for testing reservation service model
-"""
+"""Module for testing reservation service model."""
 
 import uuid
 
@@ -16,9 +14,7 @@ from core.models import ReservationServiceModel
 async def test_create_reservation_service(
     test_reservation_service, create_reservation_service_uuid,
 ):
-    """
-    Test creating reservation service model.
-    """
+    """Test creating reservation service model."""
     assert test_reservation_service.id == create_reservation_service_uuid
     assert test_reservation_service.name == "Club Room"
     assert test_reservation_service.alias == "club"
@@ -29,9 +25,7 @@ async def test_create_reservation_service(
 
 @pytest.mark.asyncio
 async def test_get_reservation_service(async_session, test_reservation_service):
-    """
-    Test getting the reservation service from the database.
-    """
+    """Test getting the reservation service from the database."""
     db_obj = await async_session.get(
         ReservationServiceModel, test_reservation_service.id,
     )
@@ -41,9 +35,7 @@ async def test_get_reservation_service(async_session, test_reservation_service):
 
 @pytest.mark.asyncio
 async def test_update_reservation_service(async_session, test_reservation_service):
-    """
-    Test updating the reservation service.
-    """
+    """Test updating the reservation service."""
     test_reservation_service.name = "Updated Room"
     await async_session.commit()
     await async_session.refresh(test_reservation_service)
@@ -52,9 +44,7 @@ async def test_update_reservation_service(async_session, test_reservation_servic
 
 @pytest.mark.asyncio
 async def test_delete_reservation_service(async_session, test_reservation_service):
-    """
-    Test deleting the reservation service.
-    """
+    """Test deleting the reservation service."""
     await async_session.delete(test_reservation_service)
     await async_session.commit()
     deleted = await async_session.get(
@@ -65,9 +55,7 @@ async def test_delete_reservation_service(async_session, test_reservation_servic
 
 @pytest.mark.asyncio
 async def test_list_reservation_services(async_session):
-    """
-    Test listing multiple reservation services.
-    """
+    """Test listing multiple reservation services."""
     services = [
         ReservationServiceModel(
             id=uuid.uuid4(),

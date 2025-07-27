@@ -1,6 +1,4 @@
-"""
-Conftest for testing schema
-"""
+"""Conftest for testing schema."""
 
 import pytest
 from core.schemas import Rules
@@ -15,9 +13,7 @@ from core.schemas import Rules
 
 @pytest.fixture(scope="module")
 def valid_rules():
-    """
-    Return rules schemas.
-    """
+    """Return rules schemas."""
     return Rules(
         night_time=True,
         reservation_without_permission=False,

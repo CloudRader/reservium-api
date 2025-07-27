@@ -1,6 +1,4 @@
-"""
-This module provides fixtures for test services
-"""
+"""Module provides fixtures for test services."""
 
 import pytest
 import pytest_asyncio
@@ -41,9 +39,7 @@ from core.schemas import (
 
 @pytest.fixture()
 def service_user(async_session):
-    """
-    Return UserService.
-    """
+    """Return UserService."""
     from services import UserService
 
     return UserService(db=async_session)
@@ -51,9 +47,7 @@ def service_user(async_session):
 
 @pytest.fixture()
 def service_reservation_service(async_session):
-    """
-    Return ReservationServiceService.
-    """
+    """Return ReservationServiceService."""
     from services import ReservationServiceService
 
     return ReservationServiceService(db=async_session)
@@ -61,9 +55,7 @@ def service_reservation_service(async_session):
 
 @pytest.fixture()
 def service_mini_service(async_session):
-    """
-    Return MiniServiceService.
-    """
+    """Return MiniServiceService."""
     from services import MiniServiceService
 
     return MiniServiceService(db=async_session)
@@ -71,9 +63,7 @@ def service_mini_service(async_session):
 
 @pytest.fixture()
 def service_calendar(async_session):
-    """
-    Return MiniServiceService.
-    """
+    """Return MiniServiceService."""
     from services import CalendarService
 
     return CalendarService(db=async_session)
@@ -81,9 +71,7 @@ def service_calendar(async_session):
 
 @pytest.fixture()
 def service_event(async_session):
-    """
-    Return EventService.
-    """
+    """Return EventService."""
     from services import EventService
 
     return EventService(db=async_session)
@@ -91,9 +79,7 @@ def service_event(async_session):
 
 @pytest.fixture()
 def service_email():
-    """
-    Return EmailService.
-    """
+    """Return EmailService."""
     from services import EmailService
 
     return EmailService()
@@ -101,9 +87,7 @@ def service_email():
 
 @pytest.fixture()
 def user_data_from_is() -> UserIS:
-    """
-    Return new UserIS schema.
-    """
+    """Return new UserIS schema."""
     return UserIS(
         country="Czech Republic",
         created_at="2024-6-12",
@@ -128,9 +112,7 @@ def user_data_from_is() -> UserIS:
 
 @pytest.fixture()
 def limit_data_from_is() -> LimitObject:
-    """
-    Return new LimitObject schema.
-    """
+    """Return new LimitObject schema."""
     return LimitObject(
         id=1,
         name="Studovna",
@@ -141,9 +123,7 @@ def limit_data_from_is() -> LimitObject:
 
 @pytest.fixture()
 def roles_data_from_is(limit_data_from_is) -> list[Role]:
-    """
-    Return new Role schema.
-    """
+    """Return new Role schema."""
     return [
         Role(
             role="service_admin",
@@ -157,9 +137,7 @@ def roles_data_from_is(limit_data_from_is) -> list[Role]:
 
 @pytest.fixture()
 def service_data_from_is() -> Service:
-    """
-    Return new Service schema.
-    """
+    """Return new Service schema."""
     return Service(
         alias="stud",
         name="Studovna",
@@ -171,9 +149,7 @@ def service_data_from_is() -> Service:
 
 @pytest.fixture()
 def services_data_from_is(service_data_from_is) -> list[ServiceValidity]:
-    """
-    Return new ServiceValidity schema.
-    """
+    """Return new ServiceValidity schema."""
     return [
         ServiceValidity(
             from_="2024-02-12",
@@ -187,17 +163,13 @@ def services_data_from_is(service_data_from_is) -> list[ServiceValidity]:
 
 @pytest.fixture()
 def zone_data_from_is() -> Zone:
-    """
-    Return new Zone schema.
-    """
+    """Return new Zone schema."""
     return Zone(alias="game", id=21, name="test.name", note="some.note")
 
 
 @pytest.fixture()
 def room_data_from_is(zone_data_from_is) -> Room:
-    """
-    Return new Room schema.
-    """
+    """Return new Room schema."""
     return Room(
         door_number="215",
         floor=2,
@@ -209,21 +181,21 @@ def room_data_from_is(zone_data_from_is) -> Room:
 
 @pytest.fixture()
 def data_from_is(
-    user_data_from_is, room_data_from_is, services_data_from_is,
+    user_data_from_is,
+    room_data_from_is,
+    services_data_from_is,
 ) -> InformationFromIS:
-    """
-    Return new InformationFromIS schema.
-    """
+    """Return new InformationFromIS schema."""
     return InformationFromIS(
-        user=user_data_from_is, room=room_data_from_is, services=services_data_from_is,
+        user=user_data_from_is,
+        room=room_data_from_is,
+        services=services_data_from_is,
     )
 
 
 @pytest.fixture()
 def event_create_form() -> EventCreate:
-    """
-    Return creating Event schema.
-    """
+    """Return creating Event schema."""
     return EventCreate(
         start_datetime="2025-04-28T12:30",
         end_datetime="2025-04-29T21:00",
@@ -243,19 +215,18 @@ def server_create_user(
     services_data_from_is,
     room_data_from_is,
 ):
-    """
-    Return server creating user.
-    """
+    """Return server creating user."""
     return service_user.create_user(
-        user_data_from_is, roles_data_from_is, services_data_from_is, room_data_from_is,
+        user_data_from_is,
+        roles_data_from_is,
+        services_data_from_is,
+        room_data_from_is,
     )
 
 
 @pytest_asyncio.fixture()
 async def user(service_user) -> User:
-    """
-    Return user object in db.
-    """
+    """Return user object in db."""
     return await service_user.create(
         UserCreate(
             id=9897,
@@ -271,9 +242,7 @@ async def user(service_user) -> User:
 
 @pytest_asyncio.fixture()
 async def event(service_event, event_create_form, user, calendar) -> Event:
-    """
-    Return event object in db.
-    """
+    """Return event object in db."""
     event_create_form.reservation_type = calendar.id
     return await service_event.create_event(
         event_create=event_create_form,
@@ -285,9 +254,7 @@ async def event(service_event, event_create_form, user, calendar) -> Event:
 
 @pytest_asyncio.fixture()
 async def user_not_head(service_user) -> User:
-    """
-    Return user without head permission object in db.
-    """
+    """Return user without head permission object in db."""
     return await service_user.create(
         UserCreate(
             id=5045,
@@ -303,9 +270,7 @@ async def user_not_head(service_user) -> User:
 
 @pytest.fixture()
 def reservation_service_create() -> ReservationServiceCreate:
-    """
-    Return ReservationServiceCreate schema.
-    """
+    """Return ReservationServiceCreate schema."""
     return ReservationServiceCreate(
         name="Game Room",
         alias="game",
@@ -317,21 +282,20 @@ def reservation_service_create() -> ReservationServiceCreate:
 
 @pytest_asyncio.fixture()
 async def reservation_service(
-    service_reservation_service, reservation_service_create, user,
+    service_reservation_service,
+    reservation_service_create,
+    user,
 ) -> ReservationService:
-    """
-    Return reservation service object in db.
-    """
+    """Return reservation service object in db."""
     return await service_reservation_service.create_reservation_service(
-        reservation_service_create, user,
+        reservation_service_create,
+        user,
     )
 
 
 @pytest.fixture()
 def mini_service_create(reservation_service) -> MiniServiceCreate:
-    """
-    Return MiniServiceCreate schema.
-    """
+    """Return MiniServiceCreate schema."""
     return MiniServiceCreate(
         name="Bar",
         reservation_service_id=reservation_service.id,
@@ -340,17 +304,13 @@ def mini_service_create(reservation_service) -> MiniServiceCreate:
 
 @pytest_asyncio.fixture()
 async def mini_service(service_mini_service, mini_service_create, user) -> MiniService:
-    """
-    Return mini service object in db.
-    """
+    """Return mini service object in db."""
     return await service_mini_service.create_mini_service(mini_service_create, user)
 
 
 @pytest.fixture
 def rules_schema() -> Rules:
-    """
-    Return rules schemas.
-    """
+    """Return rules schemas."""
     return Rules(
         night_time=False,
         reservation_without_permission=False,
@@ -363,9 +323,7 @@ def rules_schema() -> Rules:
 
 @pytest.fixture(scope="module")
 def calendar_rules_create() -> Rules:
-    """
-    Return rules schemas.
-    """
+    """Return rules schemas."""
     return Rules(
         night_time=False,
         reservation_without_permission=True,
@@ -378,9 +336,7 @@ def calendar_rules_create() -> Rules:
 
 @pytest.fixture()
 def calendar_create(reservation_service, calendar_rules_create) -> CalendarCreate:
-    """
-    Return CalendarCreate schema.
-    """
+    """Return CalendarCreate schema."""
     return CalendarCreate(
         id="service.cal.test@test.zc",
         reservation_type="Galambula",
@@ -399,17 +355,13 @@ def calendar_create(reservation_service, calendar_rules_create) -> CalendarCreat
 
 @pytest_asyncio.fixture()
 async def calendar(service_calendar, calendar_create, user) -> Calendar:
-    """
-    Return calendar object in db.
-    """
+    """Return calendar object in db."""
     return await service_calendar.create_calendar(calendar_create, user)
 
 
 @pytest.fixture()
 def registration_form_create() -> RegistrationFormCreate:
-    """
-    Return RegistrationFormCreate schema.
-    """
+    """Return RegistrationFormCreate schema."""
     return RegistrationFormCreate(
         event_name="Birthday Party",
         guests=15,

@@ -1,6 +1,4 @@
-"""
-Module for testing calendar model
-"""
+"""Module for testing calendar model."""
 
 import pytest
 import sqlalchemy
@@ -12,9 +10,7 @@ from core.models import CalendarModel
 
 @pytest.mark.asyncio
 async def test_create_calendar(test_calendar, test_reservation_service):
-    """
-    Test creating a calendar.
-    """
+    """Test creating a calendar."""
     assert test_calendar.id == "test_calendar@google.com"
     assert test_calendar.reservation_type == "Entire Space"
     assert test_calendar.max_people == 10
@@ -25,9 +21,7 @@ async def test_create_calendar(test_calendar, test_reservation_service):
 
 @pytest.mark.asyncio
 async def test_get_calendar(async_session, test_calendar):
-    """
-    Test fetching calendar from the database.
-    """
+    """Test fetching calendar from the database."""
     db_obj = await async_session.get(CalendarModel, test_calendar.id)
     assert db_obj is not None
     assert db_obj.reservation_type == test_calendar.reservation_type
@@ -35,9 +29,7 @@ async def test_get_calendar(async_session, test_calendar):
 
 @pytest.mark.asyncio
 async def test_update_calendar(async_session, test_calendar):
-    """
-    Test updating calendar values.
-    """
+    """Test updating calendar values."""
     test_calendar.color = "#123456"
     await async_session.commit()
     await async_session.refresh(test_calendar)
@@ -47,9 +39,7 @@ async def test_update_calendar(async_session, test_calendar):
 
 @pytest.mark.asyncio
 async def test_delete_calendar(async_session, test_calendar):
-    """
-    Test soft-deleting the calendar (or real delete if no soft delete).
-    """
+    """Test soft-deleting the calendar (or real delete if no soft delete)."""
     await async_session.delete(test_calendar)
     await async_session.commit()
     deleted = await async_session.get(CalendarModel, test_calendar.id)
@@ -60,9 +50,7 @@ async def test_delete_calendar(async_session, test_calendar):
 async def test_list_calendars(
     async_session, rules_club_member, test_reservation_service, test_mini_service,
 ):
-    """
-    Test listing multiple calendars.
-    """
+    """Test listing multiple calendars."""
     calendars = [
         CalendarModel(
             id="test_calwagwagwgwandar_type1@exam.com",

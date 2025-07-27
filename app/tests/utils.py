@@ -1,6 +1,4 @@
-"""
-Utils for test package.
-"""
+"""Utils for test package."""
 
 from typing import Any
 

@@ -1,3 +1,1 @@
-"""
-Module for testing calendar api
-"""
+"""Module for testing calendar api."""

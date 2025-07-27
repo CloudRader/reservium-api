@@ -1,6 +1,4 @@
-"""
-Tests for User Pydantic Schemas
-"""
+"""Tests for User Pydantic Schemas."""
 
 from datetime import datetime
 
@@ -13,9 +11,7 @@ from pydantic import ValidationError
 
 
 def test_user_create_schema_valid():
-    """
-    Test creating a user with valid data.
-    """
+    """Test creating a user with valid data."""
     schema = UserCreate(
         id=2142,
         username="TestUser",
@@ -33,9 +29,7 @@ def test_user_create_schema_valid():
 
 
 def test_user_create_schema_invalid_roles_type():
-    """
-    Test that invalid role type raises an error.
-    """
+    """Test that invalid role type raises an error."""
     with pytest.raises(ValidationError):
         UserCreate(
             id=2142,
@@ -49,9 +43,7 @@ def test_user_create_schema_invalid_roles_type():
 
 
 def test_user_update_partial_schema():
-    """
-    Test updating user with partial data.
-    """
+    """Test updating user with partial data."""
     update = UserUpdate(username="UpdatedName")
     assert update.username == "UpdatedName"
     assert update.active_member is None
@@ -60,9 +52,7 @@ def test_user_update_partial_schema():
 
 
 def test_user_in_db_base_schema():
-    """
-    Test full user DB representation.
-    """
+    """Test full user DB representation."""
     user = UserInDBBase(
         id=42,
         username="TestUser",
@@ -79,9 +69,7 @@ def test_user_in_db_base_schema():
 
 
 def test_user_schema_extends_base():
-    """
-    Test that User schema includes all base fields.
-    """
+    """Test that User schema includes all base fields."""
     now = datetime.now()
     user = User(
         id=1,
@@ -99,9 +87,7 @@ def test_user_schema_extends_base():
 
 @pytest.mark.parametrize("field", ["id", "username", "active_member", "section_head"])
 def test_user_create_required_fields(field):
-    """
-    Test that omitting required fields raises validation error.
-    """
+    """Test that omitting required fields raises validation error."""
     data = {
         "id": 1,
         "username": "Test",

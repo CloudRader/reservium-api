@@ -1,6 +1,4 @@
-"""
-Conftest for testing crud
-"""
+"""Conftest for testing crud."""
 
 import pytest
 import pytest_asyncio
@@ -23,41 +21,31 @@ from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService, CRUDUser
 
 @pytest.fixture
 def user_crud(async_session):
-    """
-    Return user crud.
-    """
+    """Return user crud."""
     return CRUDUser(db=async_session)
 
 
 @pytest.fixture
 def reservation_service_crud(async_session):
-    """
-    Return reservation service crud.
-    """
+    """Return reservation service crud."""
     return CRUDReservationService(db=async_session)
 
 
 @pytest.fixture
 def mini_service_crud(async_session):
-    """
-    Return mini service crud.
-    """
+    """Return mini service crud."""
     return CRUDMiniService(db=async_session)
 
 
 @pytest.fixture
 def calendar_crud(async_session):
-    """
-    Return calendar crud.
-    """
+    """Return calendar crud."""
     return CRUDCalendar(db=async_session)
 
 
 @pytest_asyncio.fixture
 async def test_user(user_crud):
-    """
-    Creates and returns a test user.
-    """
+    """Create and return a test user."""
     user = await user_crud.create(
         UserCreate(
             id=2142,
@@ -74,9 +62,7 @@ async def test_user(user_crud):
 
 @pytest_asyncio.fixture
 async def test_user2(user_crud):
-    """
-    Creates and returns a test user2.
-    """
+    """Create and return a test user2."""
     user = await user_crud.create(
         UserCreate(
             id=6545,
@@ -93,9 +79,7 @@ async def test_user2(user_crud):
 
 @pytest_asyncio.fixture
 async def test_reservation_service(reservation_service_crud):
-    """
-    Creates and returns a test reservation service.
-    """
+    """Create and return a test reservation service."""
     reservation_service = await reservation_service_crud.create(
         ReservationServiceCreate(
             name="Study Room",
@@ -110,9 +94,7 @@ async def test_reservation_service(reservation_service_crud):
 
 @pytest_asyncio.fixture
 async def test_reservation_service2(reservation_service_crud):
-    """
-    Creates and returns a test reservation service2.
-    """
+    """Create and return a test reservation service2."""
     reservation_service = await reservation_service_crud.create(
         ReservationServiceCreate(
             name="Grill",
@@ -127,12 +109,11 @@ async def test_reservation_service2(reservation_service_crud):
 
 @pytest_asyncio.fixture
 async def test_mini_service(mini_service_crud, test_reservation_service):
-    """
-    Creates and returns a test mini service.
-    """
+    """Create and return a test mini service."""
     mini_service = await mini_service_crud.create(
         MiniServiceCreate(
-            name="Projector", reservation_service_id=test_reservation_service.id,
+            name="Projector",
+            reservation_service_id=test_reservation_service.id,
         ),
     )
     return mini_service
@@ -140,12 +121,11 @@ async def test_mini_service(mini_service_crud, test_reservation_service):
 
 @pytest_asyncio.fixture
 async def test_mini_service2(mini_service_crud, test_reservation_service):
-    """
-    Creates and returns a test mini service2.
-    """
+    """Create and return a test mini service2."""
     mini_service = await mini_service_crud.create(
         MiniServiceCreate(
-            name="Bar", reservation_service_id=test_reservation_service.id,
+            name="Bar",
+            reservation_service_id=test_reservation_service.id,
         ),
     )
     return mini_service
@@ -153,9 +133,7 @@ async def test_mini_service2(mini_service_crud, test_reservation_service):
 
 @pytest.fixture(scope="module")
 def calendar_rules() -> Rules:
-    """
-    Return rules schemas.
-    """
+    """Return rules schemas."""
     return Rules(
         night_time=True,
         reservation_without_permission=True,
@@ -168,11 +146,11 @@ def calendar_rules() -> Rules:
 
 @pytest_asyncio.fixture
 async def test_calendar_service(
-    calendar_crud, calendar_rules, test_reservation_service,
+    calendar_crud,
+    calendar_rules,
+    test_reservation_service,
 ):
-    """
-    Creates and returns a test calendar.
-    """
+    """Create and return a test calendar."""
     calendar = await calendar_crud.create(
         CalendarCreate(
             id="fixteure.calen.id@exgogl.eu",

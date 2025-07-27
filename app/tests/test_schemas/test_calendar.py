@@ -1,6 +1,4 @@
-"""
-Tests for Calendar Pydantic Schemas
-"""
+"""Tests for Calendar Pydantic Schemas."""
 
 from datetime import UTC, datetime
 from uuid import uuid4
@@ -20,9 +18,7 @@ from pydantic import ValidationError
 
 
 def test_calendar_create_valid(valid_rules):
-    """
-    Test creating a calendar with valid data.
-    """
+    """Test creating a calendar with valid data."""
     schema = CalendarCreate(
         reservation_service_id=uuid4(),
         reservation_type="Event",
@@ -45,9 +41,7 @@ def test_calendar_create_valid(valid_rules):
 
 
 def test_calendar_create_invalid_max_people(valid_rules):
-    """
-    Test that calendar creation fails when max_people is below 1.
-    """
+    """Test that calendar creation fails when max_people is below 1."""
     with pytest.raises(ValidationError):
         CalendarCreate(
             reservation_service_id=uuid4(),
@@ -61,9 +55,7 @@ def test_calendar_create_invalid_max_people(valid_rules):
 
 
 def test_calendar_update_partial():
-    """
-    Test updating calendar with partial fields.
-    """
+    """Test updating calendar with partial fields."""
     update = CalendarUpdate(
         reservation_type="Meeting",
         max_people=15,
@@ -77,9 +69,7 @@ def test_calendar_update_partial():
 
 
 def test_calendar_in_db_schema(valid_rules):
-    """
-    Test full calendar DB schema with all fields.
-    """
+    """Test full calendar DB schema with all fields."""
     now = datetime.now(UTC)
     schema = CalendarInDBBase(
         id="calendar123",
@@ -101,9 +91,7 @@ def test_calendar_in_db_schema(valid_rules):
 
 
 def test_calendar_schema_extends_base(valid_rules):
-    """
-    Test that Calendar schema extends base schema correctly.
-    """
+    """Test that Calendar schema extends base schema correctly."""
     calendar = Calendar(
         id="calendarABC",
         deleted_at=None,
@@ -124,9 +112,7 @@ def test_calendar_schema_extends_base(valid_rules):
     ["reservation_type", "max_people", "collision_with_itself", "club_member_rules"],
 )
 def test_calendar_create_required_fields(field, valid_rules):
-    """
-    Test that missing required fields raises a validation error.
-    """
+    """Test that missing required fields raises a validation error."""
     data = {
         "reservation_service_id": uuid4(),
         "reservation_type": "Talk",
@@ -142,9 +128,7 @@ def test_calendar_create_required_fields(field, valid_rules):
 
 
 def test_rules_field_validation():
-    """
-    Test invalid values for fields inside Rules.
-    """
+    """Test invalid values for fields inside Rules."""
     with pytest.raises(ValidationError):
         Rules(
             night_time=True,

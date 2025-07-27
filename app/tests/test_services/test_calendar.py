@@ -1,6 +1,4 @@
-"""
-Module for testing mini service ser.
-"""
+"""Module for testing mini service ser."""
 
 import pytest
 from api import BaseAppError, PermissionDeniedError
@@ -12,9 +10,7 @@ from core.schemas import CalendarUpdate
 
 @pytest.mark.asyncio
 async def test_create_calendar(calendar, calendar_create):
-    """
-    Test creating a calendar.
-    """
+    """Test creating a calendar."""
     assert calendar is not None
     assert calendar.reservation_type == calendar_create.reservation_type
     assert calendar.club_member_rules == calendar_create.club_member_rules
@@ -25,9 +21,7 @@ async def test_create_calendar(calendar, calendar_create):
 async def test_create_calendar_no_permission(
     service_calendar, calendar_create, user_not_head,
 ):
-    """
-    Test creating a mini service when the user doesn't have permission.
-    """
+    """Test creating a mini service when the user doesn't have permission."""
     with pytest.raises(PermissionDeniedError):
         await service_calendar.create_calendar(calendar_create, user_not_head)
 
@@ -36,9 +30,7 @@ async def test_create_calendar_no_permission(
 async def test_create_calendar_collision_not_found(
     service_calendar, calendar_create, user,
 ):
-    """
-    Test that creating a calendar with a non-existent collision calendar raises an error.
-    """
+    """Test that creating a calendar with a non-existent collision calendar raises an error."""
     calendar_create.collision_with_calendar = ["non-existent-calendar-id"]
     with pytest.raises(BaseAppError):
         await service_calendar.create_calendar(calendar_create, user)
@@ -48,9 +40,7 @@ async def test_create_calendar_collision_not_found(
 async def test_create_calendar_with_existing_reservation_type(
     service_calendar, calendar_create, user,
 ):
-    """
-    Test that creating a calendar with an already existing reservation type raises an error.
-    """
+    """Test that creating a calendar with an already existing reservation type raises an error."""
     await service_calendar.create_calendar(calendar_create, user)
     with pytest.raises(BaseAppError):
         await service_calendar.create_calendar(calendar_create, user)
@@ -58,9 +48,7 @@ async def test_create_calendar_with_existing_reservation_type(
 
 @pytest.mark.asyncio
 async def test_get_calendar(service_calendar, calendar):
-    """
-    Test getting a calendar.
-    """
+    """Test getting a calendar."""
     get_calendar = await service_calendar.get(calendar.id)
     assert get_calendar is not None
     assert get_calendar.reservation_type == calendar.reservation_type
@@ -70,9 +58,7 @@ async def test_get_calendar(service_calendar, calendar):
 
 @pytest.mark.asyncio
 async def test_get_calendar_by_reservation_type(service_calendar, calendar):
-    """
-    Test getting a calendar by reservation type.
-    """
+    """Test getting a calendar by reservation type."""
     get_calendar = await service_calendar.get_by_reservation_type(
         calendar.reservation_type,
     )
@@ -86,9 +72,7 @@ async def test_get_calendar_by_reservation_type(service_calendar, calendar):
 async def test_get_reservation_service_of_this_calendar(
     service_calendar, calendar, reservation_service,
 ):
-    """
-    Test getting a reservation service of this calendar.
-    """
+    """Test getting a reservation service of this calendar."""
     get_reservation_service = (
         await service_calendar.get_reservation_service_of_this_calendar(
             calendar.reservation_service_id,
@@ -102,9 +86,7 @@ async def test_get_reservation_service_of_this_calendar(
 
 @pytest.mark.asyncio
 async def test_get_calendars_by_reservation_service_id(service_calendar, calendar):
-    """
-    Test getting a calendar by reservation service id.
-    """
+    """Test getting a calendar by reservation service id."""
     get_calendars = await service_calendar.get_by_reservation_service_id(
         calendar.reservation_service_id,
     )
@@ -115,9 +97,7 @@ async def test_get_calendars_by_reservation_service_id(service_calendar, calenda
 
 @pytest.mark.asyncio
 async def test_update_mini_service(service_calendar, calendar, user):
-    """
-    Test updating an existing calendar.
-    """
+    """Test updating an existing calendar."""
     calendar_update = CalendarUpdate(
         reservation_type="Updated Galambula",
     )
@@ -135,9 +115,7 @@ async def test_update_mini_service(service_calendar, calendar, user):
 async def test_update_mini_service_no_permission(
     service_calendar, calendar, user_not_head,
 ):
-    """
-    Test updating a calendar when the user doesn't have permission.
-    """
+    """Test updating a calendar when the user doesn't have permission."""
     calendar_update = CalendarUpdate(
         reservation_type="Updated Galambula",
     )
@@ -150,9 +128,7 @@ async def test_update_mini_service_no_permission(
 
 @pytest.mark.asyncio
 async def test_soft_delete_calendar(service_calendar, calendar, user):
-    """
-    Test soft deleting a calendar.
-    """
+    """Test soft deleting a calendar."""
     soft_removed_service = await service_calendar.delete_calendar(
         calendar.id, user, hard_remove=False,
     )
@@ -163,9 +139,7 @@ async def test_soft_delete_calendar(service_calendar, calendar, user):
 
 @pytest.mark.asyncio
 async def test_hard_delete_calendar(service_calendar, calendar, user):
-    """
-    Test hard deleting a calendar.
-    """
+    """Test hard deleting a calendar."""
     hard_removed_service = await service_calendar.delete_calendar(
         calendar.id, user, hard_remove=True,
     )
@@ -176,9 +150,7 @@ async def test_hard_delete_calendar(service_calendar, calendar, user):
 
 @pytest.mark.asyncio
 async def test_delete_calendar_no_permission(service_calendar, calendar, user_not_head):
-    """
-    Test deleting a calendar when the user doesn't have permission.
-    """
+    """Test deleting a calendar when the user doesn't have permission."""
     with pytest.raises(PermissionDeniedError):
         await service_calendar.delete_calendar(
             calendar.id, user_not_head, hard_remove=False,
@@ -187,9 +159,7 @@ async def test_delete_calendar_no_permission(service_calendar, calendar, user_no
 
 @pytest.mark.asyncio
 async def test_delete_non_existent_calendar(service_calendar, user):
-    """
-    Test deleting a calendar that doesn't exist.
-    """
+    """Test deleting a calendar that doesn't exist."""
     delete_not_exist_calendar = await service_calendar.delete_calendar(
         "non-existent-id", user, hard_remove=False,
     )
@@ -198,9 +168,7 @@ async def test_delete_non_existent_calendar(service_calendar, user):
 
 @pytest.mark.asyncio
 async def test_retrieve_soft_removed_calendar(service_calendar, calendar, user):
-    """
-    Test restoring soft deleted calendar.
-    """
+    """Test restoring soft deleted calendar."""
     soft_removed_calendar = await service_calendar.delete_calendar(
         calendar.id, user, hard_remove=False,
     )
@@ -214,18 +182,14 @@ async def test_retrieve_soft_removed_calendar(service_calendar, calendar, user):
 
 @pytest.mark.asyncio
 async def test_retrieve_non_deleted_calendar(service_calendar, calendar, user):
-    """
-    Test retrieving a calendar that hasn't been softly deleted.
-    """
+    """Test retrieving a calendar that hasn't been softly deleted."""
     with pytest.raises(BaseAppError):
         await service_calendar.retrieve_removed_object(calendar.id, user)
 
 
 @pytest.mark.asyncio
 async def test_get_all_google_calendar_to_add(service_calendar, user):
-    """
-    Test getting all Google calendars that can be added by a user.
-    """
+    """Test getting all Google calendars that can be added by a user."""
     # Simulate the list of Google calendars
     google_calendars_data = [
         {"id": "1", "accessRole": "owner", "primary": False},

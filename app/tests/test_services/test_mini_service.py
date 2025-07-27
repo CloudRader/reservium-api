@@ -1,6 +1,4 @@
-"""
-Module for testing mini service ser.
-"""
+"""Module for testing mini service ser."""
 
 import pytest
 from api import PermissionDeniedError
@@ -12,9 +10,7 @@ from core.schemas import MiniServiceUpdate
 
 @pytest.mark.asyncio
 async def test_create_mini_service(mini_service, mini_service_create):
-    """
-    Test creating a mini service.
-    """
+    """Test creating a mini service."""
     assert mini_service is not None
     assert mini_service.name == mini_service_create.name
     assert (
@@ -27,9 +23,7 @@ async def test_create_mini_service(mini_service, mini_service_create):
 async def test_create_mini_service_no_permission(
     service_mini_service, mini_service_create, user_not_head,
 ):
-    """
-    Test creating a mini service when the user doesn't have permission.
-    """
+    """Test creating a mini service when the user doesn't have permission."""
     with pytest.raises(PermissionDeniedError):
         await service_mini_service.create_mini_service(
             mini_service_create, user_not_head,
@@ -38,9 +32,7 @@ async def test_create_mini_service_no_permission(
 
 @pytest.mark.asyncio
 async def test_get_mini_service(service_mini_service, mini_service):
-    """
-    Test getting a mini service.
-    """
+    """Test getting a mini service."""
     get_mini_service = await service_mini_service.get(mini_service.id)
     assert get_mini_service is not None
     assert get_mini_service.name == mini_service.name
@@ -51,9 +43,7 @@ async def test_get_mini_service(service_mini_service, mini_service):
 
 @pytest.mark.asyncio
 async def test_get_mini_service_by_name(mini_service, service_mini_service):
-    """
-    Test getting a mini service by name.
-    """
+    """Test getting a mini service by name."""
     get_mini_service = await service_mini_service.get_by_name(mini_service.name)
     assert get_mini_service is not None
     assert get_mini_service.name == mini_service.name
@@ -66,9 +56,7 @@ async def test_get_mini_service_by_name(mini_service, service_mini_service):
 async def test_get_mini_services_by_reservation_service_id(
     mini_service, service_mini_service,
 ):
-    """
-    Test getting a mini service by reservation service id.
-    """
+    """Test getting a mini service by reservation service id."""
     get_mini_services = await service_mini_service.get_by_reservation_service_id(
         mini_service.reservation_service_id,
     )
@@ -82,9 +70,7 @@ async def test_get_mini_services_by_reservation_service_id(
 
 @pytest.mark.asyncio
 async def test_update_mini_service(service_mini_service, mini_service, user):
-    """
-    Test updating an existing mini service.
-    """
+    """Test updating an existing mini service."""
     mini_service_update = MiniServiceUpdate(
         name="Console",
     )
@@ -102,9 +88,7 @@ async def test_update_mini_service(service_mini_service, mini_service, user):
 async def test_update_mini_service_no_permission(
     service_mini_service, mini_service, user_not_head,
 ):
-    """
-    Test updating a mini service when the user doesn't have permission.
-    """
+    """Test updating a mini service when the user doesn't have permission."""
     mini_service_update = MiniServiceUpdate(
         name="Updated Bar",
     )
@@ -117,9 +101,7 @@ async def test_update_mini_service_no_permission(
 
 @pytest.mark.asyncio
 async def test_soft_delete_mini_service(service_mini_service, mini_service, user):
-    """
-    Test soft deleting a mini service.
-    """
+    """Test soft deleting a mini service."""
     soft_removed_service = await service_mini_service.delete_mini_service(
         mini_service.id, user, hard_remove=False,
     )
@@ -130,9 +112,7 @@ async def test_soft_delete_mini_service(service_mini_service, mini_service, user
 
 @pytest.mark.asyncio
 async def test_hard_delete_mini_service(service_mini_service, mini_service, user):
-    """
-    Test hard deleting a mini service.
-    """
+    """Test hard deleting a mini service."""
     hard_removed_service = await service_mini_service.delete_mini_service(
         mini_service.id, user, hard_remove=True,
     )
@@ -145,9 +125,7 @@ async def test_hard_delete_mini_service(service_mini_service, mini_service, user
 async def test_delete_mini_service_no_permission(
     service_mini_service, mini_service, user_not_head,
 ):
-    """
-    Test deleting a mini service when the user doesn't have permission.
-    """
+    """Test deleting a mini service when the user doesn't have permission."""
     with pytest.raises(PermissionDeniedError):
         await service_mini_service.delete_mini_service(
             mini_service.id, user_not_head, hard_remove=False,
@@ -158,9 +136,7 @@ async def test_delete_mini_service_no_permission(
 async def test_retrieve_soft_removed_mini_service(
     service_mini_service, mini_service, user,
 ):
-    """
-    Test restoring soft deleted mini service.
-    """
+    """Test restoring soft deleted mini service."""
     soft_removed_mini_service = await service_mini_service.delete_mini_service(
         mini_service.id, user, hard_remove=False,
     )

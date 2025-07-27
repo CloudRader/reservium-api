@@ -1,6 +1,4 @@
-"""
-Module for testing email service.
-"""
+"""Module for testing email service."""
 
 import datetime as dt
 
@@ -15,38 +13,55 @@ from core.schemas import EventUpdate
 
 @pytest.mark.asyncio
 async def test_post_event_not_have_this_service(
-    event_create_form, services_data_from_is, user, calendar, service_event,
+    event_create_form,
+    services_data_from_is,
+    user,
+    calendar,
+    service_event,
 ):
     """
-    Test that posting an event fails if the user doesn't have
-    access to the required service.
+    Test that posting an event fails.
+
+    If the user doesn't have access to the required service.
     """
     result = await service_event.post_event(
-        event_create_form, services_data_from_is, user, calendar,
+        event_create_form,
+        services_data_from_is,
+        user,
+        calendar,
     )
     assert result["message"] == "You don't have game service!"
 
 
 @pytest.mark.asyncio
 async def test_post_event_with_not_exist_reservation_type(
-    event_create_form, services_data_from_is, user, service_event,
+    event_create_form,
+    services_data_from_is,
+    user,
+    service_event,
 ):
-    """
-    Test that posting an event fails if the calendar type does not exist.
-    """
+    """Test that posting an event fails if the calendar type does not exist."""
     result = await service_event.post_event(
-        event_create_form, services_data_from_is, user, None,
+        event_create_form,
+        services_data_from_is,
+        user,
+        None,
     )
     assert result["message"] == "Calendar with that type not exist!"
 
 
 @pytest.mark.asyncio
 async def test_post_event_not_create_more_people_than_can_be(
-    event_create_form, services_data_from_is, user, calendar, service_event,
+    event_create_form,
+    services_data_from_is,
+    user,
+    calendar,
+    service_event,
 ):
     """
-    Test that an event cannot be created with more guests
-    than allowed by the calendar configuration.
+    Test that an event cannot be created with more guests than allowed.
+
+    The number of guests must not exceed the limit set in the calendar configuration.
     """
     services_data_from_is[0].service.alias = "game"
     event_create_form.start_datetime = dt.datetime.now() + dt.timedelta(hours=48)
@@ -54,7 +69,10 @@ async def test_post_event_not_create_more_people_than_can_be(
     event_create_form.guests = 10
     calendar.more_than_max_people_with_permission = False
     result = await service_event.post_event(
-        event_create_form, services_data_from_is, user, calendar,
+        event_create_form,
+        services_data_from_is,
+        user,
+        calendar,
     )
     assert result["message"] == (
         "You can't reserve this type of " "reservation for more than 8 people!"
@@ -63,25 +81,28 @@ async def test_post_event_not_create_more_people_than_can_be(
 
 @pytest.mark.asyncio
 async def test_post_event(
-    event_create_form, services_data_from_is, user, calendar, service_event,
+    event_create_form,
+    services_data_from_is,
+    user,
+    calendar,
+    service_event,
 ):
-    """
-    Test that posting an event succeeds under valid conditions.
-    """
+    """Test that posting an event succeeds under valid conditions."""
     services_data_from_is[0].service.alias = "game"
     event_create_form.start_datetime = dt.datetime.now() + dt.timedelta(hours=48)
     event_create_form.end_datetime = dt.datetime.now() + dt.timedelta(hours=53)
     event_body = await service_event.post_event(
-        event_create_form, services_data_from_is, user, calendar,
+        event_create_form,
+        services_data_from_is,
+        user,
+        calendar,
     )
     assert not (len(event_body) == 1 and "message" in event_body)
 
 
 @pytest.mark.asyncio
 async def test_create_event(event, event_create_form):
-    """
-    Test creating an event.
-    """
+    """Test creating an event."""
     assert event is not None
     assert event.purpose == event_create_form.purpose
     assert event.guests == event_create_form.guests
@@ -90,9 +111,7 @@ async def test_create_event(event, event_create_form):
 
 @pytest.mark.asyncio
 async def test_get_event(service_event, event):
-    """
-    Test retrieving a created event.
-    """
+    """Test retrieving a created event."""
     fetched_event = await service_event.get(event.id)
 
     assert fetched_event is not None
@@ -101,9 +120,7 @@ async def test_get_event(service_event, event):
 
 @pytest.mark.asyncio
 async def test_cancel_event(service_event, event, user):
-    """
-    Test deleting an event.
-    """
+    """Test deleting an event."""
     event.start_datetime = dt.datetime.now() + dt.timedelta(hours=1)
     event.end_datetime = dt.datetime.now() + dt.timedelta(hours=4)
     cancel_event = await service_event.cancel_event(event.id, user)
@@ -114,18 +131,14 @@ async def test_cancel_event(service_event, event, user):
 
 @pytest.mark.asyncio
 async def test_cancel_event_with_exception(service_event, event, user):
-    """
-    Test canceling an event when raise exception.
-    """
+    """Test canceling an event when raise exception."""
     with pytest.raises(BaseAppError):
         await service_event.cancel_event(event.id, user)
 
 
 @pytest.mark.asyncio
 async def test_request_update_reservation_time(service_event, event, user):
-    """
-    Test requesting update reservation time an event.
-    """
+    """Test requesting update reservation time an event."""
     event.start_datetime = dt.datetime.now() + dt.timedelta(hours=1)
     event.end_datetime = dt.datetime.now() + dt.timedelta(hours=4)
     event_update = EventUpdate(
@@ -134,7 +147,9 @@ async def test_request_update_reservation_time(service_event, event, user):
     )
     request_update_reservation_time = (
         await service_event.request_update_reservation_time(
-            event.id, event_update, user,
+            event.id,
+            event_update,
+            user,
         )
     )
 
@@ -146,14 +161,14 @@ async def test_request_update_reservation_time(service_event, event, user):
 
 @pytest.mark.asyncio
 async def test_approve_update_reservation_time(service_event, event, user):
-    """
-    Test approving update reservation time an event.
-    """
+    """Test approving update reservation time an event."""
     event.event_state = EventState.UPDATE_REQUESTED
     event_update = EventUpdate(event_state=EventState.CONFIRMED)
     approve_update_reservation_time = (
         await service_event.approve_update_reservation_time(
-            event.id, event_update, user,
+            event.id,
+            event_update,
+            user,
         )
     )
 
@@ -163,9 +178,7 @@ async def test_approve_update_reservation_time(service_event, event, user):
 
 @pytest.mark.asyncio
 async def test_confirm_event(service_event, event, user):
-    """
-    Test confirming an event.
-    """
+    """Test confirming an event."""
     event.event_state = EventState.NOT_APPROVED
     confirm_event = await service_event.confirm_event(event.id, user)
 

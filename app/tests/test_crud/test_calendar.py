@@ -1,6 +1,4 @@
-"""
-Module for testing calendar service crud
-"""
+"""Module for testing calendar service crud."""
 
 import pytest
 from core.schemas import CalendarUpdate
@@ -11,9 +9,7 @@ from core.schemas import CalendarUpdate
 
 @pytest.mark.asyncio
 async def test_create_calendar(test_calendar_service):
-    """
-    Test creating a calendar.
-    """
+    """Test creating a calendar."""
     assert test_calendar_service.reservation_type == "Grillcentrum"
     assert test_calendar_service.id == "fixteure.calen.id@exgogl.eu"
     assert test_calendar_service.max_people == 15
@@ -26,9 +22,7 @@ async def test_create_calendar(test_calendar_service):
 
 @pytest.mark.asyncio
 async def test_get_calendar_by_id(test_calendar_service, calendar_crud):
-    """
-    Test retrieving calendar by ID.
-    """
+    """Test retrieving calendar by ID."""
     calendar = await calendar_crud.get(test_calendar_service.id)
     assert calendar is not None
     assert calendar.id == test_calendar_service.id
@@ -39,9 +33,7 @@ async def test_get_calendar_by_id(test_calendar_service, calendar_crud):
 
 @pytest.mark.asyncio
 async def test_get_calendar_by_reservation_type(test_calendar_service, calendar_crud):
-    """
-    Test retrieving calendar by reservation type.
-    """
+    """Test retrieving calendar by reservation type."""
     calendar = await calendar_crud.get_by_reservation_type(
         reservation_type=test_calendar_service.reservation_type,
     )
@@ -51,18 +43,14 @@ async def test_get_calendar_by_reservation_type(test_calendar_service, calendar_
 
 @pytest.mark.asyncio
 async def test_get_all_calendars(test_calendar_service, calendar_crud):
-    """
-    Test retrieving all calendars.
-    """
+    """Test retrieving all calendars."""
     calendars = await calendar_crud.get_all()
     assert any(cal.id == test_calendar_service.id for cal in calendars)
 
 
 @pytest.mark.asyncio
 async def test_get_by_reservation_service_id(calendar_crud, test_calendar_service):
-    """
-    Test retrieving calendars by reservation service ID.
-    """
+    """Test retrieving calendars by reservation service ID."""
     calendars = await calendar_crud.get_by_reservation_service_id(
         test_calendar_service.reservation_service_id,
     )
@@ -71,9 +59,7 @@ async def test_get_by_reservation_service_id(calendar_crud, test_calendar_servic
 
 @pytest.mark.asyncio
 async def test_update_calendar(calendar_crud, test_calendar_service):
-    """
-    Test updating a calendar.
-    """
+    """Test updating a calendar."""
     updated = await calendar_crud.update(
         db_obj=test_calendar_service, obj_in=CalendarUpdate(color="#ff0000"),
     )
@@ -82,18 +68,14 @@ async def test_update_calendar(calendar_crud, test_calendar_service):
 
 @pytest.mark.asyncio
 async def test_soft_remove_calendar(calendar_crud, test_calendar_service):
-    """
-    Test soft deleting calendar.
-    """
+    """Test soft deleting calendar."""
     soft_removed = await calendar_crud.soft_remove(test_calendar_service.id)
     assert soft_removed.deleted_at is not None
 
 
 @pytest.mark.asyncio
 async def test_retrieve_soft_removed_calendar(calendar_crud, test_calendar_service):
-    """
-    Test restoring soft deleted calendar.
-    """
+    """Test restoring soft deleted calendar."""
     await calendar_crud.soft_remove(test_calendar_service.id)
     restored = await calendar_crud.retrieve_removed_object(test_calendar_service.id)
     assert restored is not None
@@ -102,9 +84,7 @@ async def test_retrieve_soft_removed_calendar(calendar_crud, test_calendar_servi
 
 @pytest.mark.asyncio
 async def test_hard_remove_calendar(calendar_crud, test_calendar_service):
-    """
-    Test permanently deleting calendar.
-    """
+    """Test permanently deleting calendar."""
     removed = await calendar_crud.remove(test_calendar_service.id)
     assert removed is not None
 
@@ -114,9 +94,7 @@ async def test_hard_remove_calendar(calendar_crud, test_calendar_service):
 
 @pytest.mark.asyncio
 async def test_hard_remove_nonexistent_calendar(calendar_crud, test_calendar_service):
-    """
-    Test deleting a nonexistent calendar.
-    """
+    """Test deleting a nonexistent calendar."""
     removed = await calendar_crud.remove(test_calendar_service.id)
     assert removed is not None
 
@@ -126,9 +104,7 @@ async def test_hard_remove_nonexistent_calendar(calendar_crud, test_calendar_ser
 
 @pytest.mark.asyncio
 async def test_get_by_id_include_removed(calendar_crud, test_calendar_service):
-    """
-    Test retrieving a soft-deleted calendar by ID with include_removed=True.
-    """
+    """Test retrieving a soft-deleted calendar by ID with include_removed=True."""
     await calendar_crud.soft_remove(test_calendar_service.id)
     calendar = await calendar_crud.get(test_calendar_service.id, include_removed=True)
     assert calendar is not None
@@ -139,9 +115,7 @@ async def test_get_by_id_include_removed(calendar_crud, test_calendar_service):
 async def test_get_by_reservation_type_include_removed(
     calendar_crud, test_calendar_service,
 ):
-    """
-    Test retrieving a soft-deleted calendar by reservation type with include_removed=True.
-    """
+    """Test retrieving a soft-deleted calendar by reservation type with include_removed=True."""
     await calendar_crud.soft_remove(test_calendar_service.id)
     calendar = await calendar_crud.get_by_reservation_type(
         reservation_type=test_calendar_service.reservation_type, include_removed=True,

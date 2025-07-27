@@ -1,6 +1,4 @@
-"""
-Module for testing email service.
-"""
+"""Module for testing email service."""
 
 import pytest
 
@@ -10,9 +8,7 @@ import pytest
 
 @pytest.mark.asyncio
 def test_prepare_registration_form(registration_form_create, service_email):
-    """
-    Test creating a registration form for sending by email.
-    """
+    """Test creating a registration form for sending by email."""
     registration_form = service_email.prepare_registration_form(
         registration_form_create, "John Doll",
     )

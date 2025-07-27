@@ -1,6 +1,4 @@
-"""
-Module for testing reservation service crud
-"""
+"""Module for testing reservation service crud."""
 
 import pytest
 from core.schemas import ReservationServiceUpdate
@@ -11,9 +9,7 @@ from core.schemas import ReservationServiceUpdate
 
 @pytest.mark.asyncio
 async def test_create_reservation_service(test_reservation_service):
-    """
-    Test creating reservation service.
-    """
+    """Test creating reservation service."""
     assert test_reservation_service.name == "Study Room"
     assert test_reservation_service.alias == "study"
     assert test_reservation_service.public is True
@@ -23,9 +19,7 @@ async def test_create_reservation_service(test_reservation_service):
 async def test_get_reservation_service_by_id(
     test_reservation_service, reservation_service_crud,
 ):
-    """
-    Test getting reservation service by id.
-    """
+    """Test getting reservation service by id."""
     db_reservation_service = await reservation_service_crud.get(
         test_reservation_service.id,
     )
@@ -39,9 +33,7 @@ async def test_get_reservation_service_by_id(
 async def test_get_by_name_reservation_service(
     test_reservation_service, reservation_service_crud,
 ):
-    """
-    Test getting reservation service by name.
-    """
+    """Test getting reservation service by name."""
     service = await reservation_service_crud.get_by_name("Study Room")
     assert service is not None
     assert service.alias == test_reservation_service.alias
@@ -51,9 +43,7 @@ async def test_get_by_name_reservation_service(
 async def test_get_by_alias_reservation_service(
     test_reservation_service, reservation_service_crud,
 ):
-    """
-    Test getting reservation service by alias.
-    """
+    """Test getting reservation service by alias."""
     service = await reservation_service_crud.get_by_alias("study")
     assert service is not None
     assert service.name == test_reservation_service.name
@@ -63,9 +53,7 @@ async def test_get_by_alias_reservation_service(
 async def test_get_all_reservation_services(
     reservation_service_crud, test_reservation_service, test_reservation_service2,
 ):
-    """
-    Test retrieving all reservation services.
-    """
+    """Test retrieving all reservation services."""
     services = await reservation_service_crud.get_all()
     names = [service.name for service in services]
 
@@ -78,9 +66,7 @@ async def test_get_all_reservation_services(
 async def test_get_multi_reservation_services(
     reservation_service_crud, test_reservation_service, test_reservation_service2,
 ):
-    """
-    Test retrieving limited reservation services.
-    """
+    """Test retrieving limited reservation services."""
     services = await reservation_service_crud.get_multi(limit=1)
     names = [service.name for service in services]
     assert len(services) == 1
@@ -96,9 +82,7 @@ async def test_get_multi_reservation_services(
 async def test_get_all_aliases(
     reservation_service_crud, test_reservation_service, test_reservation_service2,
 ):
-    """
-    Test retrieving all aliases.
-    """
+    """Test retrieving all aliases."""
     aliases = await reservation_service_crud.get_all_aliases()
     assert test_reservation_service.alias in aliases
     assert test_reservation_service2.alias in aliases
@@ -108,9 +92,7 @@ async def test_get_all_aliases(
 async def test_get_public_services(
     reservation_service_crud, test_reservation_service, test_reservation_service2,
 ):
-    """
-    Test retrieving all public services.
-    """
+    """Test retrieving all public services."""
     public_services = await reservation_service_crud.get_public_services()
     public_names = [service.name for service in public_services]
 
@@ -124,9 +106,7 @@ async def test_get_public_services(
 async def test_update_reservation_service(
     test_reservation_service, reservation_service_crud,
 ):
-    """
-    Test updating reservation service.
-    """
+    """Test updating reservation service."""
     updated = await reservation_service_crud.update(
         db_obj=test_reservation_service,
         obj_in=ReservationServiceUpdate(name="Updated name", public=False),
@@ -139,9 +119,7 @@ async def test_update_reservation_service(
 async def test_soft_remove_reservation_service(
     test_reservation_service, reservation_service_crud,
 ):
-    """
-    Test soft deleting reservation service.
-    """
+    """Test soft deleting reservation service."""
     soft_removed = await reservation_service_crud.soft_remove(
         test_reservation_service.id,
     )
@@ -152,9 +130,7 @@ async def test_soft_remove_reservation_service(
 async def test_retrieve_soft_removed_reservation_service(
     test_reservation_service, reservation_service_crud,
 ):
-    """
-    Test restoring soft deleted reservation service.
-    """
+    """Test restoring soft deleted reservation service."""
     await reservation_service_crud.soft_remove(test_reservation_service.id)
     restored = await reservation_service_crud.retrieve_removed_object(
         test_reservation_service.id,
@@ -167,9 +143,7 @@ async def test_retrieve_soft_removed_reservation_service(
 async def test_hard_remove_reservation_service(
     test_reservation_service, reservation_service_crud,
 ):
-    """
-    Test hard deleting reservation service.
-    """
+    """Test hard deleting reservation service."""
     removed = await reservation_service_crud.remove(test_reservation_service.id)
     assert removed is not None
     assert removed.id == test_reservation_service.id
@@ -182,9 +156,7 @@ async def test_hard_remove_reservation_service(
 async def test_hard_remove_nonexistent_reservation_service(
     test_reservation_service, reservation_service_crud,
 ):
-    """
-    Test hard deleting nonexistent reservation service.
-    """
+    """Test hard deleting nonexistent reservation service."""
     removed = await reservation_service_crud.remove(test_reservation_service.id)
     assert removed is not None
 
@@ -199,9 +171,7 @@ async def test_hard_remove_nonexistent_reservation_service(
 async def test_get_by_name_include_removed(
     reservation_service_crud, test_reservation_service,
 ):
-    """
-    Test retrieving a soft-deleted reservation service by name with include_removed=True.
-    """
+    """Test retrieving a soft-deleted reservation service by name with include_removed=True."""
     await reservation_service_crud.soft_remove(test_reservation_service.id)
     service = await reservation_service_crud.get_by_name(
         name=test_reservation_service.name, include_removed=True,
@@ -215,9 +185,7 @@ async def test_get_by_name_include_removed(
 async def test_get_by_alias_include_removed(
     reservation_service_crud, test_reservation_service,
 ):
-    """
-    Test retrieving a soft-deleted reservation service by alias with include_removed=True.
-    """
+    """Test retrieving a soft-deleted reservation service by alias with include_removed=True."""
     await reservation_service_crud.soft_remove(test_reservation_service.id)
     service = await reservation_service_crud.get_by_alias(
         alias=test_reservation_service.alias, include_removed=True,
@@ -231,9 +199,7 @@ async def test_get_by_alias_include_removed(
 async def test_get_public_services_include_removed(
     reservation_service_crud, test_reservation_service,
 ):
-    """
-    Test retrieving public services including soft-deleted ones.
-    """
+    """Test retrieving public services including soft-deleted ones."""
     await reservation_service_crud.soft_remove(test_reservation_service.id)
     services = await reservation_service_crud.get_public_services(include_removed=True)
     assert any(service.id == test_reservation_service.id for service in services)
@@ -241,9 +207,7 @@ async def test_get_public_services_include_removed(
 
 @pytest.mark.asyncio
 async def test_get_all_aliases_empty(reservation_service_crud):
-    """
-    Test retrieving all aliases when no services exist.
-    """
+    """Test retrieving all aliases when no services exist."""
     aliases = await reservation_service_crud.get_all_aliases()
     assert isinstance(aliases, list)
     assert len(aliases) == 0

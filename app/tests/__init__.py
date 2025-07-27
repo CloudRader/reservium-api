@@ -1,6 +1,4 @@
-"""
-Package for Tests.
-"""
+"""Package for Tests."""
 
 from .utils import as_dict
 

@@ -1,6 +1,4 @@
-"""
-Tests for MiniService Pydantic Schemas
-"""
+"""Tests for MiniService Pydantic Schemas."""
 
 import pytest
 from core.models import EventState
@@ -17,9 +15,7 @@ from pydantic import ValidationError
 
 
 def test_event_create_valid():
-    """
-    Test creating an event with valid data.
-    """
+    """Test creating an event with valid data."""
     schema = EventCreateToDb(
         id="some_id_string",
         purpose="Birthday party",
@@ -39,17 +35,13 @@ def test_event_create_valid():
 
 
 def test_event_update_partial():
-    """
-    Test updating event with partial data.
-    """
+    """Test updating event with partial data."""
     update = EventUpdate(purpose="New Purpose")
     assert update.purpose == "New Purpose"
 
 
 def test_event_in_db_base_schema():
-    """
-    Test full event DB representation.
-    """
+    """Test full event DB representation."""
     schema = EventInDBBase(
         id="some_id_string",
         purpose="Birthday party",
@@ -71,9 +63,7 @@ def test_event_in_db_base_schema():
 
 
 def test_event_schema_extends_base():
-    """
-    Test that Event schema includes all base fields.
-    """
+    """Test that Event schema includes all base fields."""
     schema = Event(
         id="some_id_string",
         purpose="Birthday party",
@@ -105,9 +95,7 @@ def test_event_schema_extends_base():
     ],
 )
 def test_event_create_required_fields(field):
-    """
-    Test that omitting required fields raises validation error.
-    """
+    """Test that omitting required fields raises validation error."""
     data = {
         "id": "some_id_string",
         "purpose": "Birthday party",
