@@ -2,7 +2,7 @@
 User ORM model and its dependencies.
 """
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 from core.models.base_class import Base
 from core.models.soft_delete_mixin import SoftDeleteMixin
@@ -31,7 +31,7 @@ class User(Base, SoftDeleteMixin):
     section_head: Mapped[bool] = mapped_column(
         unique=False, nullable=False, default=False
     )
-    roles: Mapped[Optional[List[str]]] = mapped_column(
+    roles: Mapped[list[str] | None] = mapped_column(
         ARRAY(String), unique=False, nullable=True
     )
 

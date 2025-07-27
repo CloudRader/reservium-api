@@ -2,6 +2,7 @@
 Package for Services.
 """
 
+# ruff: noqa: I001
 from .service_base import CrudServiceBase
 from .event_services import EventService
 from .user_services import UserService

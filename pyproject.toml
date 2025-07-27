@@ -58,5 +58,5 @@ src = ["app"]
 
 
 [tool.ruff.lint]
-select = ["E", "N", "A", "W", "F", "I"]
-#select = ["E", "F", "W", "I", "C90", "N", "B", "UP"]
+select = ["E", "N", "A", "W", "F", "I", "B", "UP"]
+#select = ["C90", "B", "UP"]

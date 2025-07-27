@@ -3,7 +3,6 @@ DTO schemes for Email entity.
 """
 
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -11,10 +10,10 @@ from pydantic import BaseModel, EmailStr, Field
 class EmailCreate(BaseModel):
     """Schema for creating an email."""
 
-    email: List[EmailStr]
+    email: list[EmailStr]
     subject: str
     body: str
-    attachment: Optional[str] = None
+    attachment: str | None = None
 
 
 class EmailMeta(BaseModel):
@@ -35,5 +34,5 @@ class RegistrationFormCreate(BaseModel):
     email: EmailStr
     organizers: str
     space: str
-    other_space: List[str]
+    other_space: list[str]
     manager_contact_mail: EmailStr

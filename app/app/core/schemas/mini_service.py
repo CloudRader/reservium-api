@@ -1,7 +1,6 @@
 """DTO schemes for MiniService entity."""
 
 from datetime import datetime
-from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -10,7 +9,7 @@ from pydantic import BaseModel, Field
 class MiniServiceBase(BaseModel):
     """Shared properties of MiniService."""
 
-    lockers_id: List[int] = Field(default_factory=list)
+    lockers_id: list[int] = Field(default_factory=list)
     access_group: str | None = None
     room_id: int | None = None
 
@@ -32,7 +31,7 @@ class MiniServiceInDBBase(MiniServiceBase):
     """Base model for mini service in database."""
 
     id: UUID
-    deleted_at: Optional[datetime] = None
+    deleted_at: datetime | None = None
     name: str
     reservation_service_id: UUID
 

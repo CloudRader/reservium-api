@@ -1,7 +1,6 @@
 """DTO schemes for ReservationService entity."""
 
 from datetime import datetime
-from typing import List, Optional
 from uuid import UUID
 
 from core.schemas import Calendar, MiniService
@@ -14,7 +13,7 @@ class ReservationServiceBase(BaseModel):
     web: str | None = None
     contact_mail: str | None = None
     public: bool | None = None
-    lockers_id: List[int] = Field(default_factory=list)
+    lockers_id: list[int] = Field(default_factory=list)
     access_group: str | None = None
     room_id: int | None = None
 
@@ -37,7 +36,7 @@ class ReservationServiceInDBBase(ReservationServiceBase):
     """Base model for reservation service in database."""
 
     id: UUID
-    deleted_at: Optional[datetime] = None
+    deleted_at: datetime | None = None
     name: str
     alias: str
     calendars: list[Calendar] = Field(default_factory=list)

@@ -3,7 +3,6 @@ DTO schemes for User entity.
 """
 
 from datetime import datetime
-from typing import Optional
 
 from core.schemas.event import Event
 from pydantic import BaseModel, Field
@@ -40,7 +39,7 @@ class UserInDBBase(UserBase):
     """Base model for user in database."""
 
     id: int
-    deleted_at: Optional[datetime] = None
+    deleted_at: datetime | None = None
     username: str
     full_name: str
     room_number: str

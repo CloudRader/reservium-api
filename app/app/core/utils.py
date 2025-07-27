@@ -1,9 +1,8 @@
 """Utils for core module."""
 
-from typing import List
 
 
-def get_env_file_path(env_file_names: List[str]) -> List[str]:
+def get_env_file_path(env_file_names: list[str]) -> list[str]:
     """Get environment file paths from environment file names.
 
     :param env_file_names: List of environment file names.

@@ -3,7 +3,7 @@ Calendar ORM model and its dependencies.
 """
 
 import json
-from typing import TYPE_CHECKING, Any, Type
+from typing import TYPE_CHECKING, Any
 
 from core.models.base_class import Base
 from core.models.soft_delete_mixin import SoftDeleteMixin
@@ -29,7 +29,7 @@ class RulesType(TypeDecorator):
     impl = TEXT
 
     @property
-    def python_type(self) -> Type[Any]:
+    def python_type(self) -> type[Any]:
         return Rules
 
     def load_dialect_impl(self, dialect):

@@ -2,7 +2,7 @@
 API controllers for users.
 """
 
-from typing import Annotated, Any, List
+from typing import Annotated, Any
 
 from api import (
     fastapi_docs,
@@ -32,7 +32,7 @@ async def get_user(current_user: Annotated[User, Depends(get_current_user)]) -> 
 
 @router.get(
     "/",
-    response_model=List[User],
+    response_model=list[User],
     # responses=ERROR_RESPONSES["404"],
     status_code=status.HTTP_200_OK,
 )

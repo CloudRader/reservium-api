@@ -2,7 +2,7 @@
 API controllers for mini services.
 """
 
-from typing import Annotated, Any, List
+from typing import Annotated, Any
 from uuid import UUID
 
 from api import (
@@ -48,14 +48,14 @@ async def create_mini_service(
 
 @router.post(
     "/create_mini_services",
-    response_model=List[MiniService],
+    response_model=list[MiniService],
     responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_201_CREATED,
 )
 async def create_mini_services(
     service: Annotated[MiniServiceService, Depends(MiniServiceService)],
     user: Annotated[User, Depends(get_current_user)],
-    mini_services_create: List[MiniServiceCreate],
+    mini_services_create: list[MiniServiceCreate],
 ) -> Any:
     """
     Create mini services, only users with special roles can create mini service.
@@ -66,7 +66,7 @@ async def create_mini_services(
 
     :returns MiniServiceModel: the created mini service.
     """
-    mini_service_result: List[MiniService] = []
+    mini_service_result: list[MiniService] = []
     for mini_service_create in mini_services_create:
         mini_service_result.append(
             await create_mini_service(service, user, mini_service_create)
@@ -104,7 +104,7 @@ async def get_mini_service(
 
 @router.get(
     "/",
-    response_model=List[MiniService],
+    response_model=list[MiniService],
     responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )
@@ -242,7 +242,7 @@ async def get_mini_services_by_name(
 
 @router.get(
     "/reservation_service/{reservation_service_id}",
-    response_model=List[MiniService],
+    response_model=list[MiniService],
     responses=ERROR_RESPONSES["404"],
     status_code=status.HTTP_200_OK,
 )

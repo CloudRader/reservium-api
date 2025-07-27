@@ -2,7 +2,7 @@
 API controllers for reservation services.
 """
 
-from typing import Annotated, Any, List
+from typing import Annotated, Any
 from uuid import UUID
 
 from api import (
@@ -64,7 +64,7 @@ async def create_reservation_service(
 
 @router.post(
     "/create_reservation_services",
-    response_model=List[ReservationService],
+    response_model=list[ReservationService],
     responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_201_CREATED,
 )
@@ -73,7 +73,7 @@ async def create_reservation_services(
     user_service: Annotated[UserService, Depends(UserService)],
     user: Annotated[User, Depends(get_current_user)],
     token: Annotated[Any, Depends(get_current_token)],
-    reservation_services_create: List[ReservationServiceCreate],
+    reservation_services_create: list[ReservationServiceCreate],
 ) -> Any:
     """
     Create reservation services, only user with head of the
@@ -87,7 +87,7 @@ async def create_reservation_services(
 
     :returns ReservationServicesModel: the created reservation service.
     """
-    reservation_services_result: List[ReservationService] = []
+    reservation_services_result: list[ReservationService] = []
     for reservation in reservation_services_create:
         reservation_services_result.append(
             await create_reservation_service(
@@ -128,7 +128,7 @@ async def get_reservation_service(
 
 @router.get(
     "/",
-    response_model=List[ReservationService],
+    response_model=list[ReservationService],
     responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )
@@ -160,7 +160,7 @@ async def get_reservation_services(
 
 @router.get(
     "/services/public",
-    response_model=List[ReservationService],
+    response_model=list[ReservationService],
     responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )

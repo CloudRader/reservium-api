@@ -3,10 +3,10 @@ Entry point for running the FastAPI application using Uvicorn or Gunicorn.
 """
 
 import uvicorn
-from fastapi import FastAPI
 from core import settings
-from core.gunicorn.application import Application
 from core.gunicorn.app_options import get_app_options
+from core.gunicorn.application import Application
+from fastapi import FastAPI
 
 # import os
 #

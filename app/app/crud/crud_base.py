@@ -4,8 +4,8 @@ for handling common database operations with SQLAlchemy and FastAPI.
 """
 
 from abc import ABC, abstractmethod
-from datetime import datetime, timezone
-from typing import Any, Generic, Type, TypeVar
+from datetime import UTC, datetime
+from typing import Any, TypeVar
 from uuid import UUID
 
 from core.models.base_class import Base
@@ -18,7 +18,7 @@ CreateSchema = TypeVar("CreateSchema", bound=BaseModel)
 UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
 
 
-class AbstractCRUDBase(Generic[Model, CreateSchema, UpdateSchema], ABC):
+class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
     """
     An abstract base class that provides generic CRUD operations.
     """
@@ -108,8 +108,8 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
     common database operations with SQLAlchemy and FastAPI.
     """
 
-    def __init__(self, model: Type[Model], db: AsyncSession):
-        self.model: Type[Model] = model
+    def __init__(self, model: type[Model], db: AsyncSession):
+        self.model: type[Model] = model
         self.db: AsyncSession = db
 
     async def get(
@@ -209,7 +209,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         obj = await self.check_uuid_and_return_obj_from_db_by_uuid(uuid)
         if obj is None or obj.deleted_at is not None:
             return None
-        obj.deleted_at = datetime.now(timezone.utc)
+        obj.deleted_at = datetime.now(UTC)
         self.db.add(obj)
         await self.db.commit()
         stmt = (

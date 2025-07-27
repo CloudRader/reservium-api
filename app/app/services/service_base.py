@@ -4,7 +4,7 @@ for services that implement CRUD operations on objects
 """
 
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import TypeVar
 from uuid import UUID
 
 from core.models.base_class import Base
@@ -18,7 +18,9 @@ CreateSchema = TypeVar("CreateSchema", bound=BaseModel)
 UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
 
 
-class AbstractCRUDService(ABC, Generic[Model, Crud, CreateSchema, UpdateSchema]):
+class AbstractCRUDService[
+    Model: Base, Crud: CRUDBase, CreateSchema: BaseModel, UpdateSchema: BaseModel
+](ABC):
     """
     Abstract base class for a CRUD service.
 

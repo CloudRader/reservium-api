@@ -3,7 +3,7 @@ Module which includes classes and methods responsible for connection to database
 """
 
 from asyncio import current_task
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from core import settings
 from sqlalchemy.ext.asyncio import (

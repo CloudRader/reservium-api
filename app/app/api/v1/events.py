@@ -2,7 +2,7 @@
 API controllers for events.
 """
 
-from typing import Annotated, Any, List
+from typing import Annotated, Any
 
 from api import (
     ERROR_RESPONSES,
@@ -155,7 +155,7 @@ async def create_event(
 
 @router.get(
     "/user/{user_id}",
-    response_model=List[EventWithExtraDetails],
+    response_model=list[EventWithExtraDetails],
     responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )
@@ -180,7 +180,7 @@ async def get_events_by_user_id(
 
 @router.get(
     "/state/reservation_service/{reservation_service_alias}",
-    response_model=List[EventWithExtraDetails],
+    response_model=list[EventWithExtraDetails],
     responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )

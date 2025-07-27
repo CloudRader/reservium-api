@@ -2,7 +2,6 @@
 DTO schemes for Data from IS.
 """
 
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -10,8 +9,8 @@ from pydantic import BaseModel, Field
 class Organization(BaseModel):
     """Represents an organization."""
 
-    name: Optional[str]
-    note: Optional[str]
+    name: str | None
+    note: str | None
 
 
 class UserIS(BaseModel):
@@ -22,16 +21,16 @@ class UserIS(BaseModel):
     email: str
     first_name: str
     id: int
-    im: Optional[str]
-    note: Optional[str]
-    organization: Optional[Organization]
-    phone: Optional[str]
-    phone_vpn: Optional[str]
-    photo_file: Optional[str]
-    photo_file_small: Optional[str]
+    im: str | None
+    note: str | None
+    organization: Organization | None
+    phone: str | None
+    phone_vpn: str | None
+    photo_file: str | None
+    photo_file_small: str | None
     state: str
     surname: str
-    ui_language: Optional[str]
+    ui_language: str | None
     ui_skin: str
     username: str
     usertype: str
@@ -42,7 +41,7 @@ class Service(BaseModel):
 
     alias: str
     name: str
-    note: Optional[str]
+    note: str | None
     servicetype: str
     web: str
 
@@ -50,9 +49,9 @@ class Service(BaseModel):
 class ServiceValidity(BaseModel):
     """Represents a service validity."""
 
-    from_: Optional[str] = Field(None, alias="from")
-    to: Optional[str]
-    note: Optional[str]
+    from_: str | None = Field(None, alias="from")
+    to: str | None
+    note: str | None
     service: Service
     usetype: str
 
@@ -68,8 +67,8 @@ class LimitObject(BaseModel):
 
     id: int
     name: str
-    alias: Optional[str] = None
-    note: Optional[str] = None
+    alias: str | None = None
+    note: str | None = None
     # description: Optional[str]
 
 
@@ -92,7 +91,7 @@ class RoleList(BaseModel):
 class Zone(BaseModel):
     """Represents a zone."""
 
-    alias: Optional[str]
+    alias: str | None
     id: int
     name: str
     note: str
@@ -104,7 +103,7 @@ class Room(BaseModel):
     door_number: str
     floor: int
     id: int
-    name: Optional[str]
+    name: str | None
     zone: Zone
 
 

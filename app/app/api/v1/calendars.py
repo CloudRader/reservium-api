@@ -2,7 +2,7 @@
 API controllers for calendars.
 """
 
-from typing import Annotated, Any, List
+from typing import Annotated, Any
 
 from api import (
     ERROR_RESPONSES,
@@ -61,7 +61,7 @@ async def create_calendar(
 
 @router.post(
     "/create_calendars",
-    response_model=List[Calendar],
+    response_model=list[Calendar],
     responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_201_CREATED,
 )
@@ -71,7 +71,7 @@ async def create_calendars(
         GoogleCalendarService, Depends(GoogleCalendarService)
     ],
     user: Annotated[User, Depends(get_current_user)],
-    calendars_create: List[CalendarCreate],
+    calendars_create: list[CalendarCreate],
 ) -> Any:
     """
     Create calendars, only users with special roles can create calendar.
@@ -83,7 +83,7 @@ async def create_calendars(
 
     :returns CalendarModel: the created calendar.
     """
-    calendars_result: List[Calendar] = []
+    calendars_result: list[Calendar] = []
     for calendar in calendars_create:
         calendars_result.append(
             await create_calendar(service, google_calendar_service, user, calendar)
@@ -121,7 +121,7 @@ async def get_calendar(
 
 @router.get(
     "/",
-    response_model=List[Calendar],
+    response_model=list[Calendar],
     responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )
@@ -284,7 +284,7 @@ async def get_mini_services_by_calendar(
 
 @router.get(
     "/reservation_service/{reservation_service_id}",
-    response_model=List[Calendar],
+    response_model=list[Calendar],
     responses=ERROR_RESPONSES["400"],
     status_code=status.HTTP_200_OK,
 )

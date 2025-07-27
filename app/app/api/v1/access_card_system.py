@@ -2,7 +2,7 @@
 API controllers for authorisation in access card system.
 """
 
-from typing import Annotated, Any, Dict
+from typing import Annotated, Any
 
 import requests
 from api import ERROR_RESPONSES
@@ -20,7 +20,7 @@ from services import AccessCardSystemService, EventService
 router = APIRouter(tags=[fastapi_docs.ACCESS_CARD_SYSTEM_TAG["name"]])
 
 
-def send_request(data: Dict[str, Any]) -> Dict[str, Any]:
+def send_request(data: dict[str, Any]) -> dict[str, Any]:
     """
     Send a JSON-formatted POST request to the dormitory access control API.
 

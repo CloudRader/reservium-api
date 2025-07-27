@@ -3,7 +3,7 @@ DTO schemes for Event entity.
 """
 
 from datetime import datetime
-from typing import Any, List
+from typing import Any
 
 from core.models.event import EventState
 from pydantic import BaseModel, EmailStr, Field, field_validator
@@ -52,7 +52,7 @@ class NaiveDatetimeValidatorMixin:
 class EventBase(BaseModel):
     """Shared properties of Event."""
 
-    additional_services: List[str] = Field(default_factory=list)
+    additional_services: list[str] = Field(default_factory=list)
 
 
 class EventCreate(NaiveDatetimeValidatorMixin, BaseModel):
@@ -64,7 +64,7 @@ class EventCreate(NaiveDatetimeValidatorMixin, BaseModel):
     guests: int = Field(ge=1)
     reservation_type: str
     email: EmailStr
-    additional_services: List[str] = Field(default_factory=list)
+    additional_services: list[str] = Field(default_factory=list)
 
 
 class EventCreateToDb(EventBase):
