@@ -1,6 +1,4 @@
-"""
-Package for Services.
-"""
+"""Package for Services."""
 
 # ruff: noqa: I001
 from .service_base import CrudServiceBase

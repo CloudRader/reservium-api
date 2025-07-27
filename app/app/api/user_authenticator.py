@@ -1,6 +1,4 @@
-"""
-Module for authenticator functions.
-"""
+"""Module for authenticator functions."""
 
 from typing import Annotated, Any
 
@@ -14,8 +12,9 @@ from services import UserService
 
 def get_oauth_session():
     """
-    Create and return an OAuth2 session using the client ID and
-    redirect URI from the application settings.
+    Create and return an OAuth2 session using the client ID.
+
+    Redirect URI from the application settings.
 
     This function initializes an OAuth2 session that can be used to
     handle the OAuth2 authentication flow, including obtaining
@@ -24,7 +23,8 @@ def get_oauth_session():
     :return: OAuth2Session.
     """
     return OAuth2Session(
-        client_id=settings.IS.CLIENT_ID, redirect_uri=settings.IS.REDIRECT_URI,
+        client_id=settings.IS.CLIENT_ID,
+        redirect_uri=settings.IS.REDIRECT_URI,
     )
 
 
@@ -41,7 +41,8 @@ async def get_request(token: str, request: str):
 
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            info_endpoint, headers={"Authorization": f"Bearer {token}"},
+            info_endpoint,
+            headers={"Authorization": f"Bearer {token}"},
         )
 
         if response.status_code == 401:
@@ -59,7 +60,8 @@ async def get_request(token: str, request: str):
 
 
 async def authenticate_user(
-    user_service: Annotated[UserService, Depends(UserService)], token: str,
+    user_service: Annotated[UserService, Depends(UserService)],
+    token: str,
 ):
     """
     Authenticate a user using their tokens from IS.
@@ -97,7 +99,8 @@ async def get_current_token(request: Request) -> Any:
 
 
 async def get_current_user(
-    user_service: Annotated[UserService, Depends(UserService)], request: Request,
+    user_service: Annotated[UserService, Depends(UserService)],
+    request: Request,
 ) -> Any:
     """
     Retrieve the current user based on a JWT token.

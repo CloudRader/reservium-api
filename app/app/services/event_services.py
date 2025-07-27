@@ -1,5 +1,7 @@
 """
-This module defines an abstract base class AbstractEventService that work with Event.
+Define an abstract base class AbstractEventService.
+
+This class works with Event.
 """
 
 import datetime as dt
@@ -48,9 +50,7 @@ class AbstractEventService(
     ],
     ABC,
 ):
-    """
-    This abstract class defines the interface for an event service.
-    """
+    """Abstract class defines the interface for an event service."""
 
     @abstractmethod
     async def post_event(
@@ -61,7 +61,8 @@ class AbstractEventService(
         calendar: Calendar,
     ) -> Any:
         """
-        Preparing for posting event in google calendar.
+        Prepare for posting event in google calendar.
+
         :param event_input: Input data for creating the event.
         :param services: User services from IS.
         :param user: User object in db.
@@ -95,7 +96,7 @@ class AbstractEventService(
         user_id: int,
     ) -> list[EventWithExtraDetails] | None:
         """
-        Retrieves the Events instance by user id.
+        Retrieve the Events instance by user id.
 
         :param user_id: user id of the events.
 
@@ -110,7 +111,7 @@ class AbstractEventService(
         event_state: EventState,
     ) -> list[EventWithExtraDetails]:
         """
-        Retrieves the Events instance by reservation service alias.
+        Retrieve the Events instance by reservation service alias.
 
         :param reservation_service_alias: reservation service alias of the events.
         :param event_state: event state of the event.
@@ -161,8 +162,9 @@ class AbstractEventService(
     @abstractmethod
     async def get_current_event_for_user(self, user_id: int) -> EventModel | None:
         """
-        Retrieves the current event for the given user where the current
-        time is between start_datetime and end_datetime.
+        Retrieve the current event for the given user.
+
+        Current time is between start_datetime and end_datetime.
 
         :param user_id: ID of the user.
 
@@ -229,9 +231,7 @@ class AbstractEventService(
 
 
 class EventService(AbstractEventService):
-    """
-    Class EventService represent service that work with Event
-    """
+    """Class EventService represent service that work with Event."""
 
     def __init__(
         self,

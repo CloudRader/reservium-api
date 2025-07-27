@@ -1,6 +1,4 @@
-"""
-API controllers for users.
-"""
+"""API controllers for users."""
 
 from typing import Annotated, Any
 

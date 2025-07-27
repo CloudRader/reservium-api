@@ -1,6 +1,4 @@
-"""
-App factory module for the FastAPI application.
-"""
+"""App factory module for the FastAPI application."""
 
 import logging
 from contextlib import asynccontextmanager
@@ -26,7 +24,6 @@ async def startup_event(fast_api_app: FastAPI):
 
     :param fast_api_app: The FastAPI application instance.
     """
-
     logger.info("Starting %s.", settings.APP_NAME)
     yield
     logger.info("Shutting down %s.", settings.APP_NAME)
@@ -34,7 +31,7 @@ async def startup_event(fast_api_app: FastAPI):
 
 def create_app():  # -> FastAPI:
     """
-    Factory function to create and configure the FastAPI app.
+    Create and configure the FastAPI app.
 
     This sets up:
     - Application metadata

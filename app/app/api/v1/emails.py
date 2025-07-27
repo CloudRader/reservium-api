@@ -1,6 +1,4 @@
-"""
-API controllers for emails.
-"""
+"""API controllers for emails."""
 
 import os
 from pathlib import Path
@@ -31,7 +29,7 @@ env = Environment(loader=FileSystemLoader(template_dir), autoescape=select_autoe
 
 def render_email_template(template_name: str, context: dict) -> str:
     """
-    Renders an email template using Jinja2 with the given context.
+    Render an email template using Jinja2 with the given context.
 
     :param template_name: Name of the template file.
     :param context: Dictionary of variables to render into the template.
@@ -51,8 +49,7 @@ async def send_registration_form(
     registration_form: RegistrationFormCreate,
 ) -> Any:
     """
-    Sends email with pdf attachment with reservation request to
-    dorm head's email address.
+    Send email with PDF attachment with reservation request to dorm head's email address.
 
     :param service: Email service.
     :param token: Token for user identification.
@@ -74,7 +71,7 @@ async def send_registration_form(
 
 async def send_email(email_create: EmailCreate) -> Any:
     """
-    Sends an email asynchronously.
+    Send an email asynchronously.
 
     This endpoint sends an email using the provided email details. The email is
     sent in the background to avoid blocking the request-response cycle.
@@ -107,7 +104,7 @@ async def preparing_email(
     email_meta: EmailMeta,
 ) -> Any:
     """
-    Prepares and sends both member and manager information email based on an event.
+    Prepare and send both member and manager information emails based on an event.
 
     :param service_event: Event service to resolve event relationships.
     :param event: The Event object in db.
@@ -121,7 +118,11 @@ async def preparing_email(
     user = await service_event.get_user_of_this_event(event)
 
     context = construct_body_context(
-        event, user, reservation_service, calendar, email_meta.reason,
+        event,
+        user,
+        reservation_service,
+        calendar,
+        email_meta.reason,
     )
 
     # Mail for club members
@@ -135,7 +136,9 @@ async def preparing_email(
     body = render_email_template(template_for_manager, context)
     email_subject = f"[Reservation Alert] {email_meta.subject}"
     email_create = construct_email(
-        reservation_service.contact_mail, email_subject, body,
+        reservation_service.contact_mail,
+        email_subject,
+        body,
     )
     await send_email(email_create)
 
@@ -148,7 +151,7 @@ def construct_email(
     body: str,
 ) -> EmailCreate:
     """
-    Constructing the schema of the email .
+    Construct the schema of the email.
 
     :param send_to_email: Recipient email address.
     :param subject: Email subject.
@@ -156,7 +159,6 @@ def construct_email(
 
     :return: Constructed EmailCreate schema.
     """
-
     return EmailCreate(
         email=[send_to_email],
         subject=subject,
@@ -172,7 +174,7 @@ def construct_body_context(
     reason: str,
 ) -> dict:
     """
-    Constructs a dictionary of context variables to render an email template.
+    Construct a dictionary of context variables to render an email template.
 
     :param event: Event object in db.
     :param user: User object in db.
@@ -206,7 +208,7 @@ def construct_body_context(
 
 def create_email_meta(template_name: str, subject: str, reason: str = "") -> EmailMeta:
     """
-    Constructs an EmailMeta object from parameters.
+    Construct an EmailMeta object from parameters.
 
     :param template_name: Name of the email template.
     :param subject: Email subject.

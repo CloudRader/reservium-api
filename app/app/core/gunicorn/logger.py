@@ -1,6 +1,4 @@
-"""
-Custom Gunicorn logger setup module.
-"""
+"""Custom Gunicorn logger setup module."""
 
 from logging import Formatter
 
@@ -9,15 +7,10 @@ from gunicorn.glogging import Logger
 
 
 class GunicornLogger(Logger):
-    """
-    Custom Gunicorn logger that applies application-specific log formatting.
-    """
+    """Custom Gunicorn logger that applies application-specific log formatting."""
 
     def setup(self, cfg) -> None:
-        """
-        Configure access and error log handlers with custom formatting.
-        """
-
+        """Configure access and error log handlers with custom formatting."""
         super().setup(cfg)
 
         self._set_handler(

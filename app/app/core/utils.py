@@ -3,7 +3,8 @@
 
 
 def get_env_file_path(env_file_names: list[str]) -> list[str]:
-    """Get environment file paths from environment file names.
+    """
+    Get environment file paths from environment file names.
 
     :param env_file_names: List of environment file names.
 

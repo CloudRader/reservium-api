@@ -1,6 +1,4 @@
-"""
-API controllers for mini services.
-"""
+"""API controllers for mini services."""
 
 from typing import Annotated, Any
 from uuid import UUID
@@ -139,8 +137,9 @@ async def update_mini_service(
     mini_service_update: Annotated[MiniServiceUpdate, Body()],
 ) -> Any:
     """
-    Update mini service with uuid equal to mini_service_uuid,
-    only users with special roles can update mini service.
+    Update mini service with uuid equal to 'mini_service_id'.
+
+    Only users with special roles can update mini service.
 
     :param service: Mini Service ser.
     :param user: User who make this request.
@@ -150,7 +149,9 @@ async def update_mini_service(
     :returns MiniServiceModel: the updated mini service.
     """
     mini_service = await service.update_mini_service(
-        mini_service_id, mini_service_update, user,
+        mini_service_id,
+        mini_service_update,
+        user,
     )
     if not mini_service:
         raise EntityNotFoundError(Entity.MINI_SERVICE, mini_service_id)
@@ -169,8 +170,9 @@ async def retrieve_deleted_reservation_service(
     mini_service_id: Annotated[UUID, Path()],
 ) -> Any:
     """
-    Retrieve deleted mini service with uuid equal to mini_service_id,
-    only users with special roles can update mini service.
+    Retrieve deleted mini service with uuid equal to 'mini_service_id'.
+
+    Only users with special roles can update mini service.
 
     :param service: Mini Service ser.
     :param user: User who make this request.
@@ -197,8 +199,9 @@ async def delete_mini_service(
     hard_remove: bool = Query(False),
 ) -> Any:
     """
-    Delete mini service with mini_service_id equal to uuid,
-    only users with special roles can delete mini service.
+    Delete mini service with mini_service_id equal to 'id'.
+
+    Only users with special roles can delete mini service.
 
     :param service: Mini Service ser.
     :param user: User who make this request.
@@ -262,7 +265,8 @@ async def get_mini_services_by_reservation_service_id(
     to reservation service id or None if no such mini services exists.
     """
     mini_services = await service.get_by_reservation_service_id(
-        reservation_service_id, include_removed,
+        reservation_service_id,
+        include_removed,
     )
     if mini_services is None:
         raise BaseAppError()

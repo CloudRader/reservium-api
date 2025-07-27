@@ -1,6 +1,4 @@
-"""
-Package for API modules.
-"""
+"""Package for API modules."""
 
 from .docs import fastapi_docs
 from .exceptions import (

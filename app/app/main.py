@@ -1,5 +1,6 @@
 """
 Module to run FastAPI application, where API routers are connecting application to API modules.
+
 In other words it is an entry point of the application.
 """
 

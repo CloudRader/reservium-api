@@ -1,7 +1,4 @@
-"""
-DTO schemes for Data from IS.
-"""
-
+"""DTO schemes for Data from IS."""
 
 from pydantic import BaseModel, Field
 

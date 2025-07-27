@@ -1,6 +1,4 @@
-"""
-Package for App Exceptions.
-"""
+"""Package for App Exceptions."""
 
 from enum import Enum
 from typing import Any
@@ -31,7 +29,8 @@ class Entity(Enum):
 # pylint: disable=unused-argument
 # reason: Exception handlers require request and exception parameter.
 def get_exception_response_detail(status_code: int, desc: str) -> dict:
-    """Get exception response detail for openAPI documentation.
+    """
+    Get exception response detail for openAPI documentation.
 
     :param status_code: Status code of the exception.
     :param desc: Description of the exception.
@@ -48,7 +47,10 @@ class BaseAppError(Exception):
     DESCRIPTION: str = "An error occurred."
 
     def __init__(
-        self, message: str | None = None, status_code: int | None = None, **kwargs: Any,
+        self,
+        message: str | None = None,
+        status_code: int | None = None,
+        **kwargs: Any,
     ):
         self.message = message or self.DESCRIPTION
         self.status_code = status_code or self.STATUS_CODE
@@ -68,16 +70,12 @@ class BaseAppError(Exception):
 
 
 def app_exception_handler(request: Request, exc: BaseAppError) -> JSONResponse:
-    """
-    Generic handler for BaseAppError.
-    """
+    """Handle BaseAppError exceptions."""
     return exc.to_response()
 
 
 class EntityNotFoundError(BaseAppError):
-    """
-    Exception for when entity is not found in database.
-    """
+    """Exception for when entity is not found in database."""
 
     STATUS_CODE = status.HTTP_404_NOT_FOUND
     DESCRIPTION = "Entity not found."
@@ -102,37 +100,35 @@ class EntityNotFoundError(BaseAppError):
 
 
 class PermissionDeniedError(BaseAppError):
-    """
-    Exception raised when a user does not have the required permissions.
-    """
+    """Exception raised when a user does not have the required permissions."""
 
     STATUS_CODE = status.HTTP_403_FORBIDDEN
     DESCRIPTION = "User does not have the required permissions."
 
     def __init__(self, message: str | None = None, **kwargs):
         super().__init__(
-            message=message or self.DESCRIPTION, status_code=self.STATUS_CODE, **kwargs,
+            message=message or self.DESCRIPTION,
+            status_code=self.STATUS_CODE,
+            **kwargs,
         )
 
 
 class UnauthorizedError(BaseAppError):
-    """
-    Exception raised when a user does not have the required permissions.
-    """
+    """Exception raised when a user does not have the required permissions."""
 
     STATUS_CODE = status.HTTP_401_UNAUTHORIZED
     DESCRIPTION = "There's some kind of authorization problem."
 
     def __init__(self, message: str | None = None, **kwargs):
         super().__init__(
-            message=message or self.DESCRIPTION, status_code=self.STATUS_CODE, **kwargs,
+            message=message or self.DESCRIPTION,
+            status_code=self.STATUS_CODE,
+            **kwargs,
         )
 
 
 class MethodNotAllowedError(BaseAppError):
-    """
-    Exception for not allowed methods.
-    """
+    """Exception for not allowed methods."""
 
     STATUS_CODE = status.HTTP_405_METHOD_NOT_ALLOWED
     DESCRIPTION = "Method not allowed."
@@ -143,9 +139,7 @@ class MethodNotAllowedError(BaseAppError):
 
 
 class NotImplementedFunctionError(BaseAppError):
-    """
-    Exception for when a functionality is not yet implemented.
-    """
+    """Exception for when a functionality is not yet implemented."""
 
     STATUS_CODE = status.HTTP_501_NOT_IMPLEMENTED
     DESCRIPTION = "Method not implemented."

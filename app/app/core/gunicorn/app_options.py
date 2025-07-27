@@ -1,6 +1,4 @@
-"""
-Gunicorn configuration helper for FastAPI.
-"""
+"""Gunicorn configuration helper for FastAPI."""
 
 from core.gunicorn.logger import GunicornLogger
 
@@ -12,10 +10,7 @@ def get_app_options(
     workers: int,
     log_level: str,
 ) -> dict:
-    """
-    Generate a dictionary of Gunicorn configuration options.
-    """
-
+    """Generate a dictionary of Gunicorn configuration options."""
     return {
         "accesslog": "-",
         "errorlog": "-",

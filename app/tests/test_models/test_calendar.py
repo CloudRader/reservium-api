@@ -63,7 +63,6 @@ async def test_list_calendars(
     """
     Test listing multiple calendars.
     """
-
     calendars = [
         CalendarModel(
             id="test_calwagwagwgwandar_type1@exam.com",

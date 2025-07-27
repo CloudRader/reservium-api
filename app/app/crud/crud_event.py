@@ -1,7 +1,8 @@
 """
-This module defines the CRUD operations for the Event model, including an
-abstract base class (AbstractCRUDEvent) and a concrete implementation (CRUDEvent)
-using SQLAlchemy.
+Define CRUD operations for the Event model.
+
+Includes an abstract base class (AbstractCRUDEvent) and a concrete
+implementation (CRUDEvent) using SQLAlchemy.
 """
 
 from abc import ABC, abstractmethod
@@ -19,6 +20,7 @@ from sqlalchemy.orm import joinedload
 class AbstractCRUDEvent(CRUDBase[EventModel, EventCreateToDb, EventUpdate], ABC):
     """
     Abstract class for CRUD operations specific to the Event model.
+
     It extends the generic CRUDBase class and defines additional abstract methods
     for querying and manipulating Event instances.
     """
@@ -29,7 +31,7 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventCreateToDb, EventUpdate], ABC)
         user_id: int,
     ) -> list[EventModel] | None:
         """
-        Retrieves the Events instance by user id.
+        Retrieve the Events instance by user id.
 
         :param user_id: user id of the events.
 
@@ -44,7 +46,7 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventCreateToDb, EventUpdate], ABC)
         event_state: EventState,
     ) -> list[EventModel]:
         """
-        Retrieves the Events instance by reservation service id.
+        Retrieve the Events instance by reservation service id.
 
         :param reservation_service_id: reservation service id of the events.
         :param event_state: event state of the event.
@@ -69,8 +71,9 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventCreateToDb, EventUpdate], ABC)
     @abstractmethod
     async def get_current_event_for_user(self, user_id: int) -> EventModel | None:
         """
-        Retrieves the current event for the given user where the current
-        time is between start_datetime and end_datetime.
+        Retrieve the current event for the given user where the current.
+
+        Time is between start_datetime and end_datetime.
 
         :param user_id: ID of the user.
 
@@ -81,6 +84,7 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventCreateToDb, EventUpdate], ABC)
 class CRUDEvent(AbstractCRUDEvent):
     """
     Concrete class for CRUD operations specific to the Event model.
+
     It extends the abstract AbstractCRUDEvent class and implements the required methods
     for querying and manipulating Event instances.
     """

@@ -1,6 +1,4 @@
-"""
-Calendar nad Mini Service ORM model association.
-"""
+"""Calendar nad Mini Service ORM model association."""
 
 from uuid import UUID
 
@@ -10,9 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 
 class CalendarMiniServiceAssociationTable(Base):
-    """
-    Association table for many-to-many relationship between Calendar and MiniService.
-    """
+    """Association table for many-to-many relationship between Calendar and MiniService."""
 
     __tablename__ = "calendar_mini_service_association"
     __table_args__ = (UniqueConstraint("calendar_id", "mini_service_id"),)

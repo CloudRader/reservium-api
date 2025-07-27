@@ -1,6 +1,4 @@
-"""
-Module which includes classes and methods responsible for connection to database.
-"""
+"""Module which includes classes and methods responsible for connection to database."""
 
 from asyncio import current_task
 from collections.abc import AsyncGenerator
@@ -29,15 +27,19 @@ class DatabaseSession:
 
     def __init__(self):
         self.engine = create_async_engine(
-            url=str(settings.DB.POSTGRES_DATABASE_URI), pool_pre_ping=True,
+            url=str(settings.DB.POSTGRES_DATABASE_URI),
+            pool_pre_ping=True,
         )
         self.session_factory = async_sessionmaker(
-            bind=self.engine, autoflush=False, autocommit=False, expire_on_commit=False,
+            bind=self.engine,
+            autoflush=False,
+            autocommit=False,
+            expire_on_commit=False,
         )
 
     def get_scoped_session(self):
         """
-        Returns a scoped asynchronous session tied to the current task.
+        Return a scoped asynchronous session tied to the current task.
 
         Uses `async_scoped_session` to create a session that is scoped to the
         current async task, ensuring that all database operations within the
@@ -51,7 +53,8 @@ class DatabaseSession:
 
     async def session_dependency(self) -> AsyncGenerator[AsyncSession, None]:
         """
-        Yields an asynchronous database session.
+        Yield an asynchronous database session.
+
         The session is automatically closed after use.
         """
         async with self.session_factory() as session:
@@ -62,7 +65,8 @@ class DatabaseSession:
 
     async def scoped_session_dependency(self) -> AsyncGenerator[AsyncSession, None]:
         """
-        Yields a scoped asynchronous session, tied to the current task.
+        Yield a scoped asynchronous session, tied to the current task.
+
         The session is closed after the request completes.
         """
         session = self.get_scoped_session()

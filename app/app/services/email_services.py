@@ -1,5 +1,7 @@
 """
-This module defines an abstract base class AbstractEmailService that work with Email.
+Define an abstract base class AbstractEmailService.
+
+This class works with Email.
 """
 
 import os
@@ -13,9 +15,7 @@ from pypdf import PdfReader, PdfWriter
 
 
 class AbstractEmailService(ABC):
-    """
-    This abstract class defines the interface for an email service.
-    """
+    """Abstract class defines the interface for an email service."""
 
     @abstractmethod
     def prepare_registration_form(
@@ -24,7 +24,8 @@ class AbstractEmailService(ABC):
         full_name: User,
     ) -> Any:
         """
-        Preparing registration form in pdf for sending to head of the dormitory.
+        Prepare registration form in pdf for sending to head of the dormitory.
+
         :param registration_form: Input data for adding in pdf.
         :param full_name: User fullname.
 
@@ -33,9 +34,7 @@ class AbstractEmailService(ABC):
 
 
 class EmailService(AbstractEmailService):
-    """
-    Class EmailService represent service that work with Email
-    """
+    """Class EmailService represent service that work with Email."""
 
     def prepare_registration_form(
         self,

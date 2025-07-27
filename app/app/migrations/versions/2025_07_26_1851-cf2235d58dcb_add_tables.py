@@ -1,4 +1,5 @@
-"""Add tables
+"""
+Add tables
 
 Revision ID: cf2235d58dcb
 Revises:
@@ -60,7 +61,9 @@ def upgrade() -> None:
         sa.Column("more_than_max_people_with_permission", sa.Boolean(), nullable=False),
         sa.Column("collision_with_itself", sa.Boolean(), nullable=False),
         sa.Column(
-            "collision_with_calendar", postgresql.ARRAY(sa.String()), nullable=True,
+            "collision_with_calendar",
+            postgresql.ARRAY(sa.String()),
+            nullable=True,
         ),
         sa.Column("club_member_rules", RulesType(length=sa.TEXT()), nullable=True),
         sa.Column("active_member_rules", RulesType(length=sa.TEXT()), nullable=False),
@@ -74,7 +77,8 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_calendar")),
         sa.UniqueConstraint(
-            "reservation_type", name=op.f("uq_calendar_reservation_type"),
+            "reservation_type",
+            name=op.f("uq_calendar_reservation_type"),
         ),
     )
     op.create_table(
@@ -111,7 +115,8 @@ def upgrade() -> None:
             ),
         ),
         sa.PrimaryKeyConstraint(
-            "id", name=op.f("pk_calendar_mini_service_association"),
+            "id",
+            name=op.f("pk_calendar_mini_service_association"),
         ),
         sa.UniqueConstraint(
             "calendar_id",
@@ -146,10 +151,14 @@ def upgrade() -> None:
         sa.Column("additional_services", postgresql.ARRAY(sa.String()), nullable=True),
         sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(
-            ["calendar_id"], ["calendar.id"], name=op.f("fk_event_calendar_id_calendar"),
+            ["calendar_id"],
+            ["calendar.id"],
+            name=op.f("fk_event_calendar_id_calendar"),
         ),
         sa.ForeignKeyConstraint(
-            ["user_id"], ["user.id"], name=op.f("fk_event_user_id_user"),
+            ["user_id"],
+            ["user.id"],
+            name=op.f("fk_event_user_id_user"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_event")),
     )

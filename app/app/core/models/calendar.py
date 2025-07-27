@@ -1,6 +1,4 @@
-"""
-Calendar ORM model and its dependencies.
-"""
+"""Calendar ORM model and its dependencies."""
 
 import json
 from typing import TYPE_CHECKING, Any
@@ -21,8 +19,9 @@ if TYPE_CHECKING:
 
 class RulesType(TypeDecorator):
     """
-    Custom SQLAlchemy type to handle the serialization and deserialization of
-    the `Rules` Pydantic model to and from JSON.
+    Custom SQLAlchemy type for serializing and deserializing the `Rules` Pydantic model.
+
+    This type handles conversion of `Rules` objects to and from JSON for database storage.
     """
 
     impl = TEXT
@@ -58,9 +57,7 @@ class RulesType(TypeDecorator):
 
 
 class Calendar(Base, SoftDeleteMixin):
-    """
-    Calendar model to create and manipulate user entity in the database.
-    """
+    """Calendar model to create and manipulate user entity in the database."""
 
     id: Mapped[str] = mapped_column(primary_key=True)
     reservation_type: Mapped[str] = mapped_column(unique=True, nullable=False)

@@ -1,6 +1,4 @@
-"""
-API controllers for calendars.
-"""
+"""API controllers for calendars."""
 
 from typing import Annotated, Any
 
@@ -29,7 +27,8 @@ router = APIRouter(tags=[fastapi_docs.CALENDAR_TAG["name"]])
 async def create_calendar(
     service: Annotated[CalendarService, Depends(CalendarService)],
     google_calendar_service: Annotated[
-        GoogleCalendarService, Depends(GoogleCalendarService),
+        GoogleCalendarService,
+        Depends(GoogleCalendarService),
     ],
     user: Annotated[User, Depends(get_current_user)],
     calendar_create: CalendarCreate,
@@ -68,7 +67,8 @@ async def create_calendar(
 async def create_calendars(
     service: Annotated[CalendarService, Depends(CalendarService)],
     google_calendar_service: Annotated[
-        GoogleCalendarService, Depends(GoogleCalendarService),
+        GoogleCalendarService,
+        Depends(GoogleCalendarService),
     ],
     user: Annotated[User, Depends(get_current_user)],
     calendars_create: list[CalendarCreate],
@@ -151,13 +151,13 @@ async def get_all_calendars(
 async def get_all_google_calendar_to_add(
     service: Annotated[CalendarService, Depends(CalendarService)],
     google_calendar_service: Annotated[
-        GoogleCalendarService, Depends(GoogleCalendarService),
+        GoogleCalendarService,
+        Depends(GoogleCalendarService),
     ],
     user: Annotated[User, Depends(get_current_user)],
 ) -> Any:
     """
-    Get Calendars from Google Calendar
-    that are candidates for additions
+    Get Calendars from Google Calendar that are candidates for additions.
 
     :param service: Calendar service.
     :param google_calendar_service: Google Calendar service.
@@ -186,8 +186,7 @@ async def update_calendar(
     calendar_update: Annotated[CalendarUpdate, Body()],
 ) -> Any:
     """
-    Update calendar with id equal to calendar_id,
-    only users with special roles can update calendar.
+    Update calendar with id equal to calendar_id, only users with special roles can update calendar.
 
     :param service: Calendar service.
     :param user: User who make this request.
@@ -214,8 +213,9 @@ async def retrieve_deleted_calendar(
     calendar_id: Annotated[str, Path()],
 ) -> Any:
     """
-    Retrieve deleted calendar with uuid equal to calendar_id,
-    only users with special roles can update calendar.
+    Retrieve deleted calendar with uuid equal to 'calendar_id'.
+
+    Only users with special roles can update the calendar.
 
     :param service: Reservation Service ser.
     :param user: User who make this request.
@@ -242,8 +242,7 @@ async def delete_calendar(
     hard_remove: bool = Query(False),
 ) -> Any:
     """
-    Delete calendar with id equal to calendar_id,
-    only users with special roles can delete calendar.
+    Delete calendar with id equal to calendar_id, only users with special roles can delete calendar.
 
     :param service: Calendar service.
     :param user: User who make this request.
@@ -304,7 +303,8 @@ async def get_calendars_by_reservation_service_id(
     to reservation service id or None if no such calendars exists.
     """
     calendars = await service.get_by_reservation_service_id(
-        reservation_service_id, include_removed,
+        reservation_service_id,
+        include_removed,
     )
     if calendars is None:
         raise BaseAppError()

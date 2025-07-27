@@ -1,7 +1,4 @@
-"""
-Package for CRUD repositories for each domain type, used to handle
-operations over database.
-"""
+"""Provide CRUD repositories for each domain model to handle database operations."""
 
 from .crud_base import CRUDBase
 from .crud_calendar import CRUDCalendar

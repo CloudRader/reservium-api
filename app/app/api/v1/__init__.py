@@ -1,6 +1,4 @@
-"""
-API router for v1 of the Reservation System.
-"""
+"""API router for v1 of the Reservation System."""
 
 from api.v1.access_card_system import router as access_card_system_router
 from api.v1.auth import router as auth_router

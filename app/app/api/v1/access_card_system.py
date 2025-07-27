@@ -1,6 +1,4 @@
-"""
-API controllers for authorisation in access card system.
-"""
+"""API controllers for authorisation in access card system."""
 
 from typing import Annotated, Any
 
@@ -35,7 +33,10 @@ def send_request(data: dict[str, Any]) -> dict[str, Any]:
     }
 
     response = requests.post(
-        settings.DORMITORY_ACCESS_SYSTEM.API_URL, json=data, headers=headers, timeout=5,
+        settings.DORMITORY_ACCESS_SYSTEM.API_URL,
+        json=data,
+        headers=headers,
+        timeout=5,
     )
 
     if response.status_code != 200:

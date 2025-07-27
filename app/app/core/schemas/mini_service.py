@@ -46,4 +46,4 @@ class MiniService(MiniServiceInDBBase):
 
 
 class MiniServicerInDB(MiniServiceInDBBase):
-    """Additional properties stored in DB"""
+    """Additional properties stored in DB."""

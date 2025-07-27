@@ -1,6 +1,4 @@
-"""
-Reservation service ORM model and its dependencies.
-"""
+"""Reservation service ORM model and its dependencies."""
 
 from typing import TYPE_CHECKING
 
@@ -16,9 +14,7 @@ if TYPE_CHECKING:
 
 
 class ReservationService(Base, SoftDeleteMixin):
-    """
-    Reservation service model to create and manipulate reservation service entity in the database.
-    """
+    """Model for creating and managing reservation service entities in the database."""
 
     __tablename__ = "reservation_service"
 
@@ -31,11 +27,15 @@ class ReservationService(Base, SoftDeleteMixin):
     room_id: Mapped[int] = mapped_column(nullable=True)
 
     calendars: Mapped[list["Calendar"]] = relationship(
-        back_populates="reservation_service", lazy="selectin",
+        back_populates="reservation_service",
+        lazy="selectin",
     )
     mini_services: Mapped[list["MiniService"]] = relationship(
-        back_populates="reservation_service", lazy="selectin",
+        back_populates="reservation_service",
+        lazy="selectin",
     )
     lockers_id: Mapped[list[int]] = mapped_column(
-        ARRAY(Integer), nullable=False, default=list,
+        ARRAY(Integer),
+        nullable=False,
+        default=list,
     )

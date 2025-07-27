@@ -50,7 +50,6 @@ def test_event_in_db_base_schema():
     """
     Test full event DB representation.
     """
-
     schema = EventInDBBase(
         id="some_id_string",
         purpose="Birthday party",

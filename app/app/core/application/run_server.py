@@ -1,6 +1,4 @@
-"""
-Entry point for running the FastAPI application using Uvicorn or Gunicorn.
-"""
+"""Entry point for running the FastAPI application using Uvicorn or Gunicorn."""
 
 import uvicorn
 from core import settings
@@ -14,9 +12,7 @@ from fastapi import FastAPI
 
 
 def guvicorn_run(app: FastAPI):
-    """
-    Run the FastAPI application using Gunicorn.
-    """
+    """Run the FastAPI application using Gunicorn."""
     Application(
         application=app,
         options=get_app_options(
@@ -30,9 +26,7 @@ def guvicorn_run(app: FastAPI):
 
 
 def uvicorn_run():
-    """
-    Run the FastAPI application using Uvicorn.
-    """
+    """Run the FastAPI application using Uvicorn."""
     uvicorn.run(
         "main:app",
         host=settings.RUN.SERVER_HOST,

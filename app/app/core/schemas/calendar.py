@@ -78,4 +78,4 @@ class Calendar(CalendarInDBBase):
 
 
 class CalendarInDB(CalendarInDBBase):
-    """Additional properties stored in DB"""
+    """Additional properties stored in DB."""

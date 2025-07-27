@@ -1,7 +1,4 @@
-"""
-This module defines an abstract base class AbstractGoogleCalendarService that work with
-Google Calendar API
-"""
+"""Defines an abstract base class for working with the Google Calendar API."""
 
 from abc import ABC, abstractmethod
 
@@ -12,10 +9,7 @@ from googleapiclient.errors import HttpError
 
 
 class AbstractGoogleCalendarService(ABC):
-    """
-    This abstract class defines the interface for a service
-    that interacts with the Google Calendar API.
-    """
+    """Interface for a service interacting with the Google Calendar API."""
 
     @abstractmethod
     async def get_calendar(self, calendar_id: str) -> dict:
@@ -47,9 +41,7 @@ class AbstractGoogleCalendarService(ABC):
 
 
 class GoogleCalendarService(AbstractGoogleCalendarService):
-    """
-    Service implementation for interacting with the Google Calendar API.
-    """
+    """Service implementation for interacting with the Google Calendar API."""
 
     def __init__(self):
         self.service = build("calendar", "v3", credentials=auth_google(None))

@@ -1,6 +1,8 @@
 """
-This module provides an abstract CRUD base class and a concrete implementation
-for handling common database operations with SQLAlchemy and FastAPI.
+Provide an abstract CRUD base class.
+
+Includes a concrete implementation for handling common database operations with
+SQLAlchemy and FastAPI.
 """
 
 from abc import ABC, abstractmethod
@@ -19,93 +21,96 @@ UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
 
 
 class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
-    """
-    An abstract base class that provides generic CRUD operations.
-    """
+    """An abstract base class that provides generic CRUD operations."""
 
     @abstractmethod
     async def get(
-        self, uuid: UUID | str | int, include_removed: bool = False,
+        self,
+        uuid: UUID | str | int,
+        include_removed: bool = False,
     ) -> Model | None:
         """
         Retrieve a single record by its UUID.
+
         If include_removed is True retrieve a single record
         including marked as deleted.
         """
 
     @abstractmethod
     async def get_multi(self, skip: int = 0, limit: int = 100) -> list[Model]:
-        """
-        Retrieve a list of records with pagination.
-        """
+        """Retrieve a list of records with pagination."""
 
     @abstractmethod
     async def get_all(self, include_removed: bool = False) -> list[Model]:
         """
         Retrieve all records without pagination.
+
         If include_removed is True retrieve all records
         including marked as deleted.
         """
 
     @abstractmethod
     async def get_by_reservation_service_id(
-        self, reservation_service_id: str, include_removed: bool = False,
+        self,
+        reservation_service_id: str,
+        include_removed: bool = False,
     ) -> list[Model] | None:
         """
-        Retrieves all records by its reservation service id.
+        Retrieve all records by its reservation service id.
+
         If include_removed is True retrieve all records
         including marked as deleted.
         """
 
     @abstractmethod
     async def create(self, obj_in: CreateSchema) -> Model:
-        """
-        Create a new record from the input scheme.
-        """
+        """Create a new record from the input scheme."""
 
     @abstractmethod
     async def update(
-        self, *, db_obj: Model | None, obj_in: UpdateSchema,
+        self,
+        *,
+        db_obj: Model | None,
+        obj_in: UpdateSchema,
     ) -> Model | None:
-        """
-        Update an existing record with the input scheme.
-        """
+        """Update an existing record with the input scheme."""
 
     @abstractmethod
     async def retrieve_removed_object(
-        self, uuid: UUID | str | int | None,
+        self,
+        uuid: UUID | str | int | None,
     ) -> Model | None:
-        """
-        Retrieve removed object from soft removed.
-        """
+        """Retrieve removed object from soft removed."""
 
     @abstractmethod
     async def remove(self, uuid: UUID | str | int | None) -> Model | None:
-        """
-        Remove a record by its UUID.
-        """
+        """Remove a record by its UUID."""
 
     @abstractmethod
     async def soft_remove(self, uuid: UUID | str | int | None) -> Model | None:
         """
         Soft remove a record by its UUID.
+
         Change attribute deleted_at to time of deletion
         """
 
     @abstractmethod
     async def check_uuid_and_return_obj_from_db_by_uuid(
-        self, uuid: UUID | str | int | None,
+        self,
+        uuid: UUID | str | int | None,
     ) -> Model | None:
         """
-        Retrieve a database object by its primary key (UUID, string, or integer),
-        if the identifier is provided.
+        Retrieve a database object by its primary key (UUID, string, or integer).
+
+        If the identifier is provided.
         """
 
 
 class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
     """
-    A concrete implementation of the abstract CRUD base class for handling
-    common database operations with SQLAlchemy and FastAPI.
+    A concrete implementation of the abstract CRUD base class.
+
+    Handling common database operations with SQLAlchemy and FastAPI.
     """
 
     def __init__(self, model: type[Model], db: AsyncSession):
@@ -113,7 +118,9 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         self.db: AsyncSession = db
 
     async def get(
-        self, uuid: UUID | str | int, include_removed: bool = False,
+        self,
+        uuid: UUID | str | int,
+        include_removed: bool = False,
     ) -> Model | None:
         if uuid is None:
             return None
@@ -136,7 +143,9 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         return list(result.scalars().all())
 
     async def get_by_reservation_service_id(
-        self, reservation_service_id: UUID | str, include_removed: bool = False,
+        self,
+        reservation_service_id: UUID | str,
+        include_removed: bool = False,
     ) -> list[Model] | None:
         stmt = select(self.model).filter(
             self.model.reservation_service_id == reservation_service_id,
@@ -155,7 +164,10 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         return db_obj
 
     async def update(
-        self, *, db_obj: Model | None, obj_in: UpdateSchema | dict[str, Any],
+        self,
+        *,
+        db_obj: Model | None,
+        obj_in: UpdateSchema | dict[str, Any],
     ) -> Model | None:
         if db_obj is None or obj_in is None:
             return None
@@ -173,7 +185,8 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         return db_obj
 
     async def retrieve_removed_object(
-        self, uuid: UUID | str | int | None,
+        self,
+        uuid: UUID | str | int | None,
     ) -> Model | None:
         if uuid is None:
             return None
@@ -221,7 +234,8 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         return result.scalar_one_or_none()
 
     async def check_uuid_and_return_obj_from_db_by_uuid(
-        self, uuid: UUID | str | int | None,
+        self,
+        uuid: UUID | str | int | None,
     ) -> Model | None:
         if uuid is None:
             return None

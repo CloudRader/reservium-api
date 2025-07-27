@@ -1,6 +1,4 @@
-"""
-Utils for services.
-"""
+"""Utils for services."""
 
 import datetime as dt
 
@@ -16,8 +14,9 @@ def first_standard_check(
     end_time,
 ):
     """
-    Checking if the user is reserving the service user has
-    and that user can't reserve before current date.
+    Check if the user is reserving the service user has.
+
+    That user can't reserve before current date.
 
     :param services: User services from IS.
     :param reservation_service: Reservation Service object in db.
@@ -81,7 +80,6 @@ def dif_days_res(start_datetime, end_datetime, user_rules: Rules) -> bool:
 
     :return: Boolean indicating if the reservation duration is less than 24
     """
-
     time_difference = abs(end_datetime - start_datetime)
     if time_difference > dt.timedelta(hours=user_rules.max_reservation_hours):
         return False
@@ -89,7 +87,9 @@ def dif_days_res(start_datetime, end_datetime, user_rules: Rules) -> bool:
 
 
 def control_res_in_advance_or_prior(
-    start_time, user_rules: Rules, in_advance: bool,
+    start_time,
+    user_rules: Rules,
+    in_advance: bool,
 ) -> bool:
     """
     Check if the reservation is made within the specified advance or prior time.
@@ -102,14 +102,14 @@ def control_res_in_advance_or_prior(
     :return: Boolean indicating if the reservation
     is made within the specified advance or prior time.
     """
-
     current_time = dt.datetime.now()
 
     time_difference = abs(start_time - current_time)
 
     if in_advance:
         if time_difference < dt.timedelta(
-            minutes=user_rules.in_advance_minutes, hours=user_rules.in_advance_hours,
+            minutes=user_rules.in_advance_minutes,
+            hours=user_rules.in_advance_hours,
         ):
             return False
     else:
@@ -120,14 +120,13 @@ def control_res_in_advance_or_prior(
 
 def description_of_event(user: User, event_input: EventCreate):
     """
-    Description of the event.
+    Describe the event.
 
     :param user: User object in db.
     :param event_input: Input data for creating the event.
 
     :return: String of the description.
     """
-
     formatted_services: str = "-"
     if event_input.additional_services:
         formatted_services = ", ".join(event_input.additional_services)
@@ -143,7 +142,7 @@ def description_of_event(user: User, event_input: EventCreate):
 
 def ready_event(calendar: CalendarModel, event_input: EventCreate, user: User):
     """
-    Constructing the body of the event .
+    Construct the body of the event.
 
     :param calendar: Calendar object in db.
     :param event_input: Input data for creating the event.
@@ -151,7 +150,6 @@ def ready_event(calendar: CalendarModel, event_input: EventCreate, user: User):
 
     :return: Dict body of the event.
     """
-
     prague = timezone("Europe/Prague")
 
     start_time = prague.localize(event_input.start_datetime).isoformat()
@@ -169,14 +167,13 @@ def ready_event(calendar: CalendarModel, event_input: EventCreate, user: User):
 
 def service_availability_check(services: list[ServiceValidity], service_alias) -> bool:
     """
-    Checking if the user is reserving the service user has.
+    Check if the user is reserving the service user has.
 
     :param services: List of available user services on IS.
     :param service_alias: The alias of the service user wants to reserve .
 
     :return: Boolean indicating if a user have this service or not.
     """
-
     for service in services:
         if service.service.alias == service_alias:
             return True

@@ -1,5 +1,7 @@
 """
-This module defines an abstract base class AbstractUserService that work with User
+Define an abstract base class AbstractUserService.
+
+This class works with User.
 """
 
 from abc import ABC, abstractmethod
@@ -32,8 +34,9 @@ class AbstractUserService(
     ABC,
 ):
     """
-    This abstract class defines the interface for a user service
-    that provides CRUD operations for a specific UserModel.
+    Abstract class defines the interface for a user service.
+
+    Provides CRUD operations for a specific UserModel.
     """
 
     @abstractmethod
@@ -58,7 +61,7 @@ class AbstractUserService(
     @abstractmethod
     async def get_by_username(self, username: str) -> UserModel:
         """
-        Retrieves a User instance by its username.
+        Retrieve a User instance by its username.
 
         :param username: The username of the User.
 
@@ -67,12 +70,11 @@ class AbstractUserService(
 
 
 class UserService(AbstractUserService):
-    """
-    Class UserService represent service that work with User
-    """
+    """Class UserService represent service that work with User."""
 
     def __init__(
-        self, db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
+        self,
+        db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
         self.reservation_service_crud = CRUDReservationService(db)
         super().__init__(CRUDUser(db))

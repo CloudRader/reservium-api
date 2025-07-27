@@ -1,6 +1,4 @@
-"""
-Shortcuts to easily import schemes.
-"""
+"""Shortcuts to easily import schemes."""
 
 from .access_card_system import (
     ClubAccessSystemRequest,

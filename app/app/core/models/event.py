@@ -1,6 +1,4 @@
-"""
-Event ORM model and its dependencies.
-"""
+"""Event ORM model and its dependencies."""
 
 from datetime import datetime
 from enum import Enum
@@ -35,9 +33,7 @@ class EventState(Enum):
 
 
 class Event(Base, SoftDeleteMixin):
-    """
-    Event model to create and manipulate event entity in the database.
-    """
+    """Event model to create and manipulate event entity in the database."""
 
     id: Mapped[str] = mapped_column(primary_key=True)
     purpose: Mapped[str] = mapped_column(nullable=False)

@@ -1,6 +1,7 @@
 """
-This module defines an abstract base class AbstractAccessCardSystem
-that work with Access Card System.
+Define an abstract base class AbstractAccessCardSystem.
+
+This class works with the Access Card System.
 """
 
 from abc import ABC, abstractmethod
@@ -16,9 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AbstractAccessCardSystemService(ABC):
-    """
-    This abstract class defines the interface for an email service.
-    """
+    """Abstract class defines the interface for an email service."""
 
     @abstractmethod
     async def add_var_symbol(self, access_body: VarSymbolCreateUpdate) -> dict:
@@ -94,12 +93,11 @@ class AbstractAccessCardSystemService(ABC):
 
 
 class AccessCardSystemService(AbstractAccessCardSystemService):
-    """
-    Class AccessCardSystemService represent service that work with Access Card System.
-    """
+    """Class AccessCardSystemService represent service that work with Access Card System."""
 
     def __init__(
-        self, db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
+        self,
+        db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
         self.event_crud = CRUDEvent(db)
         self.user_crud = CRUDUser(db)

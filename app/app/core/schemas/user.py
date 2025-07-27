@@ -1,6 +1,4 @@
-"""
-DTO schemes for User entity.
-"""
+"""DTO schemes for User entity."""
 
 from datetime import datetime
 
@@ -59,4 +57,4 @@ class User(UserInDBBase):
 
 
 class UserInDB(UserInDBBase):
-    """Additional properties stored in DB"""
+    """Additional properties stored in DB."""

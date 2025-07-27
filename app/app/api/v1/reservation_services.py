@@ -1,6 +1,4 @@
-"""
-API controllers for reservation services.
-"""
+"""API controllers for reservation services."""
 
 from typing import Annotated, Any
 from uuid import UUID
@@ -42,8 +40,9 @@ async def create_reservation_service(
     reservation_service_create: ReservationServiceCreate,
 ) -> Any:
     """
-    Create reservation service, only user with head of the
-    operation section role can create reservation service.
+    Create reservation service.
+
+    Only user with head of the operation section role can create reservation service.
 
     :param service: Reservation Service ser.
     :param user_service: User service.
@@ -54,7 +53,8 @@ async def create_reservation_service(
     :returns ReservationServiceModel: the created reservation service.
     """
     reservation_service = await service.create_reservation_service(
-        reservation_service_create, user,
+        reservation_service_create,
+        user,
     )
     if not reservation_service:
         raise BaseAppError()
@@ -76,8 +76,9 @@ async def create_reservation_services(
     reservation_services_create: list[ReservationServiceCreate],
 ) -> Any:
     """
-    Create reservation services, only user with head of the
-    operation section role can create reservation services.
+    Create reservation services.
+
+    Only user with head of the operation section role can create reservation services.
 
     :param service: Reservation Service ser.
     :param user_service: User service.
@@ -91,7 +92,11 @@ async def create_reservation_services(
     for reservation in reservation_services_create:
         reservation_services_result.append(
             await create_reservation_service(
-                service, user_service, user, token, reservation,
+                service,
+                user_service,
+                user,
+                token,
+                reservation,
             ),
         )
 
@@ -194,8 +199,9 @@ async def update_reservation_service(
     reservation_service_update: Annotated[ReservationServiceUpdate, Body()],
 ) -> Any:
     """
-    Update reservation service with uuid equal to reservation_service_id,
-    only user with head of the operation section role can update reservation service.
+    Update reservation service with uuid equal to 'reservation_service_id'.
+
+    Only user with head of the operation section role can update reservation service.
 
     :param service: Reservation Service ser.
     :param user: User who make this request.
@@ -205,7 +211,9 @@ async def update_reservation_service(
     :returns ReservationServiceModel: the updated reservation service.
     """
     reservation_service = await service.update_reservation_service(
-        reservation_service_id, reservation_service_update, user,
+        reservation_service_id,
+        reservation_service_update,
+        user,
     )
     if not reservation_service:
         raise EntityNotFoundError(Entity.RESERVATION_SERVICE, reservation_service_id)
@@ -224,8 +232,9 @@ async def retrieve_deleted_reservation_service(
     reservation_service_id: Annotated[UUID, Path()],
 ) -> Any:
     """
-    Retrieve deleted reservation service with uuid equal to reservation_service_id,
-    only user with head of the operation section role can update reservation service.
+    Retrieve deleted reservation service with uuid equal to 'reservation_service_id'.
+
+    Only user with head of the operation section role can update reservation service.
 
     :param service: Reservation Service ser.
     :param user: User who make this request.
@@ -234,7 +243,8 @@ async def retrieve_deleted_reservation_service(
     :returns ReservationServiceModel: the updated reservation service.
     """
     reservation_service = await service.retrieve_removed_object(
-        reservation_service_id, user,
+        reservation_service_id,
+        user,
     )
     if not reservation_service:
         raise EntityNotFoundError(Entity.RESERVATION_SERVICE, reservation_service_id)
@@ -254,8 +264,9 @@ async def delete_reservation_service(
     hard_remove: bool = Query(False),
 ) -> Any:
     """
-    Delete reservation service with id equal to reservation_service_id,
-    only user with head of the operation section role can delete reservation service.
+    Delete reservation service with id equal to 'reservation_service_id'.
+
+    Only user with head of the operation section role can delete reservation service.
 
     :param service: Reservation Service ser.
     :param user: User who make this request.
@@ -265,7 +276,9 @@ async def delete_reservation_service(
     :returns ReservationServiceModel: the deleted reservation service.
     """
     reservation_service = await service.delete_reservation_service(
-        reservation_service_id, user, hard_remove,
+        reservation_service_id,
+        user,
+        hard_remove,
     )
     if not reservation_service:
         raise EntityNotFoundError(Entity.RESERVATION_SERVICE, reservation_service_id)

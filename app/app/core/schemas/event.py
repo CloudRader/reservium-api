@@ -1,6 +1,4 @@
-"""
-DTO schemes for Event entity.
-"""
+"""DTO schemes for Event entity."""
 
 from datetime import datetime
 from typing import Any
@@ -10,17 +8,16 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class NaiveDatetimeValidatorMixin:
-    """
-    Mixin to validate that datetime fields are naive (i.e., without timezone info).
-    """
+    """Mixin to validate that datetime fields are naive (i.e., without timezone info)."""
 
     @classmethod
     @field_validator("start_datetime", "end_datetime", mode="before")
     def check_naive_datetime(
-        cls, value: Any,
+        cls,
+        value: Any,
     ) -> Any:
         """
-        Validates that datetime values are naive (not timezone-aware).
+        Validate that datetime values are naive (not timezone-aware).
 
         :param value: Input value (string or datetime)
         :return: Validated value if naive
@@ -126,7 +123,7 @@ class Event(EventInDBBase):
 
 
 class EventInDB(EventInDBBase):
-    """Additional properties stored in DB"""
+    """Additional properties stored in DB."""
 
 
 class EventWithExtraDetails(BaseModel):

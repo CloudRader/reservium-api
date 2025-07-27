@@ -53,4 +53,4 @@ class ReservationService(ReservationServiceInDBBase):
 
 
 class ReservationServicerInDB(ReservationServiceInDBBase):
-    """Additional properties stored in DB"""
+    """Additional properties stored in DB."""

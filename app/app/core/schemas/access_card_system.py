@@ -1,6 +1,4 @@
-"""
-DTO schemes for Access Card System entity.
-"""
+"""DTO schemes for Access Card System entity."""
 
 from pydantic import BaseModel
 
@@ -22,9 +20,7 @@ class VarSymbolDelete(BaseModel):
 
 
 class ClubAccessSystemRequest(BaseModel):
-    """
-    Schema for handling club access card system.
-    """
+    """Schema for handling club access card system."""
 
     uid: int
     room_id: int

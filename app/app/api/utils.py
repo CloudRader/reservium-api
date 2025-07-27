@@ -1,6 +1,4 @@
-"""
-Utils for API.
-"""
+"""Utils for API."""
 
 import datetime as dt
 from urllib.parse import urlparse, urlunparse
@@ -35,7 +33,9 @@ def modify_url_scheme(url: str, new_scheme: str) -> str:
 
 
 def control_collision(
-    google_calendar_service, event_input: EventCreate, calendar: Calendar,
+    google_calendar_service,
+    event_input: EventCreate,
+    calendar: Calendar,
 ) -> bool:
     """
     Check if there is already another reservation at that time.
@@ -76,7 +76,7 @@ def control_collision(
 
 def get_events(service, start_time, end_time, calendar_id):
     """
-    Get events from Google calendar by its id
+    Get events from Google calendar by its id.
 
     :param service: Google Calendar service.
     :param start_time: Start time of the reservation.
@@ -126,7 +126,10 @@ def check_collision_time(
     """
     if not calendar.collision_with_itself:
         collisions = get_events(
-            google_calendar_service, start_datetime, end_datetime, calendar.id,
+            google_calendar_service,
+            start_datetime,
+            end_datetime,
+            calendar.id,
         )
         if len(collisions) > calendar.max_people:
             return False
@@ -176,7 +179,6 @@ def control_available_reservation_time(start_datetime, end_datetime) -> bool:
 
     :return: Boolean indicating if a user can reserve at night or not.
     """
-
     start_time = start_datetime.time()
     end_time = end_datetime.time()
 

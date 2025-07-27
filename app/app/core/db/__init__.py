@@ -1,6 +1,4 @@
-"""
-Package for modules which establish connection to database.
-"""
+"""Package for modules which establish connection to database."""
 
 from .session import db_session
 

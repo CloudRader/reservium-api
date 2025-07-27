@@ -22,7 +22,6 @@ from core import settings
 from core.models.base_class import Base
 from core.models.calendar import RulesType
 
-
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -45,7 +44,7 @@ config.set_main_option("sqlalchemy.url", str(settings.DB.POSTGRES_DATABASE_URI))
 
 
 def render_item(type_, obj, autogen_context):  # pylint: disable=unused-argument
-    """Custom render function to support user-defined types like RulesType."""
+    """Render function to support user-defined types like RulesType."""
     if isinstance(obj, RulesType):
         autogen_context.imports.add("from core.models import RulesType")
         return "RulesType(length=sa.TEXT())"
@@ -53,7 +52,8 @@ def render_item(type_, obj, autogen_context):  # pylint: disable=unused-argument
 
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode.
+    """
+    Run migrations in 'offline' mode.
 
     This configures the context with just a URL
     and not an Engine, though an Engine is acceptable
@@ -89,11 +89,11 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    """In this scenario we need to create an Engine
-    and associate a connection with the context.
-
     """
+    In this scenario we need to create an Engine.
 
+    Associate a connection with the context.
+    """
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
@@ -108,7 +108,6 @@ async def run_async_migrations() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-
     asyncio.run(run_async_migrations())
 
 

@@ -1,6 +1,4 @@
-"""
-Root API router that includes all versioned API routers.
-"""
+"""Root API router that includes all versioned API routers."""
 
 from api.v1 import router as router_v1
 from fastapi import APIRouter

@@ -1,6 +1,4 @@
-"""
-Package for API Documentation.
-"""
+"""Package for API Documentation."""
 
 from core import settings
 

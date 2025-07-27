@@ -1,6 +1,4 @@
-"""
-API controllers for authorisation in google.
-"""
+"""API controllers for authorisation in google."""
 
 import os.path
 
@@ -13,6 +11,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 def auth_google(creds):
     """
     Authenticate and return Google credentials.
+
     This function handles the authentication for Google APIs. It checks for existing
     credentials in 'token.json'. If they are not present or invalid, it initiates the
     OAuth2 flow to obtain new credentials.

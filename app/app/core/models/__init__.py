@@ -1,6 +1,4 @@
-"""
-Package for ORM models.
-"""
+"""Package for ORM models."""
 
 from .calendar import Calendar as CalendarModel
 from .calendar import RulesType

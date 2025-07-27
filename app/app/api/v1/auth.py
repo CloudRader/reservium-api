@@ -1,6 +1,4 @@
-"""
-API controllers for authorisation in IS(Information System of the club).
-"""
+"""API controllers for authorisation in IS(Information System of the club)."""
 
 from typing import Annotated, Any
 
@@ -24,6 +22,7 @@ router = APIRouter(tags=[fastapi_docs.AUTHORISATION_TAG["name"]])
 async def login_local_dev(request: Request):
     """
     Authenticate a user, construct authorization URL and redirect to authorization page of IS.
+
     This endpoint for local authorization.
     """
     authorization_url = (
@@ -38,9 +37,7 @@ async def login_local_dev(request: Request):
 
 @router.get("/login")
 async def login(request: Request):
-    """
-    Authenticate a user, construct authorization URL and sent it for authorization.
-    """
+    """Authenticate a user, construct authorization URL and sent it for authorization."""
     authorization_url = (
         f"{settings.IS.OAUTH}/authorize?client_id={settings.IS.CLIENT_ID}"
         "&response_type=code&scope=location"  # Include the "location" scope
@@ -53,10 +50,11 @@ async def login(request: Request):
 
 @router.get("/callback")
 async def callback(
-    user_service: Annotated[UserService, Depends(UserService)], request: Request,
+    user_service: Annotated[UserService, Depends(UserService)],
+    request: Request,
 ) -> Any:
     """
-    Callback link after authorization on IS.
+    Handle callback after authorization on IS.
 
     :param user_service: User service.
     :param request: Request received, needed to get the user token.
