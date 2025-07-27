@@ -136,10 +136,7 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
             if access_request.device_id in mini_service.lockers_id:
                 return True
 
-        if (
-            reservation_service
-            == await service_event.get_reservation_service_of_this_event(event)
-        ):
+        if reservation_service == await service_event.get_reservation_service_of_this_event(event):
             if access_request.device_id in reservation_service.lockers_id:
                 return True
 

@@ -72,7 +72,9 @@ async def test_reservation_service(async_session, create_reservation_service_uui
 @pytest.mark.asyncio
 @pytest_asyncio.fixture
 async def test_mini_service(
-    async_session, create_mini_service_uuid, test_reservation_service,
+    async_session,
+    create_mini_service_uuid,
+    test_reservation_service,
 ):
     """Creates and returns a sample reservation service for testing."""
     mini_service = MiniServiceModel(
@@ -102,7 +104,10 @@ def rules_club_member() -> Rules:
 @pytest.mark.asyncio
 @pytest_asyncio.fixture
 async def test_calendar(
-    async_session, rules_club_member, test_reservation_service, test_mini_service,
+    async_session,
+    rules_club_member,
+    test_reservation_service,
+    test_mini_service,
 ):
     """Creates and returns a sample calendar for testing."""
     calendar = CalendarModel(

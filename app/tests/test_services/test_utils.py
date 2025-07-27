@@ -25,27 +25,37 @@ def test_first_standard_check(services_data_from_is, reservation_service):
     start_time = dt.datetime.now() - dt.timedelta(hours=1)
     end_time = dt.datetime.now() + dt.timedelta(hours=4)
     result = first_standard_check(
-        services_data_from_is, reservation_service, start_time, end_time,
+        services_data_from_is,
+        reservation_service,
+        start_time,
+        end_time,
     )
     assert result["message"] == f"You don't have {reservation_service.alias} service!"
 
     services_data_from_is[0].service.alias = "game"
     result = first_standard_check(
-        services_data_from_is, reservation_service, start_time, end_time,
+        services_data_from_is,
+        reservation_service,
+        start_time,
+        end_time,
     )
     assert result["message"] == "You can't make a reservation before the present time!"
 
     start_time = dt.datetime.now() + dt.timedelta(hours=5)
     result = first_standard_check(
-        services_data_from_is, reservation_service, start_time, end_time,
+        services_data_from_is,
+        reservation_service,
+        start_time,
+        end_time,
     )
-    assert (
-        result["message"] == "The end of a reservation cannot be before its beginning!"
-    )
+    assert result["message"] == "The end of a reservation cannot be before its beginning!"
 
     end_time = dt.datetime.now() + dt.timedelta(hours=7)
     result = first_standard_check(
-        services_data_from_is, reservation_service, start_time, end_time,
+        services_data_from_is,
+        reservation_service,
+        start_time,
+        end_time,
     )
     assert result == "Access"
 
@@ -93,9 +103,7 @@ def test_reservation_in_advance(rules_schema):
     start_time = dt.datetime.now() + dt.timedelta(days=15)
     result = reservation_in_advance(start_time, rules_schema)
     assert result["message"] == (
-        f"You can't make reservations earlier than "
-        f"{rules_schema.in_prior_days} days "
-        f"in advance!"
+        f"You can't make reservations earlier than {rules_schema.in_prior_days} days in advance!"
     )
 
     start_time = dt.datetime.now() + dt.timedelta(days=7)

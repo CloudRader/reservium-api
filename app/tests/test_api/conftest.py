@@ -58,9 +58,7 @@ async def client(user_service, reservation_service_service):
     from services import ReservationServiceService, UserService
 
     app.dependency_overrides[UserService] = lambda: user_service
-    app.dependency_overrides[ReservationServiceService] = (
-        lambda: reservation_service_service
-    )
+    app.dependency_overrides[ReservationServiceService] = lambda: reservation_service_service
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac

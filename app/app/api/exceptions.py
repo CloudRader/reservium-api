@@ -87,9 +87,7 @@ class EntityNotFoundError(BaseAppError):
         message: str | None = None,
         **kwargs: Any,
     ):
-        final_message = (
-            message or f"Entity {entity.value} with id {entity_id} was not found."
-        )
+        final_message = message or f"Entity {entity.value} with id {entity_id} was not found."
         super().__init__(
             message=final_message,
             status_code=self.STATUS_CODE,

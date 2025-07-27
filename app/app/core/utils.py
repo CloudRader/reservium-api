@@ -1,7 +1,6 @@
 """Utils for core module."""
 
 
-
 def get_env_file_path(env_file_names: list[str]) -> list[str]:
     """
     Get environment file paths from environment file names.

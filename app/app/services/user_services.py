@@ -93,10 +93,7 @@ class UserService(AbstractUserService):
         for role in roles:
             if role.role == "service_admin":
                 for manager in role.limit_objects:
-                    if (
-                        manager.alias
-                        in await self.reservation_service_crud.get_all_aliases()
-                    ):
+                    if manager.alias in await self.reservation_service_crud.get_all_aliases():
                         user_roles.append(manager.alias)
 
         active_member = False

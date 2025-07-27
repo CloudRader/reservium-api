@@ -29,7 +29,10 @@ async def test_user_service_update_existing_user(server_create_user):
 
 @pytest.mark.asyncio
 async def test_user_service_create_user_section_head(
-    service_user, user_data_from_is, services_data_from_is, room_data_from_is,
+    service_user,
+    user_data_from_is,
+    services_data_from_is,
+    room_data_from_is,
 ):
     """Test auto-setting section_head when note='head' in UserIS."""
     user_data_from_is.note = "head"

@@ -48,7 +48,10 @@ async def test_delete_calendar(async_session, test_calendar):
 
 @pytest.mark.asyncio
 async def test_list_calendars(
-    async_session, rules_club_member, test_reservation_service, test_mini_service,
+    async_session,
+    rules_club_member,
+    test_reservation_service,
+    test_mini_service,
 ):
     """Test listing multiple calendars."""
     calendars = [
@@ -84,9 +87,7 @@ async def test_list_calendars(
     async_session.add_all(calendars)
     await async_session.commit()
 
-    result = (
-        (await async_session.execute(sqlalchemy.select(CalendarModel))).scalars().all()
-    )
+    result = (await async_session.execute(sqlalchemy.select(CalendarModel))).scalars().all()
 
     assert len(result) >= 2
     reservation_types = [c.reservation_type for c in result]

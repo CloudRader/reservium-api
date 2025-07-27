@@ -62,9 +62,7 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
                 "summary": summary,  # Title of the new calendar
                 "timeZone": "Europe/Prague",  # Set your desired timezone
             }
-            created_calendar = (
-                self.service.calendars().insert(body=calendar_body).execute()
-            )
+            created_calendar = self.service.calendars().insert(body=calendar_body).execute()
             calendar_id = created_calendar.get("id")
 
             rule = {

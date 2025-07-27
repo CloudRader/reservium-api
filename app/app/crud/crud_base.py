@@ -131,9 +131,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         return result.scalar_one_or_none()
 
     async def get_multi(self, skip: int = 0, limit: int = 100) -> list[Model]:
-        stmt = (
-            select(self.model).order_by(self.model.id.desc()).offset(skip).limit(limit)
-        )
+        stmt = select(self.model).order_by(self.model.id.desc()).offset(skip).limit(limit)
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
@@ -172,9 +170,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         if db_obj is None or obj_in is None:
             return None
 
-        update_data = (
-            obj_in if isinstance(obj_in, dict) else obj_in.dict(exclude_unset=True)
-        )
+        update_data = obj_in if isinstance(obj_in, dict) else obj_in.dict(exclude_unset=True)
 
         for field, value in update_data.items():
             setattr(db_obj, field, value)
@@ -191,9 +187,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         if uuid is None:
             return None
         stmt = (
-            select(self.model)
-            .execution_options(include_deleted=True)
-            .filter(self.model.id == uuid)
+            select(self.model).execution_options(include_deleted=True).filter(self.model.id == uuid)
         )
         result = await self.db.execute(stmt)
         obj = result.scalar_one_or_none()
@@ -206,9 +200,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
 
     async def remove(self, uuid: UUID | str | int | None) -> Model | None:
         stmt = (
-            select(self.model)
-            .execution_options(include_deleted=True)
-            .filter(self.model.id == uuid)
+            select(self.model).execution_options(include_deleted=True).filter(self.model.id == uuid)
         )
         result = await self.db.execute(stmt)
         obj = result.scalar_one_or_none()
@@ -226,9 +218,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         self.db.add(obj)
         await self.db.commit()
         stmt = (
-            select(self.model)
-            .execution_options(include_deleted=True)
-            .filter(self.model.id == uuid)
+            select(self.model).execution_options(include_deleted=True).filter(self.model.id == uuid)
         )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()

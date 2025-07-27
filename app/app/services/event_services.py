@@ -325,8 +325,8 @@ class EventService(AbstractEventService):
         if not calendar:
             raise BaseAppError("A calendar of this event isn't exist.", status_code=404)
 
-        reservation_service: ReservationService = (
-            await self.reservation_service_crud.get(calendar.reservation_service_id)
+        reservation_service: ReservationService = await self.reservation_service_crud.get(
+            calendar.reservation_service_id
         )
         if not reservation_service:
             raise BaseAppError(
@@ -440,8 +440,7 @@ class EventService(AbstractEventService):
         if event.user_id != user.id:
             if reservation_service.alias not in user.roles:
                 raise PermissionDeniedError(
-                    "You do not have permission to cancel a "
-                    "reservation made by another user.",
+                    "You do not have permission to cancel a reservation made by another user.",
                 )
 
         updated_event = EventUpdate(event_state=EventState.CANCELED)
@@ -455,8 +454,7 @@ class EventService(AbstractEventService):
 
         if event.event_state != EventState.NOT_APPROVED:
             raise BaseAppError(
-                "You cannot approve a reservation that is not in the "
-                "'not approved' state.",
+                "You cannot approve a reservation that is not in the 'not approved' state.",
             )
 
         reservation_service = await self.get_reservation_service_of_this_event(event)

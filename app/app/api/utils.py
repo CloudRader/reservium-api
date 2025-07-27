@@ -63,15 +63,13 @@ def control_collision(
                 ),
             )
 
-    if not check_collision_time(
+    return check_collision_time(
         check_collision,
         event_input.start_datetime,
         event_input.end_datetime,
         calendar,
         google_calendar_service,
-    ):
-        return False
-    return True
+    )
 
 
 def get_events(service, start_time, end_time, calendar_id):
@@ -149,12 +147,10 @@ def check_collision_time(
         str(check_collision[0]["end"]["dateTime"]),
     )
 
-    if end_date_event == start_date.astimezone(
-        timezone("Europe/Prague"),
-    ) or start_date_event == end_date.astimezone(timezone("Europe/Prague")):
-        return True
-
-    return False
+    return bool(
+        end_date_event == start_date.astimezone(timezone("Europe/Prague"))
+        or start_date_event == end_date.astimezone(timezone("Europe/Prague")),
+    )
 
 
 def check_night_reservation(user: User) -> bool:
@@ -165,9 +161,7 @@ def check_night_reservation(user: User) -> bool:
 
     :return: True if user can do night reservation and false otherwise.
     """
-    if not user.active_member:
-        return False
-    return True
+    return user.active_member
 
 
 def control_available_reservation_time(start_datetime, end_datetime) -> bool:
@@ -185,10 +179,4 @@ def control_available_reservation_time(start_datetime, end_datetime) -> bool:
     start_res_time = dt.datetime.strptime("08:00:00", "%H:%M:%S").time()
     end_res_time = dt.datetime.strptime("22:00:00", "%H:%M:%S").time()
 
-    if (
-        start_time < start_res_time
-        or end_time < start_res_time
-        or end_time > end_res_time
-    ):
-        return False
-    return True
+    return not (start_time < start_res_time or end_time < start_res_time or end_time > end_res_time)

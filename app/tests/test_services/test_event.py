@@ -75,7 +75,7 @@ async def test_post_event_not_create_more_people_than_can_be(
         calendar,
     )
     assert result["message"] == (
-        "You can't reserve this type of " "reservation for more than 8 people!"
+        "You can't reserve this type of reservation for more than 8 people!"
     )
 
 
@@ -145,12 +145,10 @@ async def test_request_update_reservation_time(service_event, event, user):
         start_datetime=dt.datetime.now() + dt.timedelta(hours=3),
         end_datetime=dt.datetime.now() + dt.timedelta(hours=6),
     )
-    request_update_reservation_time = (
-        await service_event.request_update_reservation_time(
-            event.id,
-            event_update,
-            user,
-        )
+    request_update_reservation_time = await service_event.request_update_reservation_time(
+        event.id,
+        event_update,
+        user,
     )
 
     assert request_update_reservation_time is not None
@@ -164,12 +162,10 @@ async def test_approve_update_reservation_time(service_event, event, user):
     """Test approving update reservation time an event."""
     event.event_state = EventState.UPDATE_REQUESTED
     event_update = EventUpdate(event_state=EventState.CONFIRMED)
-    approve_update_reservation_time = (
-        await service_event.approve_update_reservation_time(
-            event.id,
-            event_update,
-            user,
-        )
+    approve_update_reservation_time = await service_event.approve_update_reservation_time(
+        event.id,
+        event_update,
+        user,
     )
 
     assert approve_update_reservation_time is not None

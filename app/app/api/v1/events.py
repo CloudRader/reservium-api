@@ -68,10 +68,8 @@ async def create_event(
     )
     if not calendar:
         raise EntityNotFoundError(Entity.CALENDAR, event_create.reservation_type)
-    reservation_service = (
-        await calendar_service.get_reservation_service_of_this_calendar(
-            calendar.reservation_service_id,
-        )
+    reservation_service = await calendar_service.get_reservation_service_of_this_calendar(
+        calendar.reservation_service_id,
     )
     google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
 
@@ -133,9 +131,7 @@ async def create_event(
             return {"message": "Night time"}
 
     event_google_calendar = (
-        google_calendar_service.events()
-        .insert(calendarId=calendar.id, body=event_body)
-        .execute()
+        google_calendar_service.events().insert(calendarId=calendar.id, body=event_body).execute()
     )
     event = await service.create_event(
         event_create,

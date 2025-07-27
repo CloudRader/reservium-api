@@ -12,7 +12,9 @@ from core.models import MiniServiceModel
 
 @pytest.mark.asyncio
 async def test_create_mini_service(
-    test_mini_service, create_mini_service_uuid, create_reservation_service_uuid,
+    test_mini_service,
+    create_mini_service_uuid,
+    create_reservation_service_uuid,
 ):
     """Test creating mini service model."""
     assert test_mini_service.id == create_mini_service_uuid
@@ -64,11 +66,7 @@ async def test_list_mini_services(async_session, test_reservation_service):
     async_session.add_all(services)
     await async_session.commit()
 
-    result = (
-        (await async_session.execute(sqlalchemy.select(MiniServiceModel)))
-        .scalars()
-        .all()
-    )
+    result = (await async_session.execute(sqlalchemy.select(MiniServiceModel))).scalars().all()
 
     assert len(result) == 2
     names = [s.name for s in result]

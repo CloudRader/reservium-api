@@ -246,8 +246,7 @@ class CalendarService(AbstractCalendarService):
                 )
                 if not await self.update(collision, update_exist_calendar):
                     raise BaseAppError(
-                        "Failed to update collisions on the calendar "
-                        f"with this id {collision}",
+                        f"Failed to update collisions on the calendar with this id {collision}",
                     )
 
         return await self.create(calendar_create)
