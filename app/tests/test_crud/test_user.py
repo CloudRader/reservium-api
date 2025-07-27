@@ -45,7 +45,7 @@ async def test_update_user(test_user, user_crud):
     Test updating user.
     """
     user_updated = await user_crud.update(
-        db_obj=test_user, obj_in=UserUpdate(section_head=True)
+        db_obj=test_user, obj_in=UserUpdate(section_head=True),
     )
     assert user_updated.section_head is True
 

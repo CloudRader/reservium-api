@@ -99,7 +99,7 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
     """
 
     def __init__(
-        self, db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)]
+        self, db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
         self.event_crud = CRUDEvent(db)
         self.user_crud = CRUDUser(db)
@@ -117,16 +117,16 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
             raise PermissionDeniedError("This user isn't exist in system.")
 
         reservation_service = await self.reservation_service_crud.get_by_room_id(
-            access_request.room_id
+            access_request.room_id,
         )
         mini_service = await self.mini_service_crud.get_by_room_id(
-            access_request.room_id
+            access_request.room_id,
         )
 
         if (reservation_service is None) and (mini_service is None):
             raise PermissionDeniedError(
                 "This room associated with some service isn't exist "
-                "in system or use another access system"
+                "in system or use another access system",
             )
 
         event = await service_event.get_current_event_for_user(user.id)
@@ -147,7 +147,7 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
 
             for mini_service_name in event.additional_services:
                 mini_service = await self.mini_service_crud.get_by_name(
-                    mini_service_name
+                    mini_service_name,
                 )
                 if (mini_service.room_id is None) and (
                     access_request.device_id in mini_service.lockers_id
@@ -155,7 +155,7 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
                     return True
 
         raise PermissionDeniedError(
-            "No matching reservation exists at this time for this rules."
+            "No matching reservation exists at this time for this rules.",
         )
 
     async def add_var_symbol(self, access_body: VarSymbolCreateUpdate) -> dict:

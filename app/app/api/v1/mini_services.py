@@ -69,7 +69,7 @@ async def create_mini_services(
     mini_service_result: list[MiniService] = []
     for mini_service_create in mini_services_create:
         mini_service_result.append(
-            await create_mini_service(service, user, mini_service_create)
+            await create_mini_service(service, user, mini_service_create),
         )
 
     return mini_service_result
@@ -150,7 +150,7 @@ async def update_mini_service(
     :returns MiniServiceModel: the updated mini service.
     """
     mini_service = await service.update_mini_service(
-        mini_service_id, mini_service_update, user
+        mini_service_id, mini_service_update, user,
     )
     if not mini_service:
         raise EntityNotFoundError(Entity.MINI_SERVICE, mini_service_id)
@@ -262,7 +262,7 @@ async def get_mini_services_by_reservation_service_id(
     to reservation service id or None if no such mini services exists.
     """
     mini_services = await service.get_by_reservation_service_id(
-        reservation_service_id, include_removed
+        reservation_service_id, include_removed,
     )
     if mini_services is None:
         raise BaseAppError()

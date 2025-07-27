@@ -15,34 +15,34 @@ from core.schemas import EventUpdate
 
 @pytest.mark.asyncio
 async def test_post_event_not_have_this_service(
-    event_create_form, services_data_from_is, user, calendar, service_event
+    event_create_form, services_data_from_is, user, calendar, service_event,
 ):
     """
     Test that posting an event fails if the user doesn't have
     access to the required service.
     """
     result = await service_event.post_event(
-        event_create_form, services_data_from_is, user, calendar
+        event_create_form, services_data_from_is, user, calendar,
     )
     assert result["message"] == "You don't have game service!"
 
 
 @pytest.mark.asyncio
 async def test_post_event_with_not_exist_reservation_type(
-    event_create_form, services_data_from_is, user, service_event
+    event_create_form, services_data_from_is, user, service_event,
 ):
     """
     Test that posting an event fails if the calendar type does not exist.
     """
     result = await service_event.post_event(
-        event_create_form, services_data_from_is, user, None
+        event_create_form, services_data_from_is, user, None,
     )
     assert result["message"] == "Calendar with that type not exist!"
 
 
 @pytest.mark.asyncio
 async def test_post_event_not_create_more_people_than_can_be(
-    event_create_form, services_data_from_is, user, calendar, service_event
+    event_create_form, services_data_from_is, user, calendar, service_event,
 ):
     """
     Test that an event cannot be created with more guests
@@ -54,7 +54,7 @@ async def test_post_event_not_create_more_people_than_can_be(
     event_create_form.guests = 10
     calendar.more_than_max_people_with_permission = False
     result = await service_event.post_event(
-        event_create_form, services_data_from_is, user, calendar
+        event_create_form, services_data_from_is, user, calendar,
     )
     assert result["message"] == (
         "You can't reserve this type of " "reservation for more than 8 people!"
@@ -63,7 +63,7 @@ async def test_post_event_not_create_more_people_than_can_be(
 
 @pytest.mark.asyncio
 async def test_post_event(
-    event_create_form, services_data_from_is, user, calendar, service_event
+    event_create_form, services_data_from_is, user, calendar, service_event,
 ):
     """
     Test that posting an event succeeds under valid conditions.
@@ -72,7 +72,7 @@ async def test_post_event(
     event_create_form.start_datetime = dt.datetime.now() + dt.timedelta(hours=48)
     event_create_form.end_datetime = dt.datetime.now() + dt.timedelta(hours=53)
     event_body = await service_event.post_event(
-        event_create_form, services_data_from_is, user, calendar
+        event_create_form, services_data_from_is, user, calendar,
     )
     assert not (len(event_body) == 1 and "message" in event_body)
 
@@ -134,7 +134,7 @@ async def test_request_update_reservation_time(service_event, event, user):
     )
     request_update_reservation_time = (
         await service_event.request_update_reservation_time(
-            event.id, event_update, user
+            event.id, event_update, user,
         )
     )
 
@@ -153,7 +153,7 @@ async def test_approve_update_reservation_time(service_event, event, user):
     event_update = EventUpdate(event_state=EventState.CONFIRMED)
     approve_update_reservation_time = (
         await service_event.approve_update_reservation_time(
-            event.id, event_update, user
+            event.id, event_update, user,
         )
     )
 

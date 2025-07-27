@@ -67,7 +67,7 @@ async def test_user(user_crud):
             active_member=True,
             section_head=False,
             roles=["club", "grill"],
-        )
+        ),
     )
     return user
 
@@ -86,7 +86,7 @@ async def test_user2(user_crud):
             active_member=False,
             section_head=True,
             roles=["study", "games"],
-        )
+        ),
     )
     return user
 
@@ -103,7 +103,7 @@ async def test_reservation_service(reservation_service_crud):
             web="https://study.room.cz",
             contact_mail="study.test.room@buk.cvut.cz",
             public=True,
-        )
+        ),
     )
     return reservation_service
 
@@ -120,7 +120,7 @@ async def test_reservation_service2(reservation_service_crud):
             web="https://grill.cz",
             contact_mail="grill.test@buk.cvut.cz",
             public=False,
-        )
+        ),
     )
     return reservation_service
 
@@ -132,8 +132,8 @@ async def test_mini_service(mini_service_crud, test_reservation_service):
     """
     mini_service = await mini_service_crud.create(
         MiniServiceCreate(
-            name="Projector", reservation_service_id=test_reservation_service.id
-        )
+            name="Projector", reservation_service_id=test_reservation_service.id,
+        ),
     )
     return mini_service
 
@@ -145,8 +145,8 @@ async def test_mini_service2(mini_service_crud, test_reservation_service):
     """
     mini_service = await mini_service_crud.create(
         MiniServiceCreate(
-            name="Bar", reservation_service_id=test_reservation_service.id
-        )
+            name="Bar", reservation_service_id=test_reservation_service.id,
+        ),
     )
     return mini_service
 
@@ -168,7 +168,7 @@ def calendar_rules() -> Rules:
 
 @pytest_asyncio.fixture
 async def test_calendar_service(
-    calendar_crud, calendar_rules, test_reservation_service
+    calendar_crud, calendar_rules, test_reservation_service,
 ):
     """
     Creates and returns a test calendar.
@@ -187,6 +187,6 @@ async def test_calendar_service(
             manager_rules=calendar_rules,
             reservation_service_id=test_reservation_service.id,
             # mini_services=[test_mini_service, test_mini_service2],
-        )
+        ),
     )
     return calendar

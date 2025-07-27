@@ -9,8 +9,6 @@ from core.models.event import EventState
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
-# pylint: disable=too-few-public-methods
-# reason: This class need for proper validation
 class NaiveDatetimeValidatorMixin:
     """
     Mixin to validate that datetime fields are naive (i.e., without timezone info).
@@ -18,8 +16,8 @@ class NaiveDatetimeValidatorMixin:
 
     @classmethod
     @field_validator("start_datetime", "end_datetime", mode="before")
-    def check_naive_datetime(  # pylint: disable=no-self-argument
-        cls, value: Any
+    def check_naive_datetime(
+        cls, value: Any,
     ) -> Any:
         """
         Validates that datetime values are naive (not timezone-aware).
@@ -117,8 +115,6 @@ class EventInDBBase(EventBase):
     user_id: int
     calendar_id: str
 
-    # pylint: disable=too-few-public-methods
-    # reason: Config class only needs to set orm_mode to True.
     class Config:
         """Config class for database event model."""
 

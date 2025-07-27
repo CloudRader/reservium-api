@@ -164,7 +164,7 @@ async def reservation_service(reservation_service_crud):
     )
 
     reservation_service = await reservation_service_crud.create(
-        reservation_service_data
+        reservation_service_data,
     )
     return reservation_service
 

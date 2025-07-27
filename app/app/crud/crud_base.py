@@ -25,7 +25,7 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
 
     @abstractmethod
     async def get(
-        self, uuid: UUID | str | int, include_removed: bool = False
+        self, uuid: UUID | str | int, include_removed: bool = False,
     ) -> Model | None:
         """
         Retrieve a single record by its UUID.
@@ -49,7 +49,7 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
 
     @abstractmethod
     async def get_by_reservation_service_id(
-        self, reservation_service_id: str, include_removed: bool = False
+        self, reservation_service_id: str, include_removed: bool = False,
     ) -> list[Model] | None:
         """
         Retrieves all records by its reservation service id.
@@ -65,7 +65,7 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
 
     @abstractmethod
     async def update(
-        self, *, db_obj: Model | None, obj_in: UpdateSchema
+        self, *, db_obj: Model | None, obj_in: UpdateSchema,
     ) -> Model | None:
         """
         Update an existing record with the input scheme.
@@ -73,7 +73,7 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
 
     @abstractmethod
     async def retrieve_removed_object(
-        self, uuid: UUID | str | int | None
+        self, uuid: UUID | str | int | None,
     ) -> Model | None:
         """
         Retrieve removed object from soft removed.
@@ -94,7 +94,7 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
 
     @abstractmethod
     async def check_uuid_and_return_obj_from_db_by_uuid(
-        self, uuid: UUID | str | int | None
+        self, uuid: UUID | str | int | None,
     ) -> Model | None:
         """
         Retrieve a database object by its primary key (UUID, string, or integer),
@@ -113,7 +113,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         self.db: AsyncSession = db
 
     async def get(
-        self, uuid: UUID | str | int, include_removed: bool = False
+        self, uuid: UUID | str | int, include_removed: bool = False,
     ) -> Model | None:
         if uuid is None:
             return None
@@ -136,10 +136,10 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         return list(result.scalars().all())
 
     async def get_by_reservation_service_id(
-        self, reservation_service_id: UUID | str, include_removed: bool = False
+        self, reservation_service_id: UUID | str, include_removed: bool = False,
     ) -> list[Model] | None:
         stmt = select(self.model).filter(
-            self.model.reservation_service_id == reservation_service_id
+            self.model.reservation_service_id == reservation_service_id,
         )
         if include_removed:
             stmt = stmt.execution_options(include_deleted=True)
@@ -155,7 +155,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         return db_obj
 
     async def update(
-        self, *, db_obj: Model | None, obj_in: UpdateSchema | dict[str, Any]
+        self, *, db_obj: Model | None, obj_in: UpdateSchema | dict[str, Any],
     ) -> Model | None:
         if db_obj is None or obj_in is None:
             return None
@@ -173,7 +173,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         return db_obj
 
     async def retrieve_removed_object(
-        self, uuid: UUID | str | int | None
+        self, uuid: UUID | str | int | None,
     ) -> Model | None:
         if uuid is None:
             return None
@@ -221,7 +221,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         return result.scalar_one_or_none()
 
     async def check_uuid_and_return_obj_from_db_by_uuid(
-        self, uuid: UUID | str | int | None
+        self, uuid: UUID | str | int | None,
     ) -> Model | None:
         if uuid is None:
             return None

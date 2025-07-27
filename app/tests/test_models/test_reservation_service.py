@@ -14,7 +14,7 @@ from core.models import ReservationServiceModel
 
 @pytest.mark.asyncio
 async def test_create_reservation_service(
-    test_reservation_service, create_reservation_service_uuid
+    test_reservation_service, create_reservation_service_uuid,
 ):
     """
     Test creating reservation service model.
@@ -33,7 +33,7 @@ async def test_get_reservation_service(async_session, test_reservation_service):
     Test getting the reservation service from the database.
     """
     db_obj = await async_session.get(
-        ReservationServiceModel, test_reservation_service.id
+        ReservationServiceModel, test_reservation_service.id,
     )
     assert db_obj is not None
     assert db_obj.name == test_reservation_service.name
@@ -58,7 +58,7 @@ async def test_delete_reservation_service(async_session, test_reservation_servic
     await async_session.delete(test_reservation_service)
     await async_session.commit()
     deleted = await async_session.get(
-        ReservationServiceModel, test_reservation_service.id
+        ReservationServiceModel, test_reservation_service.id,
     )
     assert deleted is None
 

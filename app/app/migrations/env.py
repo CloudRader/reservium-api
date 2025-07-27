@@ -8,7 +8,6 @@ handles running migrations in both offline and online modes.
 import asyncio
 from logging.config import fileConfig
 
-# pylint: disable=no-member
 from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import pool
@@ -18,13 +17,11 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 load_dotenv(dotenv_path=".env.template")
 load_dotenv(dotenv_path=".env", override=True)
 
-# pylint: disable=wrong-import-position
 # ruff: noqa: E402, F403
 from core import settings
 from core.models.base_class import Base
 from core.models.calendar import RulesType
 
-# pylint: enable=wrong-import-position
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

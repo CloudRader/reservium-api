@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AbstractCRUDMiniService(
-    CRUDBase[MiniServiceModel, MiniServiceCreate, MiniServiceUpdate], ABC
+    CRUDBase[MiniServiceModel, MiniServiceCreate, MiniServiceUpdate], ABC,
 ):
     """
     Abstract class for CRUD operations specific to the MiniService model.
@@ -25,7 +25,7 @@ class AbstractCRUDMiniService(
 
     @abstractmethod
     async def get_by_name(
-        self, name: str, include_removed: bool = False
+        self, name: str, include_removed: bool = False,
     ) -> MiniServiceModel | None:
         """
         Retrieves a Calendar instance by its name.
@@ -38,7 +38,7 @@ class AbstractCRUDMiniService(
 
     @abstractmethod
     async def get_by_room_id(
-        self, room_id: int, include_removed: bool = False
+        self, room_id: int, include_removed: bool = False,
     ) -> MiniServiceModel | None:
         """
         Retrieves a Mini Service instance by its room id.
@@ -51,7 +51,7 @@ class AbstractCRUDMiniService(
 
     @abstractmethod
     async def get_names_by_reservation_service_id(
-        self, reservation_service_id: UUID
+        self, reservation_service_id: UUID,
     ) -> list[str]:
         """
         Retrieves all names from all Mini Services
@@ -64,7 +64,7 @@ class AbstractCRUDMiniService(
 
     @abstractmethod
     async def get_ids_by_reservation_service_id(
-        self, reservation_service_id: UUID
+        self, reservation_service_id: UUID,
     ) -> list[str]:
         """
         Retrieves all ids from all Mini Services
@@ -87,7 +87,7 @@ class CRUDMiniService(AbstractCRUDMiniService):
         super().__init__(MiniServiceModel, db)
 
     async def get_by_name(
-        self, name: str, include_removed: bool = False
+        self, name: str, include_removed: bool = False,
     ) -> MiniServiceModel | None:
         stmt = select(self.model).where(self.model.name == name)
         if include_removed:
@@ -96,7 +96,7 @@ class CRUDMiniService(AbstractCRUDMiniService):
         return result.scalar_one_or_none()
 
     async def get_by_room_id(
-        self, room_id: int, include_removed: bool = False
+        self, room_id: int, include_removed: bool = False,
     ) -> MiniServiceModel | None:
         stmt = select(self.model).where(self.model.room_id == room_id)
         if include_removed:
@@ -105,19 +105,19 @@ class CRUDMiniService(AbstractCRUDMiniService):
         return result.scalar_one_or_none()
 
     async def get_names_by_reservation_service_id(
-        self, reservation_service_id: UUID
+        self, reservation_service_id: UUID,
     ) -> list[str]:
         stmt = select(self.model.name).where(
-            self.model.reservation_service_id == reservation_service_id
+            self.model.reservation_service_id == reservation_service_id,
         )
         result = await self.db.execute(stmt)
         return [row[0] for row in result.fetchall()]
 
     async def get_ids_by_reservation_service_id(
-        self, reservation_service_id: UUID
+        self, reservation_service_id: UUID,
     ) -> list[str]:
         stmt = select(self.model.id).where(
-            self.model.reservation_service_id == reservation_service_id
+            self.model.reservation_service_id == reservation_service_id,
         )
         result = await self.db.execute(stmt)
         return [row[0] for row in result.fetchall()]

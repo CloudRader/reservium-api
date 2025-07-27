@@ -29,7 +29,7 @@ router = APIRouter(tags=[fastapi_docs.CALENDAR_TAG["name"]])
 async def create_calendar(
     service: Annotated[CalendarService, Depends(CalendarService)],
     google_calendar_service: Annotated[
-        GoogleCalendarService, Depends(GoogleCalendarService)
+        GoogleCalendarService, Depends(GoogleCalendarService),
     ],
     user: Annotated[User, Depends(get_current_user)],
     calendar_create: CalendarCreate,
@@ -49,7 +49,7 @@ async def create_calendar(
     else:
         calendar_create.id = (
             await google_calendar_service.create_calendar(
-                calendar_create.reservation_type
+                calendar_create.reservation_type,
             )
         ).get("id")
 
@@ -68,7 +68,7 @@ async def create_calendar(
 async def create_calendars(
     service: Annotated[CalendarService, Depends(CalendarService)],
     google_calendar_service: Annotated[
-        GoogleCalendarService, Depends(GoogleCalendarService)
+        GoogleCalendarService, Depends(GoogleCalendarService),
     ],
     user: Annotated[User, Depends(get_current_user)],
     calendars_create: list[CalendarCreate],
@@ -86,7 +86,7 @@ async def create_calendars(
     calendars_result: list[Calendar] = []
     for calendar in calendars_create:
         calendars_result.append(
-            await create_calendar(service, google_calendar_service, user, calendar)
+            await create_calendar(service, google_calendar_service, user, calendar),
         )
 
     return calendars_result
@@ -151,7 +151,7 @@ async def get_all_calendars(
 async def get_all_google_calendar_to_add(
     service: Annotated[CalendarService, Depends(CalendarService)],
     google_calendar_service: Annotated[
-        GoogleCalendarService, Depends(GoogleCalendarService)
+        GoogleCalendarService, Depends(GoogleCalendarService),
     ],
     user: Annotated[User, Depends(get_current_user)],
 ) -> Any:
@@ -304,7 +304,7 @@ async def get_calendars_by_reservation_service_id(
     to reservation service id or None if no such calendars exists.
     """
     calendars = await service.get_by_reservation_service_id(
-        reservation_service_id, include_removed
+        reservation_service_id, include_removed,
     )
     if calendars is None:
         raise BaseAppError()

@@ -33,7 +33,7 @@ class AbstractCalendarService(
 
     @abstractmethod
     async def create_calendar(
-        self, calendar_create: CalendarCreate, user: User
+        self, calendar_create: CalendarCreate, user: User,
     ) -> CalendarModel | None:
         """
         Create a Calendar in the database.
@@ -46,7 +46,7 @@ class AbstractCalendarService(
 
     @abstractmethod
     async def update_calendar(
-        self, calendar_id: str, calendar_update: CalendarUpdate, user: User
+        self, calendar_id: str, calendar_update: CalendarUpdate, user: User,
     ) -> CalendarModel | None:
         """
         Update a Calendar in the database.
@@ -60,7 +60,7 @@ class AbstractCalendarService(
 
     @abstractmethod
     async def retrieve_removed_object(
-        self, uuid: UUID | str | int | None, user: User
+        self, uuid: UUID | str | int | None, user: User,
     ) -> CalendarModel | None:
         """
         Retrieve removed calendar from soft removed.
@@ -73,7 +73,7 @@ class AbstractCalendarService(
 
     @abstractmethod
     async def delete_calendar(
-        self, calendar_id: str, user: User, hard_remove: bool = False
+        self, calendar_id: str, user: User, hard_remove: bool = False,
     ) -> CalendarModel | None:
         """
         Delete a Calendar in the database.
@@ -103,7 +103,7 @@ class AbstractCalendarService(
 
     @abstractmethod
     async def get_by_reservation_type(
-        self, reservation_type: str, include_removed: bool = False
+        self, reservation_type: str, include_removed: bool = False,
     ) -> CalendarModel | None:
         """
         Retrieves a Calendar instance by its reservation_type.
@@ -126,7 +126,7 @@ class AbstractCalendarService(
 
     @abstractmethod
     async def get_reservation_service_of_this_calendar(
-        self, reservation_service_id: UUID
+        self, reservation_service_id: UUID,
     ) -> ReservationServiceModel | None:
         """
         Retrieves the reservation service of this calendar
@@ -139,7 +139,7 @@ class AbstractCalendarService(
 
     @abstractmethod
     async def get_by_reservation_service_id(
-        self, reservation_service_id: str, include_removed: bool = False
+        self, reservation_service_id: str, include_removed: bool = False,
     ) -> list[Row[CalendarModel]] | None:
         """
         Retrieves a Calendars instance by its reservation service id.
@@ -153,7 +153,7 @@ class AbstractCalendarService(
 
     @abstractmethod
     async def update_mini_services(
-        self, calendar: CalendarModel | None, mini_services_id: list[UUID] | None
+        self, calendar: CalendarModel | None, mini_services_id: list[UUID] | None,
     ) -> CalendarModel | None:
         """
         Update the list of mini services associated with a given calendar.
@@ -172,14 +172,14 @@ class CalendarService(AbstractCalendarService):
     """
 
     def __init__(
-        self, db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)]
+        self, db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
         self.reservation_service_crud = CRUDReservationService(db)
         self.mini_service_crud = CRUDMiniService(db)
         super().__init__(CRUDCalendar(db))
 
     async def create_calendar(
-        self, calendar_create: CalendarCreate, user: User
+        self, calendar_create: CalendarCreate, user: User,
     ) -> CalendarModel | None:
         if await self.get(calendar_create.id, True):
             raise BaseAppError("A calendar with this id already exist.")
@@ -187,14 +187,14 @@ class CalendarService(AbstractCalendarService):
             raise BaseAppError("A calendar with this reservation type already exist.")
 
         reservation_service = await self.reservation_service_crud.get(
-            calendar_create.reservation_service_id
+            calendar_create.reservation_service_id,
         )
 
         if reservation_service is None:
             raise BaseAppError("A reservation service of calendar isn't exist.")
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to create calendars."
+                f"You must be the {reservation_service.name} manager to create calendars.",
             )
 
         # if calendar_create.mini_services_id:
@@ -216,25 +216,25 @@ class CalendarService(AbstractCalendarService):
                 if existing_calendar is None:
                     raise BaseAppError(
                         "These calendar do not exist in the db "
-                        "that you want to add to this calendar collision."
+                        "that you want to add to this calendar collision.",
                     )
                 collision_calendar_to_update = set(
-                    existing_calendar.collision_with_calendar
+                    existing_calendar.collision_with_calendar,
                 )
                 collision_calendar_to_update.add(calendar_create.id)
                 update_exist_calendar = CalendarUpdate(
-                    collision_with_calendar=list(collision_calendar_to_update)
+                    collision_with_calendar=list(collision_calendar_to_update),
                 )
                 if not await self.update(collision, update_exist_calendar):
                     raise BaseAppError(
                         "Failed to update collisions on the calendar "
-                        f"with this id {collision}"
+                        f"with this id {collision}",
                     )
 
         return await self.create(calendar_create)
 
     async def update_calendar(
-        self, calendar_id: str, calendar_update: CalendarUpdate, user: User
+        self, calendar_id: str, calendar_update: CalendarUpdate, user: User,
     ) -> CalendarModel | None:
         calendar_to_update = await self.get(calendar_id)
 
@@ -242,23 +242,23 @@ class CalendarService(AbstractCalendarService):
             return None
 
         reservation_service = await self.reservation_service_crud.get(
-            calendar_to_update.reservation_service_id
+            calendar_to_update.reservation_service_id,
         )
 
         if reservation_service is None:
             raise BaseAppError("A reservation service of calendar isn't exist.")
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to create calendars."
+                f"You must be the {reservation_service.name} manager to create calendars.",
             )
 
         await self.update_mini_services(
-            calendar_to_update, calendar_update.mini_services_id
+            calendar_to_update, calendar_update.mini_services_id,
         )
         return await self.update(calendar_id, calendar_update)
 
     async def retrieve_removed_object(
-        self, uuid: UUID | str | int | None, user: User
+        self, uuid: UUID | str | int | None, user: User,
     ) -> CalendarModel | None:
         calendar = await self.get(uuid, True)
 
@@ -266,20 +266,20 @@ class CalendarService(AbstractCalendarService):
             raise BaseAppError("A calendar was not soft deleted.")
 
         reservation_service = await self.reservation_service_crud.get(
-            str(calendar.reservation_service_id)
+            str(calendar.reservation_service_id),
         )
 
         if reservation_service is None:
             raise BaseAppError("A reservation service of calendar isn't exist.")
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to create calendars."
+                f"You must be the {reservation_service.name} manager to create calendars.",
             )
 
         return await self.crud.retrieve_removed_object(uuid)
 
     async def delete_calendar(
-        self, calendar_id: str, user: User, hard_remove: bool = False
+        self, calendar_id: str, user: User, hard_remove: bool = False,
     ) -> CalendarModel | None:
         calendar = await self.get(calendar_id, True)
 
@@ -288,18 +288,18 @@ class CalendarService(AbstractCalendarService):
 
         if hard_remove and not user.section_head:
             raise PermissionDeniedError(
-                "You must be the head of PS to totally delete calendars."
+                "You must be the head of PS to totally delete calendars.",
             )
 
         reservation_service = await self.reservation_service_crud.get(
-            calendar.reservation_service_id
+            calendar.reservation_service_id,
         )
 
         if reservation_service is None:
             raise BaseAppError("A reservation service of calendar isn't exist.")
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to create calendars."
+                f"You must be the {reservation_service.name} manager to create calendars.",
             )
 
         for calendar_to_update in reservation_service.calendars:
@@ -310,7 +310,7 @@ class CalendarService(AbstractCalendarService):
                 collision_to_update = calendar_to_update.collision_with_calendar.copy()
                 collision_to_update.remove(calendar.id)
                 update_exist_calendar = CalendarUpdate(
-                    collision_with_calendar=collision_to_update
+                    collision_with_calendar=collision_to_update,
                 )
                 await self.update(calendar_to_update.id, update_exist_calendar)
 
@@ -320,7 +320,7 @@ class CalendarService(AbstractCalendarService):
         return await self.crud.soft_remove(calendar_id)
 
     async def get_all_google_calendar_to_add(
-        self, user: User, google_calendars: list[dict]
+        self, user: User, google_calendars: list[dict],
     ) -> list[dict] | None:
         if not user.roles:
             raise PermissionDeniedError()
@@ -329,7 +329,7 @@ class CalendarService(AbstractCalendarService):
 
         for calendar in google_calendars:
             if calendar.get("accessRole") == "owner" and not calendar.get(
-                "primary", False
+                "primary", False,
             ):
                 if await self.get(calendar.get("id")) is None:
                     new_calendar_candidates.append(calendar)
@@ -337,10 +337,10 @@ class CalendarService(AbstractCalendarService):
         return new_calendar_candidates
 
     async def get_by_reservation_type(
-        self, reservation_type: str, include_removed: bool = False
+        self, reservation_type: str, include_removed: bool = False,
     ) -> CalendarModel | None:
         return await self.crud.get_by_reservation_type(
-            reservation_type, include_removed
+            reservation_type, include_removed,
         )
 
     async def get_mini_services_by_calendar(self, calendar_id: str) -> list[str] | None:
@@ -356,10 +356,10 @@ class CalendarService(AbstractCalendarService):
         return mini_services_name
 
     async def get_reservation_service_of_this_calendar(
-        self, reservation_service_id: UUID
+        self, reservation_service_id: UUID,
     ) -> ReservationServiceModel | None:
         reservation_service = await self.reservation_service_crud.get(
-            reservation_service_id
+            reservation_service_id,
         )
 
         if not reservation_service:
@@ -368,14 +368,14 @@ class CalendarService(AbstractCalendarService):
         return reservation_service
 
     async def get_by_reservation_service_id(
-        self, reservation_service_id: str, include_removed: bool = False
+        self, reservation_service_id: str, include_removed: bool = False,
     ) -> list[Row[CalendarModel]] | None:
         return await self.crud.get_by_reservation_service_id(
-            reservation_service_id, include_removed
+            reservation_service_id, include_removed,
         )
 
     async def update_mini_services(
-        self, calendar: CalendarModel | None, mini_services_id: list[UUID] | None
+        self, calendar: CalendarModel | None, mini_services_id: list[UUID] | None,
     ) -> CalendarModel | None:
         if mini_services_id is None:
             return calendar
@@ -385,7 +385,7 @@ class CalendarService(AbstractCalendarService):
             if mini_service is None:
                 raise BaseAppError(
                     "These mini services do not exist in the db "
-                    "that you want to change to this calendar."
+                    "that you want to change to this calendar.",
                 )
             mini_services.append(mini_service)
         return await self.crud.update_mini_services(calendar, mini_services)

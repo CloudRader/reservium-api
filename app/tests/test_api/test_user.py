@@ -70,7 +70,7 @@ async def test_login(mock_get_oauth, client: AsyncClient):
 @patch("api.v1.auth.get_oauth_session")
 @patch("api.v1.auth.authenticate_user", new_callable=AsyncMock)
 async def test_callback_success(
-    mock_authenticate_user, mock_get_oauth, client: AsyncClient
+    mock_authenticate_user, mock_get_oauth, client: AsyncClient,
 ):
     """
     Test successful callback after OAuth authentication.

@@ -48,7 +48,7 @@ class BaseAppError(Exception):
     DESCRIPTION: str = "An error occurred."
 
     def __init__(
-        self, message: str | None = None, status_code: int | None = None, **kwargs: Any
+        self, message: str | None = None, status_code: int | None = None, **kwargs: Any,
     ):
         self.message = message or self.DESCRIPTION
         self.status_code = status_code or self.STATUS_CODE
@@ -111,7 +111,7 @@ class PermissionDeniedError(BaseAppError):
 
     def __init__(self, message: str | None = None, **kwargs):
         super().__init__(
-            message=message or self.DESCRIPTION, status_code=self.STATUS_CODE, **kwargs
+            message=message or self.DESCRIPTION, status_code=self.STATUS_CODE, **kwargs,
         )
 
 
@@ -125,7 +125,7 @@ class UnauthorizedError(BaseAppError):
 
     def __init__(self, message: str | None = None, **kwargs):
         super().__init__(
-            message=message or self.DESCRIPTION, status_code=self.STATUS_CODE, **kwargs
+            message=message or self.DESCRIPTION, status_code=self.STATUS_CODE, **kwargs,
         )
 
 

@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 class AbstractCRUDReservationService(
     CRUDBase[
-        ReservationServiceModel, ReservationServiceCreate, ReservationServiceUpdate
+        ReservationServiceModel, ReservationServiceCreate, ReservationServiceUpdate,
     ],
     ABC,
 ):
@@ -27,7 +27,7 @@ class AbstractCRUDReservationService(
 
     @abstractmethod
     async def get_by_name(
-        self, name: str, include_removed: bool = False
+        self, name: str, include_removed: bool = False,
     ) -> ReservationServiceModel | None:
         """
         Retrieves a Reservation Service instance by its name.
@@ -40,7 +40,7 @@ class AbstractCRUDReservationService(
 
     @abstractmethod
     async def get_by_alias(
-        self, alias: str, include_removed: bool = False
+        self, alias: str, include_removed: bool = False,
     ) -> ReservationServiceModel | None:
         """
         Retrieves a Reservation Services instance by its service alias.
@@ -53,7 +53,7 @@ class AbstractCRUDReservationService(
 
     @abstractmethod
     async def get_by_room_id(
-        self, room_id: int, include_removed: bool = False
+        self, room_id: int, include_removed: bool = False,
     ) -> ReservationServiceModel | None:
         """
         Retrieves a Reservation Service instance by its room id.
@@ -74,7 +74,7 @@ class AbstractCRUDReservationService(
 
     @abstractmethod
     async def get_public_services(
-        self, include_removed: bool = False
+        self, include_removed: bool = False,
     ) -> list[ReservationServiceModel]:
         """
         Retrieves a public Reservation Service instance.
@@ -96,7 +96,7 @@ class CRUDReservationService(AbstractCRUDReservationService):
         super().__init__(ReservationServiceModel, db)
 
     async def get_by_name(
-        self, name: str, include_removed: bool = False
+        self, name: str, include_removed: bool = False,
     ) -> ReservationServiceModel | None:
         stmt = select(self.model).filter(self.model.name == name)
         if include_removed:
@@ -105,7 +105,7 @@ class CRUDReservationService(AbstractCRUDReservationService):
         return result.scalar_one_or_none()
 
     async def get_by_alias(
-        self, alias: str, include_removed: bool = False
+        self, alias: str, include_removed: bool = False,
     ) -> ReservationServiceModel | None:
         stmt = select(self.model).filter(self.model.alias == alias)
         if include_removed:
@@ -114,7 +114,7 @@ class CRUDReservationService(AbstractCRUDReservationService):
         return result.scalar_one_or_none()
 
     async def get_by_room_id(
-        self, room_id: int, include_removed: bool = False
+        self, room_id: int, include_removed: bool = False,
     ) -> ReservationServiceModel | None:
         stmt = select(self.model).filter(self.model.room_id == room_id)
         if include_removed:
@@ -128,7 +128,7 @@ class CRUDReservationService(AbstractCRUDReservationService):
         return [row[0] for row in result.fetchall()]
 
     async def get_public_services(
-        self, include_removed: bool = False
+        self, include_removed: bool = False,
     ) -> list[ReservationServiceModel]:
         stmt = select(self.model).filter(self.model.public)
         if include_removed:

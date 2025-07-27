@@ -46,7 +46,7 @@ async def test_get_mini_service_by_name(test_mini_service, mini_service_crud):
 
 @pytest.mark.asyncio
 async def test_get_all_mini_services(
-    mini_service_crud, test_mini_service, test_mini_service2
+    mini_service_crud, test_mini_service, test_mini_service2,
 ):
     """
     Test retrieving all mini services.
@@ -64,7 +64,7 @@ async def test_get_by_reservation_service_id(mini_service_crud, test_mini_servic
     Test retrieving mini services by reservation service ID.
     """
     mini_services = await mini_service_crud.get_by_reservation_service_id(
-        test_mini_service.reservation_service_id
+        test_mini_service.reservation_service_id,
     )
     assert any(
         mini_service.id == test_mini_service.id for mini_service in mini_services
@@ -73,13 +73,13 @@ async def test_get_by_reservation_service_id(mini_service_crud, test_mini_servic
 
 @pytest.mark.asyncio
 async def test_get_names_by_reservation_service_id(
-    mini_service_crud, test_mini_service
+    mini_service_crud, test_mini_service,
 ):
     """
     Test retrieving mini service names by reservation service ID.
     """
     names = await mini_service_crud.get_names_by_reservation_service_id(
-        test_mini_service.reservation_service_id
+        test_mini_service.reservation_service_id,
     )
     assert test_mini_service.name in names
 
@@ -90,7 +90,7 @@ async def test_update_mini_service(test_mini_service, mini_service_crud):
     Test updating mini service.
     """
     updated = await mini_service_crud.update(
-        db_obj=test_mini_service, obj_in=MiniServiceUpdate(name="Console")
+        db_obj=test_mini_service, obj_in=MiniServiceUpdate(name="Console"),
     )
     assert updated.name == "Console"
 
@@ -129,7 +129,7 @@ async def test_hard_remove_mini_service(test_mini_service, mini_service_crud):
 
 @pytest.mark.asyncio
 async def test_hard_remove_nonexistent_mini_service(
-    test_mini_service, mini_service_crud
+    test_mini_service, mini_service_crud,
 ):
     """
     Test deleting a nonexistent mini service.
@@ -148,7 +148,7 @@ async def test_get_by_name_include_removed(mini_service_crud, test_mini_service)
     """
     await mini_service_crud.soft_remove(test_mini_service.id)
     service = await mini_service_crud.get_by_name(
-        name=test_mini_service.name, include_removed=True
+        name=test_mini_service.name, include_removed=True,
     )
     assert service is not None
     assert service.deleted_at is not None
@@ -161,7 +161,7 @@ async def test_get_by_id_include_removed(mini_service_crud, test_mini_service):
     """
     await mini_service_crud.soft_remove(test_mini_service.id)
     service = await mini_service_crud.get(
-        uuid=test_mini_service.id, include_removed=True
+        uuid=test_mini_service.id, include_removed=True,
     )
     assert service is not None
     assert service.deleted_at is not None

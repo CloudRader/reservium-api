@@ -46,8 +46,6 @@ class AbstractGoogleCalendarService(ABC):
         """
 
 
-# pylint: disable=no-member
-# reason: Dynamically generated attributes from googleapiclient are not visible to pylint.
 class GoogleCalendarService(AbstractGoogleCalendarService):
     """
     Service implementation for interacting with the Google Calendar API.

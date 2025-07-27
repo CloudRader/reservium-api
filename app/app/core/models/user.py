@@ -14,8 +14,6 @@ if TYPE_CHECKING:
     from core.models.event import Event
 
 
-# pylint: disable=too-few-public-methods
-# reason: ORM model does not require to have any public methods
 class User(Base, SoftDeleteMixin):
     """
     User model to create and manipulate user entity in the database.
@@ -26,16 +24,13 @@ class User(Base, SoftDeleteMixin):
     full_name: Mapped[str] = mapped_column(nullable=False)
     room_number: Mapped[str] = mapped_column(nullable=False)
     active_member: Mapped[bool] = mapped_column(
-        unique=False, nullable=False, default=False
+        unique=False, nullable=False, default=False,
     )
     section_head: Mapped[bool] = mapped_column(
-        unique=False, nullable=False, default=False
+        unique=False, nullable=False, default=False,
     )
     roles: Mapped[list[str] | None] = mapped_column(
-        ARRAY(String), unique=False, nullable=True
+        ARRAY(String), unique=False, nullable=True,
     )
 
     events: Mapped[list["Event"]] = relationship(back_populates="user", lazy="selectin")
-
-
-# pylint: enable=too-few-public-methods

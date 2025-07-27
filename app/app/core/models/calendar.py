@@ -19,7 +19,6 @@ if TYPE_CHECKING:
     from core.models.reservation_service import ReservationService
 
 
-# pylint: disable=too-many-ancestors
 class RulesType(TypeDecorator):
     """
     Custom SQLAlchemy type to handle the serialization and deserialization of
@@ -58,10 +57,6 @@ class RulesType(TypeDecorator):
         return RulesType(self.impl)
 
 
-# pylint: disable=too-few-public-methods
-# reason: ORM model does not require to have any public methods
-# pylint: disable=unsubscriptable-object
-# reason: Custom SQLAlchemy type, based on TypeDecorator.
 class Calendar(Base, SoftDeleteMixin):
     """
     Calendar model to create and manipulate user entity in the database.
@@ -72,11 +67,13 @@ class Calendar(Base, SoftDeleteMixin):
     color: Mapped[str] = mapped_column(default="#05baf5", nullable=False)
     max_people: Mapped[int] = mapped_column(default=0, nullable=False)
     more_than_max_people_with_permission: Mapped[bool] = mapped_column(
-        nullable=False, default=True
+        nullable=False,
+        default=True,
     )
     collision_with_itself: Mapped[bool] = mapped_column(default=False, nullable=False)
     collision_with_calendar: Mapped[list[str]] = mapped_column(
-        ARRAY(String), nullable=True
+        ARRAY(String),
+        nullable=True,
     )
 
     club_member_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=True)
@@ -84,20 +81,19 @@ class Calendar(Base, SoftDeleteMixin):
     manager_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
 
     reservation_service_id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("reservation_service.id")
+        UUID(as_uuid=True),
+        ForeignKey("reservation_service.id"),
     )
 
     reservation_service: Mapped["ReservationService"] = relationship(
-        back_populates="calendars"
+        back_populates="calendars",
     )
     events: Mapped[list["Event"]] = relationship(
-        back_populates="calendar", lazy="selectin"
+        back_populates="calendar",
+        lazy="selectin",
     )
     mini_services: Mapped[list["MiniService"]] = relationship(
         secondary="calendar_mini_service_association",
         back_populates="calendars",
         lazy="selectin",
     )
-
-
-# pylint: enable=too-few-public-methods

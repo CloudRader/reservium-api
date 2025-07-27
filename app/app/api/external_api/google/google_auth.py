@@ -38,7 +38,7 @@ def auth_google(creds):
                         "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
                         "client_secret": settings.GOOGLE.CLIENT_SECRET,
                         "redirect_uris": ["http://localhost"],
-                    }
+                    },
                 },
                 settings.GOOGLE.SCOPES,
             )

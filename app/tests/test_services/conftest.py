@@ -151,7 +151,7 @@ def roles_data_from_is(limit_data_from_is) -> list[Role]:
             description="neco",
             limit="Grillcentrum, Klubovna, Studovna",
             limit_objects=[limit_data_from_is],
-        )
+        ),
     ]
 
 
@@ -181,7 +181,7 @@ def services_data_from_is(service_data_from_is) -> list[ServiceValidity]:
             note="Zaklad",
             service=service_data_from_is,
             usetype="free",
-        )
+        ),
     ]
 
 
@@ -209,13 +209,13 @@ def room_data_from_is(zone_data_from_is) -> Room:
 
 @pytest.fixture()
 def data_from_is(
-    user_data_from_is, room_data_from_is, services_data_from_is
+    user_data_from_is, room_data_from_is, services_data_from_is,
 ) -> InformationFromIS:
     """
     Return new InformationFromIS schema.
     """
     return InformationFromIS(
-        user=user_data_from_is, room=room_data_from_is, services=services_data_from_is
+        user=user_data_from_is, room=room_data_from_is, services=services_data_from_is,
     )
 
 
@@ -247,7 +247,7 @@ def server_create_user(
     Return server creating user.
     """
     return service_user.create_user(
-        user_data_from_is, roles_data_from_is, services_data_from_is, room_data_from_is
+        user_data_from_is, roles_data_from_is, services_data_from_is, room_data_from_is,
     )
 
 
@@ -265,7 +265,7 @@ async def user(service_user) -> User:
             active_member=True,
             section_head=True,
             roles=["game", "stud", "club"],
-        )
+        ),
     )
 
 
@@ -297,7 +297,7 @@ async def user_not_head(service_user) -> User:
             active_member=False,
             section_head=False,
             roles=[],
-        )
+        ),
     )
 
 
@@ -317,13 +317,13 @@ def reservation_service_create() -> ReservationServiceCreate:
 
 @pytest_asyncio.fixture()
 async def reservation_service(
-    service_reservation_service, reservation_service_create, user
+    service_reservation_service, reservation_service_create, user,
 ) -> ReservationService:
     """
     Return reservation service object in db.
     """
     return await service_reservation_service.create_reservation_service(
-        reservation_service_create, user
+        reservation_service_create, user,
     )
 
 

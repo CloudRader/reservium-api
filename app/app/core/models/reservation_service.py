@@ -15,10 +15,6 @@ if TYPE_CHECKING:
     from core.models.mini_service import MiniService
 
 
-# pylint: disable=too-few-public-methods
-# reason: ORM model does not require to have any public methods
-# pylint: disable=unsubscriptable-object
-# reason: Custom SQLAlchemy type, based on TypeDecorator.
 class ReservationService(Base, SoftDeleteMixin):
     """
     Reservation service model to create and manipulate reservation service entity in the database.
@@ -35,14 +31,11 @@ class ReservationService(Base, SoftDeleteMixin):
     room_id: Mapped[int] = mapped_column(nullable=True)
 
     calendars: Mapped[list["Calendar"]] = relationship(
-        back_populates="reservation_service", lazy="selectin"
+        back_populates="reservation_service", lazy="selectin",
     )
     mini_services: Mapped[list["MiniService"]] = relationship(
-        back_populates="reservation_service", lazy="selectin"
+        back_populates="reservation_service", lazy="selectin",
     )
     lockers_id: Mapped[list[int]] = mapped_column(
-        ARRAY(Integer), nullable=False, default=list
+        ARRAY(Integer), nullable=False, default=list,
     )
-
-
-# pylint: enable=too-few-public-methods

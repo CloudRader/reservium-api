@@ -12,7 +12,7 @@ from core.schemas import ReservationServiceUpdate
 
 @pytest.mark.asyncio
 async def test_create_reservation_service(
-    reservation_service, reservation_service_create
+    reservation_service, reservation_service_create,
 ):
     """
     Test creating a reservation service.
@@ -27,26 +27,26 @@ async def test_create_reservation_service(
 
 @pytest.mark.asyncio
 async def test_create_reservation_service_no_permission(
-    service_reservation_service, reservation_service_create, user_not_head
+    service_reservation_service, reservation_service_create, user_not_head,
 ):
     """
     Test creating a reservation service when the user doesn't have permission.
     """
     with pytest.raises(PermissionDeniedError):
         await service_reservation_service.create_reservation_service(
-            reservation_service_create, user_not_head
+            reservation_service_create, user_not_head,
         )
 
 
 @pytest.mark.asyncio
 async def test_get_reservation_service(
-    reservation_service, service_reservation_service
+    reservation_service, service_reservation_service,
 ):
     """
     Test getting a reservation service.
     """
     get_reservation_service = await service_reservation_service.get(
-        reservation_service.id
+        reservation_service.id,
     )
     assert get_reservation_service is not None
     assert get_reservation_service.name == reservation_service.name
@@ -55,13 +55,13 @@ async def test_get_reservation_service(
 
 @pytest.mark.asyncio
 async def test_get_reservation_service_by_name(
-    reservation_service, service_reservation_service
+    reservation_service, service_reservation_service,
 ):
     """
     Test getting a reservation service by name.
     """
     get_reservation_service = await service_reservation_service.get_by_name(
-        reservation_service.name
+        reservation_service.name,
     )
     assert get_reservation_service is not None
     assert get_reservation_service.name == reservation_service.name
@@ -70,13 +70,13 @@ async def test_get_reservation_service_by_name(
 
 @pytest.mark.asyncio
 async def test_get_reservation_service_by_alias(
-    reservation_service, service_reservation_service
+    reservation_service, service_reservation_service,
 ):
     """
     Test getting a reservation service by alias.
     """
     get_reservation_service = await service_reservation_service.get_by_alias(
-        reservation_service.alias
+        reservation_service.alias,
     )
     assert get_reservation_service is not None
     assert get_reservation_service.name == reservation_service.name
@@ -85,7 +85,7 @@ async def test_get_reservation_service_by_alias(
 
 @pytest.mark.asyncio
 async def test_get_public_reservation_service_empty(
-    reservation_service, service_reservation_service
+    reservation_service, service_reservation_service,
 ):
     """
     Test getting public reservation services with empty list.
@@ -97,13 +97,13 @@ async def test_get_public_reservation_service_empty(
 
 @pytest.mark.asyncio
 async def test_get_public_reservation_service(
-    reservation_service, service_reservation_service
+    reservation_service, service_reservation_service,
 ):
     """
     Test getting public reservation services.
     """
     await service_reservation_service.update(
-        reservation_service.id, ReservationServiceUpdate(public=True)
+        reservation_service.id, ReservationServiceUpdate(public=True),
     )
     get_reservation_service = await service_reservation_service.get_public_services()
     assert get_reservation_service is not None
@@ -114,20 +114,20 @@ async def test_get_public_reservation_service(
 
 @pytest.mark.asyncio
 async def test_update_reservation_service(
-    service_reservation_service, reservation_service, user
+    service_reservation_service, reservation_service, user,
 ):
     """
     Test updating an existing reservation service.
     """
     reservation_service_update = ReservationServiceUpdate(
-        name="Updated Game Room", alias="ngame"
+        name="Updated Game Room", alias="ngame",
     )
 
     assert reservation_service_update.web is None
     assert reservation_service_update.public is None
 
     updated_service = await service_reservation_service.update_reservation_service(
-        reservation_service.id, reservation_service_update, user
+        reservation_service.id, reservation_service_update, user,
     )
 
     assert updated_service is not None
@@ -140,7 +140,7 @@ async def test_update_reservation_service(
 
 @pytest.mark.asyncio
 async def test_update_reservation_service_no_permission(
-    service_reservation_service, reservation_service, user_not_head
+    service_reservation_service, reservation_service, user_not_head,
 ):
     """
     Test updating a reservation service when the user doesn't have permission.
@@ -152,19 +152,19 @@ async def test_update_reservation_service_no_permission(
 
     with pytest.raises(PermissionDeniedError):
         await service_reservation_service.update_reservation_service(
-            reservation_service.id, reservation_service_update, user_not_head
+            reservation_service.id, reservation_service_update, user_not_head,
         )
 
 
 @pytest.mark.asyncio
 async def test_soft_delete_reservation_service(
-    service_reservation_service, reservation_service, user
+    service_reservation_service, reservation_service, user,
 ):
     """
     Test soft deleting a reservation service.
     """
     soft_removed_service = await service_reservation_service.delete_reservation_service(
-        reservation_service.id, user, hard_remove=False
+        reservation_service.id, user, hard_remove=False,
     )
 
     assert soft_removed_service is not None
@@ -173,13 +173,13 @@ async def test_soft_delete_reservation_service(
 
 @pytest.mark.asyncio
 async def test_hard_delete_reservation_service(
-    service_reservation_service, reservation_service, user
+    service_reservation_service, reservation_service, user,
 ):
     """
     Test hard deleting a reservation service.
     """
     hard_removed_service = await service_reservation_service.delete_reservation_service(
-        reservation_service.id, user, hard_remove=True
+        reservation_service.id, user, hard_remove=True,
     )
 
     assert hard_removed_service is not None
@@ -188,12 +188,12 @@ async def test_hard_delete_reservation_service(
 
 @pytest.mark.asyncio
 async def test_delete_reservation_service_no_permission(
-    service_reservation_service, reservation_service, user_not_head
+    service_reservation_service, reservation_service, user_not_head,
 ):
     """
     Test deleting a reservation service when the user doesn't have permission.
     """
     with pytest.raises(PermissionDeniedError):
         await service_reservation_service.delete_reservation_service(
-            reservation_service.id, user_not_head, hard_remove=False
+            reservation_service.id, user_not_head, hard_remove=False,
         )

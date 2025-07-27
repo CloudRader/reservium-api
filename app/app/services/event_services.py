@@ -39,8 +39,6 @@ from services.utils import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-# pylint: disable=too-few-public-methods
-# reason: Methods will be added in the next versions of the program
 class AbstractEventService(
     CrudServiceBase[
         EventModel,
@@ -173,7 +171,10 @@ class AbstractEventService(
 
     @abstractmethod
     async def approve_update_reservation_time(
-        self, uuid: str, event_update: EventUpdate, user: User
+        self,
+        uuid: str,
+        event_update: EventUpdate,
+        user: User,
     ) -> EventModel | None:
         """
         Approve update a reservation time of the Event in the database.
@@ -187,7 +188,10 @@ class AbstractEventService(
 
     @abstractmethod
     async def request_update_reservation_time(
-        self, uuid: str, event_update: EventUpdateTime, user: User
+        self,
+        uuid: str,
+        event_update: EventUpdateTime,
+        user: User,
     ) -> EventModel | None:
         """
         Update a reservation time of the Event in the database.
@@ -230,7 +234,8 @@ class EventService(AbstractEventService):
     """
 
     def __init__(
-        self, db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)]
+        self,
+        db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
         super().__init__(CRUDEvent(db))
         self.reservation_service_crud = CRUDReservationService(db)
@@ -248,7 +253,10 @@ class EventService(AbstractEventService):
             return {"message": "Calendar with that type not exist!"}
 
         message = await self.__control_conditions_and_permissions(
-            user, services, event_input, calendar
+            user,
+            services,
+            event_input,
+            calendar,
         )
 
         if message != "Access":
@@ -290,16 +298,18 @@ class EventService(AbstractEventService):
         event_state: EventState,
     ) -> list[EventWithExtraDetails]:
         reservation_service = await self.reservation_service_crud.get_by_alias(
-            reservation_service_alias
+            reservation_service_alias,
         )
 
         if not reservation_service:
             raise BaseAppError(
-                "A reservation service with this alias isn't exist.", status_code=404
+                "A reservation service with this alias isn't exist.",
+                status_code=404,
             )
 
         events = await self.crud.get_by_event_state_by_reservation_service_id(
-            reservation_service.id, event_state
+            reservation_service.id,
+            event_state,
         )
 
         return await self.__add_extra_details_to_event(events)
@@ -320,7 +330,8 @@ class EventService(AbstractEventService):
         )
         if not reservation_service:
             raise BaseAppError(
-                "A reservation service of this event isn't exist.", status_code=404
+                "A reservation service of this event isn't exist.",
+                status_code=404,
             )
 
         return reservation_service
@@ -356,7 +367,10 @@ class EventService(AbstractEventService):
         return await self.crud.get_current_event_for_user(user_id)
 
     async def approve_update_reservation_time(
-        self, uuid: str, event_update: EventUpdate, user: User
+        self,
+        uuid: str,
+        event_update: EventUpdate,
+        user: User,
     ) -> EventModel | None:
         event_to_update = await self.get(uuid)
 
@@ -367,18 +381,21 @@ class EventService(AbstractEventService):
             raise BaseAppError("You can't change canceled reservation.")
 
         reservation_service = await self.get_reservation_service_of_this_event(
-            event_to_update
+            event_to_update,
         )
 
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to update this event."
+                f"You must be the {reservation_service.name} manager to update this event.",
             )
 
         return await self.update(uuid, event_update)
 
     async def request_update_reservation_time(
-        self, uuid: str, event_update: EventUpdateTime, user: User
+        self,
+        uuid: str,
+        event_update: EventUpdateTime,
+        user: User,
     ) -> EventModel | None:
         event_to_update = await self.get(uuid)
 
@@ -387,7 +404,7 @@ class EventService(AbstractEventService):
 
         if event_to_update.start_datetime < dt.datetime.now():
             raise BaseAppError(
-                "You cannot change the reservation time after it has started."
+                "You cannot change the reservation time after it has started.",
             )
 
         if event_to_update.event_state == EventState.CANCELED:
@@ -395,7 +412,7 @@ class EventService(AbstractEventService):
 
         if event_to_update.event_state == EventState.UPDATE_REQUESTED:
             raise BaseAppError(
-                "You can't change reservation in state update requested."
+                "You can't change reservation in state update requested.",
             )
 
         event_update_time = EventUpdate(
@@ -415,7 +432,7 @@ class EventService(AbstractEventService):
 
         if event.start_datetime < dt.datetime.now():
             raise BaseAppError(
-                "You cannot cancel the reservation after it has started."
+                "You cannot cancel the reservation after it has started.",
             )
 
         reservation_service = await self.get_reservation_service_of_this_event(event)
@@ -424,7 +441,7 @@ class EventService(AbstractEventService):
             if reservation_service.alias not in user.roles:
                 raise PermissionDeniedError(
                     "You do not have permission to cancel a "
-                    "reservation made by another user."
+                    "reservation made by another user.",
                 )
 
         updated_event = EventUpdate(event_state=EventState.CANCELED)
@@ -439,14 +456,14 @@ class EventService(AbstractEventService):
         if event.event_state != EventState.NOT_APPROVED:
             raise BaseAppError(
                 "You cannot approve a reservation that is not in the "
-                "'not approved' state."
+                "'not approved' state.",
             )
 
         reservation_service = await self.get_reservation_service_of_this_event(event)
 
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to approve this reservation."
+                f"You must be the {reservation_service.name} manager to approve this reservation.",
             )
 
         return await self.crud.confirm_event(uuid)
@@ -470,7 +487,7 @@ class EventService(AbstractEventService):
         :return: Message indicating whether access is granted or denied.
         """
         reservation_service = await self.reservation_service_crud.get(
-            calendar.reservation_service_id
+            calendar.reservation_service_id,
         )
 
         # Check of the membership
@@ -489,7 +506,7 @@ class EventService(AbstractEventService):
         ):
             return {
                 "message": f"You can't reserve this type of "
-                f"reservation for more than {calendar.max_people} people!"
+                f"reservation for more than {calendar.max_people} people!",
             }
 
         # Choose user rules
@@ -497,7 +514,9 @@ class EventService(AbstractEventService):
 
         # Reservation no more than 24 hours
         if not dif_days_res(
-            event_input.start_datetime, event_input.end_datetime, user_rules
+            event_input.start_datetime,
+            event_input.end_datetime,
+            user_rules,
         ):
             return {"message": "You can reserve on different day."}
 
@@ -518,7 +537,7 @@ class EventService(AbstractEventService):
         :return: Rules object.
         """
         reservation_service = await self.reservation_service_crud.get(
-            calendar.reservation_service_id
+            calendar.reservation_service_id,
         )
 
         if not user.active_member:
@@ -528,7 +547,8 @@ class EventService(AbstractEventService):
         return calendar.active_member_rules
 
     async def __add_extra_details_to_event(
-        self, events: list[Event]
+        self,
+        events: list[Event],
     ) -> list[EventWithExtraDetails]:
         """
         Enrich a list of Event objects data.
@@ -544,7 +564,7 @@ class EventService(AbstractEventService):
             calendar = await self.get_calendar_of_this_event(event)
             user = await self.get_user_of_this_event(event)
             reservation_service = await self.get_reservation_service_of_this_event(
-                event
+                event,
             )
 
             event_with_details = EventWithExtraDetails(

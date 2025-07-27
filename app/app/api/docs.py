@@ -5,8 +5,6 @@ Package for API Documentation.
 from core import settings
 
 
-# pylint: disable=too-few-public-methods
-# reason: no more public methods needed.
 class FastApiDocs:
     """Information for fastapi documentation."""
 
@@ -65,5 +63,3 @@ class FastApiDocs:
 
 
 fastapi_docs = FastApiDocs()
-
-# pylint: enable=too-few-public-methods

@@ -34,10 +34,6 @@ class EventState(Enum):
     CANCELED = "canceled"
 
 
-# pylint: disable=too-few-public-methods
-# reason: ORM model does not require to have any public methods
-# pylint: disable=unsubscriptable-object
-# reason: Custom SQLAlchemy type, based on TypeDecorator.
 class Event(Base, SoftDeleteMixin):
     """
     Event model to create and manipulate event entity in the database.
@@ -62,6 +58,3 @@ class Event(Base, SoftDeleteMixin):
     user: Mapped["User"] = relationship(back_populates="events")
     calendar: Mapped["Calendar"] = relationship(back_populates="events")
     additional_services: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=True)
-
-
-# pylint: enable=too-few-public-methods

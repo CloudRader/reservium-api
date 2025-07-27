@@ -54,7 +54,7 @@ async def create_reservation_service(
     :returns ReservationServiceModel: the created reservation service.
     """
     reservation_service = await service.create_reservation_service(
-        reservation_service_create, user
+        reservation_service_create, user,
     )
     if not reservation_service:
         raise BaseAppError()
@@ -91,8 +91,8 @@ async def create_reservation_services(
     for reservation in reservation_services_create:
         reservation_services_result.append(
             await create_reservation_service(
-                service, user_service, user, token, reservation
-            )
+                service, user_service, user, token, reservation,
+            ),
         )
 
     await authenticate_user(user_service, token)
@@ -205,7 +205,7 @@ async def update_reservation_service(
     :returns ReservationServiceModel: the updated reservation service.
     """
     reservation_service = await service.update_reservation_service(
-        reservation_service_id, reservation_service_update, user
+        reservation_service_id, reservation_service_update, user,
     )
     if not reservation_service:
         raise EntityNotFoundError(Entity.RESERVATION_SERVICE, reservation_service_id)
@@ -234,7 +234,7 @@ async def retrieve_deleted_reservation_service(
     :returns ReservationServiceModel: the updated reservation service.
     """
     reservation_service = await service.retrieve_removed_object(
-        reservation_service_id, user
+        reservation_service_id, user,
     )
     if not reservation_service:
         raise EntityNotFoundError(Entity.RESERVATION_SERVICE, reservation_service_id)
@@ -265,7 +265,7 @@ async def delete_reservation_service(
     :returns ReservationServiceModel: the deleted reservation service.
     """
     reservation_service = await service.delete_reservation_service(
-        reservation_service_id, user, hard_remove
+        reservation_service_id, user, hard_remove,
     )
     if not reservation_service:
         raise EntityNotFoundError(Entity.RESERVATION_SERVICE, reservation_service_id)

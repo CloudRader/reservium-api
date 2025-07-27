@@ -32,8 +32,6 @@ async def startup_event(fast_api_app: FastAPI):
     logger.info("Shutting down %s.", settings.APP_NAME)
 
 
-# pylint: disable=import-outside-toplevel
-# reason: circular import issue
 def create_app():  # -> FastAPI:
     """
     Factory function to create and configure the FastAPI app.

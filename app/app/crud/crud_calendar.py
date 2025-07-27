@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AbstractCRUDCalendar(
-    CRUDBase[CalendarModel, CalendarCreate, CalendarUpdate], ABC
+    CRUDBase[CalendarModel, CalendarCreate, CalendarUpdate], ABC,
 ):
     """
     Abstract class for CRUD operations specific to the Calendar model.
@@ -24,7 +24,7 @@ class AbstractCRUDCalendar(
 
     @abstractmethod
     async def get_by_reservation_type(
-        self, reservation_type: str, include_removed: bool = False
+        self, reservation_type: str, include_removed: bool = False,
     ) -> CalendarModel | None:
         """
         Retrieves a Calendar instance by its reservation type.
@@ -37,7 +37,7 @@ class AbstractCRUDCalendar(
 
     @abstractmethod
     async def update_mini_services(
-        self, calendar: CalendarModel | None, mini_services: list[MiniServiceModel]
+        self, calendar: CalendarModel | None, mini_services: list[MiniServiceModel],
     ) -> CalendarModel | None:
         """
         Update the list of mini services associated with a given calendar.
@@ -61,7 +61,7 @@ class CRUDCalendar(AbstractCRUDCalendar):
         super().__init__(CalendarModel, db)
 
     async def get_by_reservation_type(
-        self, reservation_type: str, include_removed: bool = False
+        self, reservation_type: str, include_removed: bool = False,
     ) -> CalendarModel | None:
         stmt = select(self.model).where(self.model.reservation_type == reservation_type)
         if include_removed:
@@ -70,7 +70,7 @@ class CRUDCalendar(AbstractCRUDCalendar):
         return result.scalars().first()
 
     async def update_mini_services(
-        self, calendar: CalendarModel | None, mini_services: list[MiniServiceModel]
+        self, calendar: CalendarModel | None, mini_services: list[MiniServiceModel],
     ) -> CalendarModel | None:
         if calendar is None:
             return None

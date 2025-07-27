@@ -2,7 +2,6 @@
 Package for API modules.
 """
 
-# from api.external_api.google.google_calendar_services import GoogleCalendarService
 from .docs import fastapi_docs
 from .exceptions import (
     ERROR_RESPONSES,

@@ -9,10 +9,6 @@ from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 
-# pylint: disable=too-few-public-methods
-# reason: ORM model does not require to have any public methods
-# pylint: disable=unsubscriptable-object
-# reason: Custom SQLAlchemy type, based on TypeDecorator.
 class CalendarMiniServiceAssociationTable(Base):
     """
     Association table for many-to-many relationship between Calendar and MiniService.

@@ -58,7 +58,7 @@ async def test_delete_calendar(async_session, test_calendar):
 
 @pytest.mark.asyncio
 async def test_list_calendars(
-    async_session, rules_club_member, test_reservation_service, test_mini_service
+    async_session, rules_club_member, test_reservation_service, test_mini_service,
 ):
     """
     Test listing multiple calendars.

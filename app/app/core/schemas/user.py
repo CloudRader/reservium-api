@@ -48,8 +48,6 @@ class UserInDBBase(UserBase):
 
     events: list[Event] = Field(default_factory=list)
 
-    # pylint: disable=too-few-public-methods
-    # reason: Config class only needs to set orm_mode to True.
     class Config:
         """Config class for database user model."""
 

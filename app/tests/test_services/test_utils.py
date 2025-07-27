@@ -29,19 +29,19 @@ def test_first_standard_check(services_data_from_is, reservation_service):
     start_time = dt.datetime.now() - dt.timedelta(hours=1)
     end_time = dt.datetime.now() + dt.timedelta(hours=4)
     result = first_standard_check(
-        services_data_from_is, reservation_service, start_time, end_time
+        services_data_from_is, reservation_service, start_time, end_time,
     )
     assert result["message"] == f"You don't have {reservation_service.alias} service!"
 
     services_data_from_is[0].service.alias = "game"
     result = first_standard_check(
-        services_data_from_is, reservation_service, start_time, end_time
+        services_data_from_is, reservation_service, start_time, end_time,
     )
     assert result["message"] == "You can't make a reservation before the present time!"
 
     start_time = dt.datetime.now() + dt.timedelta(hours=5)
     result = first_standard_check(
-        services_data_from_is, reservation_service, start_time, end_time
+        services_data_from_is, reservation_service, start_time, end_time,
     )
     assert (
         result["message"] == "The end of a reservation cannot be before its beginning!"
@@ -49,7 +49,7 @@ def test_first_standard_check(services_data_from_is, reservation_service):
 
     end_time = dt.datetime.now() + dt.timedelta(hours=7)
     result = first_standard_check(
-        services_data_from_is, reservation_service, start_time, end_time
+        services_data_from_is, reservation_service, start_time, end_time,
     )
     assert result == "Access"
 

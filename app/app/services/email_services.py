@@ -12,8 +12,6 @@ from core.schemas import EmailCreate, RegistrationFormCreate, User
 from pypdf import PdfReader, PdfWriter
 
 
-# pylint: disable=too-few-public-methods
-# reason: Methods will be added in the next versions of the program
 class AbstractEmailService(ABC):
     """
     This abstract class defines the interface for an email service.
@@ -21,7 +19,9 @@ class AbstractEmailService(ABC):
 
     @abstractmethod
     def prepare_registration_form(
-        self, registration_form: RegistrationFormCreate, full_name: User
+        self,
+        registration_form: RegistrationFormCreate,
+        full_name: User,
     ) -> Any:
         """
         Preparing registration form in pdf for sending to head of the dormitory.
@@ -38,11 +38,16 @@ class EmailService(AbstractEmailService):
     """
 
     def prepare_registration_form(
-        self, registration_form: RegistrationFormCreate, full_name: str
+        self,
+        registration_form: RegistrationFormCreate,
+        full_name: str,
     ) -> EmailCreate:
         base_dir = os.path.dirname(os.path.abspath(__file__))
         original_pdf_path = os.path.join(
-            base_dir, "..", "templates", "event_registration.pdf"
+            base_dir,
+            "..",
+            "templates",
+            "event_registration.pdf",
         )
         output_path = "/tmp/event_registration.pdf"
 

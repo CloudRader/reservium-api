@@ -67,8 +67,6 @@ class CalendarInDBBase(CalendarBase):
     manager_rules: Rules
     reservation_service_id: UUID
 
-    # pylint: disable=too-few-public-methods
-    # reason: Config class only needs to set orm_mode to True.
     class Config:
         """Config class for database calendar model."""
 

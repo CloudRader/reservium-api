@@ -14,7 +14,7 @@ from core.models import MiniServiceModel
 
 @pytest.mark.asyncio
 async def test_create_mini_service(
-    test_mini_service, create_mini_service_uuid, create_reservation_service_uuid
+    test_mini_service, create_mini_service_uuid, create_reservation_service_uuid,
 ):
     """
     Test creating mini service model.

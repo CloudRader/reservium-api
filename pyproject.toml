@@ -51,12 +51,23 @@ build-backend = "hatchling.build"
 [tool.ruff]
 line-length = 100
 exclude = [".venv"]
-
-#ignore = ["E402", "F403"]
-
 src = ["app"]
 
-
 [tool.ruff.lint]
-select = ["E", "N", "A", "W", "F", "I", "B", "UP"]
-#select = ["C90", "B", "UP"]
+select = [
+  "A",    # flake8-builtins (e.g. shadowing built-in names)
+  "B",    # flake8-bugbear (bug-prone patterns)
+  "C90",  # mccabe complexity
+  "COM",  # flake8-commas (e.g. trailing commas)
+  "E",    # pycodestyle errors
+  "F",    # pyflakes (undefined names, etc.)
+  "I",    # isort (import sorting)
+  "N",    # pep8-naming
+  "UP",   # pyupgrade (modern Python syntax)
+  "W",    # pycodestyle warnings
+]
+
+[tool.ruff.format]
+quote-style = "double"
+line-ending = "auto"
+indent-style = "space"

@@ -35,7 +35,7 @@ def send_request(data: dict[str, Any]) -> dict[str, Any]:
     }
 
     response = requests.post(
-        settings.DORMITORY_ACCESS_SYSTEM.API_URL, json=data, headers=headers, timeout=5
+        settings.DORMITORY_ACCESS_SYSTEM.API_URL, json=data, headers=headers, timeout=5,
     )
 
     if response.status_code != 200:
@@ -169,7 +169,7 @@ async def add_or_update_access_to_reservation_areas(
     :return: A success message indicating that the access entries were processed.
     """
     reservation_service = await service_event.get_reservation_service_of_this_event(
-        event
+        event,
     )
     user = await service_event.get_user_of_this_event(event)
 
@@ -220,7 +220,7 @@ async def delete_access_to_reservation_areas(
     :return: A success message indicating that the access entries were processed.
     """
     reservation_service = await service_event.get_reservation_service_of_this_event(
-        event
+        event,
     )
     user = await service_event.get_user_of_this_event(event)
 

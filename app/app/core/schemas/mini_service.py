@@ -35,8 +35,6 @@ class MiniServiceInDBBase(MiniServiceBase):
     name: str
     reservation_service_id: UUID
 
-    # pylint: disable=too-few-public-methods
-    # reason: Config class only needs to set orm_mode to True.
     class Config:
         """Config class for database mini service model."""
 

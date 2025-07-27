@@ -39,7 +39,7 @@ class LoggingConfig(BaseModel):
     DATE_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
     @property
-    def LOG_CONFIG(self) -> dict:  # pylint: disable=invalid-name # noqa: N802
+    def LOG_CONFIG(self) -> dict:  # noqa: N802
         """
         Returns a dictionary-compatible configuration for Python's logging module.
         """
@@ -65,7 +65,7 @@ class LoggingConfig(BaseModel):
         }
 
     @property
-    def LOG_LEVEL_VALUE(self) -> int:  # pylint: disable=invalid-name # noqa: N802
+    def LOG_LEVEL_VALUE(self) -> int:  # noqa: N802
         """
         Converts the LOG_LEVEL string to its corresponding integer value
         as expected by the logging module.
@@ -92,7 +92,7 @@ class DatabaseConfig(BaseModel):
     }
 
     @property
-    def POSTGRES_DATABASE_URI(self) -> str:  # pylint: disable=invalid-name # noqa: N802
+    def POSTGRES_DATABASE_URI(self) -> str:  # noqa: N802
         """
         Assemble database connection URI.
         """
@@ -104,7 +104,7 @@ class DatabaseConfig(BaseModel):
                 host=self.POSTGRES_SERVER,
                 port=self.POSTGRES_PORT,
                 path=self.POSTGRES_DB,
-            )
+            ),
         )
 
 
@@ -164,8 +164,6 @@ class Settings(BaseSettings):
     GOOGLE: GoogleConfig
     DORMITORY_ACCESS_SYSTEM: DormitoryAccessSystemConfig
 
-    # pylint: disable=too-few-public-methods
-    # reason: special class for pydantic configuration.
     class Config:
         """Config class."""
 
@@ -173,8 +171,6 @@ class Settings(BaseSettings):
         env_settings = True
         env_nested_delimiter = "__"
         env_file = get_env_file_path([".env.template", ".env"])
-
-    # pylint: enable=too-few-public-methods
 
 
 settings = Settings()  # type: ignore[call-arg] # reason: Pydantic handles attribute initialization

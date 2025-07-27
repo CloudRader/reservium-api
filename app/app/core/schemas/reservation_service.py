@@ -42,8 +42,6 @@ class ReservationServiceInDBBase(ReservationServiceBase):
     calendars: list[Calendar] = Field(default_factory=list)
     mini_services: list[MiniService] = Field(default_factory=list)
 
-    # pylint: disable=too-few-public-methods
-    # reason: Config class only needs to set orm_mode to True.
     class Config:
         """Config class for database mini service model."""
 

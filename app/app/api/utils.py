@@ -29,13 +29,13 @@ def modify_url_scheme(url: str, new_scheme: str) -> str:
             parsed_url.params,
             parsed_url.query,
             parsed_url.fragment,
-        )
+        ),
     )
     return new_url
 
 
 def control_collision(
-    google_calendar_service, event_input: EventCreate, calendar: Calendar
+    google_calendar_service, event_input: EventCreate, calendar: Calendar,
 ) -> bool:
     """
     Check if there is already another reservation at that time.
@@ -60,7 +60,7 @@ def control_collision(
                     event_input.start_datetime,
                     event_input.end_datetime,
                     calendar_id,
-                )
+                ),
             )
 
     if not check_collision_time(
@@ -126,7 +126,7 @@ def check_collision_time(
     """
     if not calendar.collision_with_itself:
         collisions = get_events(
-            google_calendar_service, start_datetime, end_datetime, calendar.id
+            google_calendar_service, start_datetime, end_datetime, calendar.id,
         )
         if len(collisions) > calendar.max_people:
             return False
@@ -140,14 +140,14 @@ def check_collision_time(
     start_date = dt.datetime.fromisoformat(str(start_datetime))
     end_date = dt.datetime.fromisoformat(str(end_datetime))
     start_date_event = dt.datetime.fromisoformat(
-        str(check_collision[0]["start"]["dateTime"])
+        str(check_collision[0]["start"]["dateTime"]),
     )
     end_date_event = dt.datetime.fromisoformat(
-        str(check_collision[0]["end"]["dateTime"])
+        str(check_collision[0]["end"]["dateTime"]),
     )
 
     if end_date_event == start_date.astimezone(
-        timezone("Europe/Prague")
+        timezone("Europe/Prague"),
     ) or start_date_event == end_date.astimezone(timezone("Europe/Prague")):
         return True
 

@@ -116,12 +116,12 @@ async def preparing_email(
     """
     calendar = await service_event.get_calendar_of_this_event(event)
     reservation_service = await service_event.get_reservation_service_of_this_event(
-        event
+        event,
     )
     user = await service_event.get_user_of_this_event(event)
 
     context = construct_body_context(
-        event, user, reservation_service, calendar, email_meta.reason
+        event, user, reservation_service, calendar, email_meta.reason,
     )
 
     # Mail for club members
@@ -135,7 +135,7 @@ async def preparing_email(
     body = render_email_template(template_for_manager, context)
     email_subject = f"[Reservation Alert] {email_meta.subject}"
     email_create = construct_email(
-        reservation_service.contact_mail, email_subject, body
+        reservation_service.contact_mail, email_subject, body,
     )
     await send_email(email_create)
 

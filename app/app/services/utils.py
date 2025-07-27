@@ -57,7 +57,7 @@ def reservation_in_advance(start_time, user_rules):
         return {
             "message": f"You have to make reservations "
             f"{user_rules.in_advance_hours} hours and "
-            f"{user_rules.in_advance_minutes} minutes in advance!"
+            f"{user_rules.in_advance_minutes} minutes in advance!",
         }
 
     # Reservation prior than
@@ -65,7 +65,7 @@ def reservation_in_advance(start_time, user_rules):
         return {
             "message": f"You can't make reservations earlier than "
             f"{user_rules.in_prior_days} days "
-            f"in advance!"
+            f"in advance!",
         }
 
     return "Access"
@@ -89,7 +89,7 @@ def dif_days_res(start_datetime, end_datetime, user_rules: Rules) -> bool:
 
 
 def control_res_in_advance_or_prior(
-    start_time, user_rules: Rules, in_advance: bool
+    start_time, user_rules: Rules, in_advance: bool,
 ) -> bool:
     """
     Check if the reservation is made within the specified advance or prior time.
@@ -109,7 +109,7 @@ def control_res_in_advance_or_prior(
 
     if in_advance:
         if time_difference < dt.timedelta(
-            minutes=user_rules.in_advance_minutes, hours=user_rules.in_advance_hours
+            minutes=user_rules.in_advance_minutes, hours=user_rules.in_advance_hours,
         ):
             return False
     else:

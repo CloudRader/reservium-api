@@ -53,7 +53,7 @@ async def login(request: Request):
 
 @router.get("/callback")
 async def callback(
-    user_service: Annotated[UserService, Depends(UserService)], request: Request
+    user_service: Annotated[UserService, Depends(UserService)], request: Request,
 ) -> Any:
     """
     Callback link after authorization on IS.

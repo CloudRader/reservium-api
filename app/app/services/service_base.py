@@ -19,7 +19,10 @@ UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
 
 
 class AbstractCRUDService[
-    Model: Base, Crud: CRUDBase, CreateSchema: BaseModel, UpdateSchema: BaseModel
+    Model: Base,
+    Crud: CRUDBase,
+    CreateSchema: BaseModel,
+    UpdateSchema: BaseModel,
 ](ABC):
     """
     Abstract base class for a CRUD service.
@@ -35,7 +38,9 @@ class AbstractCRUDService[
 
     @abstractmethod
     async def get(
-        self, uuid: UUID | str | int, include_removed: bool = False
+        self,
+        uuid: UUID | str | int,
+        include_removed: bool = False,
     ) -> Model | None:
         """
         Retrieve an object from the database.
@@ -66,7 +71,9 @@ class AbstractCRUDService[
 
     @abstractmethod
     async def update(
-        self, uuid: UUID | str | int, obj_in: UpdateSchema
+        self,
+        uuid: UUID | str | int,
+        obj_in: UpdateSchema,
     ) -> Model | None:
         """
         Update an object in the database.
@@ -107,7 +114,9 @@ class CrudServiceBase(AbstractCRUDService[Model, Crud, CreateSchema, UpdateSchem
         self.crud: Crud = crud
 
     async def get(
-        self, uuid: UUID | str | int, include_removed: bool = False
+        self,
+        uuid: UUID | str | int,
+        include_removed: bool = False,
     ) -> Model | None:
         return await self.crud.get(uuid, include_removed)
 
@@ -121,7 +130,9 @@ class CrudServiceBase(AbstractCRUDService[Model, Crud, CreateSchema, UpdateSchem
         return await self.crud.create(obj_in)
 
     async def update(
-        self, uuid: UUID | str | int, obj_in: UpdateSchema
+        self,
+        uuid: UUID | str | int,
+        obj_in: UpdateSchema,
     ) -> Model | None:
         obj_to_update = await self.get(uuid)
         if obj_to_update is None:

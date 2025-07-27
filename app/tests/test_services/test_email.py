@@ -14,7 +14,7 @@ def test_prepare_registration_form(registration_form_create, service_email):
     Test creating a registration form for sending by email.
     """
     registration_form = service_email.prepare_registration_form(
-        registration_form_create, "John Doll"
+        registration_form_create, "John Doll",
     )
     assert registration_form.subject == "Event Registration"
     assert registration_form.attachment == "/tmp/event_registration.pdf"

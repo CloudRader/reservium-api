@@ -72,7 +72,7 @@ class UserService(AbstractUserService):
     """
 
     def __init__(
-        self, db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)]
+        self, db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
         self.reservation_service_crud = CRUDReservationService(db)
         super().__init__(CRUDUser(db))

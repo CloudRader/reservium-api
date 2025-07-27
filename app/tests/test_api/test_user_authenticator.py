@@ -57,7 +57,7 @@ async def test_get_request_success(mock_get):
 @pytest.mark.asyncio
 @patch("api.user_authenticator.get_request")
 async def test_authenticate_user(
-    mock_get_request, user_data_from_is, room_data_from_is
+    mock_get_request, user_data_from_is, room_data_from_is,
 ):
     """
     Test user authentication flow with mocked data from identity service.
@@ -109,7 +109,7 @@ async def test_get_current_user_success(mock_get_request, user_data_from_is):
     mock_get_request.return_value = user_data_from_is.model_dump()
 
     request = DummyRequest(
-        {"user_username": "user1", "oauth_token": {"access_token": "abc"}}
+        {"user_username": "user1", "oauth_token": {"access_token": "abc"}},
     )
 
     user = await get_current_user(mock_user_service, request)
