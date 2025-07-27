@@ -55,18 +55,21 @@ src = ["app"]
 
 [tool.ruff.lint]
 select = [
-    "A", # flake8-builtins (e.g. shadowing built-in names)
-    "B", # flake8-bugbear (bug-prone patterns)
+    "A",   # flake8-builtins (e.g. shadowing built-in names)
+    "B",   # flake8-bugbear (bug-prone patterns)
+    "BLE", # flake8-blind-except — disallow overly broad exception catching (e.g. bare `except:`)
     "C90", # mccabe complexity
     "COM", # flake8-commas (e.g. trailing commas)
-    "D", # pydocstyle (docstring conventions)
-    "E", # pycodestyle errors
-    "F", # pyflakes (undefined names, etc.)
-    "I", # isort (import sorting)
-    "N", # pep8-naming
-    "UP", # pyupgrade (modern Python syntax)
-    "SIM",
-    "W", # pycodestyle warnings
+    "D",   # pydocstyle (docstring conventions)
+    "E",   # pycodestyle errors
+    "EXE", # flake8-executable — check file executability and shebang correctness
+    "F",   # pyflakes (undefined names, etc.)
+    "I",   # isort (import sorting)
+    "ICN", # flake8-import-conventions — enforce import naming conventions
+    "N",   # pep8-naming
+    "UP",  # pyupgrade (modern Python syntax)
+    "SIM", # flake8-simplify — simplify redundant code structures
+    "W",   # pycodestyle warnings
 ]
 ignore = ["COM812", "D102", "D107", "D203", "D212"]
 

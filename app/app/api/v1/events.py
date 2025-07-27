@@ -105,30 +105,29 @@ async def create_event(
         )
         return {"message": f"more than {calendar.max_people} people"}
 
-    if not check_night_reservation(user):
-        if not control_available_reservation_time(
-            event_create.start_datetime,
-            event_create.end_datetime,
-        ):
-            event_body["summary"] = "Not approved - night time"
-            subject = event_body["summary"]
-            event_google_calendar = (
-                google_calendar_service.events()
-                .insert(calendarId=calendar.id, body=event_body)
-                .execute()
-            )
-            event = await service.create_event(
-                event_create,
-                user,
-                EventState.NOT_APPROVED,
-                event_google_calendar["id"],
-            )
-            await preparing_email(
-                service,
-                event,
-                create_email_meta("not_approve_night_time_reservation", subject),
-            )
-            return {"message": "Night time"}
+    if not check_night_reservation(user) and not control_available_reservation_time(
+        event_create.start_datetime,
+        event_create.end_datetime,
+    ):
+        event_body["summary"] = "Not approved - night time"
+        subject = event_body["summary"]
+        event_google_calendar = (
+            google_calendar_service.events()
+            .insert(calendarId=calendar.id, body=event_body)
+            .execute()
+        )
+        event = await service.create_event(
+            event_create,
+            user,
+            EventState.NOT_APPROVED,
+            event_google_calendar["id"],
+        )
+        await preparing_email(
+            service,
+            event,
+            create_email_meta("not_approve_night_time_reservation", subject),
+        )
+        return {"message": "Night time"}
 
     event_google_calendar = (
         google_calendar_service.events().insert(calendarId=calendar.id, body=event_body).execute()

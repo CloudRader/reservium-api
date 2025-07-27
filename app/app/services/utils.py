@@ -81,9 +81,7 @@ def dif_days_res(start_datetime, end_datetime, user_rules: Rules) -> bool:
     :return: Boolean indicating if the reservation duration is less than 24
     """
     time_difference = abs(end_datetime - start_datetime)
-    if time_difference > dt.timedelta(hours=user_rules.max_reservation_hours):
-        return False
-    return True
+    return not time_difference > dt.timedelta(hours=user_rules.max_reservation_hours)
 
 
 def control_res_in_advance_or_prior(
@@ -174,7 +172,4 @@ def service_availability_check(services: list[ServiceValidity], service_alias) -
 
     :return: Boolean indicating if a user have this service or not.
     """
-    for service in services:
-        if service.service.alias == service_alias:
-            return True
-    return False
+    return any(service.service.alias == service_alias for service in services)

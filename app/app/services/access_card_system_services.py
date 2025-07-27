@@ -132,9 +132,12 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
         if event is None:
             raise PermissionDeniedError("No available reservation exists at this time.")
 
-        if mini_service and (mini_service.name in event.additional_services):
-            if access_request.device_id in mini_service.lockers_id:
-                return True
+        if (
+            mini_service
+            and mini_service.name in event.additional_services
+            and access_request.device_id in mini_service.lockers_id
+        ):
+            return True
 
         if reservation_service == await service_event.get_reservation_service_of_this_event(event):
             if access_request.device_id in reservation_service.lockers_id:

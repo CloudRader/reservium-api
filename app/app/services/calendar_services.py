@@ -357,12 +357,15 @@ class CalendarService(AbstractCalendarService):
         new_calendar_candidates = []
 
         for calendar in google_calendars:
-            if calendar.get("accessRole") == "owner" and not calendar.get(
-                "primary",
-                False,
+            if (
+                calendar.get("accessRole") == "owner"
+                and not calendar.get(
+                    "primary",
+                    False,
+                )
+                and await self.get(calendar.get("id")) is None
             ):
-                if await self.get(calendar.get("id")) is None:
-                    new_calendar_candidates.append(calendar)
+                new_calendar_candidates.append(calendar)
 
         return new_calendar_candidates
 

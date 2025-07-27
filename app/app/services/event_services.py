@@ -437,11 +437,10 @@ class EventService(AbstractEventService):
 
         reservation_service = await self.get_reservation_service_of_this_event(event)
 
-        if event.user_id != user.id:
-            if reservation_service.alias not in user.roles:
-                raise PermissionDeniedError(
-                    "You do not have permission to cancel a reservation made by another user.",
-                )
+        if event.user_id != user.id and reservation_service.alias not in user.roles:
+            raise PermissionDeniedError(
+                "You do not have permission to cancel a reservation made by another user.",
+            )
 
         updated_event = EventUpdate(event_state=EventState.CANCELED)
 
@@ -495,7 +494,7 @@ class EventService(AbstractEventService):
             event_input.start_datetime,
             event_input.end_datetime,
         )
-        if not standard_message == "Access":
+        if standard_message != "Access":
             return standard_message
 
         if (
@@ -520,7 +519,7 @@ class EventService(AbstractEventService):
 
         # Check reservation in advance and prior
         message = reservation_in_advance(event_input.start_datetime, user_rules)
-        if not message == "Access":
+        if message != "Access":
             return message
 
         return "Access"
