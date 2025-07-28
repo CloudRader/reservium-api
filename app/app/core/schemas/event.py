@@ -10,12 +10,8 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 class NaiveDatetimeValidatorMixin:
     """Mixin to validate that datetime fields are naive (i.e., without timezone info)."""
 
-    @classmethod
     @field_validator("start_datetime", "end_datetime", mode="before")
-    def check_naive_datetime(
-        cls,
-        value: Any,
-    ) -> Any:
+    def check_naive_datetime(cls, value: Any) -> Any:  # noqa: N805 # declared_attr uses class method style
         """
         Validate that datetime values are naive (not timezone-aware).
 
@@ -57,7 +53,7 @@ class EventCreate(NaiveDatetimeValidatorMixin, BaseModel):
     end_datetime: datetime
     purpose: str = Field(max_length=40)
     guests: int = Field(ge=1)
-    reservation_type: str
+    calendar_id: str
     email: EmailStr
     additional_services: list[str] = Field(default_factory=list)
 

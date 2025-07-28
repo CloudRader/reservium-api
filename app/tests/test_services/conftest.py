@@ -201,7 +201,7 @@ def event_create_form() -> EventCreate:
         end_datetime="2025-04-29T21:00",
         purpose="Birthday party test",
         guests=7,
-        reservation_type="Game Room",
+        calendar_id="service.cal.test@test.zc",
         email="user_mail_test@gmail.com",
         additional_services=[],
     )
@@ -243,7 +243,6 @@ async def user(service_user) -> User:
 @pytest_asyncio.fixture()
 async def event(service_event, event_create_form, user, calendar) -> Event:
     """Return event object in db."""
-    event_create_form.reservation_type = calendar.id
     return await service_event.create_event(
         event_create=event_create_form,
         user=user,

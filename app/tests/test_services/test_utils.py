@@ -13,9 +13,6 @@ from services.utils import (
     reservation_in_advance,
 )
 
-# description_of_event, ready_event
-
-
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
 

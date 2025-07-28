@@ -21,12 +21,6 @@ from .user_authenticator import (
     get_oauth_session,
     get_request,
 )
-from .utils import (
-    check_night_reservation,
-    control_available_reservation_time,
-    control_collision,
-    modify_url_scheme,
-)
 
 __all__ = [
     # Exceptions
@@ -41,11 +35,6 @@ __all__ = [
     "UnauthorizedError",
     "ERROR_RESPONSES",
     "SoftValidationError",
-    # Utils
-    "control_collision",
-    "check_night_reservation",
-    "control_available_reservation_time",
-    "modify_url_scheme",
     # User authenticator
     "get_oauth_session",
     "get_request",

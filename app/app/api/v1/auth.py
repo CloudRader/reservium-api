@@ -6,8 +6,8 @@ from api import (
     authenticate_user,
     fastapi_docs,
     get_oauth_session,
-    modify_url_scheme,
 )
+from api.utils import modify_url_scheme
 from core import settings
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, status
 from fastapi.responses import RedirectResponse

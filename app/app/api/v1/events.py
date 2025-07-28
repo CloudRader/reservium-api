@@ -7,9 +7,7 @@ from api import (
     BaseAppError,
     Entity,
     EntityNotFoundError,
-    check_night_reservation,
-    control_available_reservation_time,
-    control_collision,
+    SoftValidationError,
     fastapi_docs,
     get_current_token,
     get_current_user,
@@ -17,6 +15,7 @@ from api import (
 )
 from api.external_api.google.google_auth import auth_google
 from api.external_api.google.google_calendar_services import GoogleCalendarService
+from api.utils import control_collision, process_event_approval
 from api.v1.emails import create_email_meta, preparing_email
 from core.models import EventState
 from core.schemas import (
@@ -30,7 +29,6 @@ from core.schemas import (
 )
 from dateutil.parser import isoparse
 from fastapi import APIRouter, Body, Depends, Path, Query, status
-from fastapi.responses import JSONResponse
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pytz import timezone
@@ -64,77 +62,30 @@ async def create_event(
     """
     services = ServiceList(services=await get_request(token, "/services/mine")).services
 
-    calendar = await calendar_service.get_by_reservation_type(
-        event_create.reservation_type,
-    )
+    calendar = await calendar_service.get(event_create.calendar_id)
     if not calendar:
-        raise EntityNotFoundError(Entity.CALENDAR, event_create.reservation_type)
+        raise EntityNotFoundError(Entity.CALENDAR, event_create.calendar_id)
     reservation_service = await calendar_service.get_reservation_service_of_this_calendar(
         calendar.reservation_service_id,
     )
 
     google_calendar_service = GoogleCalendarService()
 
-    if not control_collision(google_calendar_service, event_create, calendar):
-        return JSONResponse(
-            status_code=status.HTTP_200_OK,
-            content={"message": "There's already a reservation for that time."},
-        )
+    if not await control_collision(google_calendar_service, event_create, calendar):
+        raise SoftValidationError("There's already a reservation for that time.")
 
     event_body = await service.post_event(event_create, services, user, calendar)
     if not event_body:
         raise BaseAppError(message="Could not create event.")
 
-    event_create.reservation_type = calendar.id
-
-    if event_create.guests > calendar.max_people:
-        event_body["summary"] = f"Not approved - more than {calendar.max_people} people"
-        event = await google_calendar_service.insert_event(calendar.id, event_body)
-        await service.create_event(
-            event_create,
-            user,
-            EventState.NOT_APPROVED,
-            event["id"],
-        )
-        return {"message": f"more than {calendar.max_people} people"}
-
-    if not check_night_reservation(user) and not control_available_reservation_time(
-        event_create.start_datetime,
-        event_create.end_datetime,
-    ):
-        event_body["summary"] = "Not approved - night time"
-        subject = event_body["summary"]
-        event_google_calendar = await google_calendar_service.insert_event(calendar.id, event_body)
-        event = await service.create_event(
-            event_create,
-            user,
-            EventState.NOT_APPROVED,
-            event_google_calendar["id"],
-        )
-        await preparing_email(
-            service,
-            event,
-            create_email_meta("not_approve_night_time_reservation", subject),
-        )
-        return {"message": "Night time"}
-
-    event_google_calendar = await google_calendar_service.insert_event(calendar.id, event_body)
-    event = await service.create_event(
-        event_create,
-        user,
-        EventState.CONFIRMED,
-        event_google_calendar["id"],
-    )
-
-    await preparing_email(
+    return await process_event_approval(
         service,
-        event,
-        create_email_meta(
-            "confirm_reservation",
-            f"{reservation_service.name} Reservation Confirmation",
-        ),
+        user,
+        calendar,
+        event_body,
+        event_create,
+        reservation_service,
     )
-    return event_google_calendar
 
 
 @router.get(

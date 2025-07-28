@@ -10,8 +10,6 @@ from typing import Annotated, Any
 
 from api import (
     BaseAppError,
-    Entity,
-    EntityNotFoundError,
     PermissionDeniedError,
     SoftValidationError,
 )
@@ -255,9 +253,6 @@ class EventService(AbstractEventService):
         user: User,
         calendar: Calendar,
     ) -> Any:
-        if not calendar:
-            raise EntityNotFoundError(Entity.CALENDAR, "None", "Calendar with that type not exist!")
-
         await self.__control_conditions_and_permissions(
             user,
             services,
@@ -283,7 +278,7 @@ class EventService(AbstractEventService):
             email=event_create.email,
             event_state=event_state,
             user_id=user.id,
-            calendar_id=event_create.reservation_type,
+            calendar_id=event_create.calendar_id,
             additional_services=event_create.additional_services,
         )
         return await self.crud.create(event_create_to_db)
@@ -482,7 +477,6 @@ class EventService(AbstractEventService):
         :param services: User services from IS.
         :param event_input: Input data for creating the event.
         :param calendar: Calendar object in db.
-        ReservationService objects in db.
 
         :return: Message indicating whether access is granted or denied.
         """

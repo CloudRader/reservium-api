@@ -3,8 +3,12 @@
 import datetime as dt
 from urllib.parse import urlparse, urlunparse
 
-from core.schemas import Calendar, EventCreate, User
+from api.external_api.google.google_calendar_services import GoogleCalendarService
+from api.v1.emails import create_email_meta, preparing_email
+from core.models import EventState
+from core.schemas import Calendar, EventCreate, ReservationService, User
 from pytz import timezone
+from services import EventService
 
 
 def modify_url_scheme(url: str, new_scheme: str) -> str:
@@ -147,3 +151,74 @@ def control_available_reservation_time(start_datetime, end_datetime) -> bool:
     end_res_time = dt.datetime.strptime("22:00:00", "%H:%M:%S").time()
 
     return not (start_time < start_res_time or end_time < start_res_time or end_time > end_res_time)
+
+
+async def process_event_approval(
+    service: EventService,
+    user: User,
+    calendar: Calendar,
+    event_body: dict,
+    event_create: EventCreate,
+    reservation_service: ReservationService,
+):
+    """
+    Approve or reject the event based on guest count and time rules.
+
+    Creates the event in Google Calendar and updates the local event state accordingly.
+    Sends notification emails if the event is approved or not.
+
+    :param service: Event service.
+    :param user: User who make this request.
+    :param calendar: Calendar object in db.
+    :param event_body: Google Calendar-compatible event data.
+    :param event_create: EventCreate schema.
+    :param reservation_service: Reservation Service object in db.
+
+    :return: Either a Google Calendar event object if approved,
+             or a dictionary with a rejection message.
+    """
+    google_calendar_service = GoogleCalendarService()
+
+    if event_create.guests > calendar.max_people:
+        event_body["summary"] = f"Not approved - more than {calendar.max_people} people"
+    elif not check_night_reservation(user) and not control_available_reservation_time(
+        event_create.start_datetime,
+        event_create.end_datetime,
+    ):
+        event_body["summary"] = "Not approved - night time"
+    else:
+        event_google_calendar = await google_calendar_service.insert_event(calendar.id, event_body)
+        event = await service.create_event(
+            event_create,
+            user,
+            EventState.CONFIRMED,
+            event_google_calendar["id"],
+        )
+        await preparing_email(
+            service,
+            event,
+            create_email_meta(
+                "confirm_reservation",
+                f"{reservation_service.name} Reservation Confirmation",
+            ),
+        )
+        return event_google_calendar
+
+    event_summary = event_body["summary"]
+    event_google_calendar = await google_calendar_service.insert_event(
+        event_create.calendar_id, event_body
+    )
+    event = await service.create_event(
+        event_create,
+        user,
+        EventState.NOT_APPROVED,
+        event_google_calendar["id"],
+    )
+
+    if "night time" in event_summary.lower():
+        await preparing_email(
+            service,
+            event,
+            create_email_meta("not_approve_night_time_reservation", event_summary),
+        )
+    return {"message": event_summary}

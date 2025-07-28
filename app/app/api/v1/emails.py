@@ -23,7 +23,7 @@ from services import EmailService, EventService
 
 router = APIRouter(prefix="/emails", tags=[fastapi_docs.EMAIL_TAG["name"]])
 
-template_dir = Path(__file__).parent.parent / "templates" / "email"
+template_dir = Path(__file__).parent.parent.parent / "templates" / "email"
 env = Environment(loader=FileSystemLoader(template_dir), autoescape=select_autoescape())
 
 

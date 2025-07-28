@@ -3,7 +3,7 @@
 import datetime as dt
 
 import pytest
-from api import BaseAppError, EntityNotFoundError, SoftValidationError
+from api import BaseAppError, SoftValidationError
 from core.models import EventState
 from core.schemas import EventUpdate
 
@@ -32,24 +32,6 @@ async def test_post_event_not_have_this_service(
             calendar,
         )
     assert str(exc_info.value) == "You don't have game service!"
-
-
-@pytest.mark.asyncio
-async def test_post_event_with_not_exist_reservation_type(
-    event_create_form,
-    services_data_from_is,
-    user,
-    service_event,
-):
-    """Test that posting an event fails if the calendar type does not exist."""
-    with pytest.raises(EntityNotFoundError) as exc_info:
-        await service_event.post_event(
-            event_create_form,
-            services_data_from_is,
-            user,
-            None,
-        )
-    assert str(exc_info.value.message) == "Calendar with that type not exist!"
 
 
 @pytest.mark.asyncio
