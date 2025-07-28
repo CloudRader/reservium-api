@@ -8,7 +8,13 @@ import datetime as dt
 from abc import ABC, abstractmethod
 from typing import Annotated, Any
 
-from api import BaseAppError, PermissionDeniedError
+from api import (
+    BaseAppError,
+    Entity,
+    EntityNotFoundError,
+    PermissionDeniedError,
+    SoftValidationError,
+)
 from core import db_session
 from core.models import (
     CalendarModel,
@@ -250,17 +256,14 @@ class EventService(AbstractEventService):
         calendar: Calendar,
     ) -> Any:
         if not calendar:
-            return {"message": "Calendar with that type not exist!"}
+            raise EntityNotFoundError(Entity.CALENDAR, "None", "Calendar with that type not exist!")
 
-        message = await self.__control_conditions_and_permissions(
+        await self.__control_conditions_and_permissions(
             user,
             services,
             event_input,
             calendar,
         )
-
-        if message != "Access":
-            return message
 
         return ready_event(calendar, event_input, user)
 
@@ -471,7 +474,7 @@ class EventService(AbstractEventService):
         services: list[ServiceValidity],
         event_input: EventCreate,
         calendar: CalendarModel,
-    ) -> str | dict:
+    ):
         """
         Check conditions and permissions for creating an event.
 
@@ -488,23 +491,21 @@ class EventService(AbstractEventService):
         )
 
         # Check of the membership
-        standard_message = first_standard_check(
+        first_standard_check(
             services,
             reservation_service,
             event_input.start_datetime,
             event_input.end_datetime,
         )
-        if standard_message != "Access":
-            return standard_message
 
         if (
             not calendar.more_than_max_people_with_permission
             and event_input.guests > calendar.max_people
         ):
-            return {
-                "message": f"You can't reserve this type of "
-                f"reservation for more than {calendar.max_people} people!",
-            }
+            raise SoftValidationError(
+                f"You can't reserve this type of "
+                f"reservation for more than {calendar.max_people} people!"
+            )
 
         # Choose user rules
         user_rules = await self.__choose_user_rules(user, calendar)
@@ -515,14 +516,10 @@ class EventService(AbstractEventService):
             event_input.end_datetime,
             user_rules,
         ):
-            return {"message": "You can reserve on different day."}
+            raise SoftValidationError("You can reserve on different day.")
 
         # Check reservation in advance and prior
-        message = reservation_in_advance(event_input.start_datetime, user_rules)
-        if message != "Access":
-            return message
-
-        return "Access"
+        reservation_in_advance(event_input.start_datetime, user_rules)
 
     async def __choose_user_rules(self, user: User, calendar: CalendarModel):
         """

@@ -74,6 +74,20 @@ def app_exception_handler(request: Request, exc: BaseAppError) -> JSONResponse:
     return exc.to_response()
 
 
+class SoftValidationError(BaseAppError):
+    """Custom soft error that returns a 200 OK with a message."""
+
+    STATUS_CODE = status.HTTP_200_OK
+    DESCRIPTION = "Soft validation error that doesn't interrupt flow."
+
+    def __init__(self, message: str, **kwargs):
+        super().__init__(
+            message=message or self.DESCRIPTION,
+            status_code=self.STATUS_CODE,
+            **kwargs,
+        )
+
+
 class EntityNotFoundError(BaseAppError):
     """Exception for when entity is not found in database."""
 

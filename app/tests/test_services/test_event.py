@@ -3,7 +3,7 @@
 import datetime as dt
 
 import pytest
-from api import BaseAppError
+from api import BaseAppError, EntityNotFoundError, SoftValidationError
 from core.models import EventState
 from core.schemas import EventUpdate
 
@@ -24,13 +24,14 @@ async def test_post_event_not_have_this_service(
 
     If the user doesn't have access to the required service.
     """
-    result = await service_event.post_event(
-        event_create_form,
-        services_data_from_is,
-        user,
-        calendar,
-    )
-    assert result["message"] == "You don't have game service!"
+    with pytest.raises(SoftValidationError) as exc_info:
+        await service_event.post_event(
+            event_create_form,
+            services_data_from_is,
+            user,
+            calendar,
+        )
+    assert str(exc_info.value) == "You don't have game service!"
 
 
 @pytest.mark.asyncio
@@ -41,13 +42,14 @@ async def test_post_event_with_not_exist_reservation_type(
     service_event,
 ):
     """Test that posting an event fails if the calendar type does not exist."""
-    result = await service_event.post_event(
-        event_create_form,
-        services_data_from_is,
-        user,
-        None,
-    )
-    assert result["message"] == "Calendar with that type not exist!"
+    with pytest.raises(EntityNotFoundError) as exc_info:
+        await service_event.post_event(
+            event_create_form,
+            services_data_from_is,
+            user,
+            None,
+        )
+    assert str(exc_info.value.message) == "Calendar with that type not exist!"
 
 
 @pytest.mark.asyncio
@@ -68,13 +70,14 @@ async def test_post_event_not_create_more_people_than_can_be(
     event_create_form.end_datetime = dt.datetime.now() + dt.timedelta(hours=53)
     event_create_form.guests = 10
     calendar.more_than_max_people_with_permission = False
-    result = await service_event.post_event(
-        event_create_form,
-        services_data_from_is,
-        user,
-        calendar,
-    )
-    assert result["message"] == (
+    with pytest.raises(SoftValidationError) as exc_info:
+        await service_event.post_event(
+            event_create_form,
+            services_data_from_is,
+            user,
+            calendar,
+        )
+    assert str(exc_info.value) == (
         "You can't reserve this type of reservation for more than 8 people!"
     )
 
@@ -97,7 +100,7 @@ async def test_post_event(
         user,
         calendar,
     )
-    assert not (len(event_body) == 1 and "message" in event_body)
+    assert event_body["summary"] == "Galambula"
 
 
 @pytest.mark.asyncio

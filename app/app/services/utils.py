@@ -2,6 +2,7 @@
 
 import datetime as dt
 
+from api import SoftValidationError
 from core.models import CalendarModel, ReservationServiceModel
 from core.schemas import EventCreate, Rules, ServiceValidity, User
 from pytz import timezone
@@ -28,16 +29,14 @@ def first_standard_check(
     """
     # Check of the membership
     if not service_availability_check(services, reservation_service.alias):
-        return {"message": f"You don't have {reservation_service.alias} service!"}
+        raise SoftValidationError(f"You don't have {reservation_service.alias} service!")
 
     # Check error reservation
     if start_time < dt.datetime.now():
-        return {"message": "You can't make a reservation before the present time!"}
+        raise SoftValidationError("You can't make a reservation before the present time!")
 
     if end_time < start_time:
-        return {"message": "The end of a reservation cannot be before its beginning!"}
-
-    return "Access"
+        raise SoftValidationError("The end of a reservation cannot be before its beginning!")
 
 
 def reservation_in_advance(start_time, user_rules):
@@ -53,21 +52,17 @@ def reservation_in_advance(start_time, user_rules):
     """
     # Reservation in advance
     if not control_res_in_advance_or_prior(start_time, user_rules, True):
-        return {
-            "message": f"You have to make reservations "
+        raise SoftValidationError(
+            f"You have to make reservations "
             f"{user_rules.in_advance_hours} hours and "
-            f"{user_rules.in_advance_minutes} minutes in advance!",
-        }
+            f"{user_rules.in_advance_minutes} minutes in advance!"
+        )
 
     # Reservation prior than
     if not control_res_in_advance_or_prior(start_time, user_rules, False):
-        return {
-            "message": f"You can't make reservations earlier than "
-            f"{user_rules.in_prior_days} days "
-            f"in advance!",
-        }
-
-    return "Access"
+        raise SoftValidationError(
+            f"You can't make reservations earlier than {user_rules.in_prior_days} days in advance!"
+        )
 
 
 def dif_days_res(start_datetime, end_datetime, user_rules: Rules) -> bool:

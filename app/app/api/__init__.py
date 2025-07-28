@@ -10,6 +10,7 @@ from .exceptions import (
     MethodNotAllowedError,
     NotImplementedFunctionError,
     PermissionDeniedError,
+    SoftValidationError,
     UnauthorizedError,
     app_exception_handler,
 )
@@ -39,6 +40,7 @@ __all__ = [
     "PermissionDeniedError",
     "UnauthorizedError",
     "ERROR_RESPONSES",
+    "SoftValidationError",
     # Utils
     "control_collision",
     "check_night_reservation",

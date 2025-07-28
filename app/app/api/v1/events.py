@@ -16,6 +16,7 @@ from api import (
     get_request,
 )
 from api.external_api.google.google_auth import auth_google
+from api.external_api.google.google_calendar_services import GoogleCalendarService
 from api.v1.emails import create_email_meta, preparing_email
 from core.models import EventState
 from core.schemas import (
@@ -71,7 +72,8 @@ async def create_event(
     reservation_service = await calendar_service.get_reservation_service_of_this_calendar(
         calendar.reservation_service_id,
     )
-    google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
+
+    google_calendar_service = GoogleCalendarService()
 
     if not control_collision(google_calendar_service, event_create, calendar):
         return JSONResponse(
@@ -80,23 +82,14 @@ async def create_event(
         )
 
     event_body = await service.post_event(event_create, services, user, calendar)
-    if not event_body or (len(event_body) == 1 and "message" in event_body):
-        if event_body:
-            return JSONResponse(status_code=status.HTTP_200_OK, content=event_body)
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"message": "Could not create event."},
-        )
+    if not event_body:
+        raise BaseAppError(message="Could not create event.")
 
     event_create.reservation_type = calendar.id
 
     if event_create.guests > calendar.max_people:
         event_body["summary"] = f"Not approved - more than {calendar.max_people} people"
-        event = (
-            google_calendar_service.events()
-            .insert(calendarId=calendar.id, body=event_body)
-            .execute()
-        )
+        event = await google_calendar_service.insert_event(calendar.id, event_body)
         await service.create_event(
             event_create,
             user,
@@ -111,11 +104,7 @@ async def create_event(
     ):
         event_body["summary"] = "Not approved - night time"
         subject = event_body["summary"]
-        event_google_calendar = (
-            google_calendar_service.events()
-            .insert(calendarId=calendar.id, body=event_body)
-            .execute()
-        )
+        event_google_calendar = await google_calendar_service.insert_event(calendar.id, event_body)
         event = await service.create_event(
             event_create,
             user,
@@ -129,9 +118,7 @@ async def create_event(
         )
         return {"message": "Night time"}
 
-    event_google_calendar = (
-        google_calendar_service.events().insert(calendarId=calendar.id, body=event_body).execute()
-    )
+    event_google_calendar = await google_calendar_service.insert_event(calendar.id, event_body)
     event = await service.create_event(
         event_create,
         user,
@@ -147,10 +134,6 @@ async def create_event(
             f"{reservation_service.name} Reservation Confirmation",
         ),
     )
-
-    # Add or update access to dormitory card system only for test
-    # await add_or_update_access_to_reservation_areas(service, event)
-
     return event_google_calendar
 
 

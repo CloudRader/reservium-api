@@ -32,7 +32,7 @@ def modify_url_scheme(url: str, new_scheme: str) -> str:
     return new_url
 
 
-def control_collision(
+async def control_collision(
     google_calendar_service,
     event_input: EventCreate,
     calendar: Calendar,
@@ -55,15 +55,14 @@ def control_collision(
     if calendar.collision_with_calendar:
         for calendar_id in collisions:
             check_collision.extend(
-                get_events(
-                    google_calendar_service,
+                await google_calendar_service.fetch_events_in_time_range(
                     event_input.start_datetime,
                     event_input.end_datetime,
                     calendar_id,
                 ),
             )
 
-    return check_collision_time(
+    return await check_collision_time(
         check_collision,
         event_input.start_datetime,
         event_input.end_datetime,
@@ -72,39 +71,7 @@ def control_collision(
     )
 
 
-def get_events(service, start_time, end_time, calendar_id):
-    """
-    Get events from Google calendar by its id.
-
-    :param service: Google Calendar service.
-    :param start_time: Start time of the reservation.
-    :param end_time: End time of the reservation.
-    :param calendar_id: The calendar id of the Calendar object.
-
-    :return: List of the events for that time
-    """
-    prague = timezone("Europe/Prague")
-
-    start_time_str = prague.localize(start_time).isoformat()
-    end_time_str = prague.localize(end_time).isoformat()
-
-    # Call the Calendar API
-    events_result = (
-        service.events()
-        .list(
-            calendarId=calendar_id,
-            timeMin=start_time_str,
-            timeMax=end_time_str,
-            singleEvents=True,
-            orderBy="startTime",
-            timeZone="Europe/Prague",
-        )
-        .execute()
-    )
-    return events_result.get("items", [])
-
-
-def check_collision_time(
+async def check_collision_time(
     check_collision,
     start_datetime,
     end_datetime,
@@ -123,7 +90,7 @@ def check_collision_time(
     :return: Boolean indicating if here is already another reservation or not.
     """
     if not calendar.collision_with_itself:
-        collisions = get_events(
+        collisions = await google_calendar_service.fetch_events_in_time_range(
             google_calendar_service,
             start_datetime,
             end_datetime,
