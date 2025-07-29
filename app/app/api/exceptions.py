@@ -161,6 +161,20 @@ class NotImplementedFunctionError(BaseAppError):
         super().__init__(message=message)
 
 
+class ExternalAPIError(BaseAppError):
+    """Exception for failures from external api."""
+
+    STATUS_CODE = status.HTTP_502_BAD_GATEWAY
+    DESCRIPTION = "External api call failed."
+
+    def __init__(self, message: str | None = None, **kwargs):
+        super().__init__(
+            message=message or self.DESCRIPTION,
+            status_code=self.STATUS_CODE,
+            **kwargs,
+        )
+
+
 ERROR_RESPONSES = {
     "400": {
         **BaseAppError.response(),

@@ -3,7 +3,7 @@
 import datetime as dt
 from abc import ABC, abstractmethod
 
-from api import BaseAppError, Entity, EntityNotFoundError
+from api import BaseAppError, Entity, EntityNotFoundError, ExternalAPIError
 from api.external_api.google.google_auth import auth_google
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -50,6 +50,40 @@ class AbstractGoogleCalendarService(ABC):
         :param event_body: Dictionary describing the event details.
 
         :return: The created event object.
+        """
+
+    @abstractmethod
+    async def get_event(self, calendar_id: str, event_id: str) -> dict:
+        """
+        Retrieve a specific event from a Google Calendar.
+
+        :param calendar_id: The ID of the calendar containing the event.
+        :param event_id: The ID of the event to retrieve.
+
+        :return: The event object if found.
+        """
+
+    @abstractmethod
+    async def update_event(self, calendar_id: str, event_id: str, body: dict) -> dict:
+        """
+        Update an existing event in a specific Google Calendar.
+
+        :param calendar_id: The ID of the calendar containing the event.
+        :param event_id: The ID of the event to update.
+        :param body: A dictionary representing the updated event details.
+
+        :return: The updated event object.
+        """
+
+    @abstractmethod
+    async def delete_event(self, calendar_id: str, event_id: str) -> dict:
+        """
+        Delete an event from a specific Google Calendar.
+
+        :param calendar_id: The ID of the calendar containing the event.
+        :param event_id: The ID of the event to delete.
+
+        :return: A response confirming the deletion.
         """
 
     @abstractmethod
@@ -110,6 +144,55 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
 
     async def insert_event(self, calendar_id: str, event_body: dict) -> dict:
         return self.service.events().insert(calendarId=calendar_id, body=event_body).execute()
+
+    async def get_event(self, calendar_id: str, event_id: str) -> dict:
+        try:
+            return self.service.events().get(calendarId=calendar_id, eventId=event_id).execute()
+        except HttpError as exc:
+            if exc.status_code == 404:
+                raise EntityNotFoundError(
+                    entity=Entity.EVENT,
+                    entity_id=event_id,
+                    message="The event does not exist in Google Calendar.",
+                ) from exc
+            raise ExternalAPIError(
+                message="Failed to fetch event from Google Calendar.",
+                error_detail=str(exc),
+            ) from exc
+
+    async def update_event(self, calendar_id: str, event_id: str, body: dict) -> dict:
+        try:
+            return (
+                self.service.events()
+                .update(calendarId=calendar_id, eventId=event_id, body=body)
+                .execute()
+            )
+        except HttpError as exc:
+            if exc.status_code == 404:
+                raise EntityNotFoundError(
+                    entity=Entity.EVENT,
+                    entity_id=event_id,
+                    message="The event does not exist in Google Calendar.",
+                ) from exc
+            raise ExternalAPIError(
+                message="Failed to update event in Google Calendar.",
+                error_detail=str(exc),
+            ) from exc
+
+    async def delete_event(self, calendar_id: str, event_id: str) -> dict:
+        try:
+            return self.service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
+        except HttpError as exc:
+            if exc.status_code == 404:
+                raise EntityNotFoundError(
+                    entity=Entity.EVENT,
+                    entity_id=event_id,
+                    message="The event does not exist in Google Calendar.",
+                ) from exc
+            raise ExternalAPIError(
+                message="Failed to delete event in Google Calendar.",
+                error_detail=str(exc),
+            ) from exc
 
     async def fetch_events_in_time_range(
         self, calendar_id: str, start_time: dt.datetime, end_time: dt.datetime

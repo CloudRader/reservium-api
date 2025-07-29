@@ -60,9 +60,9 @@ async def control_collision(
         for calendar_id in collisions:
             check_collision.extend(
                 await google_calendar_service.fetch_events_in_time_range(
+                    calendar_id,
                     event_input.start_datetime,
                     event_input.end_datetime,
-                    calendar_id,
                 ),
             )
 

@@ -6,6 +6,7 @@ from .exceptions import (
     BaseAppError,
     Entity,
     EntityNotFoundError,
+    ExternalAPIError,
     Message,
     MethodNotAllowedError,
     NotImplementedFunctionError,
@@ -35,6 +36,7 @@ __all__ = [
     "UnauthorizedError",
     "ERROR_RESPONSES",
     "SoftValidationError",
+    "ExternalAPIError",
     # User authenticator
     "get_oauth_session",
     "get_request",

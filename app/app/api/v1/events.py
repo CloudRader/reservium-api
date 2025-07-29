@@ -13,7 +13,6 @@ from api import (
     get_current_user,
     get_request,
 )
-from api.external_api.google.google_auth import auth_google
 from api.external_api.google.google_calendar_services import GoogleCalendarService
 from api.utils import control_collision, process_event_approval
 from api.v1.emails import create_email_meta, preparing_email
@@ -29,8 +28,6 @@ from core.schemas import (
 )
 from dateutil.parser import isoparse
 from fastapi import APIRouter, Body, Depends, Path, Query, status
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 from pytz import timezone
 from services import CalendarService, EventService
 
@@ -169,81 +166,70 @@ async def approve_update_reservation_time(
 
     :returns EventModel: the updated event.
     """
-    google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
+    google_calendar_service = GoogleCalendarService()
     event: Event = await service.get(event_id)
     if not event:
         raise EntityNotFoundError(Entity.EVENT, event_id)
-    try:
-        event_update: EventUpdate = EventUpdate(event_state=EventState.CONFIRMED)
-        event_from_google_calendar = (
-            google_calendar_service.events()
-            .get(calendarId=event.calendar_id, eventId=event.id)
-            .execute()
+
+    event_update: EventUpdate = EventUpdate(event_state=EventState.CONFIRMED)
+    event_from_google_calendar = await google_calendar_service.get_event(
+        event.calendar_id, event_id
+    )
+
+    if not approve:
+        event_update.start_datetime = isoparse(
+            event_from_google_calendar["start"]["dateTime"],
+        ).replace(tzinfo=None)
+        event_update.end_datetime = isoparse(
+            event_from_google_calendar["end"]["dateTime"],
+        ).replace(tzinfo=None)
+        event_to_update = await service.approve_update_reservation_time(
+            event_id,
+            event_update,
+            user,
         )
-        if not approve:
-            event_update.start_datetime = isoparse(
-                event_from_google_calendar["start"]["dateTime"],
-            ).replace(tzinfo=None)
-            event_update.end_datetime = isoparse(
-                event_from_google_calendar["end"]["dateTime"],
-            ).replace(tzinfo=None)
-            event_to_update = await service.approve_update_reservation_time(
-                event_id,
-                event_update,
-                user,
-            )
-            if not event_to_update:
-                raise EntityNotFoundError(Entity.EVENT, event_id)
+        if not event_to_update:
+            raise EntityNotFoundError(Entity.EVENT, event_id)
 
-            await preparing_email(
-                service,
-                event,
-                create_email_meta(
-                    "decline_update_reservation_time",
-                    "Request Update Reservation Time Has Been Declined",
-                    manager_notes,
-                ),
-            )
-        else:
-            event_to_update = await service.approve_update_reservation_time(
-                event_id,
-                event_update,
-                user,
-            )
-            if not event_to_update:
-                raise EntityNotFoundError(Entity.EVENT, event_id)
-            prague = timezone("Europe/Prague")
-            event_from_google_calendar["start"]["dateTime"] = prague.localize(
-                event.start_datetime,
-            ).isoformat()
-            event_from_google_calendar["end"]["dateTime"] = prague.localize(
-                event.end_datetime,
-            ).isoformat()
-            await preparing_email(
-                service,
-                event,
-                create_email_meta(
-                    "approve_update_reservation_time",
-                    "Request Update Reservation Time Has Been Approved",
-                    manager_notes,
-                ),
-            )
+        await preparing_email(
+            service,
+            event,
+            create_email_meta(
+                "decline_update_reservation_time",
+                "Request Update Reservation Time Has Been Declined",
+                manager_notes,
+            ),
+        )
+    else:
+        event_to_update = await service.approve_update_reservation_time(
+            event_id,
+            event_update,
+            user,
+        )
+        if not event_to_update:
+            raise EntityNotFoundError(Entity.EVENT, event_id)
+        prague = timezone("Europe/Prague")
+        event_from_google_calendar["start"]["dateTime"] = prague.localize(
+            event.start_datetime,
+        ).isoformat()
+        event_from_google_calendar["end"]["dateTime"] = prague.localize(
+            event.end_datetime,
+        ).isoformat()
+        await preparing_email(
+            service,
+            event,
+            create_email_meta(
+                "approve_update_reservation_time",
+                "Request Update Reservation Time Has Been Approved",
+                manager_notes,
+            ),
+        )
 
-            google_calendar_service.events().update(
-                calendarId=event.calendar_id,
-                eventId=event.id,
-                body=event_from_google_calendar,
-            ).execute()
+        await google_calendar_service.update_event(
+            event.calendar_id, event_id, event_from_google_calendar
+        )
 
-            # Add or update access to dormitory card system only for test
-            # await add_or_update_access_to_reservation_areas(service, event)
-
-        return event_to_update
-
-    except HttpError as exc:
-        raise BaseAppError(
-            "Something went wrong, control updating data.",
-        ) from exc
+    return event_to_update
 
 
 @router.put(
@@ -315,44 +301,32 @@ async def cancel_reservation(
 
     :returns EventModel: the canceled reservation.
     """
-    google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
+    # TODO: can't delete after it ended, but can delete after it started or think about it
+    google_calendar_service = GoogleCalendarService()
     event = await service.cancel_event(event_id, user)
     if not event:
         raise EntityNotFoundError(Entity.EVENT, event_id)
-    try:
-        google_calendar_service.events().delete(
-            calendarId=event.calendar_id,
-            eventId=event.id,
-        ).execute()
 
-        if event.user_id == user.id:
-            await preparing_email(
-                service,
-                event,
-                create_email_meta("cancel_reservation", "Cancel Reservation"),
-            )
-        else:
-            await preparing_email(
-                service,
-                event,
-                create_email_meta(
-                    "cancel_reservation_by_manager",
-                    "Cancel Reservation by Manager",
-                    cancel_reason,
-                ),
-            )
+    await google_calendar_service.delete_event(event.calendar_id, event.id)
 
-        # Delete access to dormitory card system only for test
-        # await delete_access_to_reservation_areas(service, event)
+    if event.user_id == user.id:
+        await preparing_email(
+            service,
+            event,
+            create_email_meta("cancel_reservation", "Cancel Reservation"),
+        )
+    else:
+        await preparing_email(
+            service,
+            event,
+            create_email_meta(
+                "cancel_reservation_by_manager",
+                "Cancel Reservation by Manager",
+                cancel_reason,
+            ),
+        )
 
-        return event
-
-    except HttpError as exc:
-        raise EntityNotFoundError(
-            entity=Entity.EVENT,
-            entity_id=event_id,
-            message="This event does not exist in Google Calendar.",
-        ) from exc
+    return event
 
 
 @router.put(
@@ -381,7 +355,7 @@ async def approve_reservation(
 
     :returns EventModel: the updated reservation.
     """
-    google_calendar_service = build("calendar", "v3", credentials=auth_google(None))
+    google_calendar_service = GoogleCalendarService()
     if approve:
         event = await service.confirm_event(event_id, user)
         if not event:
@@ -390,57 +364,36 @@ async def approve_reservation(
         event = await service.cancel_event(event_id, user)
         if not event:
             raise EntityNotFoundError(Entity.EVENT, event_id)
-    try:
-        if approve:
-            calendar = await service.get_calendar_of_this_event(event)
-            event_to_update = (
-                google_calendar_service.events()
-                .get(calendarId=event.calendar_id, eventId=event.id)
-                .execute()
-            )
 
-            event_to_update["summary"] = calendar.reservation_type
+    if approve:
+        calendar = await service.get_calendar_of_this_event(event)
+        event_to_update = await google_calendar_service.get_event(event.calendar_id, event.id)
 
-            google_calendar_service.events().update(
-                calendarId=event.calendar_id,
-                eventId=event.id,
-                body=event_to_update,
-            ).execute()
+        event_to_update["summary"] = calendar.reservation_type
 
-            await preparing_email(
-                service,
-                event,
-                create_email_meta(
-                    "approve_reservation",
-                    "Reservation Has Been Approved",
-                    manager_notes,
-                ),
-            )
+        await google_calendar_service.update_event(event.calendar_id, event.id, event_to_update)
 
-            # Add or update access to dormitory card system only for test
-            # await add_or_update_access_to_reservation_areas(service, event)
+        await preparing_email(
+            service,
+            event,
+            create_email_meta(
+                "approve_reservation",
+                "Reservation Has Been Approved",
+                manager_notes,
+            ),
+        )
 
-        else:
-            google_calendar_service.events().delete(
-                calendarId=event.calendar_id,
-                eventId=event.id,
-            ).execute()
+    else:
+        await google_calendar_service.delete_event(event.calendar_id, event.id)
 
-            await preparing_email(
-                service,
-                event,
-                create_email_meta(
-                    "decline_reservation",
-                    "Reservation Has Been Declined",
-                    manager_notes,
-                ),
-            )
+        await preparing_email(
+            service,
+            event,
+            create_email_meta(
+                "decline_reservation",
+                "Reservation Has Been Declined",
+                manager_notes,
+            ),
+        )
 
-        return event
-
-    except HttpError as exc:
-        raise EntityNotFoundError(
-            entity=Entity.EVENT,
-            entity_id=event_id,
-            message="This event does not exist in Google Calendar.",
-        ) from exc
+    return event
