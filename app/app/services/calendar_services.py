@@ -12,6 +12,7 @@ from api import BaseAppError, PermissionDeniedError
 from core import db_session
 from core.models import CalendarModel, ReservationServiceModel
 from core.schemas import CalendarCreate, CalendarUpdate, User
+from core.schemas.google_calendar import GoogleCalendarCalendar
 from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService
 from fastapi import Depends
 from services import CrudServiceBase
@@ -102,8 +103,8 @@ class AbstractCalendarService(
     async def get_all_google_calendar_to_add(
         self,
         user: User,
-        google_calendars: list[dict],
-    ) -> list[dict] | None:
+        google_calendars: list[GoogleCalendarCalendar],
+    ) -> list[GoogleCalendarCalendar] | None:
         """
         Retrieve a Calendars from Google calendars that are candidates for additions.
 
@@ -349,21 +350,18 @@ class CalendarService(AbstractCalendarService):
     async def get_all_google_calendar_to_add(
         self,
         user: User,
-        google_calendars: list[dict],
-    ) -> list[dict] | None:
+        google_calendars: list[GoogleCalendarCalendar],
+    ) -> list[GoogleCalendarCalendar] | None:
         if not user.roles:
             raise PermissionDeniedError()
 
-        new_calendar_candidates = []
+        new_calendar_candidates: list[GoogleCalendarCalendar] = []
 
         for calendar in google_calendars:
             if (
-                calendar.get("accessRole") == "owner"
-                and not calendar.get(
-                    "primary",
-                    False,
-                )
-                and await self.get(calendar.get("id")) is None
+                calendar.access_role == "owner"
+                and not calendar.primary
+                and await self.get(calendar.id) is None
             ):
                 new_calendar_candidates.append(calendar)
 

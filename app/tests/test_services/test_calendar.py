@@ -3,6 +3,7 @@
 import pytest
 from api import BaseAppError, PermissionDeniedError
 from core.schemas import CalendarUpdate
+from core.schemas.google_calendar import GoogleCalendarCalendar
 
 # pylint: disable=redefined-outer-name
 # reason: using fixtures as variables is a standard for pytest
@@ -215,15 +216,39 @@ async def test_get_all_google_calendar_to_add(service_calendar, user):
     """Test getting all Google calendars that can be added by a user."""
     # Simulate the list of Google calendars
     google_calendars_data = [
-        {"id": "1", "accessRole": "owner", "primary": False},
-        {"id": "2", "accessRole": "reader", "primary": False},
-        {"id": "3", "accessRole": "owner", "primary": True},
-        {"id": "4", "accessRole": "owner", "primary": False},
+        GoogleCalendarCalendar(
+            kind="calendar#calendarListEntry",
+            etag="etag1",
+            id="1",
+            accessRole="owner",
+            primary=False,
+        ),
+        GoogleCalendarCalendar(
+            kind="calendar#calendarListEntry",
+            etag="etag2",
+            id="2",
+            accessRole="reader",
+            primary=False,
+        ),
+        GoogleCalendarCalendar(
+            kind="calendar#calendarListEntry",
+            etag="etag3",
+            id="3",
+            accessRole="owner",
+            primary=True,
+        ),
+        GoogleCalendarCalendar(
+            kind="calendar#calendarListEntry",
+            etag="etag4",
+            id="4",
+            accessRole="owner",
+            primary=False,
+        ),
     ]
     new_calendars = await service_calendar.get_all_google_calendar_to_add(
         user,
         google_calendars_data,
     )
     assert len(new_calendars) == 2
-    assert new_calendars[0]["id"] == "1"
-    assert new_calendars[1]["id"] == "4"
+    assert new_calendars[0].id == "1"
+    assert new_calendars[1].id == "4"

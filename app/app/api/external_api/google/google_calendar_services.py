@@ -3,8 +3,9 @@
 import datetime as dt
 from abc import ABC, abstractmethod
 
-from api import BaseAppError, Entity, EntityNotFoundError, ExternalAPIError
+from api import BaseAppError, Entity, EntityNotFoundError, ExternalAPIError, PermissionDeniedError
 from api.external_api.google.google_auth import auth_google
+from core.schemas.google_calendar import GoogleCalendarCalendar
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pytz import timezone
@@ -14,7 +15,7 @@ class AbstractGoogleCalendarService(ABC):
     """Interface for a service interacting with the Google Calendar API."""
 
     @abstractmethod
-    async def get_calendar(self, calendar_id: str) -> dict:
+    async def get_calendar(self, calendar_id: str) -> GoogleCalendarCalendar:
         """
         Retrieve a Google Calendar by its ID.
 
@@ -24,7 +25,7 @@ class AbstractGoogleCalendarService(ABC):
         """
 
     @abstractmethod
-    async def create_calendar(self, summary: str) -> dict:
+    async def create_calendar(self, summary: str) -> GoogleCalendarCalendar:
         """
         Create a new Google Calendar and make it publicly readable.
 
@@ -39,6 +40,17 @@ class AbstractGoogleCalendarService(ABC):
         Retrieve all calendars from the authenticated Google account.
 
         :return: A list of calendar objects.
+        """
+
+    @abstractmethod
+    async def user_has_calendar_access(self, calendar_id: str) -> None:
+        """
+        Check if the authenticated user has access to the specified Google Calendar.
+
+        This method retrieves the list of calendars accessible by the user and verifies
+        whether the given `calendar_id` is among them.
+
+        :param calendar_id: The ID of the calendar to check access for.
         """
 
     @abstractmethod
@@ -107,9 +119,11 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
     def __init__(self):
         self.service = build("calendar", "v3", credentials=auth_google(None))
 
-    async def get_calendar(self, calendar_id: str) -> dict:
+    async def get_calendar(self, calendar_id: str) -> GoogleCalendarCalendar:
         try:
-            return self.service.calendars().get(calendarId=calendar_id).execute()
+            return GoogleCalendarCalendar(
+                **self.service.calendars().get(calendarId=calendar_id).execute()
+            )
         except HttpError as exc:
             raise EntityNotFoundError(
                 entity=Entity.CALENDAR,
@@ -117,30 +131,50 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
                 message="The calendar does not exist in Google Calendar.",
             ) from exc
 
-    async def create_calendar(self, summary: str) -> dict:
+    async def create_calendar(self, summary: str) -> GoogleCalendarCalendar:
         try:
             calendar_body = {
                 "summary": summary,  # Title of the new calendar
                 "timeZone": "Europe/Prague",  # Set your desired timezone
             }
-            created_calendar = self.service.calendars().insert(body=calendar_body).execute()
-            calendar_id = created_calendar.get("id")
+            created_calendar = GoogleCalendarCalendar(
+                **self.service.calendars().insert(body=calendar_body).execute()
+            )
 
             rule = {
                 "role": "reader",  # Role is 'reader' for read-only public access
                 "scope": {"type": "default"},  # 'default' means public access
             }
-            self.service.acl().insert(calendarId=calendar_id, body=rule).execute()
+            self.service.acl().insert(
+                calendarId=created_calendar.id,
+                body=rule,
+                sendNotifications=False,
+            ).execute()
 
             return created_calendar
         except HttpError as exc:
             raise BaseAppError("Can't create calendar in Google Calendar.") from exc
 
-    async def get_all_calendars(self) -> list[dict]:
+    async def get_all_calendars(self) -> list[GoogleCalendarCalendar]:
         try:
-            return self.service.calendarList().list().execute().get("items", [])
+            calendars_dict = self.service.calendarList().list().execute().get("items", [])
+            return [GoogleCalendarCalendar(**calendar) for calendar in calendars_dict]
+            # return self.service.calendarList().list().execute().get("items", [])
         except HttpError as exc:
             raise BaseAppError("Failed to list Google calendars.") from exc
+
+    async def user_has_calendar_access(self, calendar_id: str) -> None:
+        try:
+            calendar_list = self.service.calendarList().list().execute().get("items", [])
+            if not any(cal["id"] == calendar_id for cal in calendar_list):
+                raise PermissionDeniedError(
+                    "You don't have access to this calendar in Google Calendar."
+                )
+        except HttpError as exc:
+            raise ExternalAPIError(
+                message="Failed to get calendars in Google Calendar.",
+                error_detail=str(exc),
+            ) from exc
 
     async def insert_event(self, calendar_id: str, event_body: dict) -> dict:
         return self.service.events().insert(calendarId=calendar_id, body=event_body).execute()

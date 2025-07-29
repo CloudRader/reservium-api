@@ -44,13 +44,13 @@ async def create_calendar(
     :returns CalendarModel: the created calendar.
     """
     if calendar_create.id:
-        await google_calendar_service.get_calendar(calendar_create.id)
+        await google_calendar_service.user_has_calendar_access(calendar_create.id)
     else:
         calendar_create.id = (
             await google_calendar_service.create_calendar(
                 calendar_create.reservation_type,
             )
-        ).get("id")
+        ).id
 
     calendar = await service.create_calendar(calendar_create, user)
     if not calendar:
