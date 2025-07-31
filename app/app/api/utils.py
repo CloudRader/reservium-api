@@ -7,6 +7,7 @@ from api.external_api.google.google_calendar_services import GoogleCalendarServi
 from api.v1.emails import create_email_meta, preparing_email
 from core.models import EventState
 from core.schemas import Calendar, EventCreate, ReservationService, User
+from core.schemas.google_calendar import GoogleCalendarEventCreate
 from pytz import timezone
 from services import EventService
 
@@ -157,7 +158,7 @@ async def process_event_approval(
     service: EventService,
     user: User,
     calendar: Calendar,
-    event_body: dict,
+    event_body: GoogleCalendarEventCreate,
     event_create: EventCreate,
     reservation_service: ReservationService,
 ):
@@ -180,19 +181,19 @@ async def process_event_approval(
     google_calendar_service = GoogleCalendarService()
 
     if event_create.guests > calendar.max_people:
-        event_body["summary"] = f"Not approved - more than {calendar.max_people} people"
+        event_body.summary = f"Not approved - more than {calendar.max_people} people"
     elif not check_night_reservation(user) and not control_available_reservation_time(
         event_create.start_datetime,
         event_create.end_datetime,
     ):
-        event_body["summary"] = "Not approved - night time"
+        event_body.summary = "Not approved - night time"
     else:
         event_google_calendar = await google_calendar_service.insert_event(calendar.id, event_body)
         event = await service.create_event(
             event_create,
             user,
             EventState.CONFIRMED,
-            event_google_calendar["id"],
+            event_google_calendar.id,
         )
         await preparing_email(
             service,
@@ -204,7 +205,7 @@ async def process_event_approval(
         )
         return event_google_calendar
 
-    event_summary = event_body["summary"]
+    event_summary = event_body.summary
     event_google_calendar = await google_calendar_service.insert_event(
         event_create.calendar_id, event_body
     )
@@ -212,7 +213,7 @@ async def process_event_approval(
         event_create,
         user,
         EventState.NOT_APPROVED,
-        event_google_calendar["id"],
+        event_google_calendar.id,
     )
 
     if "night time" in event_summary.lower():

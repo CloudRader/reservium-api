@@ -5,7 +5,11 @@ from abc import ABC, abstractmethod
 
 from api import BaseAppError, Entity, EntityNotFoundError, ExternalAPIError, PermissionDeniedError
 from api.external_api.google.google_auth import auth_google
-from core.schemas.google_calendar import GoogleCalendarCalendar
+from core.schemas.google_calendar import (
+    GoogleCalendarCalendar,
+    GoogleCalendarEvent,
+    GoogleCalendarEventCreate,
+)
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pytz import timezone
@@ -54,7 +58,9 @@ class AbstractGoogleCalendarService(ABC):
         """
 
     @abstractmethod
-    async def insert_event(self, calendar_id: str, event_body: dict) -> dict:
+    async def insert_event(
+        self, calendar_id: str, event_body: GoogleCalendarEventCreate
+    ) -> GoogleCalendarEvent:
         """
         Insert an event into a specific Google Calendar.
 
@@ -76,7 +82,9 @@ class AbstractGoogleCalendarService(ABC):
         """
 
     @abstractmethod
-    async def update_event(self, calendar_id: str, event_id: str, body: dict) -> dict:
+    async def update_event(
+        self, calendar_id: str, event_id: str, body: GoogleCalendarEvent
+    ) -> GoogleCalendarEvent:
         """
         Update an existing event in a specific Google Calendar.
 
@@ -88,7 +96,7 @@ class AbstractGoogleCalendarService(ABC):
         """
 
     @abstractmethod
-    async def delete_event(self, calendar_id: str, event_id: str) -> dict:
+    async def delete_event(self, calendar_id: str, event_id: str) -> None:
         """
         Delete an event from a specific Google Calendar.
 
@@ -176,12 +184,26 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
                 error_detail=str(exc),
             ) from exc
 
-    async def insert_event(self, calendar_id: str, event_body: dict) -> dict:
-        return self.service.events().insert(calendarId=calendar_id, body=event_body).execute()
-
-    async def get_event(self, calendar_id: str, event_id: str) -> dict:
+    async def insert_event(
+        self, calendar_id: str, event_body: GoogleCalendarEventCreate
+    ) -> GoogleCalendarEvent:
         try:
-            return self.service.events().get(calendarId=calendar_id, eventId=event_id).execute()
+            return GoogleCalendarEvent(
+                **self.service.events()
+                .insert(calendarId=calendar_id, body=event_body.model_dump(by_alias=True))
+                .execute()
+            )
+        except HttpError as exc:
+            raise ExternalAPIError(
+                message="Failed to create event in Google Calendar.",
+                error_detail=str(exc),
+            ) from exc
+
+    async def get_event(self, calendar_id: str, event_id: str) -> GoogleCalendarEvent:
+        try:
+            return GoogleCalendarEvent(
+                **self.service.events().get(calendarId=calendar_id, eventId=event_id).execute()
+            )
         except HttpError as exc:
             if exc.status_code == 404:
                 raise EntityNotFoundError(
@@ -194,11 +216,15 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
                 error_detail=str(exc),
             ) from exc
 
-    async def update_event(self, calendar_id: str, event_id: str, body: dict) -> dict:
+    async def update_event(
+        self, calendar_id: str, event_id: str, body: GoogleCalendarEvent
+    ) -> GoogleCalendarEvent:
         try:
-            return (
-                self.service.events()
-                .update(calendarId=calendar_id, eventId=event_id, body=body)
+            return GoogleCalendarEvent(
+                **self.service.events()
+                .update(
+                    calendarId=calendar_id, eventId=event_id, body=body.model_dump(by_alias=True)
+                )
                 .execute()
             )
         except HttpError as exc:
@@ -213,7 +239,7 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
                 error_detail=str(exc),
             ) from exc
 
-    async def delete_event(self, calendar_id: str, event_id: str) -> dict:
+    async def delete_event(self, calendar_id: str, event_id: str) -> None:
         try:
             return self.service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
         except HttpError as exc:

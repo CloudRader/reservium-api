@@ -26,6 +26,7 @@ from core.schemas import (
     ServiceList,
     User,
 )
+from core.schemas.google_calendar import GoogleCalendarEventCreate
 from dateutil.parser import isoparse
 from fastapi import APIRouter, Body, Depends, Path, Query, status
 from pytz import timezone
@@ -71,7 +72,9 @@ async def create_event(
     if not await control_collision(google_calendar_service, event_create, calendar):
         raise SoftValidationError("There's already a reservation for that time.")
 
-    event_body = await service.post_event(event_create, services, user, calendar)
+    event_body = GoogleCalendarEventCreate(
+        **await service.post_event(event_create, services, user, calendar)
+    )
     if not event_body:
         raise BaseAppError(message="Could not create event.")
 
@@ -178,10 +181,10 @@ async def approve_update_reservation_time(
 
     if not approve:
         event_update.start_datetime = isoparse(
-            event_from_google_calendar["start"]["dateTime"],
+            event_from_google_calendar.start.date_time,
         ).replace(tzinfo=None)
         event_update.end_datetime = isoparse(
-            event_from_google_calendar["end"]["dateTime"],
+            event_from_google_calendar.end.date_time,
         ).replace(tzinfo=None)
         event_to_update = await service.approve_update_reservation_time(
             event_id,
@@ -209,10 +212,10 @@ async def approve_update_reservation_time(
         if not event_to_update:
             raise EntityNotFoundError(Entity.EVENT, event_id)
         prague = timezone("Europe/Prague")
-        event_from_google_calendar["start"]["dateTime"] = prague.localize(
+        event_from_google_calendar.start.date_time = prague.localize(
             event.start_datetime,
         ).isoformat()
-        event_from_google_calendar["end"]["dateTime"] = prague.localize(
+        event_from_google_calendar.end.date_time = prague.localize(
             event.end_datetime,
         ).isoformat()
         await preparing_email(
@@ -369,7 +372,7 @@ async def approve_reservation(
         calendar = await service.get_calendar_of_this_event(event)
         event_to_update = await google_calendar_service.get_event(event.calendar_id, event.id)
 
-        event_to_update["summary"] = calendar.reservation_type
+        event_to_update.summary = calendar.reservation_type
 
         await google_calendar_service.update_event(event.calendar_id, event.id, event_to_update)
 

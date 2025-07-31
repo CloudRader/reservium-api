@@ -128,7 +128,7 @@ async def preparing_email(
     # Mail for club members
     template_for_member = f"{email_meta.template_name}.txt"
     body = render_email_template(template_for_member, context)
-    email_create = construct_email(event.email, email_meta.subject, body)
+    email_create = construct_email(str(event.email), email_meta.subject, body)
     await send_email(email_create)
 
     # Mail for manager
@@ -160,7 +160,7 @@ def construct_email(
     :return: Constructed EmailCreate schema.
     """
     return EmailCreate(
-        email=[send_to_email],
+        email=[str(send_to_email)],
         subject=subject,
         body=body,
     )
