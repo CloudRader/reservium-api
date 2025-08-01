@@ -18,9 +18,10 @@ from core.schemas import (
     UserIS,
     UserUpdate,
 )
+from core.schemas.event import EventWithExtraDetails
 from crud import CRUDReservationService, CRUDUser
 from fastapi import Depends
-from services import CrudServiceBase
+from services import CrudServiceBase, EventService
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -68,6 +69,16 @@ class AbstractUserService(
         :return: The User instance if found, None otherwise.
         """
 
+    @abstractmethod
+    async def get_events_by_user_id(self, user: User) -> list[EventWithExtraDetails] | None:
+        """
+        Retrieve all events linked to a given User.
+
+        :param user: The User object in database.
+
+        :return: List of EventWithExtraDetails objects linked to the user.
+        """
+
 
 class UserService(AbstractUserService):
     """Class UserService represent service that work with User."""
@@ -77,6 +88,7 @@ class UserService(AbstractUserService):
         db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
         self.reservation_service_crud = CRUDReservationService(db)
+        self.event_service = EventService(db)
         super().__init__(CRUDUser(db))
 
     async def create_user(
@@ -128,3 +140,6 @@ class UserService(AbstractUserService):
 
     async def get_by_username(self, username: str) -> UserModel:
         return await self.crud.get_by_username(username)
+
+    async def get_events_by_user_id(self, user: User) -> list[EventWithExtraDetails] | None:
+        return await self.event_service.add_extra_details_to_event(user.events)

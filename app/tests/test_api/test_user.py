@@ -27,10 +27,9 @@ async def test_get_auth_code(mock_get_oauth, client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_get_all_users_empty(client: AsyncClient):
-    """Test that /users/ returns 404 when there are no users in the database."""
+    """Test that /users/ returns 401 when accessed without auth."""
     response = await client.get("/v1/users/")
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {"message": "No users in db."}
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 @pytest.mark.asyncio

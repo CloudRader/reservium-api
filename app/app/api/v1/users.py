@@ -3,12 +3,14 @@
 from typing import Annotated, Any
 
 from api import (
+    ERROR_RESPONSES,
+    BaseAppError,
+    PermissionDeniedError,
     fastapi_docs,
     get_current_user,
 )
-from core.schemas import User
+from core.schemas import EventWithExtraDetails, User
 from fastapi import APIRouter, Depends, FastAPI, status
-from fastapi.responses import JSONResponse
 from services import UserService
 
 app = FastAPI()
@@ -16,8 +18,43 @@ app = FastAPI()
 router = APIRouter(tags=[fastapi_docs.USER_TAG["name"]])
 
 
-@router.get("/me", response_model=User)
-async def get_user(current_user: Annotated[User, Depends(get_current_user)]) -> Any:
+@router.get(
+    "/",
+    response_model=list[User],
+    responses=ERROR_RESPONSES["400_401_403"],
+    status_code=status.HTTP_200_OK,
+)
+async def get_all(
+    service: Annotated[UserService, Depends(UserService)],
+    user: Annotated[User, Depends(get_current_user)],
+) -> Any:
+    """
+    Retrieve all users from the database.
+
+    This endpoint is accessible only to users with the 'section_head' role.
+    It returns a list of all registered users.
+
+    :param service: User service.
+    :param user: User who make this request.
+
+    :return: All users in database.
+    """
+    if not user.section_head:
+        raise PermissionDeniedError("Permission Denied.")
+
+    users = await service.get_all()
+    if users is None:
+        raise BaseAppError()
+    return users
+
+
+@router.get(
+    "/me",
+    response_model=User,
+    responses=ERROR_RESPONSES["401"],
+    status_code=status.HTTP_200_OK,
+)
+async def get_me(current_user: Annotated[User, Depends(get_current_user)]) -> Any:
     """
     Get currently authenticated user.
 
@@ -29,25 +66,24 @@ async def get_user(current_user: Annotated[User, Depends(get_current_user)]) -> 
 
 
 @router.get(
-    "/",
-    response_model=list[User],
-    # responses=ERROR_RESPONSES["404"],
+    "/me/events",
+    response_model=list[EventWithExtraDetails],
+    responses=ERROR_RESPONSES["400_404"],
     status_code=status.HTTP_200_OK,
 )
-async def get_all_users(
-    user_service: Annotated[UserService, Depends(UserService)],
+async def get_events_by_user(
+    service: Annotated[UserService, Depends(UserService)],
+    user: Annotated[User, Depends(get_current_user)],
 ) -> Any:
     """
-    Get all users.
+    Get all events linked to a user by its ID.
 
-    :param user_service: User service.
+    :param service: User service.
+    :param user: User who make this request.
 
-    :return: All users in database.
+    :return: List of EventWithExtraDetails objects linked to the user.
     """
-    users = await user_service.get_all()
-    if not users:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"message": "No users in db."},
-        )
-    return users
+    events = await service.get_events_by_user_id(user)
+    if events is None:
+        raise BaseAppError()
+    return events

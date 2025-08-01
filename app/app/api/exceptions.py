@@ -101,12 +101,13 @@ class EntityNotFoundError(BaseAppError):
         message: str | None = None,
         **kwargs: Any,
     ):
+        entity_id_str = str(entity_id)
         final_message = message or f"Entity {entity.value} with id {entity_id} was not found."
         super().__init__(
             message=final_message,
             status_code=self.STATUS_CODE,
             entity=entity.value,
-            entity_id=entity_id,
+            entity_id=entity_id_str,
             **kwargs,
         )
 
@@ -179,10 +180,17 @@ ERROR_RESPONSES = {
     "400": {
         **BaseAppError.response(),
     },
+    "401": {
+        **UnauthorizedError.response(),
+    },
     "403": {
         **PermissionDeniedError.response(),
     },
     "404": {
+        **EntityNotFoundError.response(),
+    },
+    "400_404": {
+        **BaseAppError.response(),
         **EntityNotFoundError.response(),
     },
     "400_401_403": {

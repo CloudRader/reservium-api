@@ -21,7 +21,7 @@ from fastapi_mail import FastMail, MessageSchema, MessageType
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from services import EmailService, EventService
 
-router = APIRouter(prefix="/emails", tags=[fastapi_docs.EMAIL_TAG["name"]])
+router = APIRouter(tags=[fastapi_docs.EMAIL_TAG["name"]])
 
 template_dir = Path(__file__).parent.parent.parent / "templates" / "email"
 env = Environment(loader=FileSystemLoader(template_dir), autoescape=select_autoescape())
@@ -40,7 +40,7 @@ def render_email_template(template_name: str, context: dict) -> str:
 
 
 @router.post(
-    "/send_registration_form",
+    "/send-registration-form",
     status_code=status.HTTP_201_CREATED,
 )
 async def send_registration_form(

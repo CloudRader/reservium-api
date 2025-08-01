@@ -47,15 +47,6 @@ async def test_get_all_calendars(test_calendar_service, calendar_crud):
 
 
 @pytest.mark.asyncio
-async def test_get_by_reservation_service_id(calendar_crud, test_calendar_service):
-    """Test retrieving calendars by reservation service ID."""
-    calendars = await calendar_crud.get_by_reservation_service_id(
-        test_calendar_service.reservation_service_id,
-    )
-    assert any(cal.id == test_calendar_service.id for cal in calendars)
-
-
-@pytest.mark.asyncio
 async def test_update_calendar(calendar_crud, test_calendar_service):
     """Test updating a calendar."""
     updated = await calendar_crud.update(

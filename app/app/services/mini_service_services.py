@@ -15,7 +15,6 @@ from core.schemas import CalendarUpdate, MiniServiceCreate, MiniServiceUpdate, U
 from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService
 from fastapi import Depends
 from services import CrudServiceBase
-from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -126,22 +125,6 @@ class AbstractMiniServiceService(
         :param include_removed: Include removed object or not.
 
         :return: The Mini Service instance if found, None otherwise.
-        """
-
-    @abstractmethod
-    async def get_by_reservation_service_id(
-        self,
-        reservation_service_id: UUID,
-        include_removed: bool = False,
-    ) -> list[Row[MiniServiceModel]] | None:
-        """
-        Retrieve a Mini Service instance by reservation service id.
-
-        :param reservation_service_id: reservation service id of the mini services.
-        :param include_removed: Include removed object or not.
-
-        :return: Mini Services with reservation service id equal
-        to reservation service id or None if no such mini services exists.
         """
 
 
@@ -281,13 +264,3 @@ class MiniServiceService(AbstractMiniServiceService):
         include_removed: bool = False,
     ) -> MiniServiceModel | None:
         return await self.crud.get_by_room_id(room_id, include_removed)
-
-    async def get_by_reservation_service_id(
-        self,
-        reservation_service_id: UUID,
-        include_removed: bool = False,
-    ) -> list[Row[MiniServiceModel]] | None:
-        return await self.crud.get_by_reservation_service_id(
-            reservation_service_id,
-            include_removed,
-        )

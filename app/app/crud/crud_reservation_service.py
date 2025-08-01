@@ -6,12 +6,26 @@ implementation (CRUDReservationService) using SQLAlchemy.
 """
 
 from abc import ABC, abstractmethod
+from typing import Protocol, TypeVar, runtime_checkable
+from uuid import UUID
 
-from core.models import ReservationServiceModel
+from core.models import CalendarModel, EventModel, EventState, ReservationServiceModel
 from core.schemas import ReservationServiceCreate, ReservationServiceUpdate
 from crud import CRUDBase
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql import Select
+
+
+@runtime_checkable
+class HasReservationServiceId(Protocol):
+    """Protocol for models that have a reservation_service_id field."""
+
+    reservation_service_id: UUID
+
+
+T = TypeVar("T", bound=HasReservationServiceId)
 
 
 class AbstractCRUDReservationService(
@@ -95,6 +109,23 @@ class AbstractCRUDReservationService(
         :return: The public Reservation Service instance if found, None otherwise.
         """
 
+    @abstractmethod
+    async def get_related_entities_by_reservation_service_id(
+        self,
+        model: type[T],
+        reservation_service_id: UUID,
+        include_removed: bool = False,
+    ) -> list[T]:
+        """
+        Fetch related entities by reservation_service_id.
+
+        :param model: The SQLAlchemy model class to query.
+        :param reservation_service_id: UUID of the Reservation Service.
+        :param include_removed: Whether to include soft-deleted records.
+
+        :return: List of related entities of type `model`.
+        """
+
 
 class CRUDReservationService(AbstractCRUDReservationService):
     """
@@ -152,5 +183,38 @@ class CRUDReservationService(AbstractCRUDReservationService):
         stmt = select(self.model).filter(self.model.public)
         if include_removed:
             stmt = stmt.execution_options(include_deleted=True)
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_related_entities_by_reservation_service_id(
+        self,
+        model: type[T],
+        reservation_service_id: UUID,
+        include_removed: bool = False,
+    ) -> list[T]:
+        stmt: Select = select(model).where(
+            getattr(model, "reservation_service_id") == reservation_service_id  # noqa: B009
+        )
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=include_removed)
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_events_by_reservation_service_id(
+        self,
+        reservation_service_id: UUID,
+        event_state: EventState | None = None,
+    ) -> list[EventModel]:
+        stmt = (
+            select(EventModel)
+            .join(CalendarModel, EventModel.calendar_id == CalendarModel.id)
+            .filter(CalendarModel.reservation_service_id == reservation_service_id)
+            .options(joinedload(EventModel.calendar))
+            .order_by(EventModel.start_datetime.desc())
+        )
+
+        if event_state is not None:
+            stmt = stmt.filter(EventModel.event_state == event_state)
+
         result = await self.db.execute(stmt)
         return list(result.scalars().all())

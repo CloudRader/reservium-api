@@ -26,7 +26,7 @@ router.include_router(
 
 router.include_router(
     reservation_services_router,
-    prefix="/reservation_services",
+    prefix="/reservation-services",
 )
 
 router.include_router(
@@ -36,7 +36,7 @@ router.include_router(
 
 router.include_router(
     mini_services_router,
-    prefix="/mini_services",
+    prefix="/mini-services",
 )
 
 router.include_router(
@@ -51,5 +51,5 @@ router.include_router(
 
 router.include_router(
     access_card_system_router,
-    prefix="/access_card_system",
+    prefix="/cards",
 )

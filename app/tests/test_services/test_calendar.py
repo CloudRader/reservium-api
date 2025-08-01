@@ -92,17 +92,6 @@ async def test_get_reservation_service_of_this_calendar(
 
 
 @pytest.mark.asyncio
-async def test_get_calendars_by_reservation_service_id(service_calendar, calendar):
-    """Test getting a calendar by reservation service id."""
-    get_calendars = await service_calendar.get_by_reservation_service_id(
-        calendar.reservation_service_id,
-    )
-    assert get_calendars != []
-    assert get_calendars[0].reservation_type == calendar.reservation_type
-    assert get_calendars[0].reservation_service_id == calendar.reservation_service_id
-
-
-@pytest.mark.asyncio
 async def test_update_mini_service(service_calendar, calendar, user):
     """Test updating an existing calendar."""
     calendar_update = CalendarUpdate(
@@ -212,7 +201,7 @@ async def test_retrieve_non_deleted_calendar(service_calendar, calendar, user):
 
 
 @pytest.mark.asyncio
-async def test_get_all_google_calendar_to_add(service_calendar, user):
+async def test_get_google_calendars_available_for_import(service_calendar, user):
     """Test getting all Google calendars that can be added by a user."""
     # Simulate the list of Google calendars
     google_calendars_data = [
@@ -245,7 +234,7 @@ async def test_get_all_google_calendar_to_add(service_calendar, user):
             primary=False,
         ),
     ]
-    new_calendars = await service_calendar.get_all_google_calendar_to_add(
+    new_calendars = await service_calendar.google_calendars_available_for_import(
         user,
         google_calendars_data,
     )

@@ -3,6 +3,7 @@
 from typing import Annotated, Any
 
 from api import (
+    ERROR_RESPONSES,
     authenticate_user,
     fastapi_docs,
     get_oauth_session,
@@ -18,7 +19,10 @@ app = FastAPI()
 router = APIRouter(tags=[fastapi_docs.AUTHORISATION_TAG["name"]])
 
 
-@router.get("/login_dev")
+@router.get(
+    "/login_dev",
+    status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+)
 async def login_local_dev(request: Request):
     """
     Authenticate a user, construct authorization URL and redirect to authorization page of IS.
@@ -35,7 +39,10 @@ async def login_local_dev(request: Request):
     return RedirectResponse(authorization_url)  # for local dev
 
 
-@router.get("/login")
+@router.get(
+    "/login",
+    status_code=status.HTTP_200_OK,
+)
 async def login(request: Request):
     """Authenticate a user, construct authorization URL and sent it for authorization."""
     authorization_url = (
@@ -48,7 +55,11 @@ async def login(request: Request):
     return authorization_url
 
 
-@router.get("/callback")
+@router.get(
+    "/callback",
+    responses=ERROR_RESPONSES["401"],
+    status_code=status.HTTP_200_OK,
+)
 async def callback(
     user_service: Annotated[UserService, Depends(UserService)],
     request: Request,

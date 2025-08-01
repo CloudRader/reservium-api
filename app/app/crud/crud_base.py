@@ -50,19 +50,6 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
         """
 
     @abstractmethod
-    async def get_by_reservation_service_id(
-        self,
-        reservation_service_id: str,
-        include_removed: bool = False,
-    ) -> list[Model] | None:
-        """
-        Retrieve all records by its reservation service id.
-
-        If include_removed is True retrieve all records
-        including marked as deleted.
-        """
-
-    @abstractmethod
     async def create(self, obj_in: CreateSchema) -> Model:
         """Create a new record from the input scheme."""
 
@@ -137,19 +124,6 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
 
     async def get_all(self, include_removed: bool = False) -> list[Model]:
         stmt = select(self.model).execution_options(include_deleted=include_removed)
-        result = await self.db.execute(stmt)
-        return list(result.scalars().all())
-
-    async def get_by_reservation_service_id(
-        self,
-        reservation_service_id: UUID | str,
-        include_removed: bool = False,
-    ) -> list[Model] | None:
-        stmt = select(self.model).filter(
-            self.model.reservation_service_id == reservation_service_id,
-        )
-        if include_removed:
-            stmt = stmt.execution_options(include_deleted=True)
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 

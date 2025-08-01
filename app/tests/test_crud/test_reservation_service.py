@@ -1,6 +1,7 @@
 """Module for testing reservation service crud."""
 
 import pytest
+from core.models import CalendarModel, MiniServiceModel
 from core.schemas import ReservationServiceUpdate
 
 # pylint: disable=redefined-outer-name
@@ -230,3 +231,25 @@ async def test_get_all_aliases_empty(reservation_service_crud):
     aliases = await reservation_service_crud.get_all_aliases()
     assert isinstance(aliases, list)
     assert len(aliases) == 0
+
+
+@pytest.mark.asyncio
+async def test_get_calendars_by_reservation_service_id(
+    reservation_service_crud, test_reservation_service, test_calendar_service
+):
+    """Test retrieving calendars by reservation service ID."""
+    calendars = await reservation_service_crud.get_related_entities_by_reservation_service_id(
+        CalendarModel, test_reservation_service.id
+    )
+    assert any(cal.id == test_calendar_service.id for cal in calendars)
+
+
+@pytest.mark.asyncio
+async def test_get_mini_services_by_reservation_service_id(
+    reservation_service_crud, test_reservation_service, test_mini_service
+):
+    """Test retrieving calendars by reservation service ID."""
+    mini_services = await reservation_service_crud.get_related_entities_by_reservation_service_id(
+        MiniServiceModel, test_reservation_service.id
+    )
+    assert any(mini_service.id == test_mini_service.id for mini_service in mini_services)

@@ -16,7 +16,6 @@ from core.schemas.google_calendar import GoogleCalendarCalendar
 from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService
 from fastapi import Depends
 from services import CrudServiceBase
-from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -100,7 +99,7 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def get_all_google_calendar_to_add(
+    async def google_calendars_available_for_import(
         self,
         user: User,
         google_calendars: list[GoogleCalendarCalendar],
@@ -150,22 +149,6 @@ class AbstractCalendarService(
         :param reservation_service_id: The id of the Reservation Service.
 
         :return: Reservation Service of this calendar if found, None otherwise.
-        """
-
-    @abstractmethod
-    async def get_by_reservation_service_id(
-        self,
-        reservation_service_id: str,
-        include_removed: bool = False,
-    ) -> list[Row[CalendarModel]] | None:
-        """
-        Retrieve a Calendars instance by its reservation service id.
-
-        :param reservation_service_id: reservation service id of the calendars.
-        :param include_removed: Include removed object or not.
-
-        :return: Calendars with reservation service id equal
-        to reservation service id or None if no such calendars exists.
         """
 
     @abstractmethod
@@ -347,7 +330,7 @@ class CalendarService(AbstractCalendarService):
 
         return await self.crud.soft_remove(calendar_id)
 
-    async def get_all_google_calendar_to_add(
+    async def google_calendars_available_for_import(
         self,
         user: User,
         google_calendars: list[GoogleCalendarCalendar],
@@ -401,16 +384,6 @@ class CalendarService(AbstractCalendarService):
             return None
 
         return reservation_service
-
-    async def get_by_reservation_service_id(
-        self,
-        reservation_service_id: str,
-        include_removed: bool = False,
-    ) -> list[Row[CalendarModel]] | None:
-        return await self.crud.get_by_reservation_service_id(
-            reservation_service_id,
-            include_removed,
-        )
 
     async def update_mini_services(
         self,

@@ -7,14 +7,12 @@ implementation (CRUDEvent) using SQLAlchemy.
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from uuid import UUID
 
-from core.models import CalendarModel, EventModel, EventState
+from core.models import EventModel, EventState
 from core.schemas import EventCreateToDb, EventUpdate
 from crud import CRUDBase
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
 
 
 class AbstractCRUDEvent(CRUDBase[EventModel, EventCreateToDb, EventUpdate], ABC):
@@ -37,22 +35,6 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventCreateToDb, EventUpdate], ABC)
 
         :return: Events with user id equal
         to user id or None if no such events exists.
-        """
-
-    @abstractmethod
-    async def get_by_event_state_by_reservation_service_id(
-        self,
-        reservation_service_id: UUID,
-        event_state: EventState,
-    ) -> list[EventModel]:
-        """
-        Retrieve the Events instance by reservation service id.
-
-        :param reservation_service_id: reservation service id of the events.
-        :param event_state: event state of the event.
-
-        :return: Events with reservation service id equal
-        to reservation service id or empty list if no such events exists.
         """
 
     @abstractmethod
@@ -96,24 +78,6 @@ class CRUDEvent(AbstractCRUDEvent):
         stmt = (
             select(self.model)
             .filter(self.model.user_id == user_id)
-            .order_by(self.model.start_datetime.desc())
-        )
-        result = await self.db.execute(stmt)
-        return list(result.scalars().all())
-
-    async def get_by_event_state_by_reservation_service_id(
-        self,
-        reservation_service_id: UUID,
-        event_state: EventState,
-    ) -> list[EventModel]:
-        stmt = (
-            select(self.model)
-            .join(CalendarModel, self.model.calendar_id == CalendarModel.id)
-            .filter(
-                CalendarModel.reservation_service_id == reservation_service_id,
-                self.model.event_state == event_state,
-            )
-            .options(joinedload(self.model.calendar))
             .order_by(self.model.start_datetime.desc())
         )
         result = await self.db.execute(stmt)

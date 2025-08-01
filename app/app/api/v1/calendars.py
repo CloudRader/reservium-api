@@ -18,13 +18,122 @@ from services import CalendarService
 router = APIRouter(tags=[fastapi_docs.CALENDAR_TAG["name"]])
 
 
+@router.get(
+    "/",
+    response_model=list[Calendar],
+    responses=ERROR_RESPONSES["400"],
+    status_code=status.HTTP_200_OK,
+)
+async def get_all(
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    include_removed: bool = Query(False),
+) -> Any:
+    """
+    Get all calendars from database.
+
+    :param service: Calendar service.
+    :param include_removed: include removed calendars or not.
+
+    :return: List of all calendars or None if there are no calendars in db.
+    """
+    calendars = await service.get_all(include_removed)
+    if calendars is None:
+        raise BaseAppError()
+    return calendars
+
+
+@router.get(
+    "/{calendar_id}/mini_services",
+    responses=ERROR_RESPONSES["404"],
+    status_code=status.HTTP_200_OK,
+    deprecated=True,
+)
+async def get_mini_services_by_calendar(
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    calendar_id: Annotated[str, Path()],
+) -> Any:
+    """
+    Get mini services by its calendar (DEPRECATED!!!).
+
+    :param service: Calendar service.
+    :param calendar_id: id of the calendar.
+
+    :return: List mini services with type equal to service type
+             or None if no such calendars exists.
+    """
+    mini_services = await service.get_mini_services_by_calendar(calendar_id)
+    if mini_services is None:
+        raise EntityNotFoundError(Entity.CALENDAR, calendar_id)
+    return mini_services
+
+
+@router.get(
+    "/{calendar_id}",
+    response_model=Calendar,
+    responses=ERROR_RESPONSES["404"],
+    status_code=status.HTTP_200_OK,
+)
+async def get(
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    calendar_id: Annotated[str, Path()],
+    include_removed: bool = Query(False),
+) -> Any:
+    """
+    Get calendar by its uuid.
+
+    :param service: Calendar service.
+    :param calendar_id: id of the calendar.
+    :param include_removed: include removed calendar or not.
+
+    :return: Calendar with uuid equal to calendar_uuid
+             or None if no such document exists.
+    """
+    calendar = await service.get(calendar_id, include_removed)
+    if not calendar:
+        raise EntityNotFoundError(Entity.CALENDAR, calendar_id)
+    return calendar
+
+
+@router.get(
+    "/google/importable",
+    responses=ERROR_RESPONSES["400_401_403"],
+    status_code=status.HTTP_200_OK,
+)
+async def google_calendars_available_for_import(
+    service: Annotated[CalendarService, Depends(CalendarService)],
+    google_calendar_service: Annotated[
+        GoogleCalendarService,
+        Depends(GoogleCalendarService),
+    ],
+    user: Annotated[User, Depends(get_current_user)],
+) -> Any:
+    """
+    List Google calendars that the authenticated user owns but are not yet added to the system.
+
+    This includes all non-primary calendars where the user has 'owner' access and
+    that are not already stored in the local database.
+
+    :param service: Calendar service.
+    :param google_calendar_service: Google Calendar service.
+    :param user: User who make this request.
+
+    :returns List of importable Google Calendar entries.
+    """
+    google_calendars = await google_calendar_service.get_all_calendars()
+
+    calendars = await service.google_calendars_available_for_import(user, google_calendars)
+    if calendars is None:
+        raise BaseAppError()
+    return calendars
+
+
 @router.post(
-    "/create_calendar",
+    "/",
     response_model=Calendar,
     responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_201_CREATED,
 )
-async def create_calendar(
+async def create(
     service: Annotated[CalendarService, Depends(CalendarService)],
     google_calendar_service: Annotated[
         GoogleCalendarService,
@@ -59,12 +168,12 @@ async def create_calendar(
 
 
 @router.post(
-    "/create_calendars",
+    "/batch",
     response_model=list[Calendar],
     responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_201_CREATED,
 )
-async def create_calendars(
+async def create_multiple(
     service: Annotated[CalendarService, Depends(CalendarService)],
     google_calendar_service: Annotated[
         GoogleCalendarService,
@@ -86,91 +195,10 @@ async def create_calendars(
     calendars_result: list[Calendar] = []
     for calendar in calendars_create:
         calendars_result.append(
-            await create_calendar(service, google_calendar_service, user, calendar),
+            await create(service, google_calendar_service, user, calendar),
         )
 
     return calendars_result
-
-
-@router.get(
-    "/{calendar_id}",
-    response_model=Calendar,
-    responses=ERROR_RESPONSES["404"],
-    status_code=status.HTTP_200_OK,
-)
-async def get_calendar(
-    service: Annotated[CalendarService, Depends(CalendarService)],
-    calendar_id: Annotated[str, Path()],
-    include_removed: bool = Query(False),
-) -> Any:
-    """
-    Get calendar by its uuid.
-
-    :param service: Calendar service.
-    :param calendar_id: id of the calendar.
-    :param include_removed: include removed calendar or not.
-
-    :return: Calendar with uuid equal to calendar_uuid
-             or None if no such document exists.
-    """
-    calendar = await service.get(calendar_id, include_removed)
-    if not calendar:
-        raise EntityNotFoundError(Entity.CALENDAR, calendar_id)
-    return calendar
-
-
-@router.get(
-    "/",
-    response_model=list[Calendar],
-    responses=ERROR_RESPONSES["400"],
-    status_code=status.HTTP_200_OK,
-)
-async def get_all_calendars(
-    service: Annotated[CalendarService, Depends(CalendarService)],
-    include_removed: bool = Query(False),
-) -> Any:
-    """
-    Get all calendars from database.
-
-    :param service: Calendar service.
-    :param include_removed: include removed calendars or not.
-
-    :return: List of all calendars or None if there are no calendars in db.
-    """
-    calendars = await service.get_all(include_removed)
-    if calendars is None:
-        raise BaseAppError()
-    return calendars
-
-
-@router.get(
-    "/google_calendars/",
-    responses=ERROR_RESPONSES["400_401_403"],
-    status_code=status.HTTP_200_OK,
-)
-async def get_all_google_calendar_to_add(
-    service: Annotated[CalendarService, Depends(CalendarService)],
-    google_calendar_service: Annotated[
-        GoogleCalendarService,
-        Depends(GoogleCalendarService),
-    ],
-    user: Annotated[User, Depends(get_current_user)],
-) -> Any:
-    """
-    Get Calendars from Google Calendar that are candidates for additions.
-
-    :param service: Calendar service.
-    :param google_calendar_service: Google Calendar service.
-    :param user: User who make this request.
-
-    :returns list[dict]: candidate list for additions.
-    """
-    google_calendars = await google_calendar_service.get_all_calendars()
-
-    calendars = await service.get_all_google_calendar_to_add(user, google_calendars)
-    if calendars is None:
-        raise BaseAppError()
-    return calendars
 
 
 @router.put(
@@ -179,7 +207,7 @@ async def get_all_google_calendar_to_add(
     responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
-async def update_calendar(
+async def update(
     service: Annotated[CalendarService, Depends(CalendarService)],
     user: Annotated[User, Depends(get_current_user)],
     calendar_id: Annotated[str, Path()],
@@ -202,12 +230,12 @@ async def update_calendar(
 
 
 @router.put(
-    "/retrieve_deleted/{calendar_id}",
+    "/{calendar_id}/restore",
     response_model=Calendar,
     responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
-async def retrieve_deleted_calendar(
+async def restore(
     service: Annotated[CalendarService, Depends(CalendarService)],
     user: Annotated[User, Depends(get_current_user)],
     calendar_id: Annotated[str, Path()],
@@ -225,7 +253,7 @@ async def retrieve_deleted_calendar(
     """
     calendar = await service.retrieve_removed_object(calendar_id, user)
     if not calendar:
-        raise EntityNotFoundError(Entity.RESERVATION_SERVICE, calendar_id)
+        raise EntityNotFoundError(Entity.MINI_SERVICE, calendar_id)
     return calendar
 
 
@@ -255,57 +283,3 @@ async def delete_calendar(
     if not calendar:
         raise EntityNotFoundError(Entity.CALENDAR, calendar_id)
     return calendar
-
-
-@router.get(
-    "/mini_services/{calendar_id}",
-    responses=ERROR_RESPONSES["404"],
-    status_code=status.HTTP_200_OK,
-)
-async def get_mini_services_by_calendar(
-    service: Annotated[CalendarService, Depends(CalendarService)],
-    calendar_id: Annotated[str, Path()],
-) -> Any:
-    """
-    Get mini services by its calendar (DEPRECATED!!!).
-
-    :param service: Calendar service.
-    :param calendar_id: id of the calendar.
-
-    :return: List mini services with type equal to service type
-             or None if no such calendars exists.
-    """
-    mini_services = await service.get_mini_services_by_calendar(calendar_id)
-    if mini_services is None:
-        raise EntityNotFoundError(Entity.CALENDAR, calendar_id)
-    return mini_services
-
-
-@router.get(
-    "/reservation_service/{reservation_service_id}",
-    response_model=list[Calendar],
-    responses=ERROR_RESPONSES["400"],
-    status_code=status.HTTP_200_OK,
-)
-async def get_calendars_by_reservation_service_id(
-    service: Annotated[CalendarService, Depends(CalendarService)],
-    reservation_service_id: Annotated[str, Path()],
-    include_removed: bool = Query(False),
-) -> Any:
-    """
-    Get calendars by its reservation service id.
-
-    :param service: Calendar Service.
-    :param reservation_service_id: reservation service id of the calendars.
-    :param include_removed: include removed mini service or not.
-
-    :return: Calendars with reservation service id equal
-    to reservation service id or None if no such calendars exists.
-    """
-    calendars = await service.get_by_reservation_service_id(
-        reservation_service_id,
-        include_removed,
-    )
-    if calendars is None:
-        raise BaseAppError()
-    return calendars

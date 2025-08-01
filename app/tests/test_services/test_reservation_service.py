@@ -202,3 +202,33 @@ async def test_delete_reservation_service_no_permission(
             user_not_head,
             hard_remove=False,
         )
+
+
+@pytest.mark.asyncio
+async def test_get_calendars_by_alias(
+    service_reservation_service,
+    reservation_service,
+    calendar,
+):
+    """Test getting a calendars by reservation service alias."""
+    get_calendars = await service_reservation_service.get_calendars_by_alias(
+        reservation_service.alias,
+    )
+    assert get_calendars != []
+    assert get_calendars[0].reservation_type == calendar.reservation_type
+    assert get_calendars[0].reservation_service_id == calendar.reservation_service_id
+
+
+@pytest.mark.asyncio
+async def test_get_mini_services_by_alias(
+    service_reservation_service,
+    reservation_service,
+    mini_service,
+):
+    """Test getting a mini services by reservation service alias."""
+    get_mini_services = await service_reservation_service.get_mini_services_by_alias(
+        reservation_service.alias,
+    )
+    assert get_mini_services != []
+    assert get_mini_services[0].name == mini_service.name
+    assert get_mini_services[0].reservation_service_id == mini_service.reservation_service_id

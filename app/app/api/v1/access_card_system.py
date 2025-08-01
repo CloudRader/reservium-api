@@ -46,7 +46,7 @@ def send_request(data: dict[str, Any]) -> dict[str, Any]:
 
 
 @router.post(
-    "/external_authorize",
+    "/external-authorize",
     responses=ERROR_RESPONSES["403"],
     status_code=status.HTTP_201_CREATED,
 )

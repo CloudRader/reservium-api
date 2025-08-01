@@ -49,20 +49,6 @@ async def test_get_mini_service_by_name(mini_service, service_mini_service):
 
 
 @pytest.mark.asyncio
-async def test_get_mini_services_by_reservation_service_id(
-    mini_service,
-    service_mini_service,
-):
-    """Test getting a mini service by reservation service id."""
-    get_mini_services = await service_mini_service.get_by_reservation_service_id(
-        mini_service.reservation_service_id,
-    )
-    assert get_mini_services != []
-    assert get_mini_services[0].name == mini_service.name
-    assert get_mini_services[0].reservation_service_id == mini_service.reservation_service_id
-
-
-@pytest.mark.asyncio
 async def test_update_mini_service(service_mini_service, mini_service, user):
     """Test updating an existing mini service."""
     mini_service_update = MiniServiceUpdate(

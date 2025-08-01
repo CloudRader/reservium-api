@@ -22,7 +22,6 @@ from core.schemas import (
     EventCreate,
     EventUpdate,
     EventUpdateTime,
-    EventWithExtraDetails,
     ServiceList,
     User,
 )
@@ -36,11 +35,11 @@ router = APIRouter(tags=[fastapi_docs.EVENT_TAG["name"]])
 
 
 @router.post(
-    "/create_event",
+    "/",
     responses=ERROR_RESPONSES["404"],
     status_code=status.HTTP_201_CREATED,
 )
-async def create_event(
+async def create(
     service: Annotated[EventService, Depends(EventService)],
     calendar_service: Annotated[CalendarService, Depends(CalendarService)],
     user: Annotated[User, Depends(get_current_user)],
@@ -88,68 +87,13 @@ async def create_event(
     )
 
 
-@router.get(
-    "/user/{user_id}",
-    response_model=list[EventWithExtraDetails],
-    responses=ERROR_RESPONSES["400"],
-    status_code=status.HTTP_200_OK,
-)
-async def get_events_by_user_id(
-    service: Annotated[EventService, Depends(EventService)],
-    user_id: Annotated[int, Path()],
-) -> Any:
-    """
-    Get events by its user id.
-
-    :param service: Event service.
-    :param user_id: user id of the events.
-
-    :return: Events with user id equal
-    to user id or None if no such events exists.
-    """
-    events = await service.get_by_user_id(user_id)
-    if events is None:
-        raise BaseAppError()
-    return events
-
-
-@router.get(
-    "/state/reservation_service/{reservation_service_alias}",
-    response_model=list[EventWithExtraDetails],
-    responses=ERROR_RESPONSES["400"],
-    status_code=status.HTTP_200_OK,
-)
-async def get_by_event_state_by_reservation_service_alias(
-    service: Annotated[EventService, Depends(EventService)],
-    reservation_service_alias: Annotated[str, Path()],
-    event_state: EventState,
-) -> Any:
-    """
-    Get events by its reservation service alias.
-
-    :param service: Event service.
-    :param reservation_service_alias: reservation service id of the events.
-    :param event_state: event state of the event.
-
-    :return: Events with reservation service alias equal
-    to reservation service alias or None if no such events exists.
-    """
-    events = await service.get_by_event_state_by_reservation_service_alias(
-        reservation_service_alias,
-        event_state,
-    )
-    if events is None:
-        raise BaseAppError()
-    return events
-
-
 @router.put(
-    "/approve_update_reservation_time/{event_id}",
+    "/{event_id}/approve-time-change-request",
     response_model=Event,
     responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
-async def approve_update_reservation_time(
+async def approve_time_change_request(
     service: Annotated[EventService, Depends(EventService)],
     user: Annotated[User, Depends(get_current_user)],
     event_id: Annotated[str, Path()],
@@ -236,12 +180,12 @@ async def approve_update_reservation_time(
 
 
 @router.put(
-    "/request_update_reservation_time/{event_id}",
+    "/{event_id}/request-time-change",
     response_model=Event,
     responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
-async def request_update_reservation_time(
+async def request_time_change(
     service: Annotated[EventService, Depends(EventService)],
     user: Annotated[User, Depends(get_current_user)],
     event_id: Annotated[str, Path()],
@@ -280,60 +224,8 @@ async def request_update_reservation_time(
     return event
 
 
-@router.delete(
-    "/{event_id}",
-    response_model=Event,
-    responses=ERROR_RESPONSES["400_401_403_404"],
-    status_code=status.HTTP_200_OK,
-)
-async def cancel_reservation(
-    service: Annotated[EventService, Depends(EventService)],
-    user: Annotated[User, Depends(get_current_user)],
-    event_id: Annotated[str, Path()],
-    cancel_reason: Annotated[str, Body()] = "",
-) -> Any:
-    """
-    Delete event with id equal to 'event_id'.
-
-    Only user who make this reservation can cancel this reservation.
-
-    :param service: Event service.
-    :param user: User who make this reservation.
-    :param event_id: id of the event.
-    :param cancel_reason: reason cancellation this reservation.
-
-    :returns EventModel: the canceled reservation.
-    """
-    # TODO: can't delete after it ended, but can delete after it started or think about it
-    google_calendar_service = GoogleCalendarService()
-    event = await service.cancel_event(event_id, user)
-    if not event:
-        raise EntityNotFoundError(Entity.EVENT, event_id)
-
-    await google_calendar_service.delete_event(event.calendar_id, event.id)
-
-    if event.user_id == user.id:
-        await preparing_email(
-            service,
-            event,
-            create_email_meta("cancel_reservation", "Cancel Reservation"),
-        )
-    else:
-        await preparing_email(
-            service,
-            event,
-            create_email_meta(
-                "cancel_reservation_by_manager",
-                "Cancel Reservation by Manager",
-                cancel_reason,
-            ),
-        )
-
-    return event
-
-
 @router.put(
-    "/approve_event/{event_id}",
+    "/{event_id}/approve",
     response_model=Event,
     responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_200_OK,
@@ -396,6 +288,58 @@ async def approve_reservation(
                 "decline_reservation",
                 "Reservation Has Been Declined",
                 manager_notes,
+            ),
+        )
+
+    return event
+
+
+@router.delete(
+    "/{event_id}",
+    response_model=Event,
+    responses=ERROR_RESPONSES["400_401_403_404"],
+    status_code=status.HTTP_200_OK,
+)
+async def cancel(
+    service: Annotated[EventService, Depends(EventService)],
+    user: Annotated[User, Depends(get_current_user)],
+    event_id: Annotated[str, Path()],
+    cancel_reason: Annotated[str, Body()] = "",
+) -> Any:
+    """
+    Delete event with id equal to 'event_id'.
+
+    Only user who make this reservation can cancel this reservation.
+
+    :param service: Event service.
+    :param user: User who make this reservation.
+    :param event_id: id of the event.
+    :param cancel_reason: reason cancellation this reservation.
+
+    :returns EventModel: the canceled reservation.
+    """
+    # TODO: can't delete after it ended, but can delete after it started or think about it
+    google_calendar_service = GoogleCalendarService()
+    event = await service.cancel_event(event_id, user)
+    if not event:
+        raise EntityNotFoundError(Entity.EVENT, event_id)
+
+    await google_calendar_service.delete_event(event.calendar_id, event.id)
+
+    if event.user_id == user.id:
+        await preparing_email(
+            service,
+            event,
+            create_email_meta("cancel_reservation", "Cancel Reservation"),
+        )
+    else:
+        await preparing_email(
+            service,
+            event,
+            create_email_meta(
+                "cancel_reservation_by_manager",
+                "Cancel Reservation by Manager",
+                cancel_reason,
             ),
         )
 

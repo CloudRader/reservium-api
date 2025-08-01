@@ -109,22 +109,6 @@ class AbstractEventService(
         """
 
     @abstractmethod
-    async def get_by_event_state_by_reservation_service_alias(
-        self,
-        reservation_service_alias: str,
-        event_state: EventState,
-    ) -> list[EventWithExtraDetails]:
-        """
-        Retrieve the Events instance by reservation service alias.
-
-        :param reservation_service_alias: reservation service alias of the events.
-        :param event_state: event state of the event.
-
-        :return: Events with reservation service alias equal
-        to reservation service alias or empty list if no such events exists.
-        """
-
-    @abstractmethod
     async def get_reservation_service_of_this_event(
         self,
         event: Event,
@@ -288,29 +272,7 @@ class EventService(AbstractEventService):
         user_id: int,
     ) -> list[EventWithExtraDetails] | None:
         events = await self.crud.get_by_user_id(user_id)
-        return await self.__add_extra_details_to_event(events)
-
-    async def get_by_event_state_by_reservation_service_alias(
-        self,
-        reservation_service_alias: str,
-        event_state: EventState,
-    ) -> list[EventWithExtraDetails]:
-        reservation_service = await self.reservation_service_crud.get_by_alias(
-            reservation_service_alias,
-        )
-
-        if not reservation_service:
-            raise BaseAppError(
-                "A reservation service with this alias isn't exist.",
-                status_code=404,
-            )
-
-        events = await self.crud.get_by_event_state_by_reservation_service_id(
-            reservation_service.id,
-            event_state,
-        )
-
-        return await self.__add_extra_details_to_event(events)
+        return await self.add_extra_details_to_event(events)
 
     async def get_reservation_service_of_this_event(
         self,
@@ -534,7 +496,7 @@ class EventService(AbstractEventService):
             return calendar.manager_rules
         return calendar.active_member_rules
 
-    async def __add_extra_details_to_event(
+    async def add_extra_details_to_event(
         self,
         events: list[Event],
     ) -> list[EventWithExtraDetails]:
