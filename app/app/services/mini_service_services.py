@@ -34,7 +34,7 @@ class AbstractMiniServiceService(
     """
 
     @abstractmethod
-    async def create_mini_service(
+    async def create_with_permission_checks(
         self,
         mini_service_create: MiniServiceCreate,
         user: User,
@@ -49,7 +49,7 @@ class AbstractMiniServiceService(
         """
 
     @abstractmethod
-    async def update_mini_service(
+    async def update_with_permission_checks(
         self,
         uuid: UUID,
         mini_service_update: MiniServiceUpdate,
@@ -66,7 +66,7 @@ class AbstractMiniServiceService(
         """
 
     @abstractmethod
-    async def retrieve_removed_object(
+    async def restore_with_permission_checks(
         self,
         uuid: UUID | str | int | None,
         user: User,
@@ -81,7 +81,7 @@ class AbstractMiniServiceService(
         """
 
     @abstractmethod
-    async def delete_mini_service(
+    async def delete_with_permission_checks(
         self,
         uuid: UUID,
         user: User,
@@ -139,7 +139,7 @@ class MiniServiceService(AbstractMiniServiceService):
         self.reservation_service_crud = CRUDReservationService(db)
         super().__init__(CRUDMiniService(db))
 
-    async def create_mini_service(
+    async def create_with_permission_checks(
         self,
         mini_service_create: MiniServiceCreate,
         user: User,
@@ -160,7 +160,7 @@ class MiniServiceService(AbstractMiniServiceService):
 
         return await self.crud.create(mini_service_create)
 
-    async def update_mini_service(
+    async def update_with_permission_checks(
         self,
         uuid: UUID,
         mini_service_update: MiniServiceUpdate,
@@ -184,7 +184,7 @@ class MiniServiceService(AbstractMiniServiceService):
 
         return await self.update(uuid, mini_service_update)
 
-    async def retrieve_removed_object(
+    async def restore_with_permission_checks(
         self,
         uuid: UUID | str | int | None,
         user: User,
@@ -207,7 +207,7 @@ class MiniServiceService(AbstractMiniServiceService):
 
         return await self.crud.retrieve_removed_object(uuid)
 
-    async def delete_mini_service(
+    async def delete_with_permission_checks(
         self,
         uuid: UUID,
         user: User,

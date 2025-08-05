@@ -1,45 +1,29 @@
 """API controllers for mini services."""
 
 from typing import Annotated, Any
-from uuid import UUID
 
 from api import (
     ERROR_RESPONSES,
-    BaseAppError,
     Entity,
     EntityNotFoundError,
-    fastapi_docs,
-    get_current_user,
 )
-from core.schemas import MiniService, MiniServiceCreate, MiniServiceUpdate, User
-from fastapi import APIRouter, Body, Depends, Path, Query, status
+from api.api_base import BaseCRUDRouter
+from core.schemas import MiniService, MiniServiceCreate, MiniServiceUpdate
+from fastapi import APIRouter, Depends, Path, Query, status
 from services import MiniServiceService
 
-router = APIRouter(tags=[fastapi_docs.MINI_SERVICE_TAG["name"]])
+router = APIRouter()
 
-
-@router.get(
-    "/",
-    response_model=list[MiniService],
-    responses=ERROR_RESPONSES["400"],
-    status_code=status.HTTP_200_OK,
+crud_router = BaseCRUDRouter(
+    router=router,
+    service_dep=MiniServiceService,
+    schema_create=MiniServiceCreate,
+    schema_update=MiniServiceUpdate,
+    schema=MiniService,
+    entity_name=Entity.MINI_SERVICE,
 )
-async def get_all(
-    service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-    include_removed: bool = Query(False),
-) -> Any:
-    """
-    Get all mini services from database.
 
-    :param service: Mini Service ser.
-    :param include_removed: include removed mini services or not.
-
-    :return: List of all mini services or None if there are no mini services in db.
-    """
-    mini_services = await service.get_all(include_removed)
-    if mini_services is None:
-        raise BaseAppError()
-    return mini_services
+crud_router.register_routes()
 
 
 @router.get(
@@ -66,195 +50,4 @@ async def get_by_name(
     mini_service = await service.get_by_name(name, include_removed)
     if not mini_service:
         raise EntityNotFoundError(Entity.MINI_SERVICE, name)
-    return mini_service
-
-
-@router.get(
-    "/{mini_service_id}",
-    response_model=MiniService,
-    responses=ERROR_RESPONSES["404"],
-    status_code=status.HTTP_200_OK,
-)
-async def get(
-    service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-    mini_service_id: Annotated[str, Path()],
-    include_removed: bool = Query(False),
-) -> Any:
-    """
-    Get mini service by its uuid.
-
-    :param service: Mini Service ser.
-    :param mini_service_id: uuid of the mini service.
-    :param include_removed: include removed mini service or not.
-
-    :return: Mini Service with uuid equal to uuid
-             or None if no such mini service exists.
-    """
-    mini_service = await service.get(mini_service_id, include_removed)
-    if not mini_service:
-        raise EntityNotFoundError(Entity.MINI_SERVICE, mini_service_id)
-    return mini_service
-
-
-@router.post(
-    "/",
-    response_model=MiniService,
-    responses=ERROR_RESPONSES["400_401_403"],
-    status_code=status.HTTP_201_CREATED,
-)
-async def create(
-    service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-    user: Annotated[User, Depends(get_current_user)],
-    mini_service_create: MiniServiceCreate,
-) -> Any:
-    """
-    Create mini service, only users with special roles can create mini service.
-
-    :param service: Mini Service ser.
-    :param user: User who make this request.
-    :param mini_service_create: Mini Service Create schema.
-
-    :returns MiniServiceModel: the created mini service.
-    """
-    return await __create_single_mini_service(service, user, mini_service_create)
-
-
-@router.post(
-    "/batch",
-    response_model=list[MiniService],
-    responses=ERROR_RESPONSES["400_401_403"],
-    status_code=status.HTTP_201_CREATED,
-)
-async def create_multiple(
-    service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-    user: Annotated[User, Depends(get_current_user)],
-    mini_services_create: list[MiniServiceCreate],
-) -> Any:
-    """
-    Create mini services, only users with special roles can create mini service.
-
-    :param service: Mini Service ser.
-    :param user: User who make this request.
-    :param mini_services_create: Mini Services Create schema.
-
-    :returns MiniServiceModel: the created mini service.
-    """
-    mini_service_result: list[MiniService] = []
-    for mini_service_create in mini_services_create:
-        mini_service_result.append(
-            await __create_single_mini_service(service, user, mini_service_create)
-        )
-
-    return mini_service_result
-
-
-@router.put(
-    "/{mini_service_id}",
-    response_model=MiniService,
-    responses=ERROR_RESPONSES["400_401_403"],
-    status_code=status.HTTP_200_OK,
-)
-async def update(
-    service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-    user: Annotated[User, Depends(get_current_user)],
-    mini_service_id: Annotated[UUID, Path()],
-    mini_service_update: Annotated[MiniServiceUpdate, Body()],
-) -> Any:
-    """
-    Update mini service with uuid equal to 'mini_service_id'.
-
-    Only users with special roles can update mini service.
-
-    :param service: Mini Service ser.
-    :param user: User who make this request.
-    :param mini_service_id: uuid of the mini service.
-    :param mini_service_update: MiniServiceUpdate schema.
-
-    :returns MiniServiceModel: the updated mini service.
-    """
-    mini_service = await service.update_mini_service(
-        mini_service_id,
-        mini_service_update,
-        user,
-    )
-    if not mini_service:
-        raise EntityNotFoundError(Entity.MINI_SERVICE, mini_service_id)
-    return mini_service
-
-
-@router.put(
-    "/{mini_service_id}/restore",
-    response_model=MiniService,
-    responses=ERROR_RESPONSES["400_401_403"],
-    status_code=status.HTTP_200_OK,
-)
-async def restore(
-    service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-    user: Annotated[User, Depends(get_current_user)],
-    mini_service_id: Annotated[UUID, Path()],
-) -> Any:
-    """
-    Retrieve deleted mini service with uuid equal to 'mini_service_id'.
-
-    Only users with special roles can update mini service.
-
-    :param service: Mini Service ser.
-    :param user: User who make this request.
-    :param mini_service_id: id of the mini service.
-
-    :returns MiniServiceModel: the updated mini service.
-    """
-    mini_service = await service.retrieve_removed_object(mini_service_id, user)
-    if not mini_service:
-        raise EntityNotFoundError(Entity.MINI_SERVICE, mini_service_id)
-    return mini_service
-
-
-@router.delete(
-    "/{mini_service_id}",
-    response_model=MiniService,
-    responses=ERROR_RESPONSES["400_401_403"],
-    status_code=status.HTTP_200_OK,
-)
-async def delete(
-    service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-    user: Annotated[User, Depends(get_current_user)],
-    mini_service_id: Annotated[UUID, Path()],
-    hard_remove: bool = Query(False),
-) -> Any:
-    """
-    Delete mini service with mini_service_id equal to 'id'.
-
-    Only users with special roles can delete mini service.
-
-    :param service: Mini Service ser.
-    :param user: User who make this request.
-    :param mini_service_id: uuid of the mini service.
-    :param hard_remove: hard remove of the mini service or not.
-
-    :returns MiniServiceModel: the deleted mini service.
-    """
-    mini_service = await service.delete_mini_service(mini_service_id, user, hard_remove)
-    if not mini_service:
-        raise EntityNotFoundError(Entity.MINI_SERVICE, mini_service_id)
-    return mini_service
-
-
-async def __create_single_mini_service(
-    service: MiniServiceService,
-    user: User,
-    mini_service_create: MiniServiceCreate,
-) -> MiniService:
-    """
-    Help creating a single mini service with permission checks.
-
-    :param service: MiniServiceService instance handling the business logic.
-    :param user: Authenticated user performing the creation.
-    :param mini_service_create: Data required to create the mini service.
-
-    :return: The created MiniService instance.
-    """
-    mini_service = await service.create_mini_service(mini_service_create, user)
-    if not mini_service:
-        raise BaseAppError()
     return mini_service

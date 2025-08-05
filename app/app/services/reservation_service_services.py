@@ -42,7 +42,7 @@ class AbstractReservationServiceService(
     """
 
     @abstractmethod
-    async def create_reservation_service(
+    async def create_with_permission_checks(
         self,
         reservation_service_create: ReservationServiceCreate,
         user: User,
@@ -57,7 +57,7 @@ class AbstractReservationServiceService(
         """
 
     @abstractmethod
-    async def update_reservation_service(
+    async def update_with_permission_checks(
         self,
         uuid: UUID,
         reservation_service_update: ReservationServiceUpdate,
@@ -74,7 +74,7 @@ class AbstractReservationServiceService(
         """
 
     @abstractmethod
-    async def retrieve_removed_object(
+    async def restore_with_permission_checks(
         self,
         uuid: UUID | str | int | None,
         user: User,
@@ -89,7 +89,7 @@ class AbstractReservationServiceService(
         """
 
     @abstractmethod
-    async def delete_reservation_service(
+    async def delete_with_permission_checks(
         self,
         uuid: UUID,
         user: User,
@@ -232,7 +232,7 @@ class ReservationServiceService(AbstractReservationServiceService):
         self.calendar_crud = CRUDCalendar(db)
         self.mini_service_crud = CRUDMiniService(db)
 
-    async def create_reservation_service(
+    async def create_with_permission_checks(
         self,
         reservation_service_create: ReservationServiceCreate,
         user: User,
@@ -249,7 +249,7 @@ class ReservationServiceService(AbstractReservationServiceService):
 
         return await self.crud.create(reservation_service_create)
 
-    async def update_reservation_service(
+    async def update_with_permission_checks(
         self,
         uuid: UUID,
         reservation_service_update: ReservationServiceUpdate,
@@ -262,7 +262,7 @@ class ReservationServiceService(AbstractReservationServiceService):
 
         return await self.update(uuid, reservation_service_update)
 
-    async def retrieve_removed_object(
+    async def restore_with_permission_checks(
         self,
         uuid: UUID | str | int | None,
         user: User,
@@ -274,7 +274,7 @@ class ReservationServiceService(AbstractReservationServiceService):
 
         return await self.crud.retrieve_removed_object(uuid)
 
-    async def delete_reservation_service(
+    async def delete_with_permission_checks(
         self,
         uuid: UUID,
         user: User,

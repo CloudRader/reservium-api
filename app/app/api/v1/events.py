@@ -8,7 +8,6 @@ from api import (
     Entity,
     EntityNotFoundError,
     SoftValidationError,
-    fastapi_docs,
     get_current_token,
     get_current_user,
     get_request,
@@ -31,7 +30,7 @@ from fastapi import APIRouter, Body, Depends, Path, Query, status
 from pytz import timezone
 from services import CalendarService, EventService
 
-router = APIRouter(tags=[fastapi_docs.EVENT_TAG["name"]])
+router = APIRouter()
 
 
 @router.post(

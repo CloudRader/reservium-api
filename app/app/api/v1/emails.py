@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Annotated, Any
 
 from api import get_current_token, get_request
-from api.docs import fastapi_docs
 from core import email_connection, settings
 from core.models import CalendarModel, ReservationServiceModel
 from core.schemas import (
@@ -21,7 +20,7 @@ from fastapi_mail import FastMail, MessageSchema, MessageType
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from services import EmailService, EventService
 
-router = APIRouter(tags=[fastapi_docs.EMAIL_TAG["name"]])
+router = APIRouter()
 
 template_dir = Path(__file__).parent.parent.parent / "templates" / "email"
 env = Environment(loader=FileSystemLoader(template_dir), autoescape=select_autoescape())

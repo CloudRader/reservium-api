@@ -5,7 +5,6 @@ from typing import Annotated, Any
 from api import (
     ERROR_RESPONSES,
     authenticate_user,
-    fastapi_docs,
     get_oauth_session,
 )
 from api.utils import modify_url_scheme
@@ -16,7 +15,7 @@ from services import UserService
 
 app = FastAPI()
 
-router = APIRouter(tags=[fastapi_docs.AUTHORISATION_TAG["name"]])
+router = APIRouter()
 
 
 @router.get(

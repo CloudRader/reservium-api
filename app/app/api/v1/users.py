@@ -6,7 +6,6 @@ from api import (
     ERROR_RESPONSES,
     BaseAppError,
     PermissionDeniedError,
-    fastapi_docs,
     get_current_user,
 )
 from core.schemas import EventWithExtraDetails, User
@@ -15,7 +14,7 @@ from services import UserService
 
 app = FastAPI()
 
-router = APIRouter(tags=[fastapi_docs.USER_TAG["name"]])
+router = APIRouter()
 
 
 @router.get(

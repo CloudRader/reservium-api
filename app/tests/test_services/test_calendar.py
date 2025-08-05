@@ -26,7 +26,7 @@ async def test_create_calendar_no_permission(
 ):
     """Test creating a mini service when the user doesn't have permission."""
     with pytest.raises(PermissionDeniedError):
-        await service_calendar.create_calendar(calendar_create, user_not_head)
+        await service_calendar.create_with_permission_checks(calendar_create, user_not_head)
 
 
 @pytest.mark.asyncio
@@ -38,7 +38,7 @@ async def test_create_calendar_collision_not_found(
     """Test that creating a calendar with a non-existent collision calendar raises an error."""
     calendar_create.collision_with_calendar = ["non-existent-calendar-id"]
     with pytest.raises(BaseAppError):
-        await service_calendar.create_calendar(calendar_create, user)
+        await service_calendar.create_with_permission_checks(calendar_create, user)
 
 
 @pytest.mark.asyncio
@@ -48,9 +48,9 @@ async def test_create_calendar_with_existing_reservation_type(
     user,
 ):
     """Test that creating a calendar with an already existing reservation type raises an error."""
-    await service_calendar.create_calendar(calendar_create, user)
+    await service_calendar.create_with_permission_checks(calendar_create, user)
     with pytest.raises(BaseAppError):
-        await service_calendar.create_calendar(calendar_create, user)
+        await service_calendar.create_with_permission_checks(calendar_create, user)
 
 
 @pytest.mark.asyncio
@@ -98,7 +98,7 @@ async def test_update_mini_service(service_calendar, calendar, user):
         reservation_type="Updated Galambula",
     )
 
-    updated_service = await service_calendar.update_calendar(
+    updated_service = await service_calendar.update_with_permission_checks(
         calendar.id,
         calendar_update,
         user,
@@ -121,7 +121,7 @@ async def test_update_mini_service_no_permission(
     )
 
     with pytest.raises(PermissionDeniedError):
-        await service_calendar.update_calendar(
+        await service_calendar.update_with_permission_checks(
             calendar.id,
             calendar_update,
             user_not_head,
@@ -131,7 +131,7 @@ async def test_update_mini_service_no_permission(
 @pytest.mark.asyncio
 async def test_soft_delete_calendar(service_calendar, calendar, user):
     """Test soft deleting a calendar."""
-    soft_removed_service = await service_calendar.delete_calendar(
+    soft_removed_service = await service_calendar.delete_with_permission_checks(
         calendar.id,
         user,
         hard_remove=False,
@@ -144,7 +144,7 @@ async def test_soft_delete_calendar(service_calendar, calendar, user):
 @pytest.mark.asyncio
 async def test_hard_delete_calendar(service_calendar, calendar, user):
     """Test hard deleting a calendar."""
-    hard_removed_service = await service_calendar.delete_calendar(
+    hard_removed_service = await service_calendar.delete_with_permission_checks(
         calendar.id,
         user,
         hard_remove=True,
@@ -158,7 +158,7 @@ async def test_hard_delete_calendar(service_calendar, calendar, user):
 async def test_delete_calendar_no_permission(service_calendar, calendar, user_not_head):
     """Test deleting a calendar when the user doesn't have permission."""
     with pytest.raises(PermissionDeniedError):
-        await service_calendar.delete_calendar(
+        await service_calendar.delete_with_permission_checks(
             calendar.id,
             user_not_head,
             hard_remove=False,
@@ -168,7 +168,7 @@ async def test_delete_calendar_no_permission(service_calendar, calendar, user_no
 @pytest.mark.asyncio
 async def test_delete_non_existent_calendar(service_calendar, user):
     """Test deleting a calendar that doesn't exist."""
-    delete_not_exist_calendar = await service_calendar.delete_calendar(
+    delete_not_exist_calendar = await service_calendar.delete_with_permission_checks(
         "non-existent-id",
         user,
         hard_remove=False,
@@ -179,13 +179,13 @@ async def test_delete_non_existent_calendar(service_calendar, user):
 @pytest.mark.asyncio
 async def test_retrieve_soft_removed_calendar(service_calendar, calendar, user):
     """Test restoring soft deleted calendar."""
-    soft_removed_calendar = await service_calendar.delete_calendar(
+    soft_removed_calendar = await service_calendar.delete_with_permission_checks(
         calendar.id,
         user,
         hard_remove=False,
     )
     assert soft_removed_calendar.deleted_at is not None
-    restored = await service_calendar.retrieve_removed_object(
+    restored = await service_calendar.restore_with_permission_checks(
         soft_removed_calendar.id,
         user,
     )
@@ -197,7 +197,7 @@ async def test_retrieve_soft_removed_calendar(service_calendar, calendar, user):
 async def test_retrieve_non_deleted_calendar(service_calendar, calendar, user):
     """Test retrieving a calendar that hasn't been softly deleted."""
     with pytest.raises(BaseAppError):
-        await service_calendar.retrieve_removed_object(calendar.id, user)
+        await service_calendar.restore_with_permission_checks(calendar.id, user)
 
 
 @pytest.mark.asyncio

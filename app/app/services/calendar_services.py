@@ -35,7 +35,7 @@ class AbstractCalendarService(
     """
 
     @abstractmethod
-    async def create_calendar(
+    async def create_with_permission_checks(
         self,
         calendar_create: CalendarCreate,
         user: User,
@@ -50,7 +50,7 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def update_calendar(
+    async def update_with_permission_checks(
         self,
         calendar_id: str,
         calendar_update: CalendarUpdate,
@@ -67,7 +67,7 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def retrieve_removed_object(
+    async def restore_with_permission_checks(
         self,
         uuid: UUID | str | int | None,
         user: User,
@@ -82,7 +82,7 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def delete_calendar(
+    async def delete_with_permission_checks(
         self,
         calendar_id: str,
         user: User,
@@ -179,7 +179,7 @@ class CalendarService(AbstractCalendarService):
         self.mini_service_crud = CRUDMiniService(db)
         super().__init__(CRUDCalendar(db))
 
-    async def create_calendar(
+    async def create_with_permission_checks(
         self,
         calendar_create: CalendarCreate,
         user: User,
@@ -235,7 +235,7 @@ class CalendarService(AbstractCalendarService):
 
         return await self.create(calendar_create)
 
-    async def update_calendar(
+    async def update_with_permission_checks(
         self,
         calendar_id: str,
         calendar_update: CalendarUpdate,
@@ -263,7 +263,7 @@ class CalendarService(AbstractCalendarService):
         )
         return await self.update(calendar_id, calendar_update)
 
-    async def retrieve_removed_object(
+    async def restore_with_permission_checks(
         self,
         uuid: UUID | str | int | None,
         user: User,
@@ -286,7 +286,7 @@ class CalendarService(AbstractCalendarService):
 
         return await self.crud.retrieve_removed_object(uuid)
 
-    async def delete_calendar(
+    async def delete_with_permission_checks(
         self,
         calendar_id: str,
         user: User,

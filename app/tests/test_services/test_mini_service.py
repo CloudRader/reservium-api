@@ -24,7 +24,7 @@ async def test_create_mini_service_no_permission(
 ):
     """Test creating a mini service when the user doesn't have permission."""
     with pytest.raises(PermissionDeniedError):
-        await service_mini_service.create_mini_service(
+        await service_mini_service.create_with_permission_checks(
             mini_service_create,
             user_not_head,
         )
@@ -55,7 +55,7 @@ async def test_update_mini_service(service_mini_service, mini_service, user):
         name="Console",
     )
 
-    updated_service = await service_mini_service.update_mini_service(
+    updated_service = await service_mini_service.update_with_permission_checks(
         mini_service.id,
         mini_service_update,
         user,
@@ -78,7 +78,7 @@ async def test_update_mini_service_no_permission(
     )
 
     with pytest.raises(PermissionDeniedError):
-        await service_mini_service.update_mini_service(
+        await service_mini_service.update_with_permission_checks(
             mini_service.id,
             mini_service_update,
             user_not_head,
@@ -88,7 +88,7 @@ async def test_update_mini_service_no_permission(
 @pytest.mark.asyncio
 async def test_soft_delete_mini_service(service_mini_service, mini_service, user):
     """Test soft deleting a mini service."""
-    soft_removed_service = await service_mini_service.delete_mini_service(
+    soft_removed_service = await service_mini_service.delete_with_permission_checks(
         mini_service.id,
         user,
         hard_remove=False,
@@ -101,7 +101,7 @@ async def test_soft_delete_mini_service(service_mini_service, mini_service, user
 @pytest.mark.asyncio
 async def test_hard_delete_mini_service(service_mini_service, mini_service, user):
     """Test hard deleting a mini service."""
-    hard_removed_service = await service_mini_service.delete_mini_service(
+    hard_removed_service = await service_mini_service.delete_with_permission_checks(
         mini_service.id,
         user,
         hard_remove=True,
@@ -119,7 +119,7 @@ async def test_delete_mini_service_no_permission(
 ):
     """Test deleting a mini service when the user doesn't have permission."""
     with pytest.raises(PermissionDeniedError):
-        await service_mini_service.delete_mini_service(
+        await service_mini_service.delete_with_permission_checks(
             mini_service.id,
             user_not_head,
             hard_remove=False,
@@ -133,13 +133,13 @@ async def test_retrieve_soft_removed_mini_service(
     user,
 ):
     """Test restoring soft deleted mini service."""
-    soft_removed_mini_service = await service_mini_service.delete_mini_service(
+    soft_removed_mini_service = await service_mini_service.delete_with_permission_checks(
         mini_service.id,
         user,
         hard_remove=False,
     )
     assert soft_removed_mini_service.deleted_at is not None
-    restored = await service_mini_service.retrieve_removed_object(
+    restored = await service_mini_service.restore_with_permission_checks(
         soft_removed_mini_service.id,
         user,
     )

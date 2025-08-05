@@ -4,7 +4,6 @@ from typing import Annotated, Any
 
 import requests
 from api import ERROR_RESPONSES
-from api.docs import fastapi_docs
 from core import settings
 from core.schemas import (
     ClubAccessSystemRequest,
@@ -15,7 +14,7 @@ from core.schemas import (
 from fastapi import APIRouter, Depends, HTTPException, status
 from services import AccessCardSystemService, EventService
 
-router = APIRouter(tags=[fastapi_docs.ACCESS_CARD_SYSTEM_TAG["name"]])
+router = APIRouter()
 
 
 def send_request(data: dict[str, Any]) -> dict[str, Any]:

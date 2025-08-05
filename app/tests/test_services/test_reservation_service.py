@@ -30,7 +30,7 @@ async def test_create_reservation_service_no_permission(
 ):
     """Test creating a reservation service when the user doesn't have permission."""
     with pytest.raises(PermissionDeniedError):
-        await service_reservation_service.create_reservation_service(
+        await service_reservation_service.create_with_permission_checks(
             reservation_service_create,
             user_not_head,
         )
@@ -121,7 +121,7 @@ async def test_update_reservation_service(
     assert reservation_service_update.web is None
     assert reservation_service_update.public is None
 
-    updated_service = await service_reservation_service.update_reservation_service(
+    updated_service = await service_reservation_service.update_with_permission_checks(
         reservation_service.id,
         reservation_service_update,
         user,
@@ -148,7 +148,7 @@ async def test_update_reservation_service_no_permission(
     )
 
     with pytest.raises(PermissionDeniedError):
-        await service_reservation_service.update_reservation_service(
+        await service_reservation_service.update_with_permission_checks(
             reservation_service.id,
             reservation_service_update,
             user_not_head,
@@ -162,7 +162,7 @@ async def test_soft_delete_reservation_service(
     user,
 ):
     """Test soft deleting a reservation service."""
-    soft_removed_service = await service_reservation_service.delete_reservation_service(
+    soft_removed_service = await service_reservation_service.delete_with_permission_checks(
         reservation_service.id,
         user,
         hard_remove=False,
@@ -179,7 +179,7 @@ async def test_hard_delete_reservation_service(
     user,
 ):
     """Test hard deleting a reservation service."""
-    hard_removed_service = await service_reservation_service.delete_reservation_service(
+    hard_removed_service = await service_reservation_service.delete_with_permission_checks(
         reservation_service.id,
         user,
         hard_remove=True,
@@ -197,7 +197,7 @@ async def test_delete_reservation_service_no_permission(
 ):
     """Test deleting a reservation service when the user doesn't have permission."""
     with pytest.raises(PermissionDeniedError):
-        await service_reservation_service.delete_reservation_service(
+        await service_reservation_service.delete_with_permission_checks(
             reservation_service.id,
             user_not_head,
             hard_remove=False,
