@@ -5,7 +5,6 @@ from typing import Annotated, Any
 from api import (
     ERROR_RESPONSES,
     Entity,
-    EntityNotFoundError,
 )
 from api.api_base import BaseCRUDRouter
 from core.schemas import MiniService, MiniServiceCreate, MiniServiceUpdate
@@ -14,40 +13,58 @@ from services import MiniServiceService
 
 router = APIRouter()
 
-crud_router = BaseCRUDRouter(
-    router=router,
-    service_dep=MiniServiceService,
-    schema_create=MiniServiceCreate,
-    schema_update=MiniServiceUpdate,
-    schema=MiniService,
-    entity_name=Entity.MINI_SERVICE,
-)
 
-crud_router.register_routes()
-
-
-@router.get(
-    "/name/{name}",
-    response_model=MiniService,
-    responses=ERROR_RESPONSES["404"],
-    status_code=status.HTTP_200_OK,
-)
-async def get_by_name(
-    service: Annotated[MiniServiceService, Depends(MiniServiceService)],
-    name: Annotated[str, Path()],
-    include_removed: bool = Query(False),
-) -> Any:
+class MiniServiceRouter(
+    BaseCRUDRouter[
+        MiniServiceCreate,
+        MiniServiceUpdate,
+        MiniService,
+        MiniServiceService,
+    ]
+):
     """
-    Get mini service by its name.
+    API router for managing Mini Services.
 
-    :param service: Mini Service ser.
-    :param name: name of the mini service.
-    :param include_removed: include removed mini service or not.
-
-    :return: Mini Service with name equal to name
-             or None if no such mini service exists.
+    This class extends `BaseCRUDRouter` to automatically register standard
+    CRUD routes for the `MiniService` entity and adds custom endpoints
+    specific to Mini Services.
     """
-    mini_service = await service.get_by_name(name, include_removed)
-    if not mini_service:
-        raise EntityNotFoundError(Entity.MINI_SERVICE, name)
-    return mini_service
+
+    def __init__(self):
+        super().__init__(
+            router=router,
+            service_dep=MiniServiceService,
+            schema_create=MiniServiceCreate,
+            schema_update=MiniServiceUpdate,
+            schema=MiniService,
+            entity_name=Entity.MINI_SERVICE,
+        )
+
+        self.register_routes()
+
+        @router.get(
+            "/name/{name}",
+            response_model=MiniService,
+            responses=ERROR_RESPONSES["404"],
+            status_code=status.HTTP_200_OK,
+        )
+        async def get_by_name(
+            service: Annotated[MiniServiceService, Depends(MiniServiceService)],
+            name: Annotated[str, Path()],
+            include_removed: bool = Query(False),
+        ) -> Any:
+            """
+            Get mini service by its name.
+
+            :param service: Mini Service ser.
+            :param name: name of the mini service.
+            :param include_removed: include removed mini service or not.
+
+            :return: Mini Service with name equal to name
+                     or None if no such mini service exists.
+            """
+            mini_service = await service.get_by_name(name, include_removed)
+            return await self._handle_not_found(mini_service, name)
+
+
+MiniServiceRouter()
