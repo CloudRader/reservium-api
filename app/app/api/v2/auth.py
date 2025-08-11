@@ -3,12 +3,12 @@
 from typing import Annotated, Any
 
 from api import (
-    ERROR_RESPONSES,
     authenticate_user,
     get_oauth_session,
 )
 from api.utils import modify_url_scheme
 from core import settings
+from core.application.exceptions import ERROR_RESPONSES
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from services import UserService

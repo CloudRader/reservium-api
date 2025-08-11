@@ -7,8 +7,8 @@ This class works with Mini Service.
 from abc import ABC, abstractmethod
 from typing import Annotated
 
-from api import BaseAppError, PermissionDeniedError
 from core import db_session
+from core.application.exceptions import BaseAppError, PermissionDeniedError
 from core.models import MiniServiceModel
 from core.schemas import CalendarUpdate, MiniServiceCreate, MiniServiceUpdate, User
 from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService

@@ -7,8 +7,8 @@ This class works with the Access Card System.
 from abc import ABC, abstractmethod
 from typing import Annotated
 
-from api import PermissionDeniedError
 from core import db_session
+from core.application.exceptions import PermissionDeniedError
 from core.schemas import ClubAccessSystemRequest, VarSymbolCreateUpdate, VarSymbolDelete
 from crud import CRUDEvent, CRUDMiniService, CRUDReservationService, CRUDUser
 from fastapi import Depends

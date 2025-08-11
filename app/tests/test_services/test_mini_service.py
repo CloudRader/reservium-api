@@ -1,11 +1,8 @@
 """Module for testing mini service ser."""
 
 import pytest
-from api import PermissionDeniedError
+from core.application.exceptions import PermissionDeniedError
 from core.schemas import MiniServiceUpdate
-
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
 
 
 @pytest.mark.asyncio

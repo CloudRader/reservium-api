@@ -41,8 +41,9 @@ def create_app():
 
     :return: A fully configured FastAPI app instance.
     """
-    from api import BaseAppError, app_exception_handler, fastapi_docs
     from api.routers import router
+    from core.application.docs import fastapi_docs
+    from core.application.exceptions import BaseAppError, app_exception_handler
 
     app = FastAPI(
         title=fastapi_docs.NAME,

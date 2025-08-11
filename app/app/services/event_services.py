@@ -8,12 +8,12 @@ import datetime as dt
 from abc import ABC, abstractmethod
 from typing import Annotated, Any
 
-from api import (
+from core import db_session
+from core.application.exceptions import (
     BaseAppError,
     PermissionDeniedError,
     SoftValidationError,
 )
-from core import db_session
 from core.models import (
     CalendarModel,
     EventModel,

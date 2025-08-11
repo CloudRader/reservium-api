@@ -7,8 +7,8 @@ This class works with Calendar.
 from abc import ABC, abstractmethod
 from typing import Annotated
 
-from api import BaseAppError, PermissionDeniedError
 from core import db_session
+from core.application.exceptions import BaseAppError, PermissionDeniedError
 from core.models import CalendarModel, ReservationServiceModel
 from core.schemas import CalendarCreate, CalendarUpdate, User
 from core.schemas.google_calendar import GoogleCalendarCalendar

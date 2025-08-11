@@ -2,9 +2,6 @@
 
 import pytest
 
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
-
 
 @pytest.mark.asyncio
 def test_prepare_registration_form(registration_form_create, service_email):

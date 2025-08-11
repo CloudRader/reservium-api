@@ -2,11 +2,11 @@
 
 from typing import Annotated, Any
 
-from api import (
+from api import get_current_user
+from core.application.exceptions import (
     ERROR_RESPONSES,
     BaseAppError,
     PermissionDeniedError,
-    get_current_user,
 )
 from core.schemas import EventWithExtraDetails, User
 from fastapi import APIRouter, Depends, FastAPI, status

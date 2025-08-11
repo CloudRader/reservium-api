@@ -1,6 +1,5 @@
-"""API router for v1 of the Reservation System."""
+"""API router for v2 of the Reservation System."""
 
-from api.docs import fastapi_docs
 from api.v2.access_card_system import router as access_card_system_router
 from api.v2.auth import router as auth_router
 from api.v2.calendars import router as calendars_router
@@ -9,6 +8,7 @@ from api.v2.events import router as events_router
 from api.v2.mini_services import router as mini_services_router
 from api.v2.reservation_services import router as reservation_services_router
 from api.v2.users import router as users_router
+from core.application.docs import fastapi_docs
 from fastapi import APIRouter
 
 router = APIRouter(

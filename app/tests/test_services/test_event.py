@@ -3,12 +3,9 @@
 import datetime as dt
 
 import pytest
-from api import BaseAppError, SoftValidationError
+from core.application.exceptions import BaseAppError, SoftValidationError
 from core.models import EventState
 from core.schemas import EventUpdate
-
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
 
 
 @pytest.mark.asyncio

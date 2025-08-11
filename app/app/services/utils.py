@@ -2,7 +2,7 @@
 
 import datetime as dt
 
-from api import SoftValidationError
+from core.application.exceptions import SoftValidationError
 from core.models import CalendarModel, ReservationServiceModel
 from core.schemas import EventCreate, Rules, ServiceValidity, User
 from pytz import timezone

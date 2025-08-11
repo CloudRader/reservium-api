@@ -1,12 +1,9 @@
 """Module for testing mini service ser."""
 
 import pytest
-from api import BaseAppError, PermissionDeniedError
+from core.application.exceptions import BaseAppError, PermissionDeniedError
 from core.schemas import CalendarUpdate
 from core.schemas.google_calendar import GoogleCalendarCalendar
-
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
 
 
 @pytest.mark.asyncio

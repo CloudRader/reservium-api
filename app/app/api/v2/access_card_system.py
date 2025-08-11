@@ -3,8 +3,8 @@
 from typing import Annotated, Any
 
 import requests
-from api import ERROR_RESPONSES
 from core import settings
+from core.application.exceptions import ERROR_RESPONSES
 from core.schemas import (
     ClubAccessSystemRequest,
     Event,

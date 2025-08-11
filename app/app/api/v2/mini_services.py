@@ -2,11 +2,11 @@
 
 from typing import Annotated, Any
 
-from api import (
+from api.api_base import BaseCRUDRouter
+from core.application.exceptions import (
     ERROR_RESPONSES,
     Entity,
 )
-from api.api_base import BaseCRUDRouter
 from core.schemas import MiniService, MiniServiceCreate, MiniServiceUpdate
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import MiniServiceService

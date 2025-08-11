@@ -3,11 +3,6 @@
 from typing import Annotated, Any
 
 from api import (
-    ERROR_RESPONSES,
-    BaseAppError,
-    Entity,
-    EntityNotFoundError,
-    SoftValidationError,
     get_current_token,
     get_current_user,
     get_request,
@@ -15,6 +10,13 @@ from api import (
 from api.external_api.google.google_calendar_services import GoogleCalendarService
 from api.utils import control_collision, process_event_approval
 from api.v2.emails import create_email_meta, preparing_email
+from core.application.exceptions import (
+    ERROR_RESPONSES,
+    BaseAppError,
+    Entity,
+    EntityNotFoundError,
+    SoftValidationError,
+)
 from core.models import EventState
 from core.schemas import (
     Event,

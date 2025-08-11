@@ -7,8 +7,13 @@ This class works with Mini Service.
 from abc import ABC, abstractmethod
 from typing import Annotated
 
-from api import BaseAppError, Entity, EntityNotFoundError, PermissionDeniedError
 from core import db_session
+from core.application.exceptions import (
+    BaseAppError,
+    Entity,
+    EntityNotFoundError,
+    PermissionDeniedError,
+)
 from core.models import CalendarModel, EventState, MiniServiceModel, ReservationServiceModel
 from core.schemas import (
     EventWithExtraDetails,

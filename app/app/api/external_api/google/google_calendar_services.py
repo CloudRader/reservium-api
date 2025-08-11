@@ -3,8 +3,14 @@
 import datetime as dt
 from abc import ABC, abstractmethod
 
-from api import BaseAppError, Entity, EntityNotFoundError, ExternalAPIError, PermissionDeniedError
 from api.external_api.google.google_auth import auth_google
+from core.application.exceptions import (
+    BaseAppError,
+    Entity,
+    EntityNotFoundError,
+    ExternalAPIError,
+    PermissionDeniedError,
+)
 from core.schemas.google_calendar import (
     GoogleCalendarCalendar,
     GoogleCalendarEvent,

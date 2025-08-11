@@ -1,6 +1,6 @@
 """Package for API Documentation."""
 
-from core import settings
+from core.config import settings
 
 
 class FastApiDocs:

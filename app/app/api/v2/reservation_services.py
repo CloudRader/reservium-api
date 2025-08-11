@@ -2,11 +2,11 @@
 
 from typing import Annotated, Any
 
-from api import (
+from api.api_base import BaseCRUDRouter
+from core.application.exceptions import (
     ERROR_RESPONSES,
     Entity,
 )
-from api.api_base import BaseCRUDRouter
 from core.models.event import EventState
 from core.schemas import (
     Calendar,

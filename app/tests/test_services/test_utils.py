@@ -3,7 +3,7 @@
 import datetime as dt
 
 import pytest
-from api import SoftValidationError
+from core.application.exceptions import SoftValidationError
 from services.utils import (
     control_res_in_advance_or_prior,
     description_of_event,
@@ -12,9 +12,6 @@ from services.utils import (
     ready_event,
     reservation_in_advance,
 )
-
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
 
 
 @pytest.mark.asyncio

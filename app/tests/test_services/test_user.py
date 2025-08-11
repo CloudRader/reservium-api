@@ -3,9 +3,6 @@
 import pytest
 from core.schemas import UserCreate
 
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
-
 
 @pytest.mark.asyncio
 async def test_user_service_create_new_user(server_create_user):

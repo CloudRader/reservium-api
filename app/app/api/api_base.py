@@ -3,8 +3,8 @@
 from collections.abc import Callable
 from typing import Annotated, Any, TypeVar
 
-from api.exceptions import ERROR_RESPONSES, BaseAppError, Entity, EntityNotFoundError
 from api.user_authenticator import get_current_user
+from core.application.exceptions import ERROR_RESPONSES, BaseAppError, Entity, EntityNotFoundError
 from core.schemas.user import User
 from fastapi import APIRouter, Depends, Path, Query, status
 from pydantic import BaseModel
