@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # pylint: disable=unused-argument
 # reason: Startup_event require FastAPI.
 @asynccontextmanager
-async def startup_event(fast_api_app: FastAPI):
+async def startup_event(fast_api_app: FastAPI):  # noqa: ARG001
     """
     Startup and shutdown lifecycle event handler.
 
@@ -29,7 +29,7 @@ async def startup_event(fast_api_app: FastAPI):
     logger.info("Shutting down %s.", settings.APP_NAME)
 
 
-def create_app():  # -> FastAPI:
+def create_app():
     """
     Create and configure the FastAPI app.
 

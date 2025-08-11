@@ -6,7 +6,6 @@ This class works with Mini Service.
 
 from abc import ABC, abstractmethod
 from typing import Annotated
-from uuid import UUID
 
 from api import BaseAppError, PermissionDeniedError
 from core import db_session
@@ -51,7 +50,7 @@ class AbstractMiniServiceService(
     @abstractmethod
     async def update_with_permission_checks(
         self,
-        uuid: UUID,
+        uuid: str,
         mini_service_update: MiniServiceUpdate,
         user: User,
     ) -> MiniServiceModel | None:
@@ -68,7 +67,7 @@ class AbstractMiniServiceService(
     @abstractmethod
     async def restore_with_permission_checks(
         self,
-        uuid: UUID | str | int | None,
+        uuid: str | int | None,
         user: User,
     ) -> MiniServiceModel | None:
         """
@@ -83,7 +82,7 @@ class AbstractMiniServiceService(
     @abstractmethod
     async def delete_with_permission_checks(
         self,
-        uuid: UUID,
+        uuid: str,
         user: User,
         hard_remove: bool = False,
     ) -> MiniServiceModel | None:
@@ -162,7 +161,7 @@ class MiniServiceService(AbstractMiniServiceService):
 
     async def update_with_permission_checks(
         self,
-        uuid: UUID,
+        uuid: str,
         mini_service_update: MiniServiceUpdate,
         user: User,
     ) -> MiniServiceModel | None:
@@ -186,7 +185,7 @@ class MiniServiceService(AbstractMiniServiceService):
 
     async def restore_with_permission_checks(
         self,
-        uuid: UUID | str | int | None,
+        uuid: str | int | None,
         user: User,
     ) -> MiniServiceModel | None:
         mini_service = await self.crud.get(uuid, True)
@@ -209,7 +208,7 @@ class MiniServiceService(AbstractMiniServiceService):
 
     async def delete_with_permission_checks(
         self,
-        uuid: UUID,
+        uuid: str,
         user: User,
         hard_remove: bool = False,
     ) -> MiniServiceModel | None:

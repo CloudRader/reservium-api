@@ -15,9 +15,6 @@ from core.schemas.reservation_service import (
 )
 from pydantic import ValidationError
 
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
-
 
 def test_reservation_service_create_valid():
     """Test creating reservation service with valid data."""
@@ -55,7 +52,7 @@ def test_reservation_service_update_partial():
 
 def test_reservation_service_in_db_base_schema(valid_rules):
     """Test full DB representation of reservation service."""
-    service_id = uuid4()
+    service_id = uuid4().hex
     now = datetime.now(UTC)
     calendar = Calendar(
         id="test_calendar@google.com",
@@ -72,7 +69,7 @@ def test_reservation_service_in_db_base_schema(valid_rules):
         # mini_services=["Bar"],
     )
     mini_service = MiniService(
-        id=uuid4(),
+        id=uuid4().hex,
         name="Booking Help",
         reservation_service_id=service_id,
     )
@@ -94,7 +91,7 @@ def test_reservation_service_in_db_base_schema(valid_rules):
 def test_reservation_service_schema_extends_base():
     """Test that ReservationService schema includes all base fields."""
     service = ReservationService(
-        id=uuid4(),
+        id=uuid4().hex,
         name="Lighting",
         alias="LIGHT",
         deleted_at=None,

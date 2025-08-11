@@ -1,10 +1,9 @@
 """Module with SQLAlchemy base class used to create other models from this Base class."""
 
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from core import settings
 from sqlalchemy import MetaData
-from sqlalchemy.dialects.postgresql import UUID as pgUUID  # noqa: N811
 from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 
 
@@ -15,10 +14,9 @@ class Base(DeclarativeBase):
 
     metadata = MetaData(naming_convention=settings.DB.NAMING_CONVENTION)
 
-    id: Mapped[UUID] = mapped_column(
-        pgUUID(as_uuid=True),
+    id: Mapped[str] = mapped_column(
         primary_key=True,
-        default=uuid4,
+        default=lambda: uuid4().hex,
     )
 
     @declared_attr  # type: ignore

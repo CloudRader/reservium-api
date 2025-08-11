@@ -6,7 +6,6 @@ implementation (CRUDMiniService) using SQLAlchemy.
 """
 
 from abc import ABC, abstractmethod
-from uuid import UUID
 
 from core.models import MiniServiceModel
 from core.schemas import MiniServiceCreate, MiniServiceUpdate
@@ -59,7 +58,7 @@ class AbstractCRUDMiniService(
     @abstractmethod
     async def get_names_by_reservation_service_id(
         self,
-        reservation_service_id: UUID,
+        reservation_service_id: str,
     ) -> list[str]:
         """
         Retrieve all names from all Mini Services by reservation service uuid.
@@ -72,7 +71,7 @@ class AbstractCRUDMiniService(
     @abstractmethod
     async def get_ids_by_reservation_service_id(
         self,
-        reservation_service_id: UUID,
+        reservation_service_id: str,
     ) -> list[str]:
         """
         Retrieve all ids from all Mini Services by reservation service uuid.
@@ -118,7 +117,7 @@ class CRUDMiniService(AbstractCRUDMiniService):
 
     async def get_names_by_reservation_service_id(
         self,
-        reservation_service_id: UUID,
+        reservation_service_id: str,
     ) -> list[str]:
         stmt = select(self.model.name).where(
             self.model.reservation_service_id == reservation_service_id,
@@ -128,7 +127,7 @@ class CRUDMiniService(AbstractCRUDMiniService):
 
     async def get_ids_by_reservation_service_id(
         self,
-        reservation_service_id: UUID,
+        reservation_service_id: str,
     ) -> list[str]:
         stmt = select(self.model.id).where(
             self.model.reservation_service_id == reservation_service_id,

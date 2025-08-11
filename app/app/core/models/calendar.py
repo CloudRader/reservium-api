@@ -7,7 +7,7 @@ from core.models.base_class import Base
 from core.models.soft_delete_mixin import SoftDeleteMixin
 from core.schemas.calendar import Rules
 from sqlalchemy import ForeignKey, String
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import TEXT, TypeDecorator
 
@@ -33,26 +33,26 @@ class RulesType(TypeDecorator):
     def load_dialect_impl(self, dialect):
         return dialect.type_descriptor(TEXT())
 
-    def process_bind_param(self, value, dialect):
+    def process_bind_param(self, value, dialect):  # noqa: ARG002
         if value is None:
             return None
         if isinstance(value, dict):
             value = Rules(**value)
         return json.dumps(value.model_dump())
 
-    def process_result_value(self, value, dialect):
+    def process_result_value(self, value, dialect):  # noqa: ARG002
         if value is None:
             return None
         return Rules.model_validate_json(value)
 
-    def process_literal_param(self, value, dialect):
+    def process_literal_param(self, value, dialect):  # noqa: ARG002
         if value is None:
             return None
         if isinstance(value, dict):
             value = Rules(**value)
         return json.dumps(value.model_dump())
 
-    def copy(self, **kw):
+    def copy(self, **kw):  # noqa: ARG002
         return RulesType(self.impl)
 
 
@@ -77,10 +77,7 @@ class Calendar(Base, SoftDeleteMixin):
     active_member_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
     manager_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
 
-    reservation_service_id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("reservation_service.id"),
-    )
+    reservation_service_id: Mapped[str] = mapped_column(ForeignKey("reservation_service.id"))
 
     reservation_service: Mapped["ReservationService"] = relationship(
         back_populates="calendars",

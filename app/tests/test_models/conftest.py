@@ -1,6 +1,6 @@
 """Conftest for testing model."""
 
-import uuid
+from uuid import uuid4
 
 import pytest
 import pytest_asyncio
@@ -12,24 +12,17 @@ from core.models import (
 )
 from core.schemas import Rules
 
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
-
-# pylint: disable=duplicate-code
-# reason: needed for testing; similar conftests are intentionally
-# separated by the model they belong to
-
 
 @pytest.fixture(scope="module")
 def create_reservation_service_uuid():
     """Fixture that create uuid."""
-    return uuid.uuid4()
+    return uuid4().hex
 
 
 @pytest.fixture(scope="module")
 def create_mini_service_uuid():
     """Fixture that create uuid."""
-    return uuid.uuid4()
+    return uuid4().hex
 
 
 @pytest.mark.asyncio

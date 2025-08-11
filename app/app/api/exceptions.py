@@ -2,7 +2,6 @@
 
 from enum import Enum
 from typing import Any
-from uuid import UUID
 
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
@@ -26,8 +25,6 @@ class Entity(Enum):
     EMAIL = "Email"
 
 
-# pylint: disable=unused-argument
-# reason: Exception handlers require request and exception parameter.
 def get_exception_response_detail(status_code: int, desc: str) -> dict:
     """
     Get exception response detail for openAPI documentation.
@@ -69,7 +66,7 @@ class BaseAppError(Exception):
         return get_exception_response_detail(cls.STATUS_CODE, cls.DESCRIPTION)
 
 
-def app_exception_handler(request: Request, exc: BaseAppError) -> JSONResponse:
+def app_exception_handler(request: Request, exc: BaseAppError) -> JSONResponse:  # noqa: ARG001
     """Handle BaseAppError exceptions."""
     return exc.to_response()
 
@@ -97,7 +94,7 @@ class EntityNotFoundError(BaseAppError):
     def __init__(
         self,
         entity: Entity,
-        entity_id: UUID | str | int,
+        entity_id: str | int,
         message: str | None = None,
         **kwargs: Any,
     ):

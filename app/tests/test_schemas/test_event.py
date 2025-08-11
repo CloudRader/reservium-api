@@ -10,9 +10,6 @@ from core.schemas.event import (
 )
 from pydantic import ValidationError
 
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
-
 
 def test_event_create_valid():
     """Test creating an event with valid data."""

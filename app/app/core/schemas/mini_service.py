@@ -1,7 +1,6 @@
 """DTO schemes for MiniService entity."""
 
 from datetime import datetime
-from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -17,7 +16,7 @@ class MiniServiceBase(BaseModel):
 class MiniServiceCreate(MiniServiceBase):
     """Properties to receive via API on creation."""
 
-    reservation_service_id: UUID
+    reservation_service_id: str
     name: str
 
 
@@ -30,10 +29,10 @@ class MiniServiceUpdate(MiniServiceBase):
 class MiniServiceInDBBase(MiniServiceBase):
     """Base model for mini service in database."""
 
-    id: UUID
+    id: str
     deleted_at: datetime | None = None
     name: str
-    reservation_service_id: UUID
+    reservation_service_id: str
 
     class Config:
         """Config class for database mini service model."""

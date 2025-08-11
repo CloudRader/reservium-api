@@ -3,13 +3,6 @@
 import pytest
 from core.schemas import Rules
 
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
-
-# pylint: disable=duplicate-code
-# reason: needed for testing; similar conftests are intentionally
-# separated by the model they belong to
-
 
 @pytest.fixture(scope="module")
 def valid_rules():

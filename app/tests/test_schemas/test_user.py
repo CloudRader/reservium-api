@@ -6,9 +6,6 @@ import pytest
 from core.schemas.user import User, UserCreate, UserInDBBase, UserUpdate
 from pydantic import ValidationError
 
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
-
 
 def test_user_create_schema_valid():
     """Test creating a user with valid data."""

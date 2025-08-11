@@ -241,7 +241,7 @@ async def user(service_user) -> User:
 
 
 @pytest_asyncio.fixture()
-async def event(service_event, event_create_form, user, calendar) -> Event:
+async def event(service_event, event_create_form, user, calendar) -> Event:  # noqa: ARG001
     """Return event object in db."""
     return await service_event.create_event(
         event_create=event_create_form,

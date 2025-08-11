@@ -1,13 +1,10 @@
 """Module for testing reservation service model."""
 
-import uuid
+from uuid import uuid4
 
 import pytest
 import sqlalchemy
 from core.models import ReservationServiceModel
-
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
 
 
 @pytest.mark.asyncio
@@ -61,7 +58,7 @@ async def test_list_reservation_services(async_session):
     """Test listing multiple reservation services."""
     services = [
         ReservationServiceModel(
-            id=uuid.uuid4(),
+            id=uuid4().hex,
             name="Room A",
             alias="room_a",
             public=True,
@@ -69,7 +66,7 @@ async def test_list_reservation_services(async_session):
             contact_mail="rooma@buk.cvut.cz",
         ),
         ReservationServiceModel(
-            id=uuid.uuid4(),
+            id=uuid4().hex,
             name="Room B",
             alias="room_b",
             public=False,

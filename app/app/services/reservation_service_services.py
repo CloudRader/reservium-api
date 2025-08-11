@@ -6,7 +6,6 @@ This class works with Mini Service.
 
 from abc import ABC, abstractmethod
 from typing import Annotated
-from uuid import UUID
 
 from api import BaseAppError, Entity, EntityNotFoundError, PermissionDeniedError
 from core import db_session
@@ -59,7 +58,7 @@ class AbstractReservationServiceService(
     @abstractmethod
     async def update_with_permission_checks(
         self,
-        uuid: UUID,
+        uuid: str,
         reservation_service_update: ReservationServiceUpdate,
         user: User,
     ) -> ReservationServiceModel | None:
@@ -76,7 +75,7 @@ class AbstractReservationServiceService(
     @abstractmethod
     async def restore_with_permission_checks(
         self,
-        uuid: UUID | str | int | None,
+        uuid: str | int | None,
         user: User,
     ) -> ReservationServiceModel | None:
         """
@@ -91,7 +90,7 @@ class AbstractReservationServiceService(
     @abstractmethod
     async def delete_with_permission_checks(
         self,
-        uuid: UUID,
+        uuid: str,
         user: User,
         hard_remove: bool = False,
     ) -> ReservationServiceModel | None:
@@ -251,7 +250,7 @@ class ReservationServiceService(AbstractReservationServiceService):
 
     async def update_with_permission_checks(
         self,
-        uuid: UUID,
+        uuid: str,
         reservation_service_update: ReservationServiceUpdate,
         user: User,
     ) -> ReservationServiceModel | None:
@@ -264,7 +263,7 @@ class ReservationServiceService(AbstractReservationServiceService):
 
     async def restore_with_permission_checks(
         self,
-        uuid: UUID | str | int | None,
+        uuid: str | int | None,
         user: User,
     ) -> ReservationServiceModel | None:
         if not user.section_head:
@@ -276,7 +275,7 @@ class ReservationServiceService(AbstractReservationServiceService):
 
     async def delete_with_permission_checks(
         self,
-        uuid: UUID,
+        uuid: str,
         user: User,
         hard_remove: bool = False,
     ) -> ReservationServiceModel | None:

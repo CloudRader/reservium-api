@@ -362,6 +362,11 @@ class EventService(AbstractEventService):
         if not event_to_update:
             return None
 
+        if event_to_update.user_id != user.id:
+            raise PermissionDeniedError(
+                "You do not have permission to request change a reservation made by another user.",
+            )
+
         if event_to_update.start_datetime < dt.datetime.now():
             raise BaseAppError(
                 "You cannot change the reservation time after it has started.",

@@ -1,7 +1,6 @@
 """DTO schemes for Calendar entity."""
 
 from datetime import datetime
-from uuid import UUID
 
 from core.schemas.mini_service import MiniService
 from pydantic import BaseModel, Field
@@ -32,7 +31,7 @@ class CalendarBase(BaseModel):
 class CalendarCreate(CalendarBase):
     """Properties to receive via API on creation."""
 
-    reservation_service_id: UUID
+    reservation_service_id: str
     reservation_type: str
     max_people: int = Field(ge=1)
     collision_with_itself: bool
@@ -51,7 +50,7 @@ class CalendarUpdate(CalendarBase):
     club_member_rules: Rules | None = None
     active_member_rules: Rules | None = None
     manager_rules: Rules | None = None
-    mini_services_id: list[UUID] | None = None
+    mini_services_id: list[str] | None = None
 
 
 class CalendarInDBBase(CalendarBase):
@@ -65,7 +64,7 @@ class CalendarInDBBase(CalendarBase):
     club_member_rules: Rules
     active_member_rules: Rules
     manager_rules: Rules
-    reservation_service_id: UUID
+    reservation_service_id: str
 
     class Config:
         """Config class for database calendar model."""

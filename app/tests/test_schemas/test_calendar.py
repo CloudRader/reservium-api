@@ -13,14 +13,11 @@ from core.schemas.calendar import (
 )
 from pydantic import ValidationError
 
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
-
 
 def test_calendar_create_valid(valid_rules):
     """Test creating a calendar with valid data."""
     schema = CalendarCreate(
-        reservation_service_id=uuid4(),
+        reservation_service_id=uuid4().hex,
         reservation_type="Event",
         max_people=25,
         collision_with_itself=True,
@@ -44,7 +41,7 @@ def test_calendar_create_invalid_max_people(valid_rules):
     """Test that calendar creation fails when max_people is below 1."""
     with pytest.raises(ValidationError):
         CalendarCreate(
-            reservation_service_id=uuid4(),
+            reservation_service_id=uuid4().hex,
             reservation_type="Workshop",
             max_people=0,
             collision_with_itself=True,
@@ -80,7 +77,7 @@ def test_calendar_in_db_schema(valid_rules):
         club_member_rules=valid_rules,
         active_member_rules=valid_rules,
         manager_rules=valid_rules,
-        reservation_service_id=uuid4(),
+        reservation_service_id=uuid4().hex,
         # mini_services=["TV"],
         color="#00FF00",
     )
@@ -101,7 +98,7 @@ def test_calendar_schema_extends_base(valid_rules):
         club_member_rules=valid_rules,
         active_member_rules=valid_rules,
         manager_rules=valid_rules,
-        reservation_service_id=uuid4(),
+        reservation_service_id=uuid4().hex,
     )
     assert isinstance(calendar, CalendarInDBBase)
     assert calendar.reservation_type == "Training"

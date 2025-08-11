@@ -2,7 +2,6 @@
 
 from collections.abc import Callable
 from typing import Annotated, Any, TypeVar
-from uuid import UUID
 
 from api.exceptions import ERROR_RESPONSES, BaseAppError, Entity, EntityNotFoundError
 from api.user_authenticator import get_current_user
@@ -133,7 +132,7 @@ class BaseCRUDRouter[
         )
         async def get_by_id(
             service: Annotated[service_dep, Depends(service_dep)],
-            obj_id: Annotated[UUID | str | int, Path()],
+            obj_id: Annotated[str | int, Path()],
             include_removed: bool = Query(False),
         ):
             """
@@ -223,7 +222,7 @@ class BaseCRUDRouter[
         async def update(
             service: Annotated[service_dep, Depends(service_dep)],
             user: Annotated[User, Depends(get_current_user)],
-            obj_id: Annotated[UUID | str | int, Path()],
+            obj_id: Annotated[str | int, Path()],
             obj_update: schema_update,
         ):
             """
@@ -255,7 +254,7 @@ class BaseCRUDRouter[
         async def restore(
             service: Annotated[service_dep, Depends(service_dep)],
             user: Annotated[User, Depends(get_current_user)],
-            obj_id: Annotated[UUID | str | int, Path()],
+            obj_id: Annotated[str | int, Path()],
         ):
             """
             Retrieve deleted object with id equal to 'obj_id'.
@@ -285,7 +284,7 @@ class BaseCRUDRouter[
         async def delete(
             service: Annotated[service_dep, Depends(service_dep)],
             user: Annotated[User, Depends(get_current_user)],
-            obj_id: Annotated[UUID | str | int, Path()],
+            obj_id: Annotated[str | int, Path()],
             hard_remove: bool = Query(False),
         ):
             """

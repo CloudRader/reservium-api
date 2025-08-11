@@ -6,7 +6,6 @@ This class works with Calendar.
 
 from abc import ABC, abstractmethod
 from typing import Annotated
-from uuid import UUID
 
 from api import BaseAppError, PermissionDeniedError
 from core import db_session
@@ -69,7 +68,7 @@ class AbstractCalendarService(
     @abstractmethod
     async def restore_with_permission_checks(
         self,
-        uuid: UUID | str | int | None,
+        uuid: str | int | None,
         user: User,
     ) -> CalendarModel | None:
         """
@@ -141,7 +140,7 @@ class AbstractCalendarService(
     @abstractmethod
     async def get_reservation_service_of_this_calendar(
         self,
-        reservation_service_id: UUID,
+        reservation_service_id: str,
     ) -> ReservationServiceModel | None:
         """
         Retrieve the reservation service of this calendar by reservation service id.
@@ -155,7 +154,7 @@ class AbstractCalendarService(
     async def update_mini_services(
         self,
         calendar: CalendarModel | None,
-        mini_services_id: list[UUID] | None,
+        mini_services_id: list[str] | None,
     ) -> CalendarModel | None:
         """
         Update the list of mini services associated with a given calendar.
@@ -265,7 +264,7 @@ class CalendarService(AbstractCalendarService):
 
     async def restore_with_permission_checks(
         self,
-        uuid: UUID | str | int | None,
+        uuid: str | int | None,
         user: User,
     ) -> CalendarModel | None:
         calendar = await self.get(uuid, True)
@@ -374,7 +373,7 @@ class CalendarService(AbstractCalendarService):
 
     async def get_reservation_service_of_this_calendar(
         self,
-        reservation_service_id: UUID,
+        reservation_service_id: str,
     ) -> ReservationServiceModel | None:
         reservation_service = await self.reservation_service_crud.get(
             reservation_service_id,
@@ -388,7 +387,7 @@ class CalendarService(AbstractCalendarService):
     async def update_mini_services(
         self,
         calendar: CalendarModel | None,
-        mini_services_id: list[UUID] | None,
+        mini_services_id: list[str] | None,
     ) -> CalendarModel | None:
         if mini_services_id is None:
             return calendar

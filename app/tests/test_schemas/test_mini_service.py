@@ -12,13 +12,10 @@ from core.schemas.mini_service import (
 )
 from pydantic import ValidationError
 
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
-
 
 def test_mini_service_create_valid():
     """Test creating a mini service with valid data."""
-    service_id = uuid4()
+    service_id = uuid4().hex
     schema = MiniServiceCreate(reservation_service_id=service_id, name="Media Setup")
     assert schema.name == "Media Setup"
     assert schema.reservation_service_id == service_id
@@ -32,8 +29,8 @@ def test_mini_service_update_partial():
 
 def test_mini_service_in_db_base_schema():
     """Test full mini service DB representation."""
-    service_id = uuid4()
-    mini_id = uuid4()
+    service_id = uuid4().hex
+    mini_id = uuid4().hex
     now = datetime.now(UTC)
 
     schema = MiniServiceInDBBase(
@@ -52,8 +49,8 @@ def test_mini_service_in_db_base_schema():
 def test_mini_service_schema_extends_base():
     """Test that MiniService schema includes all base fields."""
     schema = MiniService(
-        id=uuid4(),
-        reservation_service_id=uuid4(),
+        id=uuid4().hex,
+        reservation_service_id=uuid4().hex,
         name="3D Printer",
         deleted_at=None,
     )

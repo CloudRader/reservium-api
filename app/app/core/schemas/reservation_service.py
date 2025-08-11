@@ -1,7 +1,6 @@
 """DTO schemes for ReservationService entity."""
 
 from datetime import datetime
-from uuid import UUID
 
 from core.schemas import Calendar, MiniService
 from pydantic import BaseModel, Field
@@ -35,7 +34,7 @@ class ReservationServiceUpdate(ReservationServiceBase):
 class ReservationServiceInDBBase(ReservationServiceBase):
     """Base model for reservation service in database."""
 
-    id: UUID
+    id: str
     deleted_at: datetime | None = None
     name: str
     alias: str

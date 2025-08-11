@@ -8,7 +8,6 @@ SQLAlchemy and FastAPI.
 from abc import ABC, abstractmethod
 from datetime import UTC, datetime
 from typing import Any, TypeVar
-from uuid import UUID
 
 from core.models.base_class import Base
 from pydantic import BaseModel
@@ -26,7 +25,7 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
     @abstractmethod
     async def get(
         self,
-        uuid: UUID | str | int,
+        uuid: str | int,
         include_removed: bool = False,
     ) -> Model | None:
         """
@@ -65,16 +64,16 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
     @abstractmethod
     async def retrieve_removed_object(
         self,
-        uuid: UUID | str | int | None,
+        uuid: str | int | None,
     ) -> Model | None:
         """Retrieve removed object from soft removed."""
 
     @abstractmethod
-    async def remove(self, uuid: UUID | str | int | None) -> Model | None:
+    async def remove(self, uuid: str | int | None) -> Model | None:
         """Remove a record by its UUID."""
 
     @abstractmethod
-    async def soft_remove(self, uuid: UUID | str | int | None) -> Model | None:
+    async def soft_remove(self, uuid: str | int | None) -> Model | None:
         """
         Soft remove a record by its UUID.
 
@@ -84,7 +83,7 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
     @abstractmethod
     async def check_uuid_and_return_obj_from_db_by_uuid(
         self,
-        uuid: UUID | str | int | None,
+        uuid: str | int | None,
     ) -> Model | None:
         """
         Retrieve a database object by its primary key (UUID, string, or integer).
@@ -106,7 +105,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
 
     async def get(
         self,
-        uuid: UUID | str | int,
+        uuid: str | int,
         include_removed: bool = False,
     ) -> Model | None:
         if uuid is None:
@@ -156,7 +155,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
 
     async def retrieve_removed_object(
         self,
-        uuid: UUID | str | int | None,
+        uuid: str | int | None,
     ) -> Model | None:
         if uuid is None:
             return None
@@ -172,7 +171,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         await self.db.commit()
         return obj
 
-    async def remove(self, uuid: UUID | str | int | None) -> Model | None:
+    async def remove(self, uuid: str | int | None) -> Model | None:
         stmt = (
             select(self.model).execution_options(include_deleted=True).filter(self.model.id == uuid)
         )
@@ -184,7 +183,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         await self.db.commit()
         return obj
 
-    async def soft_remove(self, uuid: UUID | str | int | None) -> Model | None:
+    async def soft_remove(self, uuid: str | int | None) -> Model | None:
         obj = await self.check_uuid_and_return_obj_from_db_by_uuid(uuid)
         if obj is None or obj.deleted_at is not None:
             return None
@@ -199,7 +198,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
 
     async def check_uuid_and_return_obj_from_db_by_uuid(
         self,
-        uuid: UUID | str | int | None,
+        uuid: str | int | None,
     ) -> Model | None:
         if uuid is None:
             return None

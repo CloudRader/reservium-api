@@ -4,9 +4,6 @@ import pytest
 import sqlalchemy
 from core.models import CalendarModel
 
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
-
 
 @pytest.mark.asyncio
 async def test_create_calendar(test_calendar, test_reservation_service):

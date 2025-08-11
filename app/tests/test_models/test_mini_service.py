@@ -1,13 +1,10 @@
 """Module for testing mini service model."""
 
-import uuid
+from uuid import uuid4
 
 import pytest
 import sqlalchemy
 from core.models import MiniServiceModel
-
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
 
 
 @pytest.mark.asyncio
@@ -53,12 +50,12 @@ async def test_list_mini_services(async_session, test_reservation_service):
     """Test listing multiple mini services."""
     services = [
         MiniServiceModel(
-            id=uuid.uuid4(),
+            id=uuid4().hex,
             name="Mini A",
             reservation_service_id=test_reservation_service.id,
         ),
         MiniServiceModel(
-            id=uuid.uuid4(),
+            id=uuid4().hex,
             name="Mini B",
             reservation_service_id=test_reservation_service.id,
         ),
