@@ -14,7 +14,7 @@ from api import (
 )
 from api.external_api.google.google_calendar_services import GoogleCalendarService
 from api.utils import control_collision, process_event_approval
-from api.v1.emails import create_email_meta, preparing_email
+from api.v2.emails import create_email_meta, preparing_email
 from core.models import EventState
 from core.schemas import (
     Event,
