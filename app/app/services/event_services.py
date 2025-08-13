@@ -14,13 +14,14 @@ from core.application.exceptions import (
     PermissionDeniedError,
     SoftValidationError,
 )
-from core.models import (
-    CalendarModel,
-    EventModel,
-    EventState,
-    ReservationServiceModel,
-    UserModel,
-)
+from core.models import EventState
+
+#     CalendarModel,
+#     EventModel,
+#     EventState,
+#     ReservationServiceModel,
+#     UserModel,
+# )
 from core.schemas import (
     Calendar,
     Event,
@@ -47,7 +48,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 class AbstractEventService(
     CrudServiceBase[
-        EventModel,
+        Event,
         CRUDEvent,
         EventCreateToDb,
         EventUpdate,
@@ -82,7 +83,7 @@ class AbstractEventService(
         user: User,
         event_state: EventState,
         event_id: str,
-    ) -> EventModel | None:
+    ) -> Event | None:
         """
         Create an Event in the database.
 
@@ -112,7 +113,7 @@ class AbstractEventService(
     async def get_reservation_service_of_this_event(
         self,
         event: Event,
-    ) -> ReservationServiceModel:
+    ) -> ReservationService:
         """
         Retrieve the ReservationService instance associated with this event.
 
@@ -125,7 +126,7 @@ class AbstractEventService(
     async def get_calendar_of_this_event(
         self,
         event: Event,
-    ) -> CalendarModel:
+    ) -> Calendar:
         """
         Retrieve the Calendar instance associated with this event.
 
@@ -138,7 +139,7 @@ class AbstractEventService(
     async def get_user_of_this_event(
         self,
         event: Event,
-    ) -> UserModel:
+    ) -> User:
         """
         Retrieve the User instance associated with this event.
 
@@ -148,7 +149,7 @@ class AbstractEventService(
         """
 
     @abstractmethod
-    async def get_current_event_for_user(self, user_id: int) -> EventModel | None:
+    async def get_current_event_for_user(self, user_id: int) -> Event | None:
         """
         Retrieve the current event for the given user.
 
@@ -165,7 +166,7 @@ class AbstractEventService(
         uuid: str,
         event_update: EventUpdate,
         user: User,
-    ) -> EventModel | None:
+    ) -> Event | None:
         """
         Approve update a reservation time of the Event in the database.
 
@@ -182,7 +183,7 @@ class AbstractEventService(
         uuid: str,
         event_update: EventUpdateTime,
         user: User,
-    ) -> EventModel | None:
+    ) -> Event | None:
         """
         Update a reservation time of the Event in the database.
 
@@ -194,7 +195,7 @@ class AbstractEventService(
         """
 
     @abstractmethod
-    async def cancel_event(self, uuid: str, user: User) -> EventModel | None:
+    async def cancel_event(self, uuid: str, user: User) -> Event | None:
         """
         Cancel an Event in the database.
 
@@ -206,7 +207,7 @@ class AbstractEventService(
         """
 
     @abstractmethod
-    async def confirm_event(self, uuid: str | None, user: User) -> EventModel | None:
+    async def confirm_event(self, uuid: str | None, user: User) -> Event | None:
         """
         Confirm event.
 
@@ -252,7 +253,7 @@ class EventService(AbstractEventService):
         user: User,
         event_state: EventState,
         event_id: str,
-    ) -> EventModel | None:
+    ) -> Event | None:
         event_create_to_db = EventCreateToDb(
             id=event_id,
             start_datetime=event_create.start_datetime,
@@ -277,7 +278,7 @@ class EventService(AbstractEventService):
     async def get_reservation_service_of_this_event(
         self,
         event: Event,
-    ) -> ReservationServiceModel:
+    ) -> ReservationService:
         if not event:
             raise BaseAppError("This event does not exist in db.", status_code=404)
 
@@ -299,7 +300,7 @@ class EventService(AbstractEventService):
     async def get_calendar_of_this_event(
         self,
         event: Event,
-    ) -> CalendarModel:
+    ) -> Calendar:
         if not event:
             raise BaseAppError("This event does not exist in db.", status_code=404)
 
@@ -312,7 +313,7 @@ class EventService(AbstractEventService):
     async def get_user_of_this_event(
         self,
         event: Event,
-    ) -> UserModel:
+    ) -> User:
         if not event:
             raise BaseAppError("This event does not exist in db.", status_code=404)
 
@@ -323,7 +324,7 @@ class EventService(AbstractEventService):
 
         return user
 
-    async def get_current_event_for_user(self, user_id: int) -> EventModel | None:
+    async def get_current_event_for_user(self, user_id: int) -> Event | None:
         return await self.crud.get_current_event_for_user(user_id)
 
     async def approve_update_reservation_time(
@@ -331,7 +332,7 @@ class EventService(AbstractEventService):
         uuid: str,
         event_update: EventUpdate,
         user: User,
-    ) -> EventModel | None:
+    ) -> Event | None:
         event_to_update = await self.get(uuid)
 
         if event_to_update is None:
@@ -356,7 +357,7 @@ class EventService(AbstractEventService):
         uuid: str,
         event_update: EventUpdateTime,
         user: User,
-    ) -> EventModel | None:
+    ) -> Event | None:
         event_to_update = await self.get(uuid)
 
         if not event_to_update:
@@ -387,7 +388,7 @@ class EventService(AbstractEventService):
         )
         return await self.update(uuid, event_update_time)
 
-    async def cancel_event(self, uuid: str, user: User) -> EventModel | None:
+    async def cancel_event(self, uuid: str, user: User) -> Event | None:
         event: Event = await self.get(uuid)
         if not event:
             return None
@@ -411,7 +412,7 @@ class EventService(AbstractEventService):
 
         return await self.update(uuid, updated_event)
 
-    async def confirm_event(self, uuid: str | None, user: User) -> EventModel | None:
+    async def confirm_event(self, uuid: str | None, user: User) -> Event | None:
         event: Event = await self.get(uuid)
         if not event:
             return None
@@ -435,7 +436,7 @@ class EventService(AbstractEventService):
         user: User,
         services: list[ServiceValidity],
         event_input: EventCreate,
-        calendar: CalendarModel,
+        calendar: Calendar,
     ):
         """
         Check conditions and permissions for creating an event.
@@ -482,7 +483,7 @@ class EventService(AbstractEventService):
         # Check reservation in advance and prior
         reservation_in_advance(event_input.start_datetime, user_rules)
 
-    async def __choose_user_rules(self, user: User, calendar: CalendarModel):
+    async def __choose_user_rules(self, user: User, calendar: Calendar):
         """
         Choose user rules based on the calendar rules and user roles.
 

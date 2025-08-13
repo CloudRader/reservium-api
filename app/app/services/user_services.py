@@ -8,7 +8,6 @@ from abc import ABC, abstractmethod
 from typing import Annotated
 
 from core import db_session
-from core.models import UserModel
 from core.schemas import (
     Role,
     Room,
@@ -47,7 +46,7 @@ class AbstractUserService(
         roles: list[Role],
         services: list[ServiceValidity],
         room: Room,
-    ) -> UserModel:
+    ) -> User:
         """
         Create a User in the database.
 
@@ -60,7 +59,7 @@ class AbstractUserService(
         """
 
     @abstractmethod
-    async def get_by_username(self, username: str) -> UserModel:
+    async def get_by_username(self, username: str) -> User:
         """
         Retrieve a User instance by its username.
 
@@ -97,7 +96,7 @@ class UserService(AbstractUserService):
         roles: list[Role],
         services: list[ServiceValidity],
         room: Room,
-    ) -> UserModel:
+    ) -> User:
         user = await self.get_by_username(user_data.username)
 
         user_roles = []
@@ -138,7 +137,7 @@ class UserService(AbstractUserService):
         )
         return await self.crud.create(user_create)
 
-    async def get_by_username(self, username: str) -> UserModel:
+    async def get_by_username(self, username: str) -> User:
         return await self.crud.get_by_username(username)
 
     async def get_events_by_user_id(self, user: User) -> list[EventWithExtraDetails] | None:

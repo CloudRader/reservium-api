@@ -9,8 +9,7 @@ from typing import Annotated
 
 from core import db_session
 from core.application.exceptions import BaseAppError, PermissionDeniedError
-from core.models import MiniServiceModel
-from core.schemas import CalendarUpdate, MiniServiceCreate, MiniServiceUpdate, User
+from core.schemas import CalendarUpdate, MiniService, MiniServiceCreate, MiniServiceUpdate, User
 from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService
 from fastapi import Depends
 from services import CrudServiceBase
@@ -19,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 class AbstractMiniServiceService(
     CrudServiceBase[
-        MiniServiceModel,
+        MiniService,
         CRUDMiniService,
         MiniServiceCreate,
         MiniServiceUpdate,
@@ -37,7 +36,7 @@ class AbstractMiniServiceService(
         self,
         mini_service_create: MiniServiceCreate,
         user: User,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         """
         Create a Mini Service in the database.
 
@@ -53,7 +52,7 @@ class AbstractMiniServiceService(
         uuid: str,
         mini_service_update: MiniServiceUpdate,
         user: User,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         """
         Update a Mini Service in the database.
 
@@ -69,7 +68,7 @@ class AbstractMiniServiceService(
         self,
         uuid: str | int | None,
         user: User,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         """
         Retrieve removed mini service from soft removed.
 
@@ -85,7 +84,7 @@ class AbstractMiniServiceService(
         uuid: str,
         user: User,
         hard_remove: bool = False,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         """
         Delete a Mini Service in the database.
 
@@ -101,7 +100,7 @@ class AbstractMiniServiceService(
         self,
         name: str,
         include_removed: bool = False,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         """
         Retrieve a Mini Service instance by its name.
 
@@ -116,7 +115,7 @@ class AbstractMiniServiceService(
         self,
         room_id: int,
         include_removed: bool = False,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         """
         Retrieve a Mini Service instance by its room id.
 
@@ -142,7 +141,7 @@ class MiniServiceService(AbstractMiniServiceService):
         self,
         mini_service_create: MiniServiceCreate,
         user: User,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         if await self.crud.get_by_name(mini_service_create.name, True):
             raise BaseAppError("A reservation service with this name already exist.")
 
@@ -164,7 +163,7 @@ class MiniServiceService(AbstractMiniServiceService):
         uuid: str,
         mini_service_update: MiniServiceUpdate,
         user: User,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         mini_service_to_update = await self.get(uuid)
 
         if mini_service_to_update is None:
@@ -187,7 +186,7 @@ class MiniServiceService(AbstractMiniServiceService):
         self,
         uuid: str | int | None,
         user: User,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         mini_service = await self.crud.get(uuid, True)
 
         if mini_service.deleted_at is None:
@@ -211,7 +210,7 @@ class MiniServiceService(AbstractMiniServiceService):
         uuid: str,
         user: User,
         hard_remove: bool = False,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         mini_service = await self.crud.get(uuid, True)
 
         if mini_service is None:
@@ -254,12 +253,12 @@ class MiniServiceService(AbstractMiniServiceService):
         self,
         name: str,
         include_removed: bool = False,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         return await self.crud.get_by_name(name, include_removed)
 
     async def get_by_room_id(
         self,
         room_id: int,
         include_removed: bool = False,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         return await self.crud.get_by_room_id(room_id, include_removed)

@@ -7,19 +7,17 @@ This class provides a common interface for services that implement CRUD operatio
 from abc import ABC, abstractmethod
 from typing import TypeVar
 
-from core.models.base_class import Base
 from crud import CRUDBase
 from pydantic import BaseModel
-from sqlalchemy import Row
 
-Model = TypeVar("Model", bound=Base)
+Schema = TypeVar("Schema", bound=BaseModel)
 Crud = TypeVar("Crud", bound=CRUDBase)
 CreateSchema = TypeVar("CreateSchema", bound=BaseModel)
 UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
 
 
 class AbstractCRUDService[
-    Model: Base,
+    Schema: BaseModel,
     Crud: CRUDBase,
     CreateSchema: BaseModel,
     UpdateSchema: BaseModel,
@@ -41,7 +39,7 @@ class AbstractCRUDService[
         self,
         uuid: str | int,
         include_removed: bool = False,
-    ) -> Model | None:
+    ) -> Schema | None:
         """
         Retrieve an object from the database.
 
@@ -55,7 +53,7 @@ class AbstractCRUDService[
         """
 
     @abstractmethod
-    async def get_all(self, include_removed: bool = False) -> list[Row[Model]] | None:
+    async def get_all(self, include_removed: bool = False) -> list[Schema] | None:
         """
         Retrieve all objects from the database.
 
@@ -68,7 +66,7 @@ class AbstractCRUDService[
         """
 
     @abstractmethod
-    async def create(self, obj_in: CreateSchema) -> Model | None:
+    async def create(self, obj_in: CreateSchema) -> Schema | None:
         """
         Create an object in the database.
 
@@ -82,7 +80,7 @@ class AbstractCRUDService[
         self,
         uuid: str | int,
         obj_in: UpdateSchema,
-    ) -> Model | None:
+    ) -> Schema | None:
         """
         Update an object in the database.
 
@@ -93,7 +91,7 @@ class AbstractCRUDService[
         """
 
     @abstractmethod
-    async def remove(self, uuid: str | int | None) -> Model | None:
+    async def remove(self, uuid: str | int | None) -> Schema | None:
         """
         Delete an object from the database.
 
@@ -101,7 +99,7 @@ class AbstractCRUDService[
         """
 
     @abstractmethod
-    async def soft_remove(self, uuid: str | int | None) -> Model | None:
+    async def soft_remove(self, uuid: str | int | None) -> Schema | None:
         """
         Soft remove a record by its UUID.
 
@@ -111,7 +109,7 @@ class AbstractCRUDService[
         """
 
 
-class CrudServiceBase(AbstractCRUDService[Model, Crud, CreateSchema, UpdateSchema]):
+class CrudServiceBase(AbstractCRUDService[Schema, Crud, CreateSchema, UpdateSchema]):
     """
     A base class for implementing a CRUD (Create, Read, Update, Delete).
 
@@ -131,30 +129,30 @@ class CrudServiceBase(AbstractCRUDService[Model, Crud, CreateSchema, UpdateSchem
         self,
         uuid: str | int,
         include_removed: bool = False,
-    ) -> Model | None:
+    ) -> Schema | None:
         return await self.crud.get(uuid, include_removed)
 
-    async def get_all(self, include_removed: bool = False) -> list[Row[Model]] | None:
+    async def get_all(self, include_removed: bool = False) -> list[Schema] | None:
         all_objects = await self.crud.get_all(include_removed)
         if len(all_objects) == 0:
             return []
         return all_objects
 
-    async def create(self, obj_in: CreateSchema) -> Model | None:
+    async def create(self, obj_in: CreateSchema) -> Schema | None:
         return await self.crud.create(obj_in)
 
     async def update(
         self,
         uuid: str | int,
         obj_in: UpdateSchema,
-    ) -> Model | None:
+    ) -> Schema | None:
         obj_to_update = await self.get(uuid)
         if obj_to_update is None:
             return None
         return await self.crud.update(db_obj=obj_to_update, obj_in=obj_in)
 
-    async def remove(self, uuid: str | int | None) -> Model | None:
+    async def remove(self, uuid: str | int | None) -> Schema | None:
         return await self.crud.remove(uuid)
 
-    async def soft_remove(self, uuid: str | int | None) -> Model | None:
+    async def soft_remove(self, uuid: str | int | None) -> Schema | None:
         return await self.crud.soft_remove(uuid)

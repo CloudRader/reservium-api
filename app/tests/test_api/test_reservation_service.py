@@ -4,6 +4,7 @@ import pytest
 from fastapi import status
 from httpx import AsyncClient
 
+
 @pytest.mark.asyncio
 async def test_get_reservation_service(client: AsyncClient, reservation_service):
     """Test retrieving a single reservation service by its ID."""
