@@ -1,59 +1,19 @@
 """Calendar ORM model and its dependencies."""
 
-import json
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from core.models.base_class import Base
 from core.models.soft_delete_mixin import SoftDeleteMixin
+from core.models.types.rules_type import RulesType
 from core.schemas.calendar import Rules
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.types import TEXT, TypeDecorator
 
 if TYPE_CHECKING:
     from core.models.event import Event
     from core.models.mini_service import MiniService
     from core.models.reservation_service import ReservationService
-
-
-class RulesType(TypeDecorator):
-    """
-    Custom SQLAlchemy type for serializing and deserializing the `Rules` Pydantic model.
-
-    This type handles conversion of `Rules` objects to and from JSON for database storage.
-    """
-
-    impl = TEXT
-
-    @property
-    def python_type(self) -> type[Any]:
-        return Rules
-
-    def load_dialect_impl(self, dialect):
-        return dialect.type_descriptor(TEXT())
-
-    def process_bind_param(self, value, dialect):  # noqa: ARG002
-        if value is None:
-            return None
-        if isinstance(value, dict):
-            value = Rules(**value)
-        return json.dumps(value.model_dump())
-
-    def process_result_value(self, value, dialect):  # noqa: ARG002
-        if value is None:
-            return None
-        return Rules.model_validate_json(value)
-
-    def process_literal_param(self, value, dialect):  # noqa: ARG002
-        if value is None:
-            return None
-        if isinstance(value, dict):
-            value = Rules(**value)
-        return json.dumps(value.model_dump())
-
-    def copy(self, **kw):  # noqa: ARG002
-        return RulesType(self.impl)
 
 
 class Calendar(Base, SoftDeleteMixin):

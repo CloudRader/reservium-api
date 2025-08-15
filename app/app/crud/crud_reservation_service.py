@@ -211,7 +211,7 @@ class CRUDReservationService(AbstractCRUDReservationService):
             .join(CalendarModel, EventModel.calendar_id == CalendarModel.id)
             .filter(CalendarModel.reservation_service_id == reservation_service_id)
             .options(joinedload(EventModel.calendar))
-            .order_by(EventModel.start_datetime.desc())
+            .order_by(EventModel.reservation_start.desc())
         )
 
         if event_state is not None:

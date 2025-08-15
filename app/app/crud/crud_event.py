@@ -9,13 +9,13 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 
 from core.models import EventModel, EventState
-from core.schemas import EventCreateToDb, EventUpdate
+from core.schemas import Event, EventUpdate
 from crud import CRUDBase
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class AbstractCRUDEvent(CRUDBase[EventModel, EventCreateToDb, EventUpdate], ABC):
+class AbstractCRUDEvent(CRUDBase[EventModel, Event, EventUpdate], ABC):
     """
     Abstract class for CRUD operations specific to the Event model.
 
@@ -105,7 +105,7 @@ class CRUDEvent(AbstractCRUDEvent):
                 self.model.start_datetime <= now,
                 self.model.end_datetime >= now,
             )
-            .order_by(self.model.start_datetime.desc())
+            .order_by(self.model.reservation_start.desc())
             .limit(1)
         )
         result = await self.db.execute(stmt)

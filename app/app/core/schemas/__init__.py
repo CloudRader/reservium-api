@@ -22,7 +22,6 @@ from .email import EmailCreate, EmailMeta, RegistrationFormCreate
 from .event import (
     Event,
     EventCreate,
-    EventCreateToDb,
     EventInDB,
     EventUpdate,
     EventUpdateTime,
@@ -61,7 +60,6 @@ __all__ = [
     "ReservationServiceUpdate",
     "ReservationServiceInDBBase",
     "EventCreate",
-    "EventCreateToDb",
     "EventUpdate",
     "Event",
     "EventInDB",

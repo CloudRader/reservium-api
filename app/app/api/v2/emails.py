@@ -188,8 +188,18 @@ def construct_body_context(
 
     context = {
         "reservation_type": calendar.reservation_type,
-        "start_time": event.start_datetime.strftime("%d/%m/%Y, %H:%M"),
-        "end_time": event.end_datetime.strftime("%d/%m/%Y, %H:%M"),
+        "start_time": event.reservation_start.strftime("%d/%m/%Y, %H:%M"),
+        "end_time": event.reservation_end.strftime("%d/%m/%Y, %H:%M"),
+        "requested_start_time": (
+            event.requested_reservation_start.strftime("%d/%m/%Y, %H:%M")
+            if event.requested_reservation_start
+            else None
+        ),
+        "requested_end_time": (
+            event.requested_reservation_end.strftime("%d/%m/%Y, %H:%M")
+            if event.requested_reservation_end
+            else None
+        ),
         "user_name": user.full_name,
         "user_room": user.room_number,
         "event_guests": event.guests,

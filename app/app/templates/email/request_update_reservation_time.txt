@@ -20,7 +20,7 @@ Your request to change the time of your reservation has been received and is now
 {{ reservation_type }}
 
 🕒 Time:
-{{ start_time }} - {{ end_time }}
+{{ requested_start_time }} - {{ requested_end_time }}
 
 📝 Description:
 Name: {{ user_name }}

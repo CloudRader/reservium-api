@@ -27,7 +27,6 @@ from core.schemas import (
     User,
 )
 from core.schemas.google_calendar import GoogleCalendarEventCreate
-from dateutil.parser import isoparse
 from fastapi import APIRouter, Body, Depends, Path, Query, status
 from pytz import timezone
 from services import CalendarService, EventService
@@ -119,18 +118,13 @@ async def approve_time_change_request(
     if not event:
         raise EntityNotFoundError(Entity.EVENT, event_id)
 
-    event_update: EventUpdate = EventUpdate(event_state=EventState.CONFIRMED)
-    event_from_google_calendar = await google_calendar_service.get_event(
-        event.calendar_id, event_id
+    event_update: EventUpdate = EventUpdate(
+        event_state=EventState.CONFIRMED,
+        requested_reservation_start=None,
+        requested_reservation_end=None,
     )
 
     if not approve:
-        event_update.start_datetime = isoparse(
-            event_from_google_calendar.start.date_time,
-        ).replace(tzinfo=None)
-        event_update.end_datetime = isoparse(
-            event_from_google_calendar.end.date_time,
-        ).replace(tzinfo=None)
         event_to_update = await service.approve_update_reservation_time(
             event_id,
             event_update,
@@ -149,6 +143,12 @@ async def approve_time_change_request(
             ),
         )
     else:
+        event_from_google_calendar = await google_calendar_service.get_event(
+            event.calendar_id, event_id
+        )
+        event_update.reservation_start = event.requested_reservation_start
+        event_update.reservation_end = event.requested_reservation_end
+
         event_to_update = await service.approve_update_reservation_time(
             event_id,
             event_update,
@@ -158,10 +158,10 @@ async def approve_time_change_request(
             raise EntityNotFoundError(Entity.EVENT, event_id)
         prague = timezone("Europe/Prague")
         event_from_google_calendar.start.date_time = prague.localize(
-            event.start_datetime,
+            event.reservation_start,
         ).isoformat()
         event_from_google_calendar.end.date_time = prague.localize(
-            event.end_datetime,
+            event.reservation_end,
         ).isoformat()
         await preparing_email(
             service,
@@ -319,7 +319,6 @@ async def cancel(
 
     :returns EventModel: the canceled reservation.
     """
-    # TODO: can't delete after it ended, but can delete after it started or think about it
     google_calendar_service = GoogleCalendarService()
     event = await service.cancel_event(event_id, user)
     if not event:

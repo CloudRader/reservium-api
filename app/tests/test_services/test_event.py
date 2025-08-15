@@ -5,7 +5,7 @@ import datetime as dt
 import pytest
 from core.application.exceptions import BaseAppError, SoftValidationError
 from core.models import EventState
-from core.schemas import EventUpdate
+from core.schemas import EventUpdate, EventUpdateTime
 
 
 @pytest.mark.asyncio
@@ -88,7 +88,7 @@ async def test_create_event(event, event_create_form):
     assert event is not None
     assert event.purpose == event_create_form.purpose
     assert event.guests == event_create_form.guests
-    assert event.start_datetime == event_create_form.start_datetime
+    assert event.reservation_start == event_create_form.start_datetime
 
 
 @pytest.mark.asyncio
@@ -103,8 +103,8 @@ async def test_get_event(service_event, event):
 @pytest.mark.asyncio
 async def test_cancel_event(service_event, event, user):
     """Test deleting an event."""
-    event.start_datetime = dt.datetime.now() + dt.timedelta(hours=1)
-    event.end_datetime = dt.datetime.now() + dt.timedelta(hours=4)
+    event.reservation_start = dt.datetime.now() + dt.timedelta(hours=1)
+    event.reservation_end = dt.datetime.now() + dt.timedelta(hours=4)
     cancel_event = await service_event.cancel_event(event.id, user)
 
     assert cancel_event is not None
@@ -121,11 +121,11 @@ async def test_cancel_event_with_exception(service_event, event, user):
 @pytest.mark.asyncio
 async def test_request_update_reservation_time(service_event, event, user):
     """Test requesting update reservation time an event."""
-    event.start_datetime = dt.datetime.now() + dt.timedelta(hours=1)
-    event.end_datetime = dt.datetime.now() + dt.timedelta(hours=4)
-    event_update = EventUpdate(
-        start_datetime=dt.datetime.now() + dt.timedelta(hours=3),
-        end_datetime=dt.datetime.now() + dt.timedelta(hours=6),
+    event.reservation_start = dt.datetime.now() + dt.timedelta(hours=1)
+    event.reservation_end = dt.datetime.now() + dt.timedelta(hours=4)
+    event_update = EventUpdateTime(
+        requested_reservation_start=dt.datetime.now() + dt.timedelta(hours=3),
+        requested_reservation_end=dt.datetime.now() + dt.timedelta(hours=6),
     )
     request_update_reservation_time = await service_event.request_update_reservation_time(
         event.id,
@@ -135,8 +135,14 @@ async def test_request_update_reservation_time(service_event, event, user):
 
     assert request_update_reservation_time is not None
     assert request_update_reservation_time.event_state == EventState.UPDATE_REQUESTED
-    assert request_update_reservation_time.start_datetime == event_update.start_datetime
-    assert request_update_reservation_time.end_datetime == event_update.end_datetime
+    assert (
+        request_update_reservation_time.requested_reservation_start
+        == event_update.requested_reservation_start
+    )
+    assert (
+        request_update_reservation_time.requested_reservation_end
+        == event_update.requested_reservation_end
+    )
 
 
 @pytest.mark.asyncio

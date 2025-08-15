@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 
 from core.models.base_class import Base
 from core.models.soft_delete_mixin import SoftDeleteMixin
+from sqlalchemy import DateTime, ForeignKey, String, text
 from sqlalchemy import Enum as SQLAlchemyEnum
-from sqlalchemy import ForeignKey, String, text
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -36,11 +36,16 @@ class Event(Base, SoftDeleteMixin):
     """Event model to create and manipulate event entity in the database."""
 
     id: Mapped[str] = mapped_column(primary_key=True)
+
+    reservation_start: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    reservation_end: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+    requested_reservation_start: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    requested_reservation_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     purpose: Mapped[str] = mapped_column(nullable=False)
     guests: Mapped[int] = mapped_column(nullable=False)
     email: Mapped[str] = mapped_column(nullable=False)
-    start_datetime: Mapped[datetime] = mapped_column(nullable=False)
-    end_datetime: Mapped[datetime] = mapped_column(nullable=False)
     event_state: Mapped[EventState] = mapped_column(
         SQLAlchemyEnum(EventState, name="event_state_enum"),
         nullable=False,

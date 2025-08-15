@@ -15,18 +15,10 @@ from core.application.exceptions import (
     SoftValidationError,
 )
 from core.models import EventState
-
-#     CalendarModel,
-#     EventModel,
-#     EventState,
-#     ReservationServiceModel,
-#     UserModel,
-# )
 from core.schemas import (
     Calendar,
     Event,
     EventCreate,
-    EventCreateToDb,
     EventUpdate,
     EventUpdateTime,
     EventWithExtraDetails,
@@ -50,7 +42,7 @@ class AbstractEventService(
     CrudServiceBase[
         Event,
         CRUDEvent,
-        EventCreateToDb,
+        Event,
         EventUpdate,
     ],
     ABC,
@@ -254,10 +246,10 @@ class EventService(AbstractEventService):
         event_state: EventState,
         event_id: str,
     ) -> Event | None:
-        event_create_to_db = EventCreateToDb(
+        event_create_to_db = Event(
             id=event_id,
-            start_datetime=event_create.start_datetime,
-            end_datetime=event_create.end_datetime,
+            reservation_start=event_create.start_datetime,
+            reservation_end=event_create.end_datetime,
             purpose=event_create.purpose,
             guests=event_create.guests,
             email=event_create.email,
@@ -368,7 +360,7 @@ class EventService(AbstractEventService):
                 "You do not have permission to request change a reservation made by another user.",
             )
 
-        if event_to_update.start_datetime < dt.datetime.now():
+        if event_to_update.reservation_start < dt.datetime.now():
             raise BaseAppError(
                 "You cannot change the reservation time after it has started.",
             )
@@ -382,8 +374,8 @@ class EventService(AbstractEventService):
             )
 
         event_update_time = EventUpdate(
-            start_datetime=event_update.start_datetime,
-            end_datetime=event_update.end_datetime,
+            requested_reservation_start=event_update.requested_reservation_start,
+            requested_reservation_end=event_update.requested_reservation_end,
             event_state=EventState.UPDATE_REQUESTED,
         )
         return await self.update(uuid, event_update_time)
@@ -396,9 +388,9 @@ class EventService(AbstractEventService):
         if event.event_state == EventState.CANCELED:
             raise BaseAppError("You can't cancel canceled reservation.")
 
-        if event.start_datetime < dt.datetime.now():
+        if event.reservation_end < dt.datetime.now():
             raise BaseAppError(
-                "You cannot cancel the reservation after it has started.",
+                "You cannot cancel the reservation after it has ended.",
             )
 
         reservation_service = await self.get_reservation_service_of_this_event(event)

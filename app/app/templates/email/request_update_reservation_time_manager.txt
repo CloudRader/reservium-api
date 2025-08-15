@@ -14,7 +14,7 @@ A {{ user_name }} has submitted a request to update the time of an existing rese
 {{ reservation_type }}
 
 🕒 Time:
-{{ start_time }} – {{ end_time }}
+{{ requested_start_time }} – {{ requested_end_time }}
 
 📝 Description:
 Name: {{ user_name }}

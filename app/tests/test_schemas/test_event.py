@@ -4,7 +4,6 @@ import pytest
 from core.models import EventState
 from core.schemas.event import (
     Event,
-    EventCreateToDb,
     EventInDBBase,
     EventUpdate,
 )
@@ -13,13 +12,13 @@ from pydantic import ValidationError
 
 def test_event_create_valid():
     """Test creating an event with valid data."""
-    schema = EventCreateToDb(
+    schema = Event(
         id="some_id_string",
         purpose="Birthday party",
         guests=5,
         email="coolEmail@buk.cvut.cz",
-        start_datetime="2025-05-12T11:00",
-        end_datetime="2025-05-12T16:00",
+        reservation_start="2025-05-12T11:00",
+        reservation_end="2025-05-12T16:00",
         event_state=EventState.CONFIRMED,
         user_id=21412,
         calendar_id="wfwafwjag2@goog.com",
@@ -39,13 +38,13 @@ def test_event_update_partial():
 
 def test_event_in_db_base_schema():
     """Test full event DB representation."""
-    schema = EventInDBBase(
+    schema = Event(
         id="some_id_string",
         purpose="Birthday party",
         guests=5,
         email="coolEmail@buk.cvut.cz",
-        start_datetime="2025-05-12T11:00",
-        end_datetime="2025-05-12T16:00",
+        reservation_start="2025-05-12T11:00",
+        reservation_end="2025-05-12T16:00",
         event_state=EventState.CONFIRMED,
         user_id=21412,
         calendar_id="wfwafwjag2@goog.com",
@@ -66,8 +65,8 @@ def test_event_schema_extends_base():
         purpose="Birthday party",
         guests=5,
         email="coolEmail@buk.cvut.cz",
-        start_datetime="2025-05-12T11:00",
-        end_datetime="2025-05-12T16:00",
+        reservation_start="2025-05-12T11:00",
+        reservation_end="2025-05-12T16:00",
         event_state=EventState.CONFIRMED,
         user_id=21412,
         calendar_id="wfwafwjag2@goog.com",
@@ -106,4 +105,4 @@ def test_event_create_required_fields(field):
     }
     del data[field]
     with pytest.raises(ValidationError):
-        EventCreateToDb(**data)
+        Event(**data)

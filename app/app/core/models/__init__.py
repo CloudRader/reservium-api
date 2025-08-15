@@ -1,7 +1,6 @@
 """Package for ORM models."""
 
 from .calendar import Calendar as CalendarModel
-from .calendar import RulesType
 from .calendar_mini_service_association import CalendarMiniServiceAssociationTable
 from .event import Event as EventModel
 from .event import EventState
@@ -18,6 +17,5 @@ __all__ = [
     "MiniServiceModel",
     "ReservationServiceModel",
     "SoftDeleteMixin",
-    "RulesType",
     "CalendarMiniServiceAssociationTable",
 ]
