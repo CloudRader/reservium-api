@@ -35,6 +35,6 @@ COPY --from=build $VENV_PATH $VENV_PATH
 # copy source code
 COPY reservation-app ./
 
-WORKDIR $HOME/app
+WORKDIR $HOME/src
 
 ENTRYPOINT ["python", "main.py"]

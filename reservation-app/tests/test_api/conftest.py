@@ -6,7 +6,7 @@ from core.schemas import ReservationServiceCreate, Room, UserCreate, UserIS, Zon
 from crud import CRUDReservationService, CRUDUser
 from httpx import ASGITransport, AsyncClient
 
-from app.main import app
+from src.main import app
 
 
 @pytest.fixture
