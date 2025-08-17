@@ -68,7 +68,9 @@ async def create(
 
     google_calendar_service = GoogleCalendarService()
 
-    if not await control_collision(google_calendar_service, event_create, calendar):
+    if not await control_collision(
+        google_calendar_service, event_create.start_datetime, event_create.end_datetime, calendar
+    ):
         raise SoftValidationError("There's already a reservation for that time.")
 
     event_body = GoogleCalendarEventCreate(
@@ -178,6 +180,54 @@ async def approve_time_change_request(
         )
 
     return event_to_update
+
+
+@router.put(
+    "/{event_id}",
+    response_model=Event,
+    responses=ERROR_RESPONSES["400_401_403"],
+    status_code=status.HTTP_200_OK,
+)
+async def update(
+    service: Annotated[EventService, Depends(EventService)],
+    user: Annotated[User, Depends(get_current_user)],
+    event_id: Annotated[str, Path()],
+    event_update: Annotated[EventUpdate, Body()],
+    reason: Annotated[str, Body()] = "",
+) -> Any:
+    """
+    Update object with id equal to event_id.
+
+    Only users with special roles can update object.
+
+    :param service: Service providing business logic of this object.
+    :param user: User who make this request.
+    :param event_id: id of the object.
+    :param event_update: ObjectUpdate schema.
+    :param reason: Annotated[str, Body()] = "",
+
+    :returns ObjectSchema: the updated object.
+    """
+    google_calendar_service = GoogleCalendarService()
+    event = await service.update_with_permission_checks(event_id, event_update, user)
+    if not event:
+        raise EntityNotFoundError(Entity.EVENT, event_id)
+
+    event_to_update = await google_calendar_service.get_event(event.calendar_id, event.id)
+    event_to_update.description = service.description_of_event(user, event)
+    await google_calendar_service.update_event(event.calendar_id, event.id, event_to_update)
+
+    await preparing_email(
+        service,
+        event,
+        create_email_meta(
+            "update_reservation",
+            "Update Reservation By Manager",
+            reason,
+        ),
+    )
+
+    return event
 
 
 @router.put(
@@ -343,4 +393,32 @@ async def cancel(
             ),
         )
 
+    return event
+
+
+@router.delete(
+    "/{event_id}/hard",
+    response_model=Event,
+    responses=ERROR_RESPONSES["400_401_403_404"],
+    status_code=status.HTTP_200_OK,
+)
+async def delete(
+    service: Annotated[EventService, Depends(EventService)],
+    user: Annotated[User, Depends(get_current_user)],
+    event_id: Annotated[str, Path()],
+) -> Any:
+    """
+    Delete event with id equal to 'event_id'.
+
+    Only managers and if event have state canceled.
+
+    :param service: Event service.
+    :param user: User who make this reservation.
+    :param event_id: id of the event.
+
+    :returns EventModel: the deleted event.
+    """
+    event = await service.delete_with_permission_checks(event_id, user)
+    if not event:
+        raise EntityNotFoundError(Entity.EVENT, event_id)
     return event

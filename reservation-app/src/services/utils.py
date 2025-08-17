@@ -3,9 +3,8 @@
 import datetime as dt
 
 from core.application.exceptions import SoftValidationError
-from core.models import CalendarModel, ReservationServiceModel
-from core.schemas import EventCreate, Rules, ServiceValidity, User
-from pytz import timezone
+from core.models import ReservationServiceModel
+from core.schemas import Rules, ServiceValidity
 
 
 def first_standard_check(
@@ -109,53 +108,6 @@ def control_res_in_advance_or_prior(
         if time_difference > dt.timedelta(days=user_rules.in_prior_days):
             return False
     return True
-
-
-def description_of_event(user: User, event_input: EventCreate):
-    """
-    Describe the event.
-
-    :param user: User object in db.
-    :param event_input: Input data for creating the event.
-
-    :return: String of the description.
-    """
-    formatted_services: str = "-"
-    if event_input.additional_services:
-        formatted_services = ", ".join(event_input.additional_services)
-    return (
-        f"Name: {user.full_name}\n"
-        f"Room: {user.room_number}\n"
-        f"Participants: {event_input.guests}\n"
-        f"Purpose: {event_input.purpose}\n"
-        f"\n"
-        f"Additionals: {formatted_services}\n"
-    )
-
-
-def ready_event(calendar: CalendarModel, event_input: EventCreate, user: User):
-    """
-    Construct the body of the event.
-
-    :param calendar: Calendar object in db.
-    :param event_input: Input data for creating the event.
-    :param user: User object in db.
-
-    :return: Dict body of the event.
-    """
-    prague = timezone("Europe/Prague")
-
-    start_time = prague.localize(event_input.start_datetime).isoformat()
-    end_time = prague.localize(event_input.end_datetime).isoformat()
-    return {
-        "summary": calendar.reservation_type,
-        "description": description_of_event(user, event_input),
-        "start": {"dateTime": start_time, "timeZone": "Europe/Prague"},
-        "end": {"dateTime": end_time, "timeZone": "Europe/Prague"},
-        "attendees": [
-            {"email": event_input.email},
-        ],
-    }
 
 
 def service_availability_check(services: list[ServiceValidity], service_alias) -> bool:

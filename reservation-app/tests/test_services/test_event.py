@@ -168,3 +168,21 @@ async def test_confirm_event(service_event, event, user):
 
     assert confirm_event is not None
     assert confirm_event.event_state == EventState.CONFIRMED
+
+
+@pytest.mark.asyncio
+def test_description_of_event(service_event, user, event_create_form):
+    """Test utils function in services."""
+    event_create_form.additional_services = ["Bar", "Console"]
+    result = service_event.description_of_event(user, event_create_form)
+    assert result is not None
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+def test_ready_event(service_event, calendar, event_create_form, user):
+    """Test utils function in services."""
+    result = service_event.construct_event_body(calendar, event_create_form, user)
+    assert result is not None
+    assert isinstance(result, dict)
+    assert result["summary"] == calendar.reservation_type

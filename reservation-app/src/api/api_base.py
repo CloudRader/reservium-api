@@ -278,7 +278,7 @@ class BaseCRUDRouter[
         @self.router.delete(
             "/{obj_id}",
             response_model=schema,
-            responses=ERROR_RESPONSES["400_401_403"],
+            responses=ERROR_RESPONSES["400_401_403_404"],
             status_code=status.HTTP_200_OK,
         )
         async def delete(

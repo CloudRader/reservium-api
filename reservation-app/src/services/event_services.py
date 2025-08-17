@@ -28,11 +28,11 @@ from core.schemas import (
 )
 from crud import CRUDCalendar, CRUDEvent, CRUDReservationService, CRUDUser
 from fastapi import Depends
+from pytz import timezone
 from services import CrudServiceBase
 from services.utils import (
     dif_days_res,
     first_standard_check,
-    ready_event,
     reservation_in_advance,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -170,6 +170,23 @@ class AbstractEventService(
         """
 
     @abstractmethod
+    async def update_with_permission_checks(
+        self,
+        uuid: str,
+        event_update: EventUpdate,
+        user: User,
+    ) -> Event | None:
+        """
+        Update a reservation of the Event in the database.
+
+        :param uuid: The id of the Event.
+        :param event_update: EventUpdate Schema for update.
+        :param user: the UserSchema for control permissions of the event.
+
+        :return: the updated Event.
+        """
+
+    @abstractmethod
     async def request_update_reservation_time(
         self,
         uuid: str,
@@ -187,7 +204,11 @@ class AbstractEventService(
         """
 
     @abstractmethod
-    async def cancel_event(self, uuid: str, user: User) -> Event | None:
+    async def cancel_event(
+        self,
+        uuid: str,
+        user: User,
+    ) -> Event | None:
         """
         Cancel an Event in the database.
 
@@ -196,6 +217,21 @@ class AbstractEventService(
         for users authorized to perform this action.
 
         :return: the canceled Event.
+        """
+
+    @abstractmethod
+    async def delete_with_permission_checks(
+        self,
+        uuid: str,
+        user: User,
+    ) -> ReservationService | None:
+        """
+        Delete an Event in the database.
+
+        :param uuid: The uuid of the Event.
+        :param user: the UserSchema for control permissions of the event.
+
+        :return: the deleted Event.
         """
 
     @abstractmethod
@@ -237,7 +273,7 @@ class EventService(AbstractEventService):
             calendar,
         )
 
-        return ready_event(calendar, event_input, user)
+        return self.construct_event_body(calendar, event_input, user)
 
     async def create_event(
         self,
@@ -344,6 +380,35 @@ class EventService(AbstractEventService):
 
         return await self.update(uuid, event_update)
 
+    async def update_with_permission_checks(
+        self,
+        uuid: str,
+        event_update: EventUpdate,
+        user: User,
+    ) -> Event | None:
+        event_to_update = await self.get(uuid)
+
+        if event_to_update is None:
+            return None
+
+        reservation_service = await self.get_reservation_service_of_this_event(event_to_update)
+
+        if reservation_service.alias not in user.roles:
+            raise PermissionDeniedError(
+                f"You must be the {reservation_service.name} manager to update event.",
+            )
+
+        event_update = self.datetime_for_update(event_to_update, event_update)
+        if event_update.reservation_start < dt.datetime.now():
+            raise SoftValidationError(
+                "You can't change a reservation start time before the present time!"
+            )
+
+        if event_update.reservation_end < event_update.reservation_start:
+            raise SoftValidationError("The end of a reservation cannot be before its beginning!")
+
+        return await self.update(uuid, event_update)
+
     async def request_update_reservation_time(
         self,
         uuid: str,
@@ -380,7 +445,11 @@ class EventService(AbstractEventService):
         )
         return await self.update(uuid, event_update_time)
 
-    async def cancel_event(self, uuid: str, user: User) -> Event | None:
+    async def cancel_event(
+        self,
+        uuid: str,
+        user: User,
+    ) -> Event | None:
         event: Event = await self.get(uuid)
         if not event:
             return None
@@ -403,6 +472,28 @@ class EventService(AbstractEventService):
         updated_event = EventUpdate(event_state=EventState.CANCELED)
 
         return await self.update(uuid, updated_event)
+
+    async def delete_with_permission_checks(
+        self,
+        uuid: str,
+        user: User,
+    ) -> ReservationService | None:
+        event = await self.crud.get(uuid, True)
+
+        if event is None:
+            return None
+
+        reservation_service = await self.get_reservation_service_of_this_event(event)
+
+        if event.event_state != EventState.CANCELED:
+            raise BaseAppError("You can't deleted not canceled reservation.")
+
+        if reservation_service.alias not in user.roles:
+            raise PermissionDeniedError(
+                f"You must be the {reservation_service.name} manager to delete event.",
+            )
+
+        return await self.crud.remove(uuid)
 
     async def confirm_event(self, uuid: str | None, user: User) -> Event | None:
         event: Event = await self.get(uuid)
@@ -470,7 +561,10 @@ class EventService(AbstractEventService):
             event_input.end_datetime,
             user_rules,
         ):
-            raise SoftValidationError("You can reserve on different day.")
+            raise SoftValidationError(
+                f"Reservation exceeds the allowed maximum of "
+                f"{user_rules.max_reservation_hours} hours."
+            )
 
         # Check reservation in advance and prior
         reservation_in_advance(event_input.start_datetime, user_rules)
@@ -524,3 +618,76 @@ class EventService(AbstractEventService):
             result.append(event_with_details)
 
         return result
+
+    @staticmethod
+    def description_of_event(
+        user: User,
+        event_input: EventCreate | Event,
+    ):
+        """
+        Describe the event.
+
+        :param user: User object in db.
+        :param event_input: Input data for creating the event.
+
+        :return: String of the description.
+        """
+        formatted_services: str = "-"
+        if event_input.additional_services:
+            formatted_services = ", ".join(event_input.additional_services)
+        return (
+            f"Name: {user.full_name}\n"
+            f"Room: {user.room_number}\n"
+            f"Participants: {event_input.guests}\n"
+            f"Purpose: {event_input.purpose}\n"
+            f"\n"
+            f"Additionals: {formatted_services}\n"
+        )
+
+    def construct_event_body(
+        self,
+        calendar: Calendar,
+        event_input: EventCreate,
+        user: User,
+    ):
+        """
+        Construct the body of the event.
+
+        :param calendar: Calendar object in db.
+        :param event_input: Input data for creating the event.
+        :param user: User object in db.
+
+        :return: Dict body of the event.
+        """
+        prague = timezone("Europe/Prague")
+
+        start_time = prague.localize(event_input.start_datetime).isoformat()
+        end_time = prague.localize(event_input.end_datetime).isoformat()
+        return {
+            "summary": calendar.reservation_type,
+            "description": self.description_of_event(user, event_input),
+            "start": {"dateTime": start_time, "timeZone": "Europe/Prague"},
+            "end": {"dateTime": end_time, "timeZone": "Europe/Prague"},
+            "attendees": [
+                {"email": event_input.email},
+            ],
+        }
+
+    @staticmethod
+    def datetime_for_update(
+        event: Event,
+        event_update: EventUpdate,
+    ):
+        """
+        Ensure reservation datetimes are set during update.
+
+        If the update payload does not include `reservation_start` or `reservation_end`,
+        these values are copied from the existing event to guarantee valid
+        collision checks and prevent partial/invalid time updates.
+        """
+        if not event_update.reservation_start:
+            event_update.reservation_start = event.reservation_start
+        if not event_update.reservation_end:
+            event_update.reservation_end = event.reservation_end
+
+        return event_update

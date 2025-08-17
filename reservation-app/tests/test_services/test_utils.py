@@ -6,10 +6,8 @@ import pytest
 from core.application.exceptions import SoftValidationError
 from services.utils import (
     control_res_in_advance_or_prior,
-    description_of_event,
     dif_days_res,
     first_standard_check,
-    ready_event,
     reservation_in_advance,
 )
 
@@ -55,24 +53,6 @@ def test_first_standard_check(services_data_from_is, reservation_service):
         start_time,
         end_time,
     )
-
-
-@pytest.mark.asyncio
-def test_description_of_event(user, event_create_form):
-    """Test utils function in services."""
-    event_create_form.additional_services = ["Bar", "Console"]
-    result = description_of_event(user, event_create_form)
-    assert result is not None
-    assert isinstance(result, str)
-
-
-@pytest.mark.asyncio
-def test_ready_event(calendar, event_create_form, user):
-    """Test utils function in services."""
-    result = ready_event(calendar, event_create_form, user)
-    assert result is not None
-    assert isinstance(result, dict)
-    assert result["summary"] == calendar.reservation_type
 
 
 @pytest.mark.asyncio

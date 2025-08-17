@@ -39,14 +39,16 @@ def modify_url_scheme(url: str, new_scheme: str) -> str:
 
 async def control_collision(
     google_calendar_service,
-    event_input: EventCreate,
+    start_datetime,
+    end_datetime,
     calendar: Calendar,
 ) -> bool:
     """
     Check if there is already another reservation at that time.
 
     :param google_calendar_service: Google Calendar service.
-    :param event_input: Input data for creating the event.
+    :param start_datetime: End time of the reservation.
+    :param end_datetime: End time of the reservation.
     :param calendar: Calendar object in db.
 
     :return: Boolean indicating if here is already another reservation or not.
@@ -62,17 +64,15 @@ async def control_collision(
             check_collision.extend(
                 await google_calendar_service.fetch_events_in_time_range(
                     calendar_id,
-                    event_input.start_datetime,
-                    event_input.end_datetime,
+                    start_datetime,
+                    end_datetime,
                 ),
             )
 
     return await check_collision_time(
         check_collision,
-        event_input.start_datetime,
-        event_input.end_datetime,
-        calendar,
-        google_calendar_service,
+        start_datetime,
+        end_datetime,
     )
 
 
@@ -80,8 +80,6 @@ async def check_collision_time(
     check_collision,
     start_datetime,
     end_datetime,
-    calendar: Calendar,
-    google_calendar_service,
 ) -> bool:
     """
     Check if there is already another reservation at that time.
@@ -89,21 +87,9 @@ async def check_collision_time(
     :param check_collision: Start time of the reservation.
     :param start_datetime: End time of the reservation.
     :param end_datetime: End time of the reservation.
-    :param calendar: Calendar object in db.
-    :param google_calendar_service: Google Calendar service.
 
     :return: Boolean indicating if here is already another reservation or not.
     """
-    if not calendar.collision_with_itself:
-        collisions = await google_calendar_service.fetch_events_in_time_range(
-            google_calendar_service,
-            start_datetime,
-            end_datetime,
-            calendar.id,
-        )
-        if len(collisions) > calendar.max_people:
-            return False
-
     if len(check_collision) == 0:
         return True
 
