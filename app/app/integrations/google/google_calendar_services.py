@@ -3,7 +3,7 @@
 import datetime as dt
 from abc import ABC, abstractmethod
 
-from api.external_api.google.google_auth import auth_google
+from integrations.google.google_auth import auth_google
 from core.application.exceptions import (
     BaseAppError,
     Entity,

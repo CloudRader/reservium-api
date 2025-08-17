@@ -7,7 +7,7 @@ from api import (
     get_current_user,
     get_request,
 )
-from api.external_api.google.google_calendar_services import GoogleCalendarService
+from integrations.google.google_calendar_services import GoogleCalendarService
 from api.utils import control_collision, process_event_approval
 from api.v2.emails import create_email_meta, preparing_email
 from core.application.exceptions import (

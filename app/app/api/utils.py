@@ -3,7 +3,7 @@
 import datetime as dt
 from urllib.parse import urlparse, urlunparse
 
-from api.external_api.google.google_calendar_services import GoogleCalendarService
+from integrations.google.google_calendar_services import GoogleCalendarService
 from api.v2.emails import create_email_meta, preparing_email
 from core.models import EventState
 from core.schemas import Calendar, EventCreate, ReservationService, User

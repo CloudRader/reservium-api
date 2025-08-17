@@ -133,10 +133,14 @@ class ISConfig(BaseModel):
 class GoogleConfig(BaseModel):
     """Config for google."""
 
-    SCOPES: str
     CLIENT_ID: str
     PROJECT_ID: str
+    AUTH_URI: str
+    TOKEN_URI: str
+    AUTH_PROVIDER_X509_CERT_URL: str
     CLIENT_SECRET: str
+    REDIRECT_URIS: list[str]
+    SCOPES: list[str]
 
 
 class DormitoryAccessSystemConfig(BaseModel):
