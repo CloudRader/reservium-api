@@ -222,7 +222,7 @@ env.bak/
 venv.bak/
 
 # Tokens files
-app/app/token.json
+reservation-app/app/token.json
 
 # Spyder project settings
 .spyderproject

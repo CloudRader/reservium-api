@@ -6,9 +6,6 @@ import pytest
 from fastapi import status
 from httpx import AsyncClient
 
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
-
 
 @pytest.mark.asyncio
 @patch("api.v2.auth.get_oauth_session")

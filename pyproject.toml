@@ -33,7 +33,6 @@ dev = [
     "pytest-asyncio>=1.1.0",
     "pytest-cov>=6.2.1",
     "mypy>=1.10.0",
-    "pylint>=3.2.1",
     "testcontainers>=4.10.0",
     "types-pytz>=2025.2.0.20250516",
     "types-python-dateutil>=2.9.0.20250516",
@@ -50,8 +49,8 @@ build-backend = "hatchling.build"
 
 [tool.ruff]
 line-length = 100
-exclude = [".venv", "app/app/migrations/versions/*"]
-src = ["app"]
+exclude = [".venv"]
+src = ["reservation-app"]
 
 [tool.ruff.lint]
 select = [
@@ -77,6 +76,7 @@ select = [
     "W",   # pycodestyle warnings
 ]
 ignore = ["COM812", "D102", "D107", "D203", "D212"]
+exclude = ["reservation-app/app/migrations/versions/*"]
 
 [tool.ruff.format]
 quote-style = "double"

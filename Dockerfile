@@ -33,7 +33,7 @@ RUN mkdir output tmp
 COPY --from=build $VENV_PATH $VENV_PATH
 
 # copy source code
-COPY app ./
+COPY reservation-app ./
 
 WORKDIR $HOME/app
 

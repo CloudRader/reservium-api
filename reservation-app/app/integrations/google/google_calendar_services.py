@@ -3,7 +3,6 @@
 import datetime as dt
 from abc import ABC, abstractmethod
 
-from integrations.google.google_auth import auth_google
 from core.application.exceptions import (
     BaseAppError,
     Entity,
@@ -18,6 +17,7 @@ from core.schemas.google_calendar import (
 )
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from integrations.google.google_auth import auth_google
 from pytz import timezone
 
 

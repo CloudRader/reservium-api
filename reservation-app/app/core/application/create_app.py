@@ -12,8 +12,6 @@ from starlette.middleware.sessions import SessionMiddleware
 logger = logging.getLogger(__name__)
 
 
-# pylint: disable=unused-argument
-# reason: Startup_event require FastAPI.
 @asynccontextmanager
 async def startup_event(fast_api_app: FastAPI):  # noqa: ARG001
     """

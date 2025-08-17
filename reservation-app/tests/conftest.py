@@ -11,9 +11,6 @@ from core.models.base_class import Base
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from testcontainers.postgres import PostgresContainer
 
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
-
 
 class TestDatabaseSession:
     """Manages async engine and session for PostgreSQL test container."""

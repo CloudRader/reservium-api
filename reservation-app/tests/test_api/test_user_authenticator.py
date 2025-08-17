@@ -12,9 +12,6 @@ from api import (
 )
 from fastapi import HTTPException, status
 
-# pylint: disable=redefined-outer-name
-# reason: using fixtures as variables is a standard for pytest
-
 
 class DummyRequest:
     """Dummy request object for testing session-based access."""
