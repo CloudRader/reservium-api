@@ -115,14 +115,33 @@ class Event(EventInDBBase):
     """Additional properties of event to return via API."""
 
 
+class EventDetailLite(Event):
+    """Extend properties of event to return via API."""
+
+    user: "User"
+    calendar: "CalendarBase"
+
+
+class EventDetail(Event):
+    """Extend properties of event to return via API."""
+
+    user: "User"
+    calendar: "CalendarWithReservationServiceInfoLite"
+
+
+class EventWithCalendarInfo(Event):
+    """Extend properties of event to return via API."""
+
+    calendar: "CalendarWithReservationServiceInfoLite"
+
+
 class EventInDB(EventInDBBase):
     """Additional properties stored in DB."""
 
 
-class EventWithExtraDetails(BaseModel):
-    """Extend properties of event to return via API."""
+from core.schemas.user import User  # noqa
+from core.schemas.calendar import CalendarWithReservationServiceInfoLite, CalendarBase  # noqa
 
-    event: Event
-    reservation_type: str | None = None
-    user_name: str | None = None
-    reservation_service_name: str | None = None
+EventDetail.model_rebuild()
+EventDetailLite.model_rebuild()
+EventWithCalendarInfo.model_rebuild()

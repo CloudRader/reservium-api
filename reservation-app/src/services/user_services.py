@@ -17,7 +17,7 @@ from core.schemas import (
     UserIS,
     UserUpdate,
 )
-from core.schemas.event import EventWithExtraDetails
+from core.schemas.event import EventWithCalendarInfo
 from crud import CRUDReservationService, CRUDUser
 from fastapi import Depends
 from services import CrudServiceBase, EventService
@@ -69,13 +69,13 @@ class AbstractUserService(
         """
 
     @abstractmethod
-    async def get_events_by_user_id(self, user: User) -> list[EventWithExtraDetails] | None:
+    async def get_events_by_user(self, user: User) -> list[EventWithCalendarInfo]:
         """
         Retrieve all events linked to a given User.
 
         :param user: The User object in database.
 
-        :return: List of EventWithExtraDetails objects linked to the user.
+        :return: List of EventWithCalendarInfo objects linked to the user.
         """
 
 
@@ -140,5 +140,5 @@ class UserService(AbstractUserService):
     async def get_by_username(self, username: str) -> User:
         return await self.crud.get_by_username(username)
 
-    async def get_events_by_user_id(self, user: User) -> list[EventWithExtraDetails] | None:
-        return await self.event_service.add_extra_details_to_event(user.events)
+    async def get_events_by_user(self, user: User) -> list[EventWithCalendarInfo]:
+        return await self.crud.get_events_by_user_id(user.id)

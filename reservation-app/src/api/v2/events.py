@@ -25,6 +25,7 @@ from core.schemas import (
     ServiceList,
     User,
 )
+from core.schemas.event import EventDetail
 from core.schemas.google_calendar import GoogleCalendarEventCreate
 from fastapi import APIRouter, Body, Depends, Path, Query, status
 from integrations.google.google_calendar_services import GoogleCalendarService
@@ -87,6 +88,28 @@ async def create(
         event_create,
         reservation_service,
     )
+
+
+@router.get(
+    "/get-by-user-roles",
+    response_model=list[EventDetail],
+    status_code=status.HTTP_200_OK,
+)
+async def get_by_user_roles(
+    service: Annotated[EventService, Depends(EventService)],
+    user: Annotated[User, Depends(get_current_user)],
+    event_state: Annotated[EventState | None, Query()] = None,
+) -> Any:
+    """
+    Get all events.
+
+    :param service: Event Service.
+    :param user: User who make this request.
+    :param event_state: event state of the event.
+
+    :return: List of EventDetail objects.
+    """
+    return await service.get_events_by_user_roles(user, event_state)
 
 
 @router.put(

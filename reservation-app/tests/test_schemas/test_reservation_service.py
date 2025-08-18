@@ -74,16 +74,21 @@ def test_reservation_service_in_db_base_schema(valid_rules):
         reservation_service_id=service_id,
     )
 
-    schema = ReservationServiceInDBBase(
+    schema_in_db_base = ReservationServiceInDBBase(
         id=service_id,
         name="Sound System",
         alias="SOUND",
         deleted_at=now,
+    )
+    schema = ReservationService(
+        id=service_id,
+        name="Sound System",
+        alias="SOUND",
         calendars=[calendar],
         mini_services=[mini_service],
     )
-    assert schema.id == service_id
-    assert schema.name == "Sound System"
+    assert schema_in_db_base.id == service_id
+    assert schema_in_db_base.name == "Sound System"
     assert schema.calendars[0].reservation_type == "Entire Space"
     assert schema.mini_services[0].name == "Booking Help"
 

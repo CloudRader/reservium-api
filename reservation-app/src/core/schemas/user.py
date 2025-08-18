@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from core.schemas.event import Event
+from core.schemas.event import EventWithCalendarInfo
 from pydantic import BaseModel, Field
 
 
@@ -44,8 +44,6 @@ class UserInDBBase(UserBase):
     active_member: bool
     section_head: bool
 
-    events: list[Event] = Field(default_factory=list)
-
     class Config:
         """Config class for database user model."""
 
@@ -54,6 +52,12 @@ class UserInDBBase(UserBase):
 
 class User(UserInDBBase):
     """Additional properties of user to return via API."""
+
+
+class UserWithEvents(User):
+    """Extended API response schema with events."""
+
+    events: list[EventWithCalendarInfo] = Field(default_factory=list)
 
 
 class UserInDB(UserInDBBase):

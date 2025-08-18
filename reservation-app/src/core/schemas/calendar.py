@@ -2,7 +2,6 @@
 
 from datetime import datetime
 
-from core.schemas.mini_service import MiniService
 from pydantic import BaseModel, Field
 
 
@@ -24,8 +23,15 @@ class CalendarBase(BaseModel):
     id: str | None = None
     collision_with_calendar: list[str] = Field(default_factory=list)
     more_than_max_people_with_permission: bool | None = None
-    mini_services: list[MiniService] = Field(default_factory=list)
     color: str | None = None
+
+
+class CalendarWithReservationServiceInfoLite(CalendarBase):
+    """Additional properties of calendar to return via API."""
+
+    reservation_type: str
+    max_people: int
+    reservation_service: "ReservationServiceInDBBase"
 
 
 class CalendarCreate(CalendarBase):
@@ -75,6 +81,15 @@ class CalendarInDBBase(CalendarBase):
 class Calendar(CalendarInDBBase):
     """Additional properties of calendar to return via API."""
 
+    mini_services: list["MiniService"] = Field(default_factory=list)
+
 
 class CalendarInDB(CalendarInDBBase):
     """Additional properties stored in DB."""
+
+
+from core.schemas.reservation_service import ReservationServiceInDBBase  # noqa
+from core.schemas.mini_service import MiniService  # noqa
+
+CalendarWithReservationServiceInfoLite.model_rebuild()
+Calendar.model_rebuild()

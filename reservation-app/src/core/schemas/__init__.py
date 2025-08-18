@@ -25,7 +25,6 @@ from .event import (
     EventInDB,
     EventUpdate,
     EventUpdateTime,
-    EventWithExtraDetails,
 )
 from .mini_service import (
     MiniService,
@@ -64,7 +63,6 @@ __all__ = [
     "Event",
     "EventInDB",
     "EventUpdateTime",
-    "EventWithExtraDetails",
     "EmailCreate",
     "RegistrationFormCreate",
     "UserIS",

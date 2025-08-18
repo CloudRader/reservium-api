@@ -127,6 +127,21 @@ class AbstractCRUDReservationService(
         :return: List of related entities of type `model`.
         """
 
+    @abstractmethod
+    async def get_events_by_reservation_service_id(
+        self,
+        reservation_service_id: str,
+        event_state: EventState | None = None,
+    ) -> list[EventModel]:
+        """
+        Fetch related events by reservation_service_id.
+
+        :param reservation_service_id: UUID of the Reservation Service.
+        :param event_state: Event state of the event.
+
+        :return: List of related events of type `model`.
+        """
+
 
 class CRUDReservationService(AbstractCRUDReservationService):
     """
@@ -210,7 +225,10 @@ class CRUDReservationService(AbstractCRUDReservationService):
             select(EventModel)
             .join(CalendarModel, EventModel.calendar_id == CalendarModel.id)
             .filter(CalendarModel.reservation_service_id == reservation_service_id)
-            .options(joinedload(EventModel.calendar))
+            .options(
+                joinedload(EventModel.calendar),
+                joinedload(EventModel.user),
+            )
             .order_by(EventModel.reservation_start.desc())
         )
 

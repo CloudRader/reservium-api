@@ -21,11 +21,11 @@ from core.schemas import (
     EventCreate,
     EventUpdate,
     EventUpdateTime,
-    EventWithExtraDetails,
     ReservationService,
     ServiceValidity,
     User,
 )
+from core.schemas.event import EventDetail
 from crud import CRUDCalendar, CRUDEvent, CRUDReservationService, CRUDUser
 from fastapi import Depends
 from pytz import timezone
@@ -85,20 +85,6 @@ class AbstractEventService(
         :param event_id: Event id in google calendar.
 
         :return: the created Event.
-        """
-
-    @abstractmethod
-    async def get_by_user_id(
-        self,
-        user_id: int,
-    ) -> list[EventWithExtraDetails] | None:
-        """
-        Retrieve the Events instance by user id.
-
-        :param user_id: user id of the events.
-
-        :return: Events with user id equal
-        to user id or empty list if no such events exists.
         """
 
     @abstractmethod
@@ -246,6 +232,21 @@ class AbstractEventService(
         :return: the updated Event.
         """
 
+    @abstractmethod
+    async def get_events_by_user_roles(
+        self,
+        user: User,
+        event_state: EventState | None = None,
+    ) -> list[EventDetail]:
+        """
+        Retrieve events for the given user roles.
+
+        :param user: the UserSchema for control permissions users
+        :param event_state: Event state of the event.
+
+        :return: Matching list of EventDetail.
+        """
+
 
 class EventService(AbstractEventService):
     """Class EventService represent service that work with Event."""
@@ -295,13 +296,6 @@ class EventService(AbstractEventService):
             additional_services=event_create.additional_services,
         )
         return await self.crud.create(event_create_to_db)
-
-    async def get_by_user_id(
-        self,
-        user_id: int,
-    ) -> list[EventWithExtraDetails] | None:
-        events = await self.crud.get_by_user_id(user_id)
-        return await self.add_extra_details_to_event(events)
 
     async def get_reservation_service_of_this_event(
         self,
@@ -588,37 +582,6 @@ class EventService(AbstractEventService):
             return calendar.manager_rules
         return calendar.active_member_rules
 
-    async def add_extra_details_to_event(
-        self,
-        events: list[Event],
-    ) -> list[EventWithExtraDetails]:
-        """
-        Enrich a list of Event objects data.
-
-        :param events: A list of Event objects to be enriched.
-
-        :return: A list of EventWithExtraDetails, containing
-        the original event and related metadata.
-        """
-        result = []
-
-        for event in events:
-            calendar = await self.get_calendar_of_this_event(event)
-            user = await self.get_user_of_this_event(event)
-            reservation_service = await self.get_reservation_service_of_this_event(
-                event,
-            )
-
-            event_with_details = EventWithExtraDetails(
-                event=event,
-                reservation_type=calendar.reservation_type,
-                user_name=user.full_name,
-                reservation_service_name=reservation_service.name,
-            )
-            result.append(event_with_details)
-
-        return result
-
     @staticmethod
     def description_of_event(
         user: User,
@@ -691,3 +654,10 @@ class EventService(AbstractEventService):
             event_update.reservation_end = event.reservation_end
 
         return event_update
+
+    async def get_events_by_user_roles(
+        self,
+        user: User,
+        event_state: EventState | None = None,
+    ) -> list[EventDetail]:
+        return await self.crud.get_events_by_aliases(user.roles, event_state)

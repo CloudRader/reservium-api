@@ -10,12 +10,12 @@ from core.application.exceptions import (
 from core.models.event import EventState
 from core.schemas import (
     Calendar,
-    EventWithExtraDetails,
     MiniService,
     ReservationService,
     ReservationServiceCreate,
     ReservationServiceUpdate,
 )
+from core.schemas.event import EventDetailLite
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import ReservationServiceService
 
@@ -162,7 +162,7 @@ class ReservationServiceRouter(
 
         @router.get(
             "/{alias}/events",
-            response_model=list[EventWithExtraDetails],
+            response_model=list[EventDetailLite],
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )

@@ -2,7 +2,6 @@
 
 from datetime import datetime
 
-from core.schemas import Calendar, MiniService
 from pydantic import BaseModel, Field
 
 
@@ -38,8 +37,6 @@ class ReservationServiceInDBBase(ReservationServiceBase):
     deleted_at: datetime | None = None
     name: str
     alias: str
-    calendars: list[Calendar] = Field(default_factory=list)
-    mini_services: list[MiniService] = Field(default_factory=list)
 
     class Config:
         """Config class for database mini service model."""
@@ -50,6 +47,15 @@ class ReservationServiceInDBBase(ReservationServiceBase):
 class ReservationService(ReservationServiceInDBBase):
     """Additional properties of reservation service to return via API."""
 
+    calendars: list["Calendar"] = Field(default_factory=list)
+    mini_services: list["MiniService"] = Field(default_factory=list)
+
 
 class ReservationServicerInDB(ReservationServiceInDBBase):
     """Additional properties stored in DB."""
+
+
+from core.schemas.calendar import Calendar  # noqa
+from core.schemas.mini_service import MiniService  # noqa
+
+ReservationServiceInDBBase.model_rebuild()

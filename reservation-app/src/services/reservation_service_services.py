@@ -17,13 +17,13 @@ from core.application.exceptions import (
 from core.models import CalendarModel, EventState, MiniServiceModel
 from core.schemas import (
     Calendar,
-    EventWithExtraDetails,
     MiniService,
     ReservationService,
     ReservationServiceCreate,
     ReservationServiceUpdate,
     User,
 )
+from core.schemas.event import EventDetailLite
 from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService
 from fastapi import Depends
 from services import CrudServiceBase
@@ -214,7 +214,7 @@ class AbstractReservationServiceService(
         self,
         alias: str,
         event_state: EventState | None = None,
-    ) -> list[EventWithExtraDetails]:
+    ) -> list[EventDetailLite]:
         """
         Retrieve all events linked to a given Reservation Service.
 
@@ -389,7 +389,7 @@ class ReservationServiceService(AbstractReservationServiceService):
         self,
         alias: str,
         event_state: EventState | None = None,
-    ) -> list[EventWithExtraDetails]:
+    ) -> list[EventDetailLite]:
         reservation_service = await self.crud.get_by_alias(
             alias,
         )
@@ -400,9 +400,7 @@ class ReservationServiceService(AbstractReservationServiceService):
                 status_code=404,
             )
 
-        events = await self.crud.get_events_by_reservation_service_id(
+        return await self.crud.get_events_by_reservation_service_id(
             reservation_service.id,
             event_state,
         )
-
-        return await self.event_service.add_extra_details_to_event(events)

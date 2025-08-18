@@ -7,11 +7,12 @@ implementation (CRUDUser) using SQLAlchemy.
 
 from abc import ABC, abstractmethod
 
-from core.models import UserModel
+from core.models import CalendarModel, EventModel, UserModel
 from core.schemas import UserCreate, UserUpdate
 from crud import CRUDBase
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 
 class AbstractCRUDUser(CRUDBase[UserModel, UserCreate, UserUpdate], ABC):
@@ -32,6 +33,16 @@ class AbstractCRUDUser(CRUDBase[UserModel, UserCreate, UserUpdate], ABC):
         :return: The User instance if found, None otherwise.
         """
 
+    @abstractmethod
+    async def get_events_by_user_id(self, user_id: int) -> list[EventModel]:
+        """
+        Fetch related events by user_id.
+
+        :param user_id: UUID of the User.
+
+        :return: List of related events of type `model`.
+        """
+
 
 class CRUDUser(AbstractCRUDUser):
     """
@@ -48,3 +59,13 @@ class CRUDUser(AbstractCRUDUser):
         stmt = select(self.model).filter(self.model.username == username)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def get_events_by_user_id(self, user_id: int) -> list[EventModel]:
+        stmt = (
+            select(EventModel)
+            .options(joinedload(EventModel.calendar).joinedload(CalendarModel.reservation_service))
+            .where(EventModel.user_id == user_id)
+        )
+        result = await self.db.execute(stmt)
+
+        return list(result.scalars().all())

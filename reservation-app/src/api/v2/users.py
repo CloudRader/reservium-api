@@ -8,7 +8,10 @@ from core.application.exceptions import (
     BaseAppError,
     PermissionDeniedError,
 )
-from core.schemas import EventWithExtraDetails, User
+from core.schemas import User
+from core.schemas.event import EventWithCalendarInfo
+
+# from core.schemas.user import UserWithEvents
 from fastapi import APIRouter, Depends, FastAPI, status
 from services import UserService
 
@@ -66,7 +69,7 @@ async def get_me(current_user: Annotated[User, Depends(get_current_user)]) -> An
 
 @router.get(
     "/me/events",
-    response_model=list[EventWithExtraDetails],
+    response_model=list[EventWithCalendarInfo],
     responses=ERROR_RESPONSES["400_404"],
     status_code=status.HTTP_200_OK,
 )
@@ -82,7 +85,7 @@ async def get_events_by_user(
 
     :return: List of EventWithExtraDetails objects linked to the user.
     """
-    events = await service.get_events_by_user_id(user)
+    events = await service.get_events_by_user(user)
     if events is None:
         raise BaseAppError()
     return events

@@ -8,11 +8,12 @@ implementation (CRUDEvent) using SQLAlchemy.
 from abc import ABC, abstractmethod
 from datetime import datetime
 
-from core.models import EventModel, EventState
+from core.models import CalendarModel, EventModel, EventState, ReservationServiceModel
 from core.schemas import Event, EventUpdate
 from crud import CRUDBase
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 
 class AbstractCRUDEvent(CRUDBase[EventModel, Event, EventUpdate], ABC):
@@ -60,6 +61,21 @@ class AbstractCRUDEvent(CRUDBase[EventModel, Event, EventUpdate], ABC):
         :param user_id: ID of the user.
 
         :return: Matching Event or None.
+        """
+
+    @abstractmethod
+    async def get_events_by_aliases(
+        self,
+        aliases: list[str],
+        event_state: EventState | None = None,
+    ) -> list[EventModel]:
+        """
+        Retrieve events for the given reservation service aliases.
+
+        :param aliases: List of reservation service aliases to filter events by.
+        :param event_state: Event state of the event.
+
+        :return: Matching list of EventModel.
         """
 
 
@@ -110,3 +126,29 @@ class CRUDEvent(AbstractCRUDEvent):
         )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def get_events_by_aliases(
+        self,
+        aliases: list[str],
+        event_state: EventState | None = None,
+    ) -> list[EventModel]:
+        stmt = (
+            select(EventModel)
+            .join(CalendarModel, EventModel.calendar_id == CalendarModel.id)
+            .join(
+                ReservationServiceModel,
+                CalendarModel.reservation_service_id == ReservationServiceModel.id,
+            )
+            .filter(ReservationServiceModel.alias.in_(aliases))
+            .options(
+                joinedload(EventModel.calendar).joinedload(CalendarModel.reservation_service),
+                joinedload(EventModel.user),
+            )
+            .order_by(EventModel.reservation_start.desc())
+        )
+
+        if event_state is not None:
+            stmt = stmt.filter(EventModel.event_state == event_state)
+
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
