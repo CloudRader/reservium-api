@@ -7,7 +7,6 @@ from core import settings
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -55,11 +54,6 @@ def create_app():
     app.include_router(router)
 
     app.add_exception_handler(BaseAppError, app_exception_handler)
-
-    app.add_middleware(
-        SessionMiddleware,
-        secret_key=settings.SECRET_KEY,
-    )
 
     app.add_middleware(
         CORSMiddleware,

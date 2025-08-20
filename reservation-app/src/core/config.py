@@ -125,9 +125,12 @@ class ISConfig(BaseModel):
     CLIENT_ID: str
     CLIENT_SECRET: str
     REDIRECT_URI: str
-    SCOPES: str
+    BASE_URL: str
     OAUTH_TOKEN: str
     OAUTH: str
+    RESPONSE_TYPE: str
+    GRANT_TYPE: str
+    SCOPE: str
 
 
 class GoogleConfig(BaseModel):

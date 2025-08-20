@@ -10,8 +10,6 @@ from core.application.exceptions import (
 )
 from core.schemas import User
 from core.schemas.event import EventWithCalendarInfo
-
-# from core.schemas.user import UserWithEvents
 from fastapi import APIRouter, Depends, FastAPI, status
 from services import UserService
 
@@ -56,7 +54,9 @@ async def get_all(
     responses=ERROR_RESPONSES["401"],
     status_code=status.HTTP_200_OK,
 )
-async def get_me(current_user: Annotated[User, Depends(get_current_user)]) -> Any:
+async def get_me(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> Any:
     """
     Get currently authenticated user.
 

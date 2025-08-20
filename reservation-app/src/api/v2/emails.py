@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import Annotated, Any
 
-from api import get_current_token, get_request
+from api import get_current_user
 from core import email_connection, settings
 from core.models import CalendarModel, ReservationServiceModel
 from core.schemas import (
@@ -13,7 +13,6 @@ from core.schemas import (
     Event,
     RegistrationFormCreate,
     User,
-    UserIS,
 )
 from fastapi import APIRouter, Depends, status
 from fastapi_mail import FastMail, MessageSchema, MessageType
@@ -44,21 +43,19 @@ def render_email_template(template_name: str, context: dict) -> str:
 )
 async def send_registration_form(
     service: Annotated[EmailService, Depends(EmailService)],
-    token: Annotated[Any, Depends(get_current_token)],
+    user: Annotated[User, Depends(get_current_user)],
     registration_form: RegistrationFormCreate,
 ) -> Any:
     """
     Send email with PDF attachment with reservation request to dorm head's email address.
 
     :param service: Email service.
-    :param token: Token for user identification.
+    :param user: User who make this request.
     :param registration_form: RegistrationFormCreate schema.
 
     :returns Dictionary: Confirming that the registration form has been sent.
     """
-    user_is = UserIS.model_validate(await get_request(token, "/users/me"))
-    full_name = user_is.first_name + " " + user_is.surname
-    email_create = service.prepare_registration_form(registration_form, full_name)
+    email_create = service.prepare_registration_form(registration_form, user.full_name)
 
     await send_email(email_create)
 

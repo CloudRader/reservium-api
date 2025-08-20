@@ -3,10 +3,9 @@
 from typing import Annotated, Any
 
 from api import (
-    get_current_token,
     get_current_user,
-    get_request,
 )
+from api.user_authenticator import http_bearer
 from api.utils import control_collision, process_event_approval
 from api.v2.emails import create_email_meta, preparing_email
 from core.application.exceptions import (
@@ -22,13 +21,14 @@ from core.schemas import (
     EventCreate,
     EventUpdate,
     EventUpdateTime,
-    ServiceList,
     User,
 )
 from core.schemas.event import EventDetail
 from core.schemas.google_calendar import GoogleCalendarEventCreate
 from fastapi import APIRouter, Body, Depends, Path, Query, status
-from integrations.google.google_calendar_services import GoogleCalendarService
+from fastapi.security import HTTPAuthorizationCredentials
+from integrations.google import GoogleCalendarService
+from integrations.information_system import IsService
 from pytz import timezone
 from services import CalendarService, EventService
 
@@ -43,8 +43,9 @@ router = APIRouter()
 async def create(
     service: Annotated[EventService, Depends(EventService)],
     calendar_service: Annotated[CalendarService, Depends(CalendarService)],
+    is_service: Annotated[IsService, Depends(IsService)],
     user: Annotated[User, Depends(get_current_user)],
-    token: Annotated[Any, Depends(get_current_token)],
+    token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
     event_create: EventCreate,
 ) -> Any:
     """
@@ -52,13 +53,14 @@ async def create(
 
     :param service: Event service.
     :param calendar_service: Calendar service.
+    :param is_service: IS service.
     :param user: User who make this request.
     :param token: Token for user identification.
     :param event_create: EventCreate schema.
 
     :returns Event json object: the created event or exception otherwise.
     """
-    services = ServiceList(services=await get_request(token, "/services/mine")).services
+    services = await is_service.get_services_data(token.credentials)
 
     calendar = await calendar_service.get(event_create.calendar_id)
     if not calendar:

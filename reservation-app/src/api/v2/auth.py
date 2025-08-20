@@ -2,15 +2,11 @@
 
 from typing import Annotated, Any
 
-from api import (
-    authenticate_user,
-    get_oauth_session,
-)
-from api.utils import modify_url_scheme
-from core import settings
+from api import authenticate_user
 from core.application.exceptions import ERROR_RESPONSES
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, status
+from fastapi import APIRouter, Depends, FastAPI, Query, status
 from fastapi.responses import RedirectResponse
+from integrations.information_system import IsAuthService, IsService
 from services import UserService
 
 app = FastAPI()
@@ -22,36 +18,26 @@ router = APIRouter()
     "/login_dev",
     status_code=status.HTTP_307_TEMPORARY_REDIRECT,
 )
-async def login_local_dev(request: Request):
+async def login_local_dev(
+    is_auth_service: Annotated[IsAuthService, Depends(IsAuthService)],
+):
     """
     Authenticate a user, construct authorization URL and redirect to authorization page of IS.
 
     This endpoint for local authorization.
     """
-    authorization_url = (
-        f"{settings.IS.OAUTH}/authorize?client_id={settings.IS.CLIENT_ID}"
-        "&response_type=code&scope=location"  # Include the "location" scope
-    )
-    oauth = get_oauth_session()
-    authorization_url, state = oauth.authorization_url(authorization_url)
-    request.session["oauth_state"] = state
-    return RedirectResponse(authorization_url)  # for local dev
+    return RedirectResponse(await is_auth_service.generate_is_oauth_redirect_uri())
 
 
 @router.get(
     "/login",
     status_code=status.HTTP_200_OK,
 )
-async def login(request: Request):
+async def login(
+    is_auth_service: Annotated[IsAuthService, Depends(IsAuthService)],
+):
     """Authenticate a user, construct authorization URL and sent it for authorization."""
-    authorization_url = (
-        f"{settings.IS.OAUTH}/authorize?client_id={settings.IS.CLIENT_ID}"
-        "&response_type=code&scope=location"  # Include the "location" scope
-    )
-    oauth = get_oauth_session()
-    authorization_url, state = oauth.authorization_url(authorization_url)
-    request.session["oauth_state"] = state
-    return authorization_url
+    return await is_auth_service.generate_is_oauth_redirect_uri()
 
 
 @router.get(
@@ -61,50 +47,39 @@ async def login(request: Request):
 )
 async def callback(
     user_service: Annotated[UserService, Depends(UserService)],
-    request: Request,
+    is_auth_service: Annotated[IsAuthService, Depends(IsAuthService)],
+    is_service: Annotated[IsService, Depends(IsService)],
+    code: str = Query(...),
 ) -> Any:
     """
     Handle callback after authorization on IS.
 
     :param user_service: User service.
-    :param request: Request received, needed to get the user token.
+    :param is_auth_service: IsAuthService service.
+    :param is_service: IsService service.
+    :param code: Code received, needed to get the user token.
 
     :return: Authorized  User schema.
     """
-    oauth = get_oauth_session()
+    token_response = await is_auth_service.get_token_response(code)
 
-    authorization_response_url = modify_url_scheme(str(request.url), "https")
+    user = await authenticate_user(user_service, is_service, token_response.access_token)
 
-    try:
-        token = oauth.fetch_token(
-            settings.IS.OAUTH_TOKEN,
-            client_secret=settings.IS.CLIENT_SECRET,
-            authorization_response=authorization_response_url,
-        )
-    except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"There's some problem with getting token. "
-            f"Control this url: {authorization_response_url}",
-            headers={"WWW-Authenticate": "Bearer"},
-        ) from exc
-
-    request.session["oauth_token"] = token
-
-    user = await authenticate_user(user_service, token["access_token"])
-    request.session["user_username"] = user.username
-
-    return {"username": user.username, "token_type": "bearer"}
+    return {
+        "username": user.username,
+        "token_type": token_response.token_type,
+        "access_token": token_response.access_token,
+        "expires_in": token_response.expires_in,
+        "scope": token_response.scope,
+    }
 
 
 @router.get("/logout")
-async def logout(request: Request):
+async def logout():
     """
     Clean session of the current user.
 
-    :param request: Request received.
-
     :return: Message.
     """
-    request.session.clear()
+    # TODO with token flow
     return {"message": "Logged out"}

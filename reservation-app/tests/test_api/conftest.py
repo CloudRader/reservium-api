@@ -38,6 +38,22 @@ async def usual_user_service(async_session):
 
 
 @pytest_asyncio.fixture
+async def is_auth_service():
+    """Return a UserService instance using the shared test session."""
+    from integrations.information_system import IsAuthService
+
+    return IsAuthService()
+
+
+@pytest_asyncio.fixture
+async def is_service():
+    """Return a UserService instance using the shared test session."""
+    from integrations.information_system import IsService
+
+    return IsService()
+
+
+@pytest_asyncio.fixture
 async def reservation_service_service(shared_session):
     """Return a ReservationServiceService instance using the shared test session."""
     from services import ReservationServiceService

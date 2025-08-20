@@ -3,15 +3,24 @@
 from pydantic import BaseModel, Field
 
 
+class TokenResponse(BaseModel):
+    """Represent token response from IS."""
+
+    access_token: str
+    expires_in: int
+    scope: str
+    token_type: str
+
+
 class Organization(BaseModel):
-    """Represents an organization."""
+    """Represent an organization."""
 
     name: str | None
     note: str | None
 
 
 class UserIS(BaseModel):
-    """Represents a user in the IS."""
+    """Represent a user in the IS."""
 
     country: str
     created_at: str
@@ -34,7 +43,7 @@ class UserIS(BaseModel):
 
 
 class Service(BaseModel):
-    """Represents a service."""
+    """Represent a service."""
 
     alias: str
     name: str
@@ -44,7 +53,7 @@ class Service(BaseModel):
 
 
 class ServiceValidity(BaseModel):
-    """Represents a service validity."""
+    """Represent a service validity."""
 
     from_: str | None = Field(None, alias="from")
     to: str | None
@@ -54,13 +63,13 @@ class ServiceValidity(BaseModel):
 
 
 class ServiceList(BaseModel):
-    """Represents a list user services."""
+    """Represent a list user services."""
 
     services: list[ServiceValidity]
 
 
 class LimitObject(BaseModel):
-    """Represents a limit object."""
+    """Represent a limit object."""
 
     id: int
     name: str
@@ -70,7 +79,7 @@ class LimitObject(BaseModel):
 
 
 class Role(BaseModel):
-    """Represents a role."""
+    """Represent a role."""
 
     role: str
     name: str
@@ -80,13 +89,13 @@ class Role(BaseModel):
 
 
 class RoleList(BaseModel):
-    """Represents a list user roles."""
+    """Represent a list user roles."""
 
     roles: list[Role]
 
 
 class Zone(BaseModel):
-    """Represents a zone."""
+    """Represent a zone."""
 
     alias: str | None
     id: int
@@ -95,7 +104,7 @@ class Zone(BaseModel):
 
 
 class Room(BaseModel):
-    """Represents a room in the IS."""
+    """Represent a room in the IS."""
 
     door_number: str
     floor: int
@@ -105,7 +114,7 @@ class Room(BaseModel):
 
 
 class InformationFromIS(BaseModel):
-    """Represents all information about user from IS."""
+    """Represent all information about user from IS."""
 
     user: UserIS
     room: Room

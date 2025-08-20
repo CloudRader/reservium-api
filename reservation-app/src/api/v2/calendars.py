@@ -7,7 +7,7 @@ from api.api_base import BaseCRUDRouter
 from core.application.exceptions import ERROR_RESPONSES, BaseAppError, Entity
 from core.schemas import Calendar, CalendarCreate, CalendarUpdate, User
 from fastapi import APIRouter, Depends, Path, status
-from integrations.google.google_calendar_services import GoogleCalendarService
+from integrations.google import GoogleCalendarService
 from services import CalendarService
 
 router = APIRouter()

@@ -2,111 +2,46 @@
 
 from typing import Annotated, Any
 
-import httpx
-from core import settings
-from core.schemas import RoleList, Room, ServiceList, UserIS
-from fastapi import Depends, HTTPException, Request, status
-from requests_oauthlib import OAuth2Session
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from integrations.information_system import IsService
 from services import UserService
 
-
-def get_oauth_session():
-    """
-    Create and return an OAuth2 session using the client ID.
-
-    Redirect URI from the application settings.
-
-    This function initializes an OAuth2 session that can be used to
-    handle the OAuth2 authentication flow, including obtaining
-    authorization tokens.
-
-    :return: OAuth2Session.
-    """
-    return OAuth2Session(
-        client_id=settings.IS.CLIENT_ID,
-        redirect_uri=settings.IS.REDIRECT_URI,
-    )
-
-
-async def get_request(token: str, request: str):
-    """
-    Make an authenticated GET request to the IS.
-
-    :param token: The authorization token.
-    :param request: The API endpoint to request data.
-
-    :return: The JSON response from the API.
-    """
-    info_endpoint = settings.IS.SCOPES + request
-
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            info_endpoint,
-            headers={"Authorization": f"Bearer {token}"},
-        )
-
-        if response.status_code == 401:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="There's some kind of authorization problem",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
-        response.raise_for_status()
-
-        response_data = response.json()
-
-    return response_data
+http_bearer = HTTPBearer()
 
 
 async def authenticate_user(
     user_service: Annotated[UserService, Depends(UserService)],
+    is_service: Annotated[IsService, Depends(IsService)],
     token: str,
 ):
     """
     Authenticate a user using their tokens from IS.
 
     :param user_service: User service
+    :param is_service: IsService service.
     :param token: Token for user identification.
 
     :return: The authenticated user object if successful, otherwise Exception.
     """
-    user_data = UserIS.model_validate(await get_request(token, "/users/me"))
-    roles = RoleList(roles=await get_request(token, "/user_roles/mine")).roles
-    services = ServiceList(services=await get_request(token, "/services/mine")).services
-    room = Room.model_validate(await get_request(token, "/rooms/mine"))
+    user_data = await is_service.get_user_data(token)
+    roles = await is_service.get_roles_data(token)
+    services = await is_service.get_services_data(token)
+    room = await is_service.get_room_data(token)
     return await user_service.create_user(user_data, roles, services, room)
-
-
-async def get_current_token(request: Request) -> Any:
-    """
-    Retrieve token of the current user.
-
-    :param request: The API endpoint to request data.
-
-    :return: Token of the user.
-    """
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        token = request.session["oauth_token"]["access_token"]
-        return token
-    except (KeyError, TypeError) as exc:
-        raise credentials_exception from exc
 
 
 async def get_current_user(
     user_service: Annotated[UserService, Depends(UserService)],
-    request: Request,
+    is_service: Annotated[IsService, Depends(IsService)],
+    token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
 ) -> Any:
     """
     Retrieve the current user based on a JWT token.
 
     :param user_service: User service.
-    :param request: The API endpoint to request data.
+    :param is_service: IsService service.
+    :param token: The authorization token.
 
     :return: User object.
     """
@@ -115,14 +50,12 @@ async def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    username = request.session.get("user_username")
-    if not username:
+    if not token:
         raise credentials_exception
-    user = await user_service.get_by_username(username)
+
+    user_data = await is_service.get_user_data(token.credentials)
+    user = await user_service.get(user_data.id)
+
     if not user:
-        raise credentials_exception
-    token = request.session["oauth_token"]["access_token"]
-    user_is = UserIS.model_validate(await get_request(token, "/users/me"))
-    if not user_is:
         raise credentials_exception
     return user
