@@ -5,7 +5,7 @@ from .access_card_system import (
     VarSymbolCreateUpdate,
     VarSymbolDelete,
 )
-from .calendar import Calendar, CalendarCreate, CalendarInDBBase, CalendarUpdate, Rules
+from .calendar import CalendarCreate, CalendarDetail, CalendarLite, CalendarUpdate, Rules
 from .data_is import (
     InformationFromIS,
     LimitObject,
@@ -20,48 +20,48 @@ from .data_is import (
 )
 from .email import EmailCreate, EmailMeta, RegistrationFormCreate
 from .event import (
-    Event,
     EventCreate,
-    EventInDB,
+    EventDetail,
+    EventLite,
     EventUpdate,
     EventUpdateTime,
 )
 from .mini_service import (
-    MiniService,
     MiniServiceCreate,
-    MiniServiceInDBBase,
+    MiniServiceDetail,
+    MiniServiceLite,
     MiniServiceUpdate,
 )
 from .reservation_service import (
-    ReservationService,
     ReservationServiceCreate,
-    ReservationServiceInDBBase,
+    ReservationServiceDetail,
+    ReservationServiceLite,
     ReservationServiceUpdate,
 )
-from .user import User, UserCreate, UserInDB, UserUpdate
+from .user import UserCreate, UserDetail, UserLite, UserUpdate
 
 __all__ = [
-    "User",
+    "UserLite",
+    "UserDetail",
     "UserCreate",
     "UserUpdate",
-    "UserInDB",
-    "Calendar",
+    "CalendarDetail",
     "CalendarCreate",
     "CalendarUpdate",
-    "CalendarInDBBase",
+    "CalendarLite",
     "Rules",
-    "MiniService",
+    "MiniServiceDetail",
     "MiniServiceCreate",
     "MiniServiceUpdate",
-    "MiniServiceInDBBase",
-    "ReservationService",
+    "MiniServiceLite",
+    "ReservationServiceDetail",
     "ReservationServiceCreate",
     "ReservationServiceUpdate",
-    "ReservationServiceInDBBase",
+    "ReservationServiceLite",
     "EventCreate",
     "EventUpdate",
-    "Event",
-    "EventInDB",
+    "EventLite",
+    "EventDetail",
     "EventUpdateTime",
     "EmailCreate",
     "RegistrationFormCreate",

@@ -54,12 +54,12 @@ async def callback(
     """
     Handle callback after authorization on IS.
 
-    :param user_service: User service.
+    :param user_service: UserLite service.
     :param is_auth_service: IsAuthService service.
     :param is_service: IsService service.
     :param code: Code received, needed to get the user token.
 
-    :return: Authorized  User schema.
+    :return: Authorized  UserLite schema.
     """
     token_response = await is_auth_service.get_token_response(code)
 

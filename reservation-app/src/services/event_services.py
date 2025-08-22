@@ -16,16 +16,16 @@ from core.application.exceptions import (
 )
 from core.models import EventState
 from core.schemas import (
-    Calendar,
-    Event,
+    CalendarDetail,
     EventCreate,
+    EventDetail,
     EventUpdate,
     EventUpdateTime,
-    ReservationService,
+    ReservationServiceDetail,
     ServiceValidity,
-    User,
+    UserLite,
 )
-from core.schemas.event import EventDetail
+from core.schemas.event import EventLite
 from crud import CRUDCalendar, CRUDEvent, CRUDReservationService, CRUDUser
 from fastapi import Depends
 from pytz import timezone
@@ -40,9 +40,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 class AbstractEventService(
     CrudServiceBase[
-        Event,
+        EventLite,
+        EventDetail,
         CRUDEvent,
-        Event,
+        EventLite,
         EventUpdate,
     ],
     ABC,
@@ -54,80 +55,80 @@ class AbstractEventService(
         self,
         event_input: EventCreate,
         services: list[ServiceValidity],
-        user: User,
-        calendar: Calendar,
+        user: UserLite,
+        calendar: CalendarDetail,
     ) -> Any:
         """
         Prepare for posting event in google calendar.
 
         :param event_input: Input data for creating the event.
-        :param services: User services from IS.
-        :param user: User object in db.
-        :param calendar: Calendar object in db.
+        :param services: UserLite services from IS.
+        :param user: UserLite object in db.
+        :param calendar: CalendarDetail object in db.
 
-        :returns Event json object: the created event or exception otherwise.
+        :returns EventExtra json object: the created event or exception otherwise.
         """
 
     @abstractmethod
     async def create_event(
         self,
         event_create: EventCreate,
-        user: User,
+        user: UserLite,
         event_state: EventState,
         event_id: str,
-    ) -> Event | None:
+    ) -> EventDetail | None:
         """
-        Create an Event in the database.
+        Create an EventExtra in the database.
 
-        :param event_create: EventCreate Schema for create.
+        :param event_create: EventCreate SchemaLite for create.
         :param user: the UserSchema for control permissions of the reservation service.
         :param event_state: State of the event.
-        :param event_id: Event id in google calendar.
+        :param event_id: EventExtra id in google calendar.
 
-        :return: the created Event.
+        :return: the created EventExtra.
         """
 
     @abstractmethod
     async def get_reservation_service_of_this_event(
         self,
-        event: Event,
-    ) -> ReservationService:
+        event: EventDetail,
+    ) -> ReservationServiceDetail:
         """
-        Retrieve the ReservationService instance associated with this event.
+        Retrieve the ReservationServiceDetail instance associated with this event.
 
-        :param event: Event object in db.
+        :param event: EventExtra object in db.
 
-        :return: ReservationService of this event.
+        :return: ReservationServiceDetail of this event.
         """
 
     @abstractmethod
     async def get_calendar_of_this_event(
         self,
-        event: Event,
-    ) -> Calendar:
+        event: EventDetail,
+    ) -> CalendarDetail:
         """
-        Retrieve the Calendar instance associated with this event.
+        Retrieve the CalendarDetail instance associated with this event.
 
-        :param event: Event object in db.
+        :param event: EventExtra object in db.
 
-        :return: Calendar of this event.
+        :return: CalendarDetail of this event.
         """
 
     @abstractmethod
     async def get_user_of_this_event(
         self,
-        event: Event,
-    ) -> User:
+        event: EventDetail,
+    ) -> UserLite:
         """
-        Retrieve the User instance associated with this event.
+        Retrieve the UserLite instance associated with this event.
 
-        :param event: Event object in db.
+        :param event: EventExtra object in db.
 
-        :return: User of this event.
+        :return: UserLite of this event.
         """
 
     @abstractmethod
-    async def get_current_event_for_user(self, user_id: int) -> Event | None:
+    async def get_current_event_for_user(self, user_id: int) -> EventDetail | None:
         """
         Retrieve the current event for the given user.
 
@@ -135,7 +136,7 @@ class AbstractEventService(
 
         :param user_id: ID of the user.
 
-        :return: Matching Event or None.
+        :return: Matching EventExtra or None.
         """
 
     @abstractmethod
@@ -143,16 +144,16 @@ class AbstractEventService(
         self,
         uuid: str,
         event_update: EventUpdate,
-        user: User,
-    ) -> Event | None:
+        user: UserLite,
+    ) -> EventDetail | None:
         """
-        Approve update a reservation time of the Event in the database.
+        Approve update a reservation time of the EventExtra in the database.
 
-        :param uuid: The uuid of the Event.
-        :param event_update: EventUpdate Schema for update.
+        :param uuid: The uuid of the EventExtra.
+        :param event_update: EventUpdate SchemaLite for update.
         :param user: the UserSchema for control permissions of the event.
 
-        :return: the updated Event.
+        :return: the updated EventExtra.
         """
 
     @abstractmethod
@@ -160,16 +161,16 @@ class AbstractEventService(
         self,
         uuid: str,
         event_update: EventUpdate,
-        user: User,
-    ) -> Event | None:
+        user: UserLite,
+    ) -> EventDetail | None:
         """
-        Update a reservation of the Event in the database.
+        Update a reservation of the EventExtra in the database.
 
-        :param uuid: The id of the Event.
-        :param event_update: EventUpdate Schema for update.
+        :param uuid: The id of the EventExtra.
+        :param event_update: EventUpdate SchemaLite for update.
         :param user: the UserSchema for control permissions of the event.
 
-        :return: the updated Event.
+        :return: the updated EventExtra.
         """
 
     @abstractmethod
@@ -177,51 +178,51 @@ class AbstractEventService(
         self,
         uuid: str,
         event_update: EventUpdateTime,
-        user: User,
-    ) -> Event | None:
+        user: UserLite,
+    ) -> EventDetail | None:
         """
-        Update a reservation time of the Event in the database.
+        Update a reservation time of the EventExtra in the database.
 
-        :param uuid: The uuid of the Event.
-        :param event_update: EventUpdateTime Schema for update.
+        :param uuid: The uuid of the EventExtra.
+        :param event_update: EventUpdateTime SchemaLite for update.
         :param user: the UserSchema for control permissions of the event.
 
-        :return: the updated Event.
+        :return: the updated EventExtra.
         """
 
     @abstractmethod
     async def cancel_event(
         self,
         uuid: str,
-        user: User,
-    ) -> Event | None:
+        user: UserLite,
+    ) -> EventDetail | None:
         """
-        Cancel an Event in the database.
+        Cancel an EventExtra in the database.
 
-        :param uuid: The uuid of the Event.
+        :param uuid: The uuid of the EventExtra.
         :param user: The user object used to control permissions
         for users authorized to perform this action.
 
-        :return: the canceled Event.
+        :return: the canceled EventExtra.
         """
 
     @abstractmethod
     async def delete_with_permission_checks(
         self,
         uuid: str,
-        user: User,
-    ) -> ReservationService | None:
+        user: UserLite,
+    ) -> ReservationServiceDetail | None:
         """
-        Delete an Event in the database.
+        Delete an EventExtra in the database.
 
-        :param uuid: The uuid of the Event.
+        :param uuid: The uuid of the EventExtra.
         :param user: the UserSchema for control permissions of the event.
 
-        :return: the deleted Event.
+        :return: the deleted EventExtra.
         """
 
     @abstractmethod
-    async def confirm_event(self, uuid: str | None, user: User) -> Event | None:
+    async def confirm_event(self, uuid: str | None, user: UserLite) -> EventDetail | None:
         """
         Confirm event.
 
@@ -229,27 +230,27 @@ class AbstractEventService(
         :param user: the UserSchema for control permissions users
         that can do this action.
 
-        :return: the updated Event.
+        :return: the updated EventExtra.
         """
 
     @abstractmethod
     async def get_events_by_user_roles(
         self,
-        user: User,
+        user: UserLite,
         event_state: EventState | None = None,
     ) -> list[EventDetail]:
         """
         Retrieve events for the given user roles.
 
         :param user: the UserSchema for control permissions users
-        :param event_state: Event state of the event.
+        :param event_state: EventExtra state of the event.
 
         :return: Matching list of EventDetail.
         """
 
 
 class EventService(AbstractEventService):
-    """Class EventService represent service that work with Event."""
+    """Class EventService represent service that work with EventExtra."""
 
     def __init__(
         self,
@@ -264,8 +265,8 @@ class EventService(AbstractEventService):
         self,
         event_input: EventCreate,
         services: list[ServiceValidity],
-        user: User,
-        calendar: Calendar,
+        user: UserLite,
+        calendar: CalendarDetail,
     ) -> Any:
         await self.__control_conditions_and_permissions(
             user,
@@ -279,11 +280,11 @@ class EventService(AbstractEventService):
     async def create_event(
         self,
         event_create: EventCreate,
-        user: User,
+        user: UserLite,
         event_state: EventState,
         event_id: str,
-    ) -> Event | None:
-        event_create_to_db = Event(
+    ) -> EventLite | None:
+        event_create_to_db = EventLite(
             id=event_id,
             reservation_start=event_create.start_datetime,
             reservation_end=event_create.end_datetime,
@@ -299,16 +300,16 @@ class EventService(AbstractEventService):
 
     async def get_reservation_service_of_this_event(
         self,
-        event: Event,
-    ) -> ReservationService:
+        event: EventLite,
+    ) -> ReservationServiceDetail:
         if not event:
             raise BaseAppError("This event does not exist in db.", status_code=404)
 
-        calendar: Calendar = await self.calendar_crud.get(event.calendar_id)
+        calendar: CalendarDetail = await self.calendar_crud.get(event.calendar_id)
         if not calendar:
             raise BaseAppError("A calendar of this event isn't exist.", status_code=404)
 
-        reservation_service: ReservationService = await self.reservation_service_crud.get(
+        reservation_service: ReservationServiceDetail = await self.reservation_service_crud.get(
             calendar.reservation_service_id
         )
         if not reservation_service:
@@ -321,12 +322,12 @@ class EventService(AbstractEventService):
 
     async def get_calendar_of_this_event(
         self,
-        event: Event,
-    ) -> Calendar:
+        event: EventLite,
+    ) -> CalendarDetail:
         if not event:
             raise BaseAppError("This event does not exist in db.", status_code=404)
 
-        calendar: Calendar = await self.calendar_crud.get(event.calendar_id)
+        calendar: CalendarDetail = await self.calendar_crud.get(event.calendar_id)
         if not calendar:
             raise BaseAppError("A calendar of this event isn't exist.", status_code=404)
 
@@ -334,8 +335,8 @@ class EventService(AbstractEventService):
 
     async def get_user_of_this_event(
         self,
-        event: Event,
-    ) -> User:
+        event: EventLite,
+    ) -> UserLite:
         if not event:
             raise BaseAppError("This event does not exist in db.", status_code=404)
 
@@ -346,15 +347,15 @@ class EventService(AbstractEventService):
 
         return user
 
-    async def get_current_event_for_user(self, user_id: int) -> Event | None:
+    async def get_current_event_for_user(self, user_id: int) -> EventDetail | None:
         return await self.crud.get_current_event_for_user(user_id)
 
     async def approve_update_reservation_time(
         self,
         uuid: str,
         event_update: EventUpdate,
-        user: User,
-    ) -> Event | None:
+        user: UserLite,
+    ) -> EventLite | None:
         event_to_update = await self.get(uuid)
 
         if event_to_update is None:
@@ -378,8 +379,8 @@ class EventService(AbstractEventService):
         self,
         uuid: str,
         event_update: EventUpdate,
-        user: User,
-    ) -> Event | None:
+        user: UserLite,
+    ) -> EventDetail | None:
         event_to_update = await self.get(uuid)
 
         if event_to_update is None:
@@ -407,8 +408,8 @@ class EventService(AbstractEventService):
         self,
         uuid: str,
         event_update: EventUpdateTime,
-        user: User,
-    ) -> Event | None:
+        user: UserLite,
+    ) -> EventDetail | None:
         event_to_update = await self.get(uuid)
 
         if not event_to_update:
@@ -442,9 +443,9 @@ class EventService(AbstractEventService):
     async def cancel_event(
         self,
         uuid: str,
-        user: User,
-    ) -> Event | None:
-        event: Event = await self.get(uuid)
+        user: UserLite,
+    ) -> EventLite | None:
+        event: EventLite = await self.get(uuid)
         if not event:
             return None
 
@@ -470,8 +471,8 @@ class EventService(AbstractEventService):
     async def delete_with_permission_checks(
         self,
         uuid: str,
-        user: User,
-    ) -> ReservationService | None:
+        user: UserLite,
+    ) -> ReservationServiceDetail | None:
         event = await self.crud.get(uuid, True)
 
         if event is None:
@@ -489,8 +490,8 @@ class EventService(AbstractEventService):
 
         return await self.crud.remove(uuid)
 
-    async def confirm_event(self, uuid: str | None, user: User) -> Event | None:
-        event: Event = await self.get(uuid)
+    async def confirm_event(self, uuid: str | None, user: UserLite) -> EventDetail | None:
+        event: EventLite = await self.get(uuid)
         if not event:
             return None
 
@@ -510,18 +511,18 @@ class EventService(AbstractEventService):
 
     async def __control_conditions_and_permissions(
         self,
-        user: User,
+        user: UserLite,
         services: list[ServiceValidity],
         event_input: EventCreate,
-        calendar: Calendar,
+        calendar: CalendarDetail,
     ):
         """
         Check conditions and permissions for creating an event.
 
-        :param user: User object in db.
-        :param services: User services from IS.
+        :param user: UserLite object in db.
+        :param services: UserLite services from IS.
         :param event_input: Input data for creating the event.
-        :param calendar: Calendar object in db.
+        :param calendar: CalendarDetail object in db.
 
         :return: Message indicating whether access is granted or denied.
         """
@@ -563,12 +564,12 @@ class EventService(AbstractEventService):
         # Check reservation in advance and prior
         reservation_in_advance(event_input.start_datetime, user_rules)
 
-    async def __choose_user_rules(self, user: User, calendar: Calendar):
+    async def __choose_user_rules(self, user: UserLite, calendar: CalendarDetail):
         """
         Choose user rules based on the calendar rules and user roles.
 
-        :param user: User object in db.
-        :param calendar: Calendar object in db.
+        :param user: UserLite object in db.
+        :param calendar: CalendarDetail object in db.
 
         :return: Rules object.
         """
@@ -584,13 +585,13 @@ class EventService(AbstractEventService):
 
     @staticmethod
     def description_of_event(
-        user: User,
-        event_input: EventCreate | Event,
+        user: UserLite,
+        event_input: EventCreate | EventDetail,
     ):
         """
         Describe the event.
 
-        :param user: User object in db.
+        :param user: UserLite object in db.
         :param event_input: Input data for creating the event.
 
         :return: String of the description.
@@ -609,16 +610,16 @@ class EventService(AbstractEventService):
 
     def construct_event_body(
         self,
-        calendar: Calendar,
+        calendar: CalendarDetail,
         event_input: EventCreate,
-        user: User,
+        user: UserLite,
     ):
         """
         Construct the body of the event.
 
-        :param calendar: Calendar object in db.
+        :param calendar: CalendarDetail object in db.
         :param event_input: Input data for creating the event.
-        :param user: User object in db.
+        :param user: UserLite object in db.
 
         :return: Dict body of the event.
         """
@@ -638,7 +639,7 @@ class EventService(AbstractEventService):
 
     @staticmethod
     def datetime_for_update(
-        event: Event,
+        event: EventLite,
         event_update: EventUpdate,
     ):
         """
@@ -657,7 +658,7 @@ class EventService(AbstractEventService):
 
     async def get_events_by_user_roles(
         self,
-        user: User,
+        user: UserLite,
         event_state: EventState | None = None,
     ) -> list[EventDetail]:
         return await self.crud.get_events_by_aliases(user.roles, event_state)

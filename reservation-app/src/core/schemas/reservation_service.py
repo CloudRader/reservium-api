@@ -1,8 +1,8 @@
-"""DTO schemes for ReservationService entity."""
+"""DTO schemes for ReservationServiceDetail entity."""
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ReservationServiceBase(BaseModel):
@@ -30,7 +30,7 @@ class ReservationServiceUpdate(ReservationServiceBase):
     alias: str | None = Field(None, max_length=6)
 
 
-class ReservationServiceInDBBase(ReservationServiceBase):
+class ReservationServiceLite(ReservationServiceBase):
     """Base model for reservation service in database."""
 
     id: str
@@ -38,24 +38,17 @@ class ReservationServiceInDBBase(ReservationServiceBase):
     name: str
     alias: str
 
-    class Config:
-        """Config class for database mini service model."""
-
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-class ReservationService(ReservationServiceInDBBase):
+class ReservationServiceDetail(ReservationServiceLite):
     """Additional properties of reservation service to return via API."""
 
-    calendars: list["Calendar"] = Field(default_factory=list)
-    mini_services: list["MiniService"] = Field(default_factory=list)
+    calendars: list["CalendarDetail"] = Field(default_factory=list)
+    mini_services: list["MiniServiceLite"] = Field(default_factory=list)
 
 
-class ReservationServicerInDB(ReservationServiceInDBBase):
-    """Additional properties stored in DB."""
+from core.schemas.calendar import CalendarDetail  # noqa
+from core.schemas.mini_service import MiniServiceLite  # noqa
 
-
-from core.schemas.calendar import Calendar  # noqa
-from core.schemas.mini_service import MiniService  # noqa
-
-ReservationServiceInDBBase.model_rebuild()
+ReservationServiceLite.model_rebuild()

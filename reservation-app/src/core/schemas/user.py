@@ -1,13 +1,13 @@
-"""DTO schemes for User entity."""
+"""DTO schemes for UserLite entity."""
 
 from datetime import datetime
 
-from core.schemas.event import EventWithCalendarInfo
-from pydantic import BaseModel, Field
+from core.schemas.event import EventDetail
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserBase(BaseModel):
-    """Shared properties of User."""
+    """Shared properties of UserLite."""
 
     roles: list[str] | None = None
 
@@ -33,7 +33,7 @@ class UserUpdate(UserBase):
     section_head: bool | None = None
 
 
-class UserInDBBase(UserBase):
+class UserLite(UserBase):
     """Base model for user in database."""
 
     id: int
@@ -44,21 +44,10 @@ class UserInDBBase(UserBase):
     active_member: bool
     section_head: bool
 
-    class Config:
-        """Config class for database user model."""
-
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-class User(UserInDBBase):
-    """Additional properties of user to return via API."""
-
-
-class UserWithEvents(User):
+class UserDetail(UserLite):
     """Extended API response schema with events."""
 
-    events: list[EventWithCalendarInfo] = Field(default_factory=list)
-
-
-class UserInDB(UserInDBBase):
-    """Additional properties stored in DB."""
+    events: list[EventDetail] = Field(default_factory=list)

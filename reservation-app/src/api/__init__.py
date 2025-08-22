@@ -6,7 +6,7 @@ from .user_authenticator import (
 )
 
 __all__ = [
-    # User authenticator
+    # UserLite authenticator
     "authenticate_user",
     "get_current_user",
 ]

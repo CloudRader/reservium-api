@@ -1,4 +1,4 @@
-"""Tests for ReservationService Pydantic Schemas."""
+"""Tests for ReservationServiceDetail Pydantic Schemas."""
 
 from datetime import UTC, datetime
 from uuid import uuid4
@@ -6,11 +6,11 @@ from uuid import uuid4
 import pytest
 
 # Dummy mini service and calendar references
-from core.schemas import Calendar, MiniService
+from core.schemas import CalendarDetail, MiniServiceDetail
 from core.schemas.reservation_service import (
-    ReservationService,
     ReservationServiceCreate,
-    ReservationServiceInDBBase,
+    ReservationServiceDetail,
+    ReservationServiceLite,
     ReservationServiceUpdate,
 )
 from pydantic import ValidationError
@@ -54,7 +54,7 @@ def test_reservation_service_in_db_base_schema(valid_rules):
     """Test full DB representation of reservation service."""
     service_id = uuid4().hex
     now = datetime.now(UTC)
-    calendar = Calendar(
+    calendar = CalendarDetail(
         id="test_calendar@google.com",
         reservation_type="Entire Space",
         color="#00ffcc",
@@ -68,19 +68,19 @@ def test_reservation_service_in_db_base_schema(valid_rules):
         reservation_service_id=service_id,
         # mini_services=["Bar"],
     )
-    mini_service = MiniService(
+    mini_service = MiniServiceDetail(
         id=uuid4().hex,
         name="Booking Help",
         reservation_service_id=service_id,
     )
 
-    schema_in_db_base = ReservationServiceInDBBase(
+    schema_in_db_base = ReservationServiceLite(
         id=service_id,
         name="Sound System",
         alias="SOUND",
         deleted_at=now,
     )
-    schema = ReservationService(
+    schema = ReservationServiceDetail(
         id=service_id,
         name="Sound System",
         alias="SOUND",
@@ -94,8 +94,8 @@ def test_reservation_service_in_db_base_schema(valid_rules):
 
 
 def test_reservation_service_schema_extends_base():
-    """Test that ReservationService schema includes all base fields."""
-    service = ReservationService(
+    """Test that ReservationServiceDetail schema includes all base fields."""
+    service = ReservationServiceDetail(
         id=uuid4().hex,
         name="Lighting",
         alias="LIGHT",
@@ -103,7 +103,7 @@ def test_reservation_service_schema_extends_base():
         calendars=[],
         mini_services=[],
     )
-    assert isinstance(service, ReservationServiceInDBBase)
+    assert isinstance(service, ReservationServiceLite)
     assert service.deleted_at is None
 
 

@@ -1,13 +1,13 @@
-"""Tests for Calendar Pydantic Schemas."""
+"""Tests for CalendarDetail Pydantic Schemas."""
 
 from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
 from core.schemas.calendar import (
-    Calendar,
     CalendarCreate,
-    CalendarInDBBase,
+    CalendarDetail,
+    CalendarLite,
     CalendarUpdate,
     Rules,
 )
@@ -18,7 +18,7 @@ def test_calendar_create_valid(valid_rules):
     """Test creating a calendar with valid data."""
     schema = CalendarCreate(
         reservation_service_id=uuid4().hex,
-        reservation_type="Event",
+        reservation_type="EventExtra",
         max_people=25,
         collision_with_itself=True,
         club_member_rules=valid_rules,
@@ -30,7 +30,7 @@ def test_calendar_create_valid(valid_rules):
         # mini_services=["printer", "scanner"],
         color="#FF0000",
     )
-    assert schema.reservation_type == "Event"
+    assert schema.reservation_type == "EventExtra"
     assert schema.max_people == 25
     assert schema.club_member_rules.max_reservation_hours == 4
     # assert "scanner" in schema.mini_services
@@ -68,7 +68,7 @@ def test_calendar_update_partial():
 def test_calendar_in_db_schema(valid_rules):
     """Test full calendar DB schema with all fields."""
     now = datetime.now(UTC)
-    schema = CalendarInDBBase(
+    schema = CalendarDetail(
         id="calendar123",
         deleted_at=now,
         reservation_type="Presentation",
@@ -88,8 +88,8 @@ def test_calendar_in_db_schema(valid_rules):
 
 
 def test_calendar_schema_extends_base(valid_rules):
-    """Test that Calendar schema extends base schema correctly."""
-    calendar = Calendar(
+    """Test that CalendarDetail schema extends base schema correctly."""
+    calendar = CalendarDetail(
         id="calendarABC",
         deleted_at=None,
         reservation_type="Training",
@@ -100,7 +100,7 @@ def test_calendar_schema_extends_base(valid_rules):
         manager_rules=valid_rules,
         reservation_service_id=uuid4().hex,
     )
-    assert isinstance(calendar, CalendarInDBBase)
+    assert isinstance(calendar, CalendarLite)
     assert calendar.reservation_type == "Training"
 
 

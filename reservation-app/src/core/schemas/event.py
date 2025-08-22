@@ -1,10 +1,10 @@
-"""DTO schemes for Event entity."""
+"""DTO schemes for EventExtra entity."""
 
 from datetime import datetime
 from typing import Any
 
 from core.models.event import EventState
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 
 def make_naive_datetime_validator(*fields: str):
@@ -53,6 +53,12 @@ class EventCreate(BaseModel):
 
     _validate_naive = make_naive_datetime_validator("start_datetime", "end_datetime")
 
+    @model_validator(mode="after")
+    def check_time_order(self) -> "EventCreate":
+        if self.end_datetime <= self.start_datetime:
+            raise ValueError("End time must be after start time")
+        return self
+
 
 class EventUpdate(EventBase):
     """Properties to receive via API on update."""
@@ -89,7 +95,7 @@ class EventUpdateTime(BaseModel):
     )
 
 
-class EventInDBBase(EventBase):
+class EventLite(EventBase):
     """Base model for event in database."""
 
     id: str
@@ -105,43 +111,30 @@ class EventInDBBase(EventBase):
     user_id: int
     calendar_id: str
 
-    class Config:
-        """Config class for database event model."""
-
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-class Event(EventInDBBase):
-    """Additional properties of event to return via API."""
+# class EventExtra(EventLite):
+#     """Extend properties of event to return via API."""
+#
+#     user: "UserLite"
+#     calendar: "CalendarLite"
 
 
-class EventDetailLite(Event):
+class EventDetail(EventLite):
     """Extend properties of event to return via API."""
 
-    user: "User"
-    calendar: "CalendarBase"
+    user: "UserLite"
+    calendar: "CalendarWithReservationServiceInfo"
 
 
-class EventDetail(Event):
-    """Extend properties of event to return via API."""
-
-    user: "User"
-    calendar: "CalendarWithReservationServiceInfoLite"
-
-
-class EventWithCalendarInfo(Event):
-    """Extend properties of event to return via API."""
-
-    calendar: "CalendarWithReservationServiceInfoLite"
+# class EventWithCalendarInfo(EventLite):
+#     """Extend properties of event to return via API."""
+#
+#     calendar: "CalendarWithReservationServiceInfo"
 
 
-class EventInDB(EventInDBBase):
-    """Additional properties stored in DB."""
-
-
-from core.schemas.user import User  # noqa
-from core.schemas.calendar import CalendarWithReservationServiceInfoLite, CalendarBase  # noqa
+from core.schemas.user import UserLite  # noqa
+from core.schemas.calendar import CalendarWithReservationServiceInfo, CalendarLite  # noqa
 
 EventDetail.model_rebuild()
-EventDetailLite.model_rebuild()
-EventWithCalendarInfo.model_rebuild()

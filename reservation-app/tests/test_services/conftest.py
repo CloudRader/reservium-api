@@ -3,28 +3,28 @@
 import pytest
 import pytest_asyncio
 from core.models.event import EventState
-from core.models.reservation_service import ReservationService
 from core.schemas import (
-    Calendar,
     CalendarCreate,
-    Event,
+    CalendarDetail,
     EventCreate,
     InformationFromIS,
     LimitObject,
-    MiniService,
     MiniServiceCreate,
+    MiniServiceDetail,
     RegistrationFormCreate,
     ReservationServiceCreate,
+    ReservationServiceDetail,
     Role,
     Room,
     Rules,
     Service,
     ServiceValidity,
-    User,
     UserCreate,
     UserIS,
+    UserLite,
     Zone,
 )
+from core.schemas.event import EventLite
 
 
 @pytest.fixture()
@@ -215,7 +215,7 @@ def server_create_user(
 
 
 @pytest_asyncio.fixture()
-async def user(service_user) -> User:
+async def user(service_user) -> UserLite:
     """Return user object in db."""
     return await service_user.create(
         UserCreate(
@@ -231,7 +231,7 @@ async def user(service_user) -> User:
 
 
 @pytest_asyncio.fixture()
-async def event(service_event, event_create_form, user, calendar) -> Event:  # noqa: ARG001
+async def event(service_event, event_create_form, user, calendar) -> EventLite:  # noqa: ARG001
     """Return event object in db."""
     return await service_event.create_event(
         event_create=event_create_form,
@@ -242,7 +242,7 @@ async def event(service_event, event_create_form, user, calendar) -> Event:  # n
 
 
 @pytest_asyncio.fixture()
-async def user_not_head(service_user) -> User:
+async def user_not_head(service_user) -> UserLite:
     """Return user without head permission object in db."""
     return await service_user.create(
         UserCreate(
@@ -274,7 +274,7 @@ async def reservation_service(
     service_reservation_service,
     reservation_service_create,
     user,
-) -> ReservationService:
+) -> ReservationServiceDetail:
     """Return reservation service object in db."""
     return await service_reservation_service.create_with_permission_checks(
         reservation_service_create,
@@ -292,7 +292,7 @@ def mini_service_create(reservation_service) -> MiniServiceCreate:
 
 
 @pytest_asyncio.fixture()
-async def mini_service(service_mini_service, mini_service_create, user) -> MiniService:
+async def mini_service(service_mini_service, mini_service_create, user) -> MiniServiceDetail:
     """Return mini service object in db."""
     return await service_mini_service.create_with_permission_checks(mini_service_create, user)
 
@@ -343,7 +343,7 @@ def calendar_create(reservation_service, calendar_rules_create) -> CalendarCreat
 
 
 @pytest_asyncio.fixture()
-async def calendar(service_calendar, calendar_create, user) -> Calendar:
+async def calendar(service_calendar, calendar_create, user) -> CalendarDetail:
     """Return calendar object in db."""
     return await service_calendar.create_with_permission_checks(calendar_create, user)
 

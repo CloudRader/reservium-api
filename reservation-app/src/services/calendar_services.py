@@ -9,7 +9,14 @@ from typing import Annotated
 
 from core import db_session
 from core.application.exceptions import BaseAppError, PermissionDeniedError
-from core.schemas import Calendar, CalendarCreate, CalendarUpdate, ReservationService, User
+from core.schemas import (
+    CalendarCreate,
+    CalendarDetail,
+    CalendarLite,
+    CalendarUpdate,
+    ReservationServiceDetail,
+    UserLite,
+)
 from core.schemas.google_calendar import GoogleCalendarCalendar
 from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService
 from fastapi import Depends
@@ -19,7 +26,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 class AbstractCalendarService(
     CrudServiceBase[
-        Calendar,
+        CalendarLite,
+        CalendarDetail,
         CRUDCalendar,
         CalendarCreate,
         CalendarUpdate,
@@ -36,12 +44,12 @@ class AbstractCalendarService(
     async def create_with_permission_checks(
         self,
         calendar_create: CalendarCreate,
-        user: User,
-    ) -> Calendar | None:
+        user: UserLite,
+    ) -> CalendarDetail | None:
         """
         Create a Calendar in the database.
 
-        :param calendar_create: CalendarCreate Schema for create.
+        :param calendar_create: CalendarCreate SchemaLite for create.
         :param user: the UserSchema for control permissions of the calendar.
 
         :return: the created Calendar.
@@ -52,13 +60,13 @@ class AbstractCalendarService(
         self,
         calendar_id: str,
         calendar_update: CalendarUpdate,
-        user: User,
-    ) -> Calendar | None:
+        user: UserLite,
+    ) -> CalendarDetail | None:
         """
         Update a Calendar in the database.
 
         :param calendar_id: The id of the Calendar.
-        :param calendar_update: CalendarUpdate Schema for update.
+        :param calendar_update: CalendarUpdate SchemaLite for update.
         :param user: the UserSchema for control permissions of the calendar.
 
         :return: the updated Calendar.
@@ -68,24 +76,24 @@ class AbstractCalendarService(
     async def restore_with_permission_checks(
         self,
         uuid: str | int | None,
-        user: User,
-    ) -> Calendar | None:
+        user: UserLite,
+    ) -> CalendarDetail | None:
         """
         Retrieve removed calendar from soft removed.
 
         :param uuid: The ID of the calendar to retrieve from removed.
         :param user: the UserSchema for control permissions of the calendar.
 
-        :return: the updated Calendar.
+        :return: the updated CalendarDetail.
         """
 
     @abstractmethod
     async def delete_with_permission_checks(
         self,
         calendar_id: str,
-        user: User,
+        user: UserLite,
         hard_remove: bool = False,
-    ) -> Calendar | None:
+    ) -> CalendarDetail | None:
         """
         Delete a Calendar in the database.
 
@@ -99,7 +107,7 @@ class AbstractCalendarService(
     @abstractmethod
     async def google_calendars_available_for_import(
         self,
-        user: User,
+        user: UserLite,
         google_calendars: list[GoogleCalendarCalendar],
     ) -> list[GoogleCalendarCalendar] | None:
         """
@@ -116,7 +124,7 @@ class AbstractCalendarService(
         self,
         reservation_type: str,
         include_removed: bool = False,
-    ) -> Calendar | None:
+    ) -> CalendarDetail | None:
         """
         Retrieve a Calendar instance by its reservation_type.
 
@@ -140,7 +148,7 @@ class AbstractCalendarService(
     async def get_reservation_service_of_this_calendar(
         self,
         reservation_service_id: str,
-    ) -> ReservationService | None:
+    ) -> ReservationServiceDetail | None:
         """
         Retrieve the reservation service of this calendar by reservation service id.
 
@@ -152,9 +160,9 @@ class AbstractCalendarService(
     @abstractmethod
     async def update_mini_services(
         self,
-        calendar: Calendar | None,
+        calendar: CalendarDetail | None,
         mini_services_id: list[str] | None,
-    ) -> Calendar | None:
+    ) -> CalendarDetail | None:
         """
         Update the list of mini services associated with a given calendar.
 
@@ -180,8 +188,8 @@ class CalendarService(AbstractCalendarService):
     async def create_with_permission_checks(
         self,
         calendar_create: CalendarCreate,
-        user: User,
-    ) -> Calendar | None:
+        user: UserLite,
+    ) -> CalendarDetail | None:
         if await self.get(calendar_create.id, True):
             raise BaseAppError("A calendar with this id already exist.")
         if await self.get_by_reservation_type(calendar_create.reservation_type, True):
@@ -237,8 +245,8 @@ class CalendarService(AbstractCalendarService):
         self,
         calendar_id: str,
         calendar_update: CalendarUpdate,
-        user: User,
-    ) -> Calendar | None:
+        user: UserLite,
+    ) -> CalendarDetail | None:
         calendar_to_update = await self.get(calendar_id)
 
         if calendar_to_update is None:
@@ -264,8 +272,8 @@ class CalendarService(AbstractCalendarService):
     async def restore_with_permission_checks(
         self,
         uuid: str | int | None,
-        user: User,
-    ) -> Calendar | None:
+        user: UserLite,
+    ) -> CalendarDetail | None:
         calendar = await self.get(uuid, True)
 
         if calendar.deleted_at is None:
@@ -287,9 +295,9 @@ class CalendarService(AbstractCalendarService):
     async def delete_with_permission_checks(
         self,
         calendar_id: str,
-        user: User,
+        user: UserLite,
         hard_remove: bool = False,
-    ) -> Calendar | None:
+    ) -> CalendarDetail | None:
         calendar = await self.get(calendar_id, True)
 
         if calendar is None:
@@ -330,7 +338,7 @@ class CalendarService(AbstractCalendarService):
 
     async def google_calendars_available_for_import(
         self,
-        user: User,
+        user: UserLite,
         google_calendars: list[GoogleCalendarCalendar],
     ) -> list[GoogleCalendarCalendar] | None:
         if not user.roles:
@@ -352,7 +360,7 @@ class CalendarService(AbstractCalendarService):
         self,
         reservation_type: str,
         include_removed: bool = False,
-    ) -> Calendar | None:
+    ) -> CalendarDetail | None:
         return await self.crud.get_by_reservation_type(
             reservation_type,
             include_removed,
@@ -373,7 +381,7 @@ class CalendarService(AbstractCalendarService):
     async def get_reservation_service_of_this_calendar(
         self,
         reservation_service_id: str,
-    ) -> ReservationService | None:
+    ) -> ReservationServiceDetail | None:
         reservation_service = await self.reservation_service_crud.get(
             reservation_service_id,
         )
@@ -385,9 +393,9 @@ class CalendarService(AbstractCalendarService):
 
     async def update_mini_services(
         self,
-        calendar: Calendar | None,
+        calendar: CalendarDetail | None,
         mini_services_id: list[str] | None,
-    ) -> Calendar | None:
+    ) -> CalendarDetail | None:
         if mini_services_id is None:
             return calendar
         mini_services = []

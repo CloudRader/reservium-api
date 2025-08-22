@@ -5,7 +5,7 @@ from urllib.parse import urlparse, urlunparse
 
 from api.v2.emails import create_email_meta, preparing_email
 from core.models import EventState
-from core.schemas import Calendar, EventCreate, ReservationService, User
+from core.schemas import CalendarDetail, EventCreate, ReservationServiceDetail, UserLite
 from core.schemas.google_calendar import GoogleCalendarEventCreate
 from integrations.google import GoogleCalendarService
 from pytz import timezone
@@ -41,15 +41,15 @@ async def control_collision(
     google_calendar_service,
     start_datetime,
     end_datetime,
-    calendar: Calendar,
+    calendar: CalendarDetail,
 ) -> bool:
     """
     Check if there is already another reservation at that time.
 
-    :param google_calendar_service: Google Calendar service.
+    :param google_calendar_service: Google CalendarDetail service.
     :param start_datetime: End time of the reservation.
     :param end_datetime: End time of the reservation.
-    :param calendar: Calendar object in db.
+    :param calendar: CalendarDetail object in db.
 
     :return: Boolean indicating if here is already another reservation or not.
     """
@@ -111,11 +111,11 @@ async def check_collision_time(
     )
 
 
-def check_night_reservation(user: User) -> bool:
+def check_night_reservation(user: UserLite) -> bool:
     """
     Control if user have permission for night reservation.
 
-    :param user: User object in db.
+    :param user: UserLite object in db.
 
     :return: True if user can do night reservation and false otherwise.
     """
@@ -142,26 +142,26 @@ def control_available_reservation_time(start_datetime, end_datetime) -> bool:
 
 async def process_event_approval(
     service: EventService,
-    user: User,
-    calendar: Calendar,
+    user: UserLite,
+    calendar: CalendarDetail,
     event_body: GoogleCalendarEventCreate,
     event_create: EventCreate,
-    reservation_service: ReservationService,
+    reservation_service: ReservationServiceDetail,
 ):
     """
     Approve or reject the event based on guest count and time rules.
 
-    Creates the event in Google Calendar and updates the local event state accordingly.
+    Creates the event in Google CalendarDetail and updates the local event state accordingly.
     Sends notification emails if the event is approved or not.
 
-    :param service: Event service.
-    :param user: User who make this request.
-    :param calendar: Calendar object in db.
-    :param event_body: Google Calendar-compatible event data.
+    :param service: EventExtra service.
+    :param user: UserLite who make this request.
+    :param calendar: CalendarDetail object in db.
+    :param event_body: Google CalendarDetail-compatible event data.
     :param event_create: EventCreate schema.
     :param reservation_service: Reservation Service object in db.
 
-    :return: Either a Google Calendar event object if approved,
+    :return: Either a Google CalendarDetail event object if approved,
              or a dictionary with a rejection message.
     """
     google_calendar_service = GoogleCalendarService()

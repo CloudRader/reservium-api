@@ -8,8 +8,8 @@ from core.application.exceptions import (
     BaseAppError,
     PermissionDeniedError,
 )
-from core.schemas import User
-from core.schemas.event import EventWithCalendarInfo
+from core.schemas import UserLite
+from core.schemas.event import EventDetail
 from fastapi import APIRouter, Depends, FastAPI, status
 from services import UserService
 
@@ -20,13 +20,13 @@ router = APIRouter()
 
 @router.get(
     "/",
-    response_model=list[User],
+    response_model=list[UserLite],
     responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def get_all(
     service: Annotated[UserService, Depends(UserService)],
-    user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[UserLite, Depends(get_current_user)],
 ) -> Any:
     """
     Retrieve all users from the database.
@@ -34,8 +34,8 @@ async def get_all(
     This endpoint is accessible only to users with the 'section_head' role.
     It returns a list of all registered users.
 
-    :param service: User service.
-    :param user: User who make this request.
+    :param service: UserLite service.
+    :param user: UserLite who make this request.
 
     :return: All users in database.
     """
@@ -50,12 +50,12 @@ async def get_all(
 
 @router.get(
     "/me",
-    response_model=User,
+    response_model=UserLite,
     responses=ERROR_RESPONSES["401"],
     status_code=status.HTTP_200_OK,
 )
 async def get_me(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[UserLite, Depends(get_current_user)],
 ) -> Any:
     """
     Get currently authenticated user.
@@ -69,19 +69,19 @@ async def get_me(
 
 @router.get(
     "/me/events",
-    response_model=list[EventWithCalendarInfo],
+    response_model=list[EventDetail],
     responses=ERROR_RESPONSES["400_404"],
     status_code=status.HTTP_200_OK,
 )
 async def get_events_by_user(
     service: Annotated[UserService, Depends(UserService)],
-    user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[UserLite, Depends(get_current_user)],
 ) -> Any:
     """
     Get all events linked to a user by its ID.
 
-    :param service: User service.
-    :param user: User who make this request.
+    :param service: UserLite service.
+    :param user: UserLite who make this request.
 
     :return: List of EventWithExtraDetails objects linked to the user.
     """

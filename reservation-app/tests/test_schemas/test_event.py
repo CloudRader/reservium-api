@@ -1,10 +1,11 @@
-"""Tests for MiniService Pydantic Schemas."""
+"""Tests for MiniServiceDetail Pydantic Schemas."""
 
 import pytest
 from core.models import EventState
 from core.schemas.event import (
-    Event,
-    EventInDBBase,
+    EventBase,
+    EventDetail,
+    EventLite,
     EventUpdate,
 )
 from pydantic import ValidationError
@@ -12,7 +13,7 @@ from pydantic import ValidationError
 
 def test_event_create_valid():
     """Test creating an event with valid data."""
-    schema = Event(
+    schema = EventLite(
         id="some_id_string",
         purpose="Birthday party",
         guests=5,
@@ -38,7 +39,7 @@ def test_event_update_partial():
 
 def test_event_in_db_base_schema():
     """Test full event DB representation."""
-    schema = Event(
+    schema = EventLite(
         id="some_id_string",
         purpose="Birthday party",
         guests=5,
@@ -59,8 +60,8 @@ def test_event_in_db_base_schema():
 
 
 def test_event_schema_extends_base():
-    """Test that Event schema includes all base fields."""
-    schema = Event(
+    """Test that EventExtra schema includes all base fields."""
+    schema = EventLite(
         id="some_id_string",
         purpose="Birthday party",
         guests=5,
@@ -72,7 +73,7 @@ def test_event_schema_extends_base():
         calendar_id="wfwafwjag2@goog.com",
         additional_services=["Bar", "Console"],
     )
-    assert isinstance(schema, EventInDBBase)
+    assert isinstance(schema, EventBase)
     assert schema.purpose == "Birthday party"
 
 
@@ -105,4 +106,4 @@ def test_event_create_required_fields(field):
     }
     del data[field]
     with pytest.raises(ValidationError):
-        Event(**data)
+        EventDetail(**data)

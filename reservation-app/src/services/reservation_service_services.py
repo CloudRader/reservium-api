@@ -16,14 +16,15 @@ from core.application.exceptions import (
 )
 from core.models import CalendarModel, EventState, MiniServiceModel
 from core.schemas import (
-    Calendar,
-    MiniService,
-    ReservationService,
+    CalendarDetail,
+    MiniServiceDetail,
     ReservationServiceCreate,
+    ReservationServiceDetail,
+    ReservationServiceLite,
     ReservationServiceUpdate,
-    User,
+    UserLite,
 )
-from core.schemas.event import EventDetailLite
+from core.schemas.event import EventDetail
 from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService
 from fastapi import Depends
 from services import CrudServiceBase
@@ -33,7 +34,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 class AbstractReservationServiceService(
     CrudServiceBase[
-        ReservationService,
+        ReservationServiceLite,
+        ReservationServiceDetail,
         CRUDReservationService,
         ReservationServiceCreate,
         ReservationServiceUpdate,
@@ -50,12 +52,12 @@ class AbstractReservationServiceService(
     async def create_with_permission_checks(
         self,
         reservation_service_create: ReservationServiceCreate,
-        user: User,
-    ) -> ReservationService | None:
+        user: UserLite,
+    ) -> ReservationServiceDetail | None:
         """
         Create a Reservation Service in the database.
 
-        :param reservation_service_create: ReservationServiceCreate Schema for create.
+        :param reservation_service_create: ReservationServiceCreate SchemaLite for create.
         :param user: the UserSchema for control permissions of the reservation service.
 
         :return: the created Reservation Service.
@@ -66,13 +68,13 @@ class AbstractReservationServiceService(
         self,
         uuid: str,
         reservation_service_update: ReservationServiceUpdate,
-        user: User,
-    ) -> ReservationService | None:
+        user: UserLite,
+    ) -> ReservationServiceDetail | None:
         """
         Update a Reservation Service in the database.
 
         :param uuid: The uuid of the Reservation Service.
-        :param reservation_service_update: ReservationServiceUpdate Schema for update.
+        :param reservation_service_update: ReservationServiceUpdate SchemaLite for update.
         :param user: the UserSchema for control permissions of the reservation service.
 
         :return: the updated Reservation Service.
@@ -82,8 +84,8 @@ class AbstractReservationServiceService(
     async def restore_with_permission_checks(
         self,
         uuid: str | int | None,
-        user: User,
-    ) -> ReservationService | None:
+        user: UserLite,
+    ) -> ReservationServiceDetail | None:
         """
         Retrieve removed object from soft removed.
 
@@ -97,9 +99,9 @@ class AbstractReservationServiceService(
     async def delete_with_permission_checks(
         self,
         uuid: str,
-        user: User,
+        user: UserLite,
         hard_remove: bool = False,
-    ) -> ReservationService | None:
+    ) -> ReservationServiceDetail | None:
         """
         Delete a Reservation Service in the database.
 
@@ -115,7 +117,7 @@ class AbstractReservationServiceService(
         self,
         alias: str,
         include_removed: bool = False,
-    ) -> ReservationService | None:
+    ) -> ReservationServiceDetail | None:
         """
         Retrieve a Reservation Service instance by its alias.
 
@@ -130,7 +132,7 @@ class AbstractReservationServiceService(
         self,
         name: str,
         include_removed: bool = False,
-    ) -> ReservationService | None:
+    ) -> ReservationServiceDetail | None:
         """
         Retrieve a Reservation Service instance by its name.
 
@@ -145,7 +147,7 @@ class AbstractReservationServiceService(
         self,
         room_id: int,
         include_removed: bool = False,
-    ) -> ReservationService | None:
+    ) -> ReservationServiceDetail | None:
         """
         Retrieve a Reservation Service instance by its room id.
 
@@ -159,7 +161,7 @@ class AbstractReservationServiceService(
     async def get_public_services(
         self,
         include_removed: bool = False,
-    ) -> list[ReservationService] | None:
+    ) -> list[ReservationServiceDetail] | None:
         """
         Retrieve a public Reservation Service instance.
 
@@ -171,7 +173,7 @@ class AbstractReservationServiceService(
     @abstractmethod
     async def get_all_services_include_all_removed(
         self,
-    ) -> list[ReservationService]:
+    ) -> list[ReservationServiceDetail]:
         """
         Retrieve Reservation Services instance include soft removed.
 
@@ -184,14 +186,14 @@ class AbstractReservationServiceService(
         self,
         alias: str,
         include_removed: bool = False,
-    ) -> list[Calendar]:
+    ) -> list[CalendarDetail]:
         """
         Retrieve all calendars linked to a given Reservation Service.
 
         :param alias: The alias of the Reservation Service.
         :param include_removed: Include removed calendars or not.
 
-        :return: List of Calendar objects linked to the reservation service.
+        :return: List of CalendarDetail objects linked to the reservation service.
         """
 
     @abstractmethod
@@ -199,14 +201,14 @@ class AbstractReservationServiceService(
         self,
         alias: str,
         include_removed: bool = False,
-    ) -> list[MiniService]:
+    ) -> list[MiniServiceDetail]:
         """
         Retrieve all mini services linked to a given Reservation Service.
 
         :param alias: The alias of the Reservation Service.
         :param include_removed: Include removed calendars or not.
 
-        :return: List of MiniService objects linked to the reservation service.
+        :return: List of MiniServiceDetail objects linked to the reservation service.
         """
 
     @abstractmethod
@@ -214,7 +216,7 @@ class AbstractReservationServiceService(
         self,
         alias: str,
         event_state: EventState | None = None,
-    ) -> list[EventDetailLite]:
+    ) -> list[EventDetail]:
         """
         Retrieve all events linked to a given Reservation Service.
 
@@ -240,8 +242,8 @@ class ReservationServiceService(AbstractReservationServiceService):
     async def create_with_permission_checks(
         self,
         reservation_service_create: ReservationServiceCreate,
-        user: User,
-    ) -> ReservationService | None:
+        user: UserLite,
+    ) -> ReservationServiceDetail | None:
         if await self.crud.get_by_name(reservation_service_create.name, True):
             raise BaseAppError("A reservation service with this name already exist.")
         if await self.crud.get_by_alias(reservation_service_create.alias, True):
@@ -258,8 +260,8 @@ class ReservationServiceService(AbstractReservationServiceService):
         self,
         uuid: str,
         reservation_service_update: ReservationServiceUpdate,
-        user: User,
-    ) -> ReservationService | None:
+        user: UserLite,
+    ) -> ReservationServiceDetail | None:
         if not user.section_head:
             raise PermissionDeniedError(
                 "You must be the head of PS to update services.",
@@ -270,8 +272,8 @@ class ReservationServiceService(AbstractReservationServiceService):
     async def restore_with_permission_checks(
         self,
         uuid: str | int | None,
-        user: User,
-    ) -> ReservationService | None:
+        user: UserLite,
+    ) -> ReservationServiceDetail | None:
         if not user.section_head:
             raise PermissionDeniedError(
                 "You must be the head of PS to retrieve removed services.",
@@ -282,9 +284,9 @@ class ReservationServiceService(AbstractReservationServiceService):
     async def delete_with_permission_checks(
         self,
         uuid: str,
-        user: User,
+        user: UserLite,
         hard_remove: bool = False,
-    ) -> ReservationService | None:
+    ) -> ReservationServiceDetail | None:
         if not user.section_head:
             raise PermissionDeniedError(
                 "You must be the head of PS to delete services.",
@@ -299,27 +301,27 @@ class ReservationServiceService(AbstractReservationServiceService):
         self,
         alias: str,
         include_removed: bool = False,
-    ) -> ReservationService | None:
+    ) -> ReservationServiceDetail | None:
         return await self.crud.get_by_alias(alias, include_removed)
 
     async def get_by_name(
         self,
         name: str,
         include_removed: bool = False,
-    ) -> ReservationService | None:
+    ) -> ReservationServiceDetail | None:
         return await self.crud.get_by_name(name, include_removed)
 
     async def get_by_room_id(
         self,
         room_id: int,
         include_removed: bool = False,
-    ) -> ReservationService | None:
+    ) -> ReservationServiceDetail | None:
         return await self.crud.get_by_room_id(room_id, include_removed)
 
     async def get_public_services(
         self,
         include_removed: bool = False,
-    ) -> list[ReservationService] | None:
+    ) -> list[ReservationServiceDetail] | None:
         services = await self.crud.get_public_services(include_removed)
         if len(services) == 0:
             return []
@@ -327,8 +329,8 @@ class ReservationServiceService(AbstractReservationServiceService):
 
     async def get_all_services_include_all_removed(
         self,
-    ) -> list[ReservationService]:
-        reservation_services: list[ReservationService] = await self.crud.get_all(
+    ) -> list[ReservationServiceDetail]:
+        reservation_services: list[ReservationServiceDetail] = await self.crud.get_all(
             True,
         )
 
@@ -354,7 +356,7 @@ class ReservationServiceService(AbstractReservationServiceService):
         self,
         alias: str,
         include_removed: bool = False,
-    ) -> list[Calendar]:
+    ) -> list[CalendarDetail]:
         reservation_service = await self.__get_reservation_service_if_exist(alias)
 
         return await self.crud.get_related_entities_by_reservation_service_id(
@@ -365,14 +367,14 @@ class ReservationServiceService(AbstractReservationServiceService):
         self,
         alias: str,
         include_removed: bool = False,
-    ) -> list[MiniService]:
+    ) -> list[MiniServiceDetail]:
         reservation_service = await self.__get_reservation_service_if_exist(alias)
 
         return await self.crud.get_related_entities_by_reservation_service_id(
             MiniServiceModel, reservation_service.id, include_removed=include_removed
         )
 
-    async def __get_reservation_service_if_exist(self, alias: str) -> ReservationService:
+    async def __get_reservation_service_if_exist(self, alias: str) -> ReservationServiceDetail:
         """
         Retrieve a Reservation Service by its ID or raise an error if not found.
 
@@ -389,7 +391,7 @@ class ReservationServiceService(AbstractReservationServiceService):
         self,
         alias: str,
         event_state: EventState | None = None,
-    ) -> list[EventDetailLite]:
+    ) -> list[EventDetail]:
         reservation_service = await self.crud.get_by_alias(
             alias,
         )

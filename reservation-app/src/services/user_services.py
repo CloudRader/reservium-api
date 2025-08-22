@@ -1,7 +1,7 @@
 """
 Define an abstract base class AbstractUserService.
 
-This class works with User.
+This class works with UserLite.
 """
 
 from abc import ABC, abstractmethod
@@ -12,12 +12,13 @@ from core.schemas import (
     Role,
     Room,
     ServiceValidity,
-    User,
     UserCreate,
+    UserDetail,
     UserIS,
+    UserLite,
     UserUpdate,
 )
-from core.schemas.event import EventWithCalendarInfo
+from core.schemas.event import EventDetail
 from crud import CRUDReservationService, CRUDUser
 from fastapi import Depends
 from services import CrudServiceBase, EventService
@@ -26,7 +27,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 class AbstractUserService(
     CrudServiceBase[
-        User,
+        UserLite,
+        UserDetail,
         CRUDUser,
         UserCreate,
         UserUpdate,
@@ -46,41 +48,41 @@ class AbstractUserService(
         roles: list[Role],
         services: list[ServiceValidity],
         room: Room,
-    ) -> User:
+    ) -> UserLite:
         """
-        Create a User in the database.
+        Create a UserLite in the database.
 
         :param user_data: Received data from IS.
         :param roles: List of user roles in IS.
         :param services: List of user services in IS.
         :param room: Room of user in IS.
 
-        :return: the created User.
+        :return: the created UserLite.
         """
 
     @abstractmethod
-    async def get_by_username(self, username: str) -> User:
+    async def get_by_username(self, username: str) -> UserLite:
         """
-        Retrieve a User instance by its username.
+        Retrieve a UserLite instance by its username.
 
-        :param username: The username of the User.
+        :param username: The username of the UserLite.
 
-        :return: The User instance if found, None otherwise.
+        :return: The UserLite instance if found, None otherwise.
         """
 
     @abstractmethod
-    async def get_events_by_user(self, user: User) -> list[EventWithCalendarInfo]:
+    async def get_events_by_user(self, user: UserLite) -> list[EventDetail]:
         """
-        Retrieve all events linked to a given User.
+        Retrieve all events linked to a given UserLite.
 
-        :param user: The User object in database.
+        :param user: The UserLite object in database.
 
         :return: List of EventWithCalendarInfo objects linked to the user.
         """
 
 
 class UserService(AbstractUserService):
-    """Class UserService represent service that work with User."""
+    """Class UserService represent service that work with UserLite."""
 
     def __init__(
         self,
@@ -96,7 +98,7 @@ class UserService(AbstractUserService):
         roles: list[Role],
         services: list[ServiceValidity],
         room: Room,
-    ) -> User:
+    ) -> UserLite:
         user = await self.get_by_username(user_data.username)
 
         user_roles = []
@@ -137,8 +139,8 @@ class UserService(AbstractUserService):
         )
         return await self.crud.create(user_create)
 
-    async def get_by_username(self, username: str) -> User:
+    async def get_by_username(self, username: str) -> UserLite:
         return await self.crud.get_by_username(username)
 
-    async def get_events_by_user(self, user: User) -> list[EventWithCalendarInfo]:
+    async def get_events_by_user(self, user: UserLite) -> list[EventDetail]:
         return await self.crud.get_events_by_user_id(user.id)

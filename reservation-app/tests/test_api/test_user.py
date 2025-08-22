@@ -48,7 +48,7 @@ async def test_logout(client: AsyncClient):
 #         expires_in=3600,
 #         scope="read write",
 #     )
-#     fake_user = type("User", (), {"username": "mocked_user"})()
+#     fake_user = type("UserLite", (), {"username": "mocked_user"})()
 #
 #     mock_authenticate_user.return_value = fake_user
 #

@@ -17,13 +17,12 @@ from core.application.exceptions import (
 )
 from core.models import EventState
 from core.schemas import (
-    Event,
     EventCreate,
+    EventDetail,
     EventUpdate,
     EventUpdateTime,
-    User,
+    UserLite,
 )
-from core.schemas.event import EventDetail
 from core.schemas.google_calendar import GoogleCalendarEventCreate
 from fastapi import APIRouter, Body, Depends, Path, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
@@ -44,21 +43,21 @@ async def create(
     service: Annotated[EventService, Depends(EventService)],
     calendar_service: Annotated[CalendarService, Depends(CalendarService)],
     is_service: Annotated[IsService, Depends(IsService)],
-    user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[UserLite, Depends(get_current_user)],
     token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
     event_create: EventCreate,
 ) -> Any:
     """
     Post event to google calendar.
 
-    :param service: Event service.
-    :param calendar_service: Calendar service.
+    :param service: EventExtra service.
+    :param calendar_service: CalendarDetail service.
     :param is_service: IS service.
-    :param user: User who make this request.
+    :param user: UserLite who make this request.
     :param token: Token for user identification.
     :param event_create: EventCreate schema.
 
-    :returns Event json object: the created event or exception otherwise.
+    :returns EventExtra json object: the created event or exception otherwise.
     """
     services = await is_service.get_services_data(token.credentials)
 
@@ -99,14 +98,14 @@ async def create(
 )
 async def get_by_user_roles(
     service: Annotated[EventService, Depends(EventService)],
-    user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[UserLite, Depends(get_current_user)],
     event_state: Annotated[EventState | None, Query()] = None,
 ) -> Any:
     """
     Get all events.
 
-    :param service: Event Service.
-    :param user: User who make this request.
+    :param service: EventExtra Service.
+    :param user: UserLite who make this request.
     :param event_state: event state of the event.
 
     :return: List of EventDetail objects.
@@ -116,13 +115,13 @@ async def get_by_user_roles(
 
 @router.put(
     "/{event_id}/approve-time-change-request",
-    response_model=Event,
+    response_model=EventDetail,
     responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def approve_time_change_request(
     service: Annotated[EventService, Depends(EventService)],
-    user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[UserLite, Depends(get_current_user)],
     event_id: Annotated[str, Path()],
     approve: bool = Query(False),
     manager_notes: Annotated[str, Body()] = "-",
@@ -132,8 +131,8 @@ async def approve_time_change_request(
 
     Only users with special roles can approve this update.
 
-    :param service: Event service.
-    :param user: User who make this request.
+    :param service: EventExtra service.
+    :param user: UserLite who make this request.
     :param event_id: uuid of the event.
     :param approve: Approve this update or not.
     :param manager_notes: Note for update or decline update reservation time.
@@ -141,7 +140,7 @@ async def approve_time_change_request(
     :returns EventModel: the updated event.
     """
     google_calendar_service = GoogleCalendarService()
-    event: Event = await service.get(event_id)
+    event: EventDetail = await service.get(event_id)
     if not event:
         raise EntityNotFoundError(Entity.EVENT, event_id)
 
@@ -209,13 +208,13 @@ async def approve_time_change_request(
 
 @router.put(
     "/{event_id}",
-    response_model=Event,
+    response_model=EventDetail,
     responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def update(
     service: Annotated[EventService, Depends(EventService)],
-    user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[UserLite, Depends(get_current_user)],
     event_id: Annotated[str, Path()],
     event_update: Annotated[EventUpdate, Body()],
     reason: Annotated[str, Body()] = "",
@@ -226,7 +225,7 @@ async def update(
     Only users with special roles can update object.
 
     :param service: Service providing business logic of this object.
-    :param user: User who make this request.
+    :param user: UserLite who make this request.
     :param event_id: id of the object.
     :param event_update: ObjectUpdate schema.
     :param reason: Annotated[str, Body()] = "",
@@ -257,13 +256,13 @@ async def update(
 
 @router.put(
     "/{event_id}/request-time-change",
-    response_model=Event,
+    response_model=EventDetail,
     responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def request_time_change(
     service: Annotated[EventService, Depends(EventService)],
-    user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[UserLite, Depends(get_current_user)],
     event_id: Annotated[str, Path()],
     event_update: Annotated[EventUpdateTime, Body()],
     reason: Annotated[str, Body()] = "",
@@ -273,15 +272,15 @@ async def request_time_change(
 
     Only user that create this reservation can request it.
 
-    :param service: Event service.
-    :param user: User who make this request.
+    :param service: EventExtra service.
+    :param user: UserLite who make this request.
     :param event_id: uuid of the event.
     :param event_update: EventUpdate schema.
     :param reason: Reason to change reservation time.
 
     :returns EventModel: the updated event.
     """
-    event: Event = await service.request_update_reservation_time(
+    event: EventDetail = await service.request_update_reservation_time(
         event_id,
         event_update,
         user,
@@ -302,13 +301,13 @@ async def request_time_change(
 
 @router.put(
     "/{event_id}/approve",
-    response_model=Event,
+    response_model=EventDetail,
     responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_200_OK,
 )
 async def approve_reservation(
     service: Annotated[EventService, Depends(EventService)],
-    user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[UserLite, Depends(get_current_user)],
     event_id: Annotated[str, Path()],
     approve: bool = Query(False),
     manager_notes: Annotated[str, Body()] = "-",
@@ -318,8 +317,8 @@ async def approve_reservation(
 
     Only users with special roles can approve reservation.
 
-    :param service: Event service.
-    :param user: User who make this approve.
+    :param service: EventExtra service.
+    :param user: UserLite who make this approve.
     :param event_id: uuid of the event.
     :param approve: Approve this reservation or not.
     :param manager_notes: Note for approve or decline reservation.
@@ -372,13 +371,13 @@ async def approve_reservation(
 
 @router.delete(
     "/{event_id}",
-    response_model=Event,
+    response_model=EventDetail,
     responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_200_OK,
 )
 async def cancel(
     service: Annotated[EventService, Depends(EventService)],
-    user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[UserLite, Depends(get_current_user)],
     event_id: Annotated[str, Path()],
     cancel_reason: Annotated[str, Body()] = "",
 ) -> Any:
@@ -387,8 +386,8 @@ async def cancel(
 
     Only user who make this reservation can cancel this reservation.
 
-    :param service: Event service.
-    :param user: User who make this reservation.
+    :param service: EventExtra service.
+    :param user: UserLite who make this reservation.
     :param event_id: id of the event.
     :param cancel_reason: reason cancellation this reservation.
 
@@ -423,13 +422,13 @@ async def cancel(
 
 @router.delete(
     "/{event_id}/hard",
-    response_model=Event,
+    response_model=EventDetail,
     responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_200_OK,
 )
 async def delete(
     service: Annotated[EventService, Depends(EventService)],
-    user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[UserLite, Depends(get_current_user)],
     event_id: Annotated[str, Path()],
 ) -> Any:
     """
@@ -437,8 +436,8 @@ async def delete(
 
     Only managers and if event have state canceled.
 
-    :param service: Event service.
-    :param user: User who make this reservation.
+    :param service: EventExtra service.
+    :param user: UserLite who make this reservation.
     :param event_id: id of the event.
 
     :returns EventModel: the deleted event.

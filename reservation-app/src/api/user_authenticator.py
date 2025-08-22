@@ -18,7 +18,7 @@ async def authenticate_user(
     """
     Authenticate a user using their tokens from IS.
 
-    :param user_service: User service
+    :param user_service: UserLite service
     :param is_service: IsService service.
     :param token: Token for user identification.
 
@@ -39,11 +39,11 @@ async def get_current_user(
     """
     Retrieve the current user based on a JWT token.
 
-    :param user_service: User service.
+    :param user_service: UserLite service.
     :param is_service: IsService service.
     :param token: The authorization token.
 
-    :return: User object.
+    :return: UserLite object.
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

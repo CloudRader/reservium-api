@@ -5,7 +5,7 @@ from typing import Annotated, Any
 from api import get_current_user
 from api.api_base import BaseCRUDRouter
 from core.application.exceptions import ERROR_RESPONSES, BaseAppError, Entity
-from core.schemas import Calendar, CalendarCreate, CalendarUpdate, User
+from core.schemas import CalendarCreate, CalendarDetail, CalendarLite, CalendarUpdate, UserLite
 from fastapi import APIRouter, Depends, Path, status
 from integrations.google import GoogleCalendarService
 from services import CalendarService
@@ -17,7 +17,8 @@ class CalendarRouter(
     BaseCRUDRouter[
         CalendarCreate,
         CalendarUpdate,
-        Calendar,
+        CalendarLite,
+        CalendarDetail,
         CalendarService,
     ]
 ):
@@ -35,7 +36,8 @@ class CalendarRouter(
             service_dep=CalendarService,
             schema_create=CalendarCreate,
             schema_update=CalendarUpdate,
-            schema=Calendar,
+            schema_lite=CalendarLite,
+            schema_detail=CalendarDetail,
             entity_name=Entity.CALENDAR,
             enable_create=False,
             enable_create_multiple=False,
@@ -55,7 +57,7 @@ class CalendarRouter(
             """
             Get mini services by its calendar (DEPRECATED!!!).
 
-            :param service: Calendar service.
+            :param service: CalendarDetail service.
             :param calendar_id: id of the calendar.
 
             :return: List mini services with type equal to service type
@@ -74,7 +76,7 @@ class CalendarRouter(
                 GoogleCalendarService,
                 Depends(GoogleCalendarService),
             ],
-            user: Annotated[User, Depends(get_current_user)],
+            user: Annotated[UserLite, Depends(get_current_user)],
         ) -> Any:
             """
             List Google calendars that the auth user owns but are not yet added to the system.
@@ -82,11 +84,11 @@ class CalendarRouter(
             This includes all non-primary calendars where the user has 'owner' access and
             that are not already stored in the local database.
 
-            :param service: Calendar service.
-            :param google_calendar_service: Google Calendar service.
-            :param user: User who make this request.
+            :param service: CalendarDetail service.
+            :param google_calendar_service: Google CalendarDetail service.
+            :param user: UserLite who make this request.
 
-            :returns: List of importable Google Calendar entries.
+            :returns: List of importable Google CalendarDetail entries.
             """
             google_calendars = await google_calendar_service.get_all_calendars()
 
@@ -94,7 +96,7 @@ class CalendarRouter(
 
         @router.post(
             "/",
-            response_model=Calendar,
+            response_model=CalendarDetail,
             responses=ERROR_RESPONSES["400_401_403_404"],
             status_code=status.HTTP_201_CREATED,
         )
@@ -104,16 +106,16 @@ class CalendarRouter(
                 GoogleCalendarService,
                 Depends(GoogleCalendarService),
             ],
-            user: Annotated[User, Depends(get_current_user)],
+            user: Annotated[UserLite, Depends(get_current_user)],
             calendar_create: CalendarCreate,
         ) -> Any:
             """
             Create calendar, only users with special roles can create calendar.
 
-            :param service: Calendar service.
-            :param google_calendar_service: Google Calendar service.
-            :param user: User who make this request.
-            :param calendar_create: Calendar Create schema.
+            :param service: CalendarDetail service.
+            :param google_calendar_service: Google CalendarDetail service.
+            :param user: UserLite who make this request.
+            :param calendar_create: CalendarDetail Create schema.
 
             :returns CalendarModel: the created calendar.
             """
@@ -123,7 +125,7 @@ class CalendarRouter(
 
         @router.post(
             "/batch",
-            response_model=list[Calendar],
+            response_model=list[CalendarDetail],
             responses=ERROR_RESPONSES["400_401_403_404"],
             status_code=status.HTTP_201_CREATED,
         )
@@ -133,20 +135,20 @@ class CalendarRouter(
                 GoogleCalendarService,
                 Depends(GoogleCalendarService),
             ],
-            user: Annotated[User, Depends(get_current_user)],
+            user: Annotated[UserLite, Depends(get_current_user)],
             calendars_create: list[CalendarCreate],
         ) -> Any:
             """
             Create calendars, only users with special roles can create calendar.
 
-            :param service: Calendar service.
-            :param google_calendar_service: Google Calendar service.
-            :param user: User who make this request.
+            :param service: CalendarDetail service.
+            :param google_calendar_service: Google CalendarDetail service.
+            :param user: UserLite who make this request.
             :param calendars_create: Calendars Create schema.
 
             :returns CalendarModel: the created calendar.
             """
-            calendars_result: list[Calendar] = []
+            calendars_result: list[CalendarDetail] = []
             for calendar in calendars_create:
                 calendars_result.append(
                     await _create_single_object(service, google_calendar_service, user, calendar),
@@ -157,18 +159,18 @@ class CalendarRouter(
         async def _create_single_object(
             service: CalendarService,
             google_calendar_service: GoogleCalendarService,
-            user: User,
+            user: UserLite,
             calendar_create: CalendarCreate,
         ) -> Any:
             """
             Help creating a single calendar with permission checks.
 
             :param service: Service providing business logic of this calendar.
-            :param google_calendar_service: Google Calendar service.
+            :param google_calendar_service: Google CalendarDetail service.
             :param user: Authenticated user performing the creation.
-            :param calendar_create: Calendar Create schema.
+            :param calendar_create: CalendarDetail Create schema.
 
-            :return: The created Calendar instance.
+            :return: The created CalendarDetail instance.
             """
             if calendar_create.id:
                 await google_calendar_service.user_has_calendar_access(calendar_create.id)

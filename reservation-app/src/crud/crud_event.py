@@ -9,14 +9,14 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 
 from core.models import CalendarModel, EventModel, EventState, ReservationServiceModel
-from core.schemas import Event, EventUpdate
+from core.schemas import EventLite, EventUpdate
 from crud import CRUDBase
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 
-class AbstractCRUDEvent(CRUDBase[EventModel, Event, EventUpdate], ABC):
+class AbstractCRUDEvent(CRUDBase[EventModel, EventLite, EventUpdate], ABC):
     """
     Abstract class for CRUD operations specific to the Event model.
 

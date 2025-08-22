@@ -9,7 +9,14 @@ from typing import Annotated
 
 from core import db_session
 from core.application.exceptions import BaseAppError, PermissionDeniedError
-from core.schemas import CalendarUpdate, MiniService, MiniServiceCreate, MiniServiceUpdate, User
+from core.schemas import (
+    CalendarUpdate,
+    MiniServiceCreate,
+    MiniServiceDetail,
+    MiniServiceLite,
+    MiniServiceUpdate,
+    UserLite,
+)
 from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService
 from fastapi import Depends
 from services import CrudServiceBase
@@ -18,7 +25,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 class AbstractMiniServiceService(
     CrudServiceBase[
-        MiniService,
+        MiniServiceLite,
+        MiniServiceDetail,
         CRUDMiniService,
         MiniServiceCreate,
         MiniServiceUpdate,
@@ -35,12 +43,12 @@ class AbstractMiniServiceService(
     async def create_with_permission_checks(
         self,
         mini_service_create: MiniServiceCreate,
-        user: User,
-    ) -> MiniService | None:
+        user: UserLite,
+    ) -> MiniServiceDetail | None:
         """
         Create a Mini Service in the database.
 
-        :param mini_service_create: MiniServiceCreate Schema for create.
+        :param mini_service_create: MiniServiceCreate SchemaLite for create.
         :param user: the UserSchema for control permissions of the mini service.
 
         :return: the created Mini Service.
@@ -51,13 +59,13 @@ class AbstractMiniServiceService(
         self,
         uuid: str,
         mini_service_update: MiniServiceUpdate,
-        user: User,
-    ) -> MiniService | None:
+        user: UserLite,
+    ) -> MiniServiceDetail | None:
         """
         Update a Mini Service in the database.
 
         :param uuid: The uuid of the Mini Service.
-        :param mini_service_update: MiniServiceUpdate Schema for update.
+        :param mini_service_update: MiniServiceUpdate SchemaLite for update.
         :param user: the UserSchema for control permissions of the mini service.
 
         :return: the updated Mini Service.
@@ -67,8 +75,8 @@ class AbstractMiniServiceService(
     async def restore_with_permission_checks(
         self,
         uuid: str | int | None,
-        user: User,
-    ) -> MiniService | None:
+        user: UserLite,
+    ) -> MiniServiceDetail | None:
         """
         Retrieve removed mini service from soft removed.
 
@@ -82,9 +90,9 @@ class AbstractMiniServiceService(
     async def delete_with_permission_checks(
         self,
         uuid: str,
-        user: User,
+        user: UserLite,
         hard_remove: bool = False,
-    ) -> MiniService | None:
+    ) -> MiniServiceDetail | None:
         """
         Delete a Mini Service in the database.
 
@@ -100,7 +108,7 @@ class AbstractMiniServiceService(
         self,
         name: str,
         include_removed: bool = False,
-    ) -> MiniService | None:
+    ) -> MiniServiceDetail | None:
         """
         Retrieve a Mini Service instance by its name.
 
@@ -115,7 +123,7 @@ class AbstractMiniServiceService(
         self,
         room_id: int,
         include_removed: bool = False,
-    ) -> MiniService | None:
+    ) -> MiniServiceDetail | None:
         """
         Retrieve a Mini Service instance by its room id.
 
@@ -140,8 +148,8 @@ class MiniServiceService(AbstractMiniServiceService):
     async def create_with_permission_checks(
         self,
         mini_service_create: MiniServiceCreate,
-        user: User,
-    ) -> MiniService | None:
+        user: UserLite,
+    ) -> MiniServiceDetail | None:
         if await self.crud.get_by_name(mini_service_create.name, True):
             raise BaseAppError("A reservation service with this name already exist.")
 
@@ -162,8 +170,8 @@ class MiniServiceService(AbstractMiniServiceService):
         self,
         uuid: str,
         mini_service_update: MiniServiceUpdate,
-        user: User,
-    ) -> MiniService | None:
+        user: UserLite,
+    ) -> MiniServiceDetail | None:
         mini_service_to_update = await self.get(uuid)
 
         if mini_service_to_update is None:
@@ -185,8 +193,8 @@ class MiniServiceService(AbstractMiniServiceService):
     async def restore_with_permission_checks(
         self,
         uuid: str | int | None,
-        user: User,
-    ) -> MiniService | None:
+        user: UserLite,
+    ) -> MiniServiceDetail | None:
         mini_service = await self.crud.get(uuid, True)
 
         if mini_service.deleted_at is None:
@@ -208,9 +216,9 @@ class MiniServiceService(AbstractMiniServiceService):
     async def delete_with_permission_checks(
         self,
         uuid: str,
-        user: User,
+        user: UserLite,
         hard_remove: bool = False,
-    ) -> MiniService | None:
+    ) -> MiniServiceDetail | None:
         mini_service = await self.crud.get(uuid, True)
 
         if mini_service is None:
@@ -253,12 +261,12 @@ class MiniServiceService(AbstractMiniServiceService):
         self,
         name: str,
         include_removed: bool = False,
-    ) -> MiniService | None:
+    ) -> MiniServiceDetail | None:
         return await self.crud.get_by_name(name, include_removed)
 
     async def get_by_room_id(
         self,
         room_id: int,
         include_removed: bool = False,
-    ) -> MiniService | None:
+    ) -> MiniServiceDetail | None:
         return await self.crud.get_by_room_id(room_id, include_removed)

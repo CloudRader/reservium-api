@@ -1,8 +1,8 @@
-"""DTO schemes for Calendar entity."""
+"""DTO schemes for CalendarDetail entity."""
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Rules(BaseModel):
@@ -24,14 +24,6 @@ class CalendarBase(BaseModel):
     collision_with_calendar: list[str] = Field(default_factory=list)
     more_than_max_people_with_permission: bool | None = None
     color: str | None = None
-
-
-class CalendarWithReservationServiceInfoLite(CalendarBase):
-    """Additional properties of calendar to return via API."""
-
-    reservation_type: str
-    max_people: int
-    reservation_service: "ReservationServiceInDBBase"
 
 
 class CalendarCreate(CalendarBase):
@@ -59,7 +51,7 @@ class CalendarUpdate(CalendarBase):
     mini_services_id: list[str] | None = None
 
 
-class CalendarInDBBase(CalendarBase):
+class CalendarLite(CalendarBase):
     """Base model for calendar in database."""
 
     id: str
@@ -67,29 +59,28 @@ class CalendarInDBBase(CalendarBase):
     reservation_type: str
     max_people: int
     collision_with_itself: bool
+    reservation_service_id: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CalendarWithReservationServiceInfo(CalendarLite):
+    """Additional properties of calendar to return via API."""
+
+    reservation_service: "ReservationServiceLite"
+
+
+class CalendarDetail(CalendarLite):
+    """Additional properties of calendar to return via API."""
+
     club_member_rules: Rules
     active_member_rules: Rules
     manager_rules: Rules
-    reservation_service_id: str
-
-    class Config:
-        """Config class for database calendar model."""
-
-        from_attributes = True
+    mini_services: list["MiniServiceLite"] = Field(default_factory=list)
 
 
-class Calendar(CalendarInDBBase):
-    """Additional properties of calendar to return via API."""
+from core.schemas.reservation_service import ReservationServiceLite  # noqa
+from core.schemas.mini_service import MiniServiceLite  # noqa
 
-    mini_services: list["MiniService"] = Field(default_factory=list)
-
-
-class CalendarInDB(CalendarInDBBase):
-    """Additional properties stored in DB."""
-
-
-from core.schemas.reservation_service import ReservationServiceInDBBase  # noqa
-from core.schemas.mini_service import MiniService  # noqa
-
-CalendarWithReservationServiceInfoLite.model_rebuild()
-Calendar.model_rebuild()
+CalendarWithReservationServiceInfo.model_rebuild()
+CalendarDetail.model_rebuild()

@@ -9,13 +9,14 @@ from core.application.exceptions import (
 )
 from core.models.event import EventState
 from core.schemas import (
-    Calendar,
-    MiniService,
-    ReservationService,
+    CalendarDetail,
+    MiniServiceDetail,
     ReservationServiceCreate,
+    ReservationServiceDetail,
+    ReservationServiceLite,
     ReservationServiceUpdate,
 )
-from core.schemas.event import EventDetailLite
+from core.schemas.event import EventDetail
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import ReservationServiceService
 
@@ -26,7 +27,8 @@ class ReservationServiceRouter(
     BaseCRUDRouter[
         ReservationServiceCreate,
         ReservationServiceUpdate,
-        ReservationService,
+        ReservationServiceLite,
+        ReservationServiceDetail,
         ReservationServiceService,
     ]
 ):
@@ -34,7 +36,7 @@ class ReservationServiceRouter(
     API router for managing Reservation Services.
 
     This class extends `BaseCRUDRouter` to automatically register standard
-    CRUD routes for the `ReservationService` entity and adds custom endpoints
+    CRUD routes for the `ReservationServiceDetail` entity and adds custom endpoints
     specific to Reservation Services.
     """
 
@@ -44,13 +46,14 @@ class ReservationServiceRouter(
             service_dep=ReservationServiceService,
             schema_create=ReservationServiceCreate,
             schema_update=ReservationServiceUpdate,
-            schema=ReservationService,
+            schema_lite=ReservationServiceLite,
+            schema_detail=ReservationServiceDetail,
             entity_name=Entity.RESERVATION_SERVICE,
         )
 
         @router.get(
             "/public",
-            response_model=list[ReservationService],
+            response_model=list[ReservationServiceDetail],
             status_code=status.HTTP_200_OK,
         )
         async def get_public(
@@ -70,7 +73,7 @@ class ReservationServiceRouter(
 
         @router.get(
             "/name/{name}",
-            response_model=ReservationService,
+            response_model=ReservationServiceDetail,
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
@@ -94,7 +97,7 @@ class ReservationServiceRouter(
 
         @router.get(
             "/alias/{alias}",
-            response_model=ReservationService,
+            response_model=ReservationServiceDetail,
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
@@ -118,7 +121,7 @@ class ReservationServiceRouter(
 
         @router.get(
             "/{alias}/calendars",
-            response_model=list[Calendar],
+            response_model=list[CalendarDetail],
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
@@ -134,13 +137,13 @@ class ReservationServiceRouter(
             :param alias: alias of the reservation service.
             :param include_removed: include removed calendars or not.
 
-            :return: List of Calendar objects linked to the reservation service.
+            :return: List of CalendarDetail objects linked to the reservation service.
             """
             return await service.get_calendars_by_alias(alias, include_removed)
 
         @router.get(
             "/{alias}/mini-services",
-            response_model=list[MiniService],
+            response_model=list[MiniServiceDetail],
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
@@ -156,13 +159,13 @@ class ReservationServiceRouter(
             :param alias: alias of the reservation service.
             :param include_removed: include removed calendars or not.
 
-            :return: List of MiniService objects linked to the reservation service.
+            :return: List of MiniServiceDetail objects linked to the reservation service.
             """
             return await service.get_mini_services_by_alias(alias, include_removed)
 
         @router.get(
             "/{alias}/events",
-            response_model=list[EventDetailLite],
+            response_model=list[EventDetail],
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
@@ -174,11 +177,11 @@ class ReservationServiceRouter(
             """
             Get all events linked to a reservation service by its alias.
 
-            :param service: Event service.
+            :param service: EventExtra service.
             :param alias: alias of the reservation service.
             :param event_state: event state of the event.
 
-            :return: List of Event objects linked to the reservation service.
+            :return: List of EventExtra objects linked to the reservation service.
             """
             return await service.get_events_by_alias(alias, event_state)
 

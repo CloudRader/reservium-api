@@ -6,13 +6,14 @@ from typing import Annotated, Any
 
 from api import get_current_user
 from core import email_connection, settings
-from core.models import CalendarModel, ReservationServiceModel
 from core.schemas import (
+    CalendarLite,
     EmailCreate,
     EmailMeta,
-    Event,
+    EventDetail,
     RegistrationFormCreate,
-    User,
+    ReservationServiceLite,
+    UserLite,
 )
 from fastapi import APIRouter, Depends, status
 from fastapi_mail import FastMail, MessageSchema, MessageType
@@ -43,14 +44,14 @@ def render_email_template(template_name: str, context: dict) -> str:
 )
 async def send_registration_form(
     service: Annotated[EmailService, Depends(EmailService)],
-    user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[UserLite, Depends(get_current_user)],
     registration_form: RegistrationFormCreate,
 ) -> Any:
     """
     Send email with PDF attachment with reservation request to dorm head's email address.
 
     :param service: Email service.
-    :param user: User who make this request.
+    :param user: UserLite who make this request.
     :param registration_form: RegistrationFormCreate schema.
 
     :returns Dictionary: Confirming that the registration form has been sent.
@@ -96,14 +97,14 @@ async def send_email(email_create: EmailCreate) -> Any:
 
 async def preparing_email(
     service_event: Annotated[EventService, Depends(EventService)],
-    event: Event,
+    event: EventDetail,
     email_meta: EmailMeta,
 ) -> Any:
     """
     Prepare and send both member and manager information emails based on an event.
 
-    :param service_event: Event service to resolve event relationships.
-    :param event: The Event object in db.
+    :param service_event: EventExtra service to resolve event relationships.
+    :param event: The EventExtra object in db.
     :param email_meta: Email metadata containing template name, subject and reason.
     :return: Dictionary confirming the emails have been sent.
     """
@@ -163,19 +164,19 @@ def construct_email(
 
 
 def construct_body_context(
-    event: Event,
-    user: User,
-    reservation_service: ReservationServiceModel,
-    calendar: CalendarModel,
+    event: EventDetail,
+    user: UserLite,
+    reservation_service: ReservationServiceLite,
+    calendar: CalendarLite,
     reason: str,
 ) -> dict:
     """
     Construct a dictionary of context variables to render an email template.
 
-    :param event: Event object in db.
-    :param user: User object in db.
-    :param reservation_service: ReservationService object in db.
-    :param calendar: Calendar object in db.
+    :param event: EventExtra object in db.
+    :param user: UserLite object in db.
+    :param reservation_service: ReservationServiceDetail object in db.
+    :param calendar: CalendarDetail object in db.
     :param reason: Optional reason string to include in the message.
     :return: Context dictionary for email rendering.
     """

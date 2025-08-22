@@ -7,7 +7,7 @@ from core import settings
 from core.application.exceptions import ERROR_RESPONSES
 from core.schemas import (
     ClubAccessSystemRequest,
-    Event,
+    EventDetail,
     VarSymbolCreateUpdate,
     VarSymbolDelete,
 )
@@ -158,13 +158,13 @@ async def get_access_group(
 
 async def add_or_update_access_to_reservation_areas(
     service_event: Annotated[EventService, Depends(EventService)],
-    event: Event,
+    event: EventDetail,
 ) -> Any:
     """
     Add or update access control entries for a reservation event.
 
-    :param service_event: Event service to resolve event relationships.
-    :param event: The Event object in db.
+    :param service_event: EventExtra service to resolve event relationships.
+    :param event: The EventExtra object in db.
 
     :return: A success message indicating that the access entries were processed.
     """
@@ -209,13 +209,13 @@ async def add_or_update_access_to_reservation_areas(
 
 async def delete_access_to_reservation_areas(
     service_event: Annotated[EventService, Depends(EventService)],
-    event: Event,
+    event: EventDetail,
 ) -> Any:
     """
     Delete access control entries for a reservation event.
 
-    :param service_event: Event service to resolve event relationships.
-    :param event: The Event object in db.
+    :param service_event: EventExtra service to resolve event relationships.
+    :param event: The EventExtra object in db.
 
     :return: A success message indicating that the access entries were processed.
     """

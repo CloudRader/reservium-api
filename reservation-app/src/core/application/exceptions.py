@@ -17,9 +17,9 @@ class Message(BaseModel):
 class Entity(Enum):
     """Enum for entity names."""
 
-    USER = "User"
-    CALENDAR = "Calendar"
-    EVENT = "Event"
+    USER = "UserLite"
+    CALENDAR = "CalendarDetail"
+    EVENT = "EventExtra"
     MINI_SERVICE = "Mini Service"
     RESERVATION_SERVICE = "Reservation Service"
     EMAIL = "Email"
@@ -113,7 +113,7 @@ class PermissionDeniedError(BaseAppError):
     """Exception raised when a user does not have the required permissions."""
 
     STATUS_CODE = status.HTTP_403_FORBIDDEN
-    DESCRIPTION = "User does not have the required permissions."
+    DESCRIPTION = "UserLite does not have the required permissions."
 
     def __init__(self, message: str | None = None, **kwargs):
         super().__init__(

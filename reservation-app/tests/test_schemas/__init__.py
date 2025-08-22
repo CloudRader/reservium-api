@@ -1,1 +1,1 @@
-"""Package for test Schema modules."""
+"""Package for test SchemaLite modules."""

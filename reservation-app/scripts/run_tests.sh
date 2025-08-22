@@ -2,7 +2,7 @@
 
 set -e # stop script execution after failure of any command
 
-src_dir="../app"
+src_dir="../src"
 
 usage() {
   echo "Usage: $0 [-c] [-r] [-f value] args

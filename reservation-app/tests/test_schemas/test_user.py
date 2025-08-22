@@ -1,9 +1,9 @@
-"""Tests for User Pydantic Schemas."""
+"""Tests for UserLite Pydantic Schemas."""
 
 from datetime import datetime
 
 import pytest
-from core.schemas.user import User, UserCreate, UserInDBBase, UserUpdate
+from core.schemas.user import UserCreate, UserLite, UserUpdate
 from pydantic import ValidationError
 
 
@@ -50,7 +50,7 @@ def test_user_update_partial_schema():
 
 def test_user_in_db_base_schema():
     """Test full user DB representation."""
-    user = UserInDBBase(
+    user = UserLite(
         id=42,
         username="TestUser",
         full_name="Gars Lars",
@@ -66,9 +66,9 @@ def test_user_in_db_base_schema():
 
 
 def test_user_schema_extends_base():
-    """Test that User schema includes all base fields."""
+    """Test that UserLite schema includes all base fields."""
     now = datetime.now()
-    user = User(
+    user = UserLite(
         id=1,
         username="TestUser",
         full_name="Gars Lars",
@@ -78,7 +78,7 @@ def test_user_schema_extends_base():
         deleted_at=now,
         roles=["Tech"],
     )
-    assert isinstance(user, UserInDBBase)
+    assert isinstance(user, UserLite)
     assert user.deleted_at == now
 
 

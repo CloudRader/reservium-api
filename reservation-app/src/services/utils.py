@@ -18,7 +18,7 @@ def first_standard_check(
 
     That user can't reserve before current date.
 
-    :param services: User services from IS.
+    :param services: UserLite services from IS.
     :param reservation_service: Reservation Service object in db.
     :param start_time: Start time of the reservation.
     :param end_time: End time of the reservation.

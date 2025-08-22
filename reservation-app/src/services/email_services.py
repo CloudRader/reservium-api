@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any
 
-from core.schemas import EmailCreate, RegistrationFormCreate, User
+from core.schemas import EmailCreate, RegistrationFormCreate, UserLite
 from pypdf import PdfReader, PdfWriter
 
 
@@ -21,15 +21,15 @@ class AbstractEmailService(ABC):
     def prepare_registration_form(
         self,
         registration_form: RegistrationFormCreate,
-        full_name: User,
+        full_name: UserLite,
     ) -> Any:
         """
         Prepare registration form in pdf for sending to head of the dormitory.
 
         :param registration_form: Input data for adding in pdf.
-        :param full_name: User fullname.
+        :param full_name: UserLite fullname.
 
-        :returns Event json object: the created event or exception otherwise.
+        :returns EventExtra json object: the created event or exception otherwise.
         """
 
 
@@ -85,7 +85,7 @@ class EmailService(AbstractEmailService):
 
         email_create = EmailCreate(
             email=[registration_form.email, registration_form.manager_contact_mail],
-            subject="Event Registration",
+            subject="EventExtra Registration",
             body=(f"Request to reserve an event for a member {full_name}"),
             attachment=output_path,
         )

@@ -7,7 +7,7 @@ from core.application.exceptions import (
     ERROR_RESPONSES,
     Entity,
 )
-from core.schemas import MiniService, MiniServiceCreate, MiniServiceUpdate
+from core.schemas import MiniServiceCreate, MiniServiceDetail, MiniServiceLite, MiniServiceUpdate
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import MiniServiceService
 
@@ -18,7 +18,8 @@ class MiniServiceRouter(
     BaseCRUDRouter[
         MiniServiceCreate,
         MiniServiceUpdate,
-        MiniService,
+        MiniServiceLite,
+        MiniServiceDetail,
         MiniServiceService,
     ]
 ):
@@ -26,7 +27,7 @@ class MiniServiceRouter(
     API router for managing Mini Services.
 
     This class extends `BaseCRUDRouter` to automatically register standard
-    CRUD routes for the `MiniService` entity and adds custom endpoints
+    CRUD routes for the `MiniServiceDetail` entity and adds custom endpoints
     specific to Mini Services.
     """
 
@@ -36,7 +37,8 @@ class MiniServiceRouter(
             service_dep=MiniServiceService,
             schema_create=MiniServiceCreate,
             schema_update=MiniServiceUpdate,
-            schema=MiniService,
+            schema_lite=MiniServiceLite,
+            schema_detail=MiniServiceDetail,
             entity_name=Entity.MINI_SERVICE,
         )
 
@@ -44,7 +46,7 @@ class MiniServiceRouter(
 
         @router.get(
             "/name/{name}",
-            response_model=MiniService,
+            response_model=MiniServiceDetail,
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )

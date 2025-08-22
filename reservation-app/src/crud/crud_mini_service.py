@@ -32,7 +32,7 @@ class AbstractCRUDMiniService(
         include_removed: bool = False,
     ) -> MiniServiceModel | None:
         """
-        Retrieve a Calendar instance by its name.
+        Retrieve a MiniService instance by its name.
 
         :param name: The name of the Mini Service.
         :param include_removed: Include removed object or not.
