@@ -1,32 +1,46 @@
 services:
   db:
-    container_name: buk-reservation-db
-    image: postgres:13.4
+    container_name: reservation-db
+    image: postgres:17.6
     restart: on-failure
     environment:
-      - POSTGRES_USER=dev
-      - POSTGRES_PASSWORD=pass
-      - POSTGRES_DB=devdb
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: devdb
+      POSTGRES_DATA: /var/lib/postgresql/data
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
       - internal
+
   backend:
-    container_name: buk-reservation-backendls
+    container_name: reservation-backend
     build:
       context: .
       dockerfile: Dockerfile
-#    image: darkrader/buk-reservation-backend-poetry:latest
+#    image: darkrader/reservation-backend:latest
     environment:
       - DB__POSTGRES_SERVER=db
     depends_on:
       - db
     restart: on-failure
+    # TODO finish action restart and rebuild
+#    develop:
+#      watch:
+#        - action: sync+restart
+#          path: ./reservation-app/src
+#          target: /usr/src/app/src
     volumes:
-      - ./:/app
+      - ./reservation-app/src:/usr/src/app/src
     ports:
       - "8000:8000"
     networks:
       - internal
+
 networks:
   internal:
+
+volumes:
+  postgres_data:

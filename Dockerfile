@@ -24,9 +24,7 @@ ENV PATH="$VENV_PATH/bin:$PATH"
 
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 
-# non-root
 RUN useradd --uid 8001 --user-group --home-dir $HOME --create-home app
-USER 8001
 WORKDIR $HOME
 RUN mkdir output tmp
 
@@ -37,4 +35,7 @@ COPY reservation-app ./
 
 WORKDIR $HOME/src
 
-ENTRYPOINT ["python", "main.py"]
+RUN chmod +x ../scripts/run_migrations.sh
+
+ENTRYPOINT ["../scripts/run_migrations.sh"]
+CMD ["python", "main.py"]
