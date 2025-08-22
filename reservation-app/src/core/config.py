@@ -4,7 +4,7 @@ import logging
 from typing import Literal
 
 from pydantic import BaseModel, PostgresDsn
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from .utils import get_env_file_path
 
@@ -168,13 +168,12 @@ class Settings(BaseSettings):
     GOOGLE: GoogleConfig
     DORMITORY_ACCESS_SYSTEM: DormitoryAccessSystemConfig
 
-    class Config:
-        """Config class."""
-
-        case_sensitive = True
-        env_settings = True
-        env_nested_delimiter = "__"
-        env_file = get_env_file_path([".env.template", ".env"])
+    model_config = SettingsConfigDict(
+        case_sensitive=True,
+        env_settings=True,
+        env_nested_delimiter="__",
+        env_file=get_env_file_path([".env.template", ".env"]),
+    )
 
 
 settings = Settings()  # type: ignore[call-arg] # reason: Pydantic handles attribute initialization

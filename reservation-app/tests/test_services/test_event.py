@@ -171,18 +171,104 @@ async def test_confirm_event(service_event, event, user):
 
 
 @pytest.mark.asyncio
-def test_description_of_event(service_event, user, event_create_form):
+async def test_description_of_event(service_event, user, event_create_form):
     """Test utils function in services."""
     event_create_form.additional_services = ["Bar", "Console"]
-    result = service_event.description_of_event(user, event_create_form)
+    result = service_event._description_of_event(user, event_create_form)
     assert result is not None
     assert isinstance(result, str)
 
 
 @pytest.mark.asyncio
-def test_ready_event(service_event, calendar, event_create_form, user):
+async def test_ready_event(service_event, calendar, event_create_form, user):
     """Test utils function in services."""
-    result = service_event.construct_event_body(calendar, event_create_form, user)
+    result = service_event._construct_event_body(calendar, event_create_form, user)
     assert result is not None
     assert isinstance(result, dict)
     assert result["summary"] == calendar.reservation_type
+
+
+@pytest.mark.asyncio
+async def test_first_standard_check(services_data_from_is, reservation_service, service_event):
+    """Test utils function in services."""
+    start_time = dt.datetime.now() - dt.timedelta(hours=1)
+    with pytest.raises(SoftValidationError) as exc_info:
+        service_event._first_standard_check(
+            services_data_from_is,
+            reservation_service,
+            start_time,
+        )
+    assert str(exc_info.value) == f"You don't have {reservation_service.alias} service!"
+
+    services_data_from_is[0].service.alias = "game"
+    with pytest.raises(SoftValidationError) as exc_info:
+        service_event._first_standard_check(
+            services_data_from_is,
+            reservation_service,
+            start_time,
+        )
+    assert str(exc_info.value) == "You can't make a reservation before the present time!"
+
+    start_time = dt.datetime.now() + dt.timedelta(hours=5)
+    service_event._first_standard_check(
+        services_data_from_is,
+        reservation_service,
+        start_time,
+    )
+
+
+@pytest.mark.asyncio
+async def test_control_res_in_advance(rules_schema, service_event):
+    """Test utils function in services."""
+    start_time = dt.datetime.now() + dt.timedelta(days=5)
+    result = service_event._control_res_in_advance_or_prior(start_time, rules_schema, True)
+    assert result is True
+    start_time = dt.datetime.now() + dt.timedelta(days=1)
+    result = service_event._control_res_in_advance_or_prior(start_time, rules_schema, True)
+    assert result is False
+
+
+@pytest.mark.asyncio
+async def test_reservation_in_advance(rules_schema, service_event):
+    """Test utils function in services."""
+    start_time = dt.datetime.now() + dt.timedelta(days=1)
+    with pytest.raises(SoftValidationError) as exc_info:
+        service_event._reservation_in_advance(start_time, rules_schema)
+    assert str(exc_info.value) == (
+        f"You have to make reservations "
+        f"{rules_schema.in_advance_hours} hours and "
+        f"{rules_schema.in_advance_minutes} minutes in advance!"
+    )
+
+    start_time = dt.datetime.now() + dt.timedelta(days=15)
+    with pytest.raises(SoftValidationError) as exc_info:
+        service_event._reservation_in_advance(start_time, rules_schema)
+    assert str(exc_info.value) == (
+        f"You can't make reservations earlier than {rules_schema.in_prior_days} days in advance!"
+    )
+
+    start_time = dt.datetime.now() + dt.timedelta(days=7)
+    service_event._reservation_in_advance(start_time, rules_schema)
+
+
+@pytest.mark.asyncio
+async def test_check_max_user_reservation_hours(rules_schema, service_event):
+    """Test utils function in services."""
+    exception = (
+        f"Reservation exceeds the allowed maximum of {rules_schema.max_reservation_hours} hours."
+    )
+    start_time = dt.datetime.now()
+    end_time = dt.datetime.now() + dt.timedelta(days=370)
+    with pytest.raises(SoftValidationError) as exc_info:
+        service_event._check_max_user_reservation_hours(start_time, end_time, rules_schema)
+    assert str(exc_info.value) == exception
+    end_time = dt.datetime.now() + dt.timedelta(days=40)
+    with pytest.raises(SoftValidationError) as exc_info:
+        service_event._check_max_user_reservation_hours(start_time, end_time, rules_schema)
+    assert str(exc_info.value) == exception
+    end_time = dt.datetime.now() + dt.timedelta(hours=33)
+    with pytest.raises(SoftValidationError) as exc_info:
+        service_event._check_max_user_reservation_hours(start_time, end_time, rules_schema)
+    assert str(exc_info.value) == exception
+    end_time = dt.datetime.now() + dt.timedelta(hours=31)
+    service_event._check_max_user_reservation_hours(start_time, end_time, rules_schema)

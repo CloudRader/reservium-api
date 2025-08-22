@@ -22,6 +22,7 @@ from core.schemas import (
     EventUpdate,
     EventUpdateTime,
     ReservationServiceDetail,
+    Rules,
     ServiceValidity,
     UserLite,
 )
@@ -30,11 +31,6 @@ from crud import CRUDCalendar, CRUDEvent, CRUDReservationService, CRUDUser
 from fastapi import Depends
 from pytz import timezone
 from services import CrudServiceBase
-from services.utils import (
-    dif_days_res,
-    first_standard_check,
-    reservation_in_advance,
-)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -268,14 +264,14 @@ class EventService(AbstractEventService):
         user: UserLite,
         calendar: CalendarDetail,
     ) -> Any:
-        await self.__control_conditions_and_permissions(
+        await self._control_conditions_and_permissions(
             user,
             services,
             event_input,
             calendar,
         )
 
-        return self.construct_event_body(calendar, event_input, user)
+        return self._construct_event_body(calendar, event_input, user)
 
     async def create_event(
         self,
@@ -509,33 +505,29 @@ class EventService(AbstractEventService):
 
         return await self.crud.confirm_event(uuid)
 
-    async def __control_conditions_and_permissions(
+    async def get_events_by_user_roles(
+        self,
+        user: UserLite,
+        event_state: EventState | None = None,
+    ) -> list[EventDetail]:
+        return await self.crud.get_events_by_aliases(user.roles, event_state)
+
+    async def _control_conditions_and_permissions(
         self,
         user: UserLite,
         services: list[ServiceValidity],
         event_input: EventCreate,
         calendar: CalendarDetail,
     ):
-        """
-        Check conditions and permissions for creating an event.
-
-        :param user: UserLite object in db.
-        :param services: UserLite services from IS.
-        :param event_input: Input data for creating the event.
-        :param calendar: CalendarDetail object in db.
-
-        :return: Message indicating whether access is granted or denied.
-        """
+        """Check conditions and permissions for creating an event."""
         reservation_service = await self.reservation_service_crud.get(
             calendar.reservation_service_id,
         )
 
-        # Check of the membership
-        first_standard_check(
+        self._first_standard_check(
             services,
             reservation_service,
             event_input.start_datetime,
-            event_input.end_datetime,
         )
 
         if (
@@ -548,31 +540,17 @@ class EventService(AbstractEventService):
             )
 
         # Choose user rules
-        user_rules = await self.__choose_user_rules(user, calendar)
+        user_rules = await self._choose_user_rules(user, calendar)
 
-        # Reservation no more than 24 hours
-        if not dif_days_res(
-            event_input.start_datetime,
-            event_input.end_datetime,
-            user_rules,
-        ):
-            raise SoftValidationError(
-                f"Reservation exceeds the allowed maximum of "
-                f"{user_rules.max_reservation_hours} hours."
-            )
+        self._check_max_user_reservation_hours(
+            event_input.start_datetime, event_input.end_datetime, user_rules
+        )
 
         # Check reservation in advance and prior
-        reservation_in_advance(event_input.start_datetime, user_rules)
+        self._reservation_in_advance(event_input.start_datetime, user_rules)
 
-    async def __choose_user_rules(self, user: UserLite, calendar: CalendarDetail):
-        """
-        Choose user rules based on the calendar rules and user roles.
-
-        :param user: UserLite object in db.
-        :param calendar: CalendarDetail object in db.
-
-        :return: Rules object.
-        """
+    async def _choose_user_rules(self, user: UserLite, calendar: CalendarDetail):
+        """Choose user rules based on the calendar rules and user roles."""
         reservation_service = await self.reservation_service_crud.get(
             calendar.reservation_service_id,
         )
@@ -583,32 +561,43 @@ class EventService(AbstractEventService):
             return calendar.manager_rules
         return calendar.active_member_rules
 
-    @staticmethod
-    def description_of_event(
-        user: UserLite,
-        event_input: EventCreate | EventDetail,
+    def _first_standard_check(
+        self,
+        services: list[ServiceValidity],
+        reservation_service: ReservationServiceDetail,
+        start_time,
     ):
         """
-        Describe the event.
+        Check if the user is reserving the service user has.
 
-        :param user: UserLite object in db.
-        :param event_input: Input data for creating the event.
-
-        :return: String of the description.
+        And that user can't reserve before current date.
         """
-        formatted_services: str = "-"
-        if event_input.additional_services:
-            formatted_services = ", ".join(event_input.additional_services)
-        return (
-            f"Name: {user.full_name}\n"
-            f"Room: {user.room_number}\n"
-            f"Participants: {event_input.guests}\n"
-            f"Purpose: {event_input.purpose}\n"
-            f"\n"
-            f"Additionals: {formatted_services}\n"
-        )
+        # Check of the membership
+        if not self._service_availability_check(services, reservation_service.alias):
+            raise SoftValidationError(f"You don't have {reservation_service.alias} service!")
 
-    def construct_event_body(
+        # Check error reservation
+        if start_time < dt.datetime.now():
+            raise SoftValidationError("You can't make a reservation before the present time!")
+
+    def _reservation_in_advance(self, start_time, user_rules):
+        """Check if the reservation is made within the specified advance and prior time."""
+        # Reservation in advance
+        if not self._control_res_in_advance_or_prior(start_time, user_rules, True):
+            raise SoftValidationError(
+                f"You have to make reservations "
+                f"{user_rules.in_advance_hours} hours and "
+                f"{user_rules.in_advance_minutes} minutes in advance!"
+            )
+
+        # Reservation prior than
+        if not self._control_res_in_advance_or_prior(start_time, user_rules, False):
+            raise SoftValidationError(
+                f"You can't make reservations earlier than {user_rules.in_prior_days} "
+                f"days in advance!"
+            )
+
+    def _construct_event_body(
         self,
         calendar: CalendarDetail,
         event_input: EventCreate,
@@ -629,13 +618,68 @@ class EventService(AbstractEventService):
         end_time = prague.localize(event_input.end_datetime).isoformat()
         return {
             "summary": calendar.reservation_type,
-            "description": self.description_of_event(user, event_input),
+            "description": self._description_of_event(user, event_input),
             "start": {"dateTime": start_time, "timeZone": "Europe/Prague"},
             "end": {"dateTime": end_time, "timeZone": "Europe/Prague"},
             "attendees": [
                 {"email": event_input.email},
             ],
         }
+
+    @staticmethod
+    def _service_availability_check(services: list[ServiceValidity], service_alias) -> bool:
+        """Check if the user is reserving the service user has."""
+        return any(service.service.alias == service_alias for service in services)
+
+    @staticmethod
+    def _check_max_user_reservation_hours(start_datetime, end_datetime, user_rules: Rules):
+        """Check if the reservation duration is less than user can reserve."""
+        duration = end_datetime - start_datetime
+        if duration >= dt.timedelta(hours=user_rules.max_reservation_hours):
+            raise SoftValidationError(
+                f"Reservation exceeds the allowed maximum of "
+                f"{user_rules.max_reservation_hours} hours."
+            )
+
+    @staticmethod
+    def _control_res_in_advance_or_prior(
+        start_time,
+        user_rules: Rules,
+        in_advance: bool,
+    ) -> bool:
+        """Check if the reservation is made within the specified advance or prior time."""
+        current_time = dt.datetime.now()
+
+        time_difference = abs(start_time - current_time)
+
+        if in_advance:
+            if time_difference < dt.timedelta(
+                minutes=user_rules.in_advance_minutes,
+                hours=user_rules.in_advance_hours,
+            ):
+                return False
+        else:
+            if time_difference > dt.timedelta(days=user_rules.in_prior_days):
+                return False
+        return True
+
+    @staticmethod
+    def _description_of_event(
+        user: UserLite,
+        event_input: EventCreate | EventDetail,
+    ):
+        """Describe the event in google calendar."""
+        formatted_services: str = "-"
+        if event_input.additional_services:
+            formatted_services = ", ".join(event_input.additional_services)
+        return (
+            f"Name: {user.full_name}\n"
+            f"Room: {user.room_number}\n"
+            f"Participants: {event_input.guests}\n"
+            f"Purpose: {event_input.purpose}\n"
+            f"\n"
+            f"Additionals: {formatted_services}\n"
+        )
 
     @staticmethod
     def datetime_for_update(
@@ -655,10 +699,3 @@ class EventService(AbstractEventService):
             event_update.reservation_end = event.reservation_end
 
         return event_update
-
-    async def get_events_by_user_roles(
-        self,
-        user: UserLite,
-        event_state: EventState | None = None,
-    ) -> list[EventDetail]:
-        return await self.crud.get_events_by_aliases(user.roles, event_state)

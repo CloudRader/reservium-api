@@ -143,7 +143,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         if db_obj is None or obj_in is None:
             return None
 
-        update_data = obj_in if isinstance(obj_in, dict) else obj_in.dict(exclude_unset=True)
+        update_data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
 
         for field, value in update_data.items():
             setattr(db_obj, field, value)

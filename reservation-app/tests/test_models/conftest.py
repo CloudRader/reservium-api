@@ -25,7 +25,6 @@ def create_mini_service_uuid():
     return uuid4().hex
 
 
-@pytest.mark.asyncio
 @pytest_asyncio.fixture
 async def test_user(async_session):
     """Creates and returns a sample user for testing."""
@@ -44,7 +43,6 @@ async def test_user(async_session):
     return user
 
 
-@pytest.mark.asyncio
 @pytest_asyncio.fixture
 async def test_reservation_service(async_session, create_reservation_service_uuid):
     """Creates and returns a sample reservation service for testing."""
@@ -62,7 +60,6 @@ async def test_reservation_service(async_session, create_reservation_service_uui
     return reservation_service
 
 
-@pytest.mark.asyncio
 @pytest_asyncio.fixture
 async def test_mini_service(
     async_session,
@@ -94,7 +91,6 @@ def rules_club_member() -> Rules:
     )
 
 
-@pytest.mark.asyncio
 @pytest_asyncio.fixture
 async def test_calendar(
     async_session,
