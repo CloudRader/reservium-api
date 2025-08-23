@@ -121,7 +121,7 @@ async def test_get_by_id_include_removed(mini_service_crud, test_mini_service):
     """Test retrieving a soft-deleted mini service by ID with include_removed=True."""
     await mini_service_crud.soft_remove(test_mini_service.id)
     service = await mini_service_crud.get(
-        uuid=test_mini_service.id,
+        id_=test_mini_service.id,
         include_removed=True,
     )
     assert service is not None

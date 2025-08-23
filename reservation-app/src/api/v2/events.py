@@ -114,7 +114,7 @@ async def get_by_user_roles(
 
 
 @router.put(
-    "/{event_id}/approve-time-change-request",
+    "/{id}/approve-time-change-request",
     response_model=EventDetail,
     responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
@@ -122,7 +122,7 @@ async def get_by_user_roles(
 async def approve_time_change_request(
     service: Annotated[EventService, Depends(EventService)],
     user: Annotated[UserLite, Depends(get_current_user)],
-    event_id: Annotated[str, Path()],
+    id_: Annotated[str, Path(alias="id")],
     approve: bool = Query(False),
     manager_notes: Annotated[str, Body()] = "-",
 ) -> Any:
@@ -133,16 +133,16 @@ async def approve_time_change_request(
 
     :param service: EventExtra service.
     :param user: UserLite who make this request.
-    :param event_id: uuid of the event.
+    :param id_: id of the event.
     :param approve: Approve this update or not.
     :param manager_notes: Note for update or decline update reservation time.
 
     :returns EventModel: the updated event.
     """
     google_calendar_service = GoogleCalendarService()
-    event: EventDetail = await service.get(event_id)
+    event: EventDetail = await service.get(id_)
     if not event:
-        raise EntityNotFoundError(Entity.EVENT, event_id)
+        raise EntityNotFoundError(Entity.EVENT, id_)
 
     event_update: EventUpdate = EventUpdate(
         event_state=EventState.CONFIRMED,
@@ -152,12 +152,12 @@ async def approve_time_change_request(
 
     if not approve:
         event_to_update = await service.approve_update_reservation_time(
-            event_id,
+            id_,
             event_update,
             user,
         )
         if not event_to_update:
-            raise EntityNotFoundError(Entity.EVENT, event_id)
+            raise EntityNotFoundError(Entity.EVENT, id_)
 
         await preparing_email(
             service,
@@ -169,19 +169,17 @@ async def approve_time_change_request(
             ),
         )
     else:
-        event_from_google_calendar = await google_calendar_service.get_event(
-            event.calendar_id, event_id
-        )
+        event_from_google_calendar = await google_calendar_service.get_event(event.calendar_id, id_)
         event_update.reservation_start = event.requested_reservation_start
         event_update.reservation_end = event.requested_reservation_end
 
         event_to_update = await service.approve_update_reservation_time(
-            event_id,
+            id_,
             event_update,
             user,
         )
         if not event_to_update:
-            raise EntityNotFoundError(Entity.EVENT, event_id)
+            raise EntityNotFoundError(Entity.EVENT, id_)
         prague = timezone("Europe/Prague")
         event_from_google_calendar.start.date_time = prague.localize(
             event.reservation_start,
@@ -200,14 +198,14 @@ async def approve_time_change_request(
         )
 
         await google_calendar_service.update_event(
-            event.calendar_id, event_id, event_from_google_calendar
+            event.calendar_id, id_, event_from_google_calendar
         )
 
     return event_to_update
 
 
 @router.put(
-    "/{event_id}",
+    "/{id}",
     response_model=EventDetail,
     responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
@@ -215,30 +213,30 @@ async def approve_time_change_request(
 async def update(
     service: Annotated[EventService, Depends(EventService)],
     user: Annotated[UserLite, Depends(get_current_user)],
-    event_id: Annotated[str, Path()],
+    id_: Annotated[str, Path(alias="id")],
     event_update: Annotated[EventUpdate, Body()],
     reason: Annotated[str, Body()] = "",
 ) -> Any:
     """
-    Update object with id equal to event_id.
+    Update object.
 
     Only users with special roles can update object.
 
     :param service: Service providing business logic of this object.
     :param user: UserLite who make this request.
-    :param event_id: id of the object.
+    :param id_: id of the object.
     :param event_update: ObjectUpdate schema.
     :param reason: Annotated[str, Body()] = "",
 
     :returns ObjectSchema: the updated object.
     """
     google_calendar_service = GoogleCalendarService()
-    event = await service.update_with_permission_checks(event_id, event_update, user)
+    event = await service.update_with_permission_checks(id_, event_update, user)
     if not event:
-        raise EntityNotFoundError(Entity.EVENT, event_id)
+        raise EntityNotFoundError(Entity.EVENT, id_)
 
     event_to_update = await google_calendar_service.get_event(event.calendar_id, event.id)
-    event_to_update.description = service.description_of_event(user, event)
+    event_to_update.description = service._description_of_event(user, event)
     await google_calendar_service.update_event(event.calendar_id, event.id, event_to_update)
 
     await preparing_email(
@@ -255,7 +253,7 @@ async def update(
 
 
 @router.put(
-    "/{event_id}/request-time-change",
+    "/{id}/request-time-change",
     response_model=EventDetail,
     responses=ERROR_RESPONSES["400_401_403"],
     status_code=status.HTTP_200_OK,
@@ -263,30 +261,30 @@ async def update(
 async def request_time_change(
     service: Annotated[EventService, Depends(EventService)],
     user: Annotated[UserLite, Depends(get_current_user)],
-    event_id: Annotated[str, Path()],
+    id_: Annotated[str, Path(alias="id")],
     event_update: Annotated[EventUpdateTime, Body()],
     reason: Annotated[str, Body()] = "",
 ) -> Any:
     """
-    Request Update reservation time with uuid equal to 'event_id'.
+    Request Update reservation time.
 
     Only user that create this reservation can request it.
 
     :param service: EventExtra service.
     :param user: UserLite who make this request.
-    :param event_id: uuid of the event.
+    :param id_: id of the event.
     :param event_update: EventUpdate schema.
     :param reason: Reason to change reservation time.
 
     :returns EventModel: the updated event.
     """
     event: EventDetail = await service.request_update_reservation_time(
-        event_id,
+        id_,
         event_update,
         user,
     )
     if not event:
-        raise EntityNotFoundError(Entity.EVENT, event_id)
+        raise EntityNotFoundError(Entity.EVENT, id_)
     await preparing_email(
         service,
         event,
@@ -300,7 +298,7 @@ async def request_time_change(
 
 
 @router.put(
-    "/{event_id}/approve",
+    "/{id}/approve",
     response_model=EventDetail,
     responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_200_OK,
@@ -308,18 +306,18 @@ async def request_time_change(
 async def approve_reservation(
     service: Annotated[EventService, Depends(EventService)],
     user: Annotated[UserLite, Depends(get_current_user)],
-    event_id: Annotated[str, Path()],
+    id_: Annotated[str, Path(alias="id")],
     approve: bool = Query(False),
     manager_notes: Annotated[str, Body()] = "-",
 ) -> Any:
     """
-    Approve reservation with uuid equal to 'event_id'.
+    Approve reservation.
 
     Only users with special roles can approve reservation.
 
     :param service: EventExtra service.
     :param user: UserLite who make this approve.
-    :param event_id: uuid of the event.
+    :param id_: uuid of the event.
     :param approve: Approve this reservation or not.
     :param manager_notes: Note for approve or decline reservation.
 
@@ -327,13 +325,13 @@ async def approve_reservation(
     """
     google_calendar_service = GoogleCalendarService()
     if approve:
-        event = await service.confirm_event(event_id, user)
+        event = await service.confirm_event(id_, user)
         if not event:
-            raise EntityNotFoundError(Entity.EVENT, event_id)
+            raise EntityNotFoundError(Entity.EVENT, id_)
     else:
-        event = await service.cancel_event(event_id, user)
+        event = await service.cancel_event(id_, user)
         if not event:
-            raise EntityNotFoundError(Entity.EVENT, event_id)
+            raise EntityNotFoundError(Entity.EVENT, id_)
 
     if approve:
         calendar = await service.get_calendar_of_this_event(event)
@@ -370,7 +368,7 @@ async def approve_reservation(
 
 
 @router.delete(
-    "/{event_id}",
+    "/{id}",
     response_model=EventDetail,
     responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_200_OK,
@@ -378,25 +376,25 @@ async def approve_reservation(
 async def cancel(
     service: Annotated[EventService, Depends(EventService)],
     user: Annotated[UserLite, Depends(get_current_user)],
-    event_id: Annotated[str, Path()],
+    id_: Annotated[str, Path(alias="id")],
     cancel_reason: Annotated[str, Body()] = "",
 ) -> Any:
     """
-    Delete event with id equal to 'event_id'.
+    Cancel event.
 
     Only user who make this reservation can cancel this reservation.
 
     :param service: EventExtra service.
     :param user: UserLite who make this reservation.
-    :param event_id: id of the event.
+    :param id_: id of the event.
     :param cancel_reason: reason cancellation this reservation.
 
     :returns EventModel: the canceled reservation.
     """
     google_calendar_service = GoogleCalendarService()
-    event = await service.cancel_event(event_id, user)
+    event = await service.cancel_event(id_, user)
     if not event:
-        raise EntityNotFoundError(Entity.EVENT, event_id)
+        raise EntityNotFoundError(Entity.EVENT, id_)
 
     await google_calendar_service.delete_event(event.calendar_id, event.id)
 
@@ -421,7 +419,7 @@ async def cancel(
 
 
 @router.delete(
-    "/{event_id}/hard",
+    "/{id}/hard",
     response_model=EventDetail,
     responses=ERROR_RESPONSES["400_401_403_404"],
     status_code=status.HTTP_200_OK,
@@ -429,20 +427,20 @@ async def cancel(
 async def delete(
     service: Annotated[EventService, Depends(EventService)],
     user: Annotated[UserLite, Depends(get_current_user)],
-    event_id: Annotated[str, Path()],
+    id_: Annotated[str, Path(alias="id")],
 ) -> Any:
     """
-    Delete event with id equal to 'event_id'.
+    Delete event.
 
     Only managers and if event have state canceled.
 
     :param service: EventExtra service.
     :param user: UserLite who make this reservation.
-    :param event_id: id of the event.
+    :param id_: id of the event.
 
     :returns EventModel: the deleted event.
     """
-    event = await service.delete_with_permission_checks(event_id, user)
+    event = await service.delete_with_permission_checks(id_, user)
     if not event:
-        raise EntityNotFoundError(Entity.EVENT, event_id)
+        raise EntityNotFoundError(Entity.EVENT, id_)
     return event

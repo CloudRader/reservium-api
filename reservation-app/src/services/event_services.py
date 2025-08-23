@@ -71,7 +71,7 @@ class AbstractEventService(
         event_create: EventCreate,
         user: UserLite,
         event_state: EventState,
-        event_id: str,
+        id_: str,
     ) -> EventDetail | None:
         """
         Create an EventExtra in the database.
@@ -79,7 +79,7 @@ class AbstractEventService(
         :param event_create: EventCreate SchemaLite for create.
         :param user: the UserSchema for control permissions of the reservation service.
         :param event_state: State of the event.
-        :param event_id: EventExtra id in google calendar.
+        :param id_: EventExtra id in google calendar.
 
         :return: the created EventExtra.
         """
@@ -138,14 +138,14 @@ class AbstractEventService(
     @abstractmethod
     async def approve_update_reservation_time(
         self,
-        uuid: str,
+        id_: str,
         event_update: EventUpdate,
         user: UserLite,
     ) -> EventDetail | None:
         """
         Approve update a reservation time of the EventExtra in the database.
 
-        :param uuid: The uuid of the EventExtra.
+        :param id_: The id of the EventExtra.
         :param event_update: EventUpdate SchemaLite for update.
         :param user: the UserSchema for control permissions of the event.
 
@@ -155,14 +155,14 @@ class AbstractEventService(
     @abstractmethod
     async def update_with_permission_checks(
         self,
-        uuid: str,
+        id_: str,
         event_update: EventUpdate,
         user: UserLite,
     ) -> EventDetail | None:
         """
         Update a reservation of the EventExtra in the database.
 
-        :param uuid: The id of the EventExtra.
+        :param id_: The id of the EventExtra.
         :param event_update: EventUpdate SchemaLite for update.
         :param user: the UserSchema for control permissions of the event.
 
@@ -172,14 +172,14 @@ class AbstractEventService(
     @abstractmethod
     async def request_update_reservation_time(
         self,
-        uuid: str,
+        id_: str,
         event_update: EventUpdateTime,
         user: UserLite,
     ) -> EventDetail | None:
         """
         Update a reservation time of the EventExtra in the database.
 
-        :param uuid: The uuid of the EventExtra.
+        :param id_: The id of the EventExtra.
         :param event_update: EventUpdateTime SchemaLite for update.
         :param user: the UserSchema for control permissions of the event.
 
@@ -189,13 +189,13 @@ class AbstractEventService(
     @abstractmethod
     async def cancel_event(
         self,
-        uuid: str,
+        id_: str,
         user: UserLite,
     ) -> EventDetail | None:
         """
         Cancel an EventExtra in the database.
 
-        :param uuid: The uuid of the EventExtra.
+        :param id_: The id of the EventExtra.
         :param user: The user object used to control permissions
         for users authorized to perform this action.
 
@@ -205,24 +205,24 @@ class AbstractEventService(
     @abstractmethod
     async def delete_with_permission_checks(
         self,
-        uuid: str,
+        id_: str,
         user: UserLite,
     ) -> ReservationServiceDetail | None:
         """
         Delete an EventExtra in the database.
 
-        :param uuid: The uuid of the EventExtra.
+        :param id_: The id of the EventExtra.
         :param user: the UserSchema for control permissions of the event.
 
         :return: the deleted EventExtra.
         """
 
     @abstractmethod
-    async def confirm_event(self, uuid: str | None, user: UserLite) -> EventDetail | None:
+    async def confirm_event(self, id_: str | None, user: UserLite) -> EventDetail | None:
         """
         Confirm event.
 
-        :param uuid: The ID of the event to confirm.
+        :param id_: The id of the event to confirm.
         :param user: the UserSchema for control permissions users
         that can do this action.
 
@@ -278,10 +278,10 @@ class EventService(AbstractEventService):
         event_create: EventCreate,
         user: UserLite,
         event_state: EventState,
-        event_id: str,
+        id_: str,
     ) -> EventLite | None:
         event_create_to_db = EventLite(
-            id=event_id,
+            id=id_,
             reservation_start=event_create.start_datetime,
             reservation_end=event_create.end_datetime,
             purpose=event_create.purpose,
@@ -348,11 +348,11 @@ class EventService(AbstractEventService):
 
     async def approve_update_reservation_time(
         self,
-        uuid: str,
+        id_: str,
         event_update: EventUpdate,
         user: UserLite,
     ) -> EventLite | None:
-        event_to_update = await self.get(uuid)
+        event_to_update = await self.get(id_)
 
         if event_to_update is None:
             return None
@@ -369,15 +369,15 @@ class EventService(AbstractEventService):
                 f"You must be the {reservation_service.name} manager to update this event.",
             )
 
-        return await self.update(uuid, event_update)
+        return await self.update(id_, event_update)
 
     async def update_with_permission_checks(
         self,
-        uuid: str,
+        id_: str,
         event_update: EventUpdate,
         user: UserLite,
     ) -> EventDetail | None:
-        event_to_update = await self.get(uuid)
+        event_to_update = await self.get(id_)
 
         if event_to_update is None:
             return None
@@ -398,15 +398,15 @@ class EventService(AbstractEventService):
         if event_update.reservation_end < event_update.reservation_start:
             raise SoftValidationError("The end of a reservation cannot be before its beginning!")
 
-        return await self.update(uuid, event_update)
+        return await self.update(id_, event_update)
 
     async def request_update_reservation_time(
         self,
-        uuid: str,
+        id_: str,
         event_update: EventUpdateTime,
         user: UserLite,
     ) -> EventDetail | None:
-        event_to_update = await self.get(uuid)
+        event_to_update = await self.get(id_)
 
         if not event_to_update:
             return None
@@ -434,14 +434,14 @@ class EventService(AbstractEventService):
             requested_reservation_end=event_update.requested_reservation_end,
             event_state=EventState.UPDATE_REQUESTED,
         )
-        return await self.update(uuid, event_update_time)
+        return await self.update(id_, event_update_time)
 
     async def cancel_event(
         self,
-        uuid: str,
+        id_: str,
         user: UserLite,
     ) -> EventLite | None:
-        event: EventLite = await self.get(uuid)
+        event: EventLite = await self.get(id_)
         if not event:
             return None
 
@@ -462,14 +462,14 @@ class EventService(AbstractEventService):
 
         updated_event = EventUpdate(event_state=EventState.CANCELED)
 
-        return await self.update(uuid, updated_event)
+        return await self.update(id_, updated_event)
 
     async def delete_with_permission_checks(
         self,
-        uuid: str,
+        id_: str,
         user: UserLite,
     ) -> ReservationServiceDetail | None:
-        event = await self.crud.get(uuid, True)
+        event = await self.crud.get(id_, True)
 
         if event is None:
             return None
@@ -484,10 +484,10 @@ class EventService(AbstractEventService):
                 f"You must be the {reservation_service.name} manager to delete event.",
             )
 
-        return await self.crud.remove(uuid)
+        return await self.crud.remove(id_)
 
-    async def confirm_event(self, uuid: str | None, user: UserLite) -> EventDetail | None:
-        event: EventLite = await self.get(uuid)
+    async def confirm_event(self, id_: str | None, user: UserLite) -> EventDetail | None:
+        event: EventLite = await self.get(id_)
         if not event:
             return None
 
@@ -503,7 +503,7 @@ class EventService(AbstractEventService):
                 f"You must be the {reservation_service.name} manager to approve this reservation.",
             )
 
-        return await self.crud.confirm_event(uuid)
+        return await self.crud.confirm_event(id_)
 
     async def get_events_by_user_roles(
         self,

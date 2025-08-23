@@ -39,7 +39,7 @@ class AbstractCRUDService[
     @abstractmethod
     async def get(
         self,
-        uuid: str | int,
+        id_: str | int,
         include_removed: bool = False,
     ) -> SchemaDetail | None:
         """
@@ -48,7 +48,7 @@ class AbstractCRUDService[
         If include_removed is True retrieve a single record
         including marked as deleted.
 
-        :param uuid: the ID of the object to retrieve.
+        :param id_: the ID of the object to retrieve.
         :param include_removed: include removed object or not.
 
         :returns T: the retrieved object.
@@ -80,34 +80,34 @@ class AbstractCRUDService[
     @abstractmethod
     async def update(
         self,
-        uuid: str | int,
+        id_: str | int,
         obj_in: UpdateSchema,
     ) -> SchemaDetail | None:
         """
         Update an object in the database.
 
-        :param uuid: the ID of the object to update.
+        :param id_: the ID of the object to update.
         :param obj_in: the updated object.
 
         :returns T: the updated object.
         """
 
     @abstractmethod
-    async def remove(self, uuid: str | int | None) -> SchemaLite | None:
+    async def remove(self, id_: str | int | None) -> SchemaLite | None:
         """
         Delete an object from the database.
 
-        :param uuid: The ID of the object to delete.
+        :param id_: The ID of the object to delete.
         """
 
     @abstractmethod
-    async def soft_remove(self, uuid: str | int | None) -> SchemaLite | None:
+    async def soft_remove(self, id_: str | int | None) -> SchemaLite | None:
         """
-        Soft remove a record by its UUID.
+        Soft remove a record by its id_.
 
         Change attribute deleted_at to time of deletion
 
-        :param uuid: The ID of the object to delete.
+        :param id_: The ID of the object to delete.
         """
 
 
@@ -131,10 +131,10 @@ class CrudServiceBase(
 
     async def get(
         self,
-        uuid: str | int,
+        id_: str | int,
         include_removed: bool = False,
     ) -> SchemaDetail | None:
-        return await self.crud.get(uuid, include_removed)
+        return await self.crud.get(id_, include_removed)
 
     async def get_all(self, include_removed: bool = False) -> list[SchemaLite] | None:
         all_objects = await self.crud.get_all(include_removed)
@@ -147,16 +147,16 @@ class CrudServiceBase(
 
     async def update(
         self,
-        uuid: str | int,
+        id_: str | int,
         obj_in: UpdateSchema,
     ) -> SchemaDetail | None:
-        obj_to_update = await self.get(uuid)
+        obj_to_update = await self.get(id_)
         if obj_to_update is None:
             return None
         return await self.crud.update(db_obj=obj_to_update, obj_in=obj_in)
 
-    async def remove(self, uuid: str | int | None) -> SchemaLite | None:
-        return await self.crud.remove(uuid)
+    async def remove(self, id_: str | int | None) -> SchemaLite | None:
+        return await self.crud.remove(id_)
 
-    async def soft_remove(self, uuid: str | int | None) -> SchemaLite | None:
-        return await self.crud.soft_remove(uuid)
+    async def soft_remove(self, id_: str | int | None) -> SchemaLite | None:
+        return await self.crud.soft_remove(id_)

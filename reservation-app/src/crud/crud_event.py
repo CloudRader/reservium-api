@@ -41,12 +41,12 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventLite, EventUpdate], ABC):
     @abstractmethod
     async def confirm_event(
         self,
-        uuid: str | None,
+        id_: str | None,
     ) -> EventModel | None:
         """
         Confirm event.
 
-        :param uuid: The ID of the event to confirm.
+        :param id_: The ID of the event to confirm.
 
         :return: the updated Event.
         """
@@ -101,9 +101,9 @@ class CRUDEvent(AbstractCRUDEvent):
 
     async def confirm_event(
         self,
-        uuid: str | None,
+        id_: str | None,
     ) -> EventModel | None:
-        obj = await self.check_uuid_and_return_obj_from_db_by_uuid(uuid)
+        obj = await self._check_id_and_return_obj_from_db_by_id(id_)
         if obj is None:
             return None
         obj.event_state = EventState.CONFIRMED

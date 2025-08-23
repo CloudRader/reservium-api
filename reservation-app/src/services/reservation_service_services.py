@@ -66,14 +66,14 @@ class AbstractReservationServiceService(
     @abstractmethod
     async def update_with_permission_checks(
         self,
-        uuid: str,
+        id_: str,
         reservation_service_update: ReservationServiceUpdate,
         user: UserLite,
     ) -> ReservationServiceDetail | None:
         """
         Update a Reservation Service in the database.
 
-        :param uuid: The uuid of the Reservation Service.
+        :param id_: The id of the Reservation Service.
         :param reservation_service_update: ReservationServiceUpdate SchemaLite for update.
         :param user: the UserSchema for control permissions of the reservation service.
 
@@ -83,13 +83,13 @@ class AbstractReservationServiceService(
     @abstractmethod
     async def restore_with_permission_checks(
         self,
-        uuid: str | int | None,
+        id_: str | int | None,
         user: UserLite,
     ) -> ReservationServiceDetail | None:
         """
         Retrieve removed object from soft removed.
 
-        :param uuid: The ID of the object to retrieve from removed.
+        :param id_: The id of the object to retrieve from removed.
         :param user: the UserSchema for control permissions of the reservation service.
 
         :return: the updated Reservation Service.
@@ -98,14 +98,14 @@ class AbstractReservationServiceService(
     @abstractmethod
     async def delete_with_permission_checks(
         self,
-        uuid: str,
+        id_: str,
         user: UserLite,
         hard_remove: bool = False,
     ) -> ReservationServiceDetail | None:
         """
         Delete a Reservation Service in the database.
 
-        :param uuid: The uuid of the Reservation Service.
+        :param id_: The id of the Reservation Service.
         :param user: the UserSchema for control permissions of the reservation service.
         :param hard_remove: hard remove of the reservation service or not.
 
@@ -258,7 +258,7 @@ class ReservationServiceService(AbstractReservationServiceService):
 
     async def update_with_permission_checks(
         self,
-        uuid: str,
+        id_: str,
         reservation_service_update: ReservationServiceUpdate,
         user: UserLite,
     ) -> ReservationServiceDetail | None:
@@ -267,11 +267,11 @@ class ReservationServiceService(AbstractReservationServiceService):
                 "You must be the head of PS to update services.",
             )
 
-        return await self.update(uuid, reservation_service_update)
+        return await self.update(id_, reservation_service_update)
 
     async def restore_with_permission_checks(
         self,
-        uuid: str | int | None,
+        id_: str | int | None,
         user: UserLite,
     ) -> ReservationServiceDetail | None:
         if not user.section_head:
@@ -279,11 +279,11 @@ class ReservationServiceService(AbstractReservationServiceService):
                 "You must be the head of PS to retrieve removed services.",
             )
 
-        return await self.crud.retrieve_removed_object(uuid)
+        return await self.crud.retrieve_removed_object(id_)
 
     async def delete_with_permission_checks(
         self,
-        uuid: str,
+        id_: str,
         user: UserLite,
         hard_remove: bool = False,
     ) -> ReservationServiceDetail | None:
@@ -293,9 +293,9 @@ class ReservationServiceService(AbstractReservationServiceService):
             )
 
         if hard_remove:
-            return await self.crud.remove(uuid)
+            return await self.crud.remove(id_)
 
-        return await self.crud.soft_remove(uuid)
+        return await self.crud.soft_remove(id_)
 
     async def get_by_alias(
         self,

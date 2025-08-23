@@ -237,7 +237,7 @@ async def event(service_event, event_create_form, user, calendar) -> EventLite: 
         event_create=event_create_form,
         user=user,
         event_state=EventState.CONFIRMED,
-        event_id="w67adfiwfawf",
+        id_="w67adfiwfawf",
     )
 
 

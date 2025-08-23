@@ -170,7 +170,6 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         case_sensitive=True,
-        env_settings=True,
         env_nested_delimiter="__",
         env_file=get_env_file_path([".env.template", ".env"]),
     )

@@ -34,11 +34,11 @@ class AbstractCRUDUser(CRUDBase[UserModel, UserCreate, UserUpdate], ABC):
         """
 
     @abstractmethod
-    async def get_events_by_user_id(self, user_id: int) -> list[EventModel]:
+    async def get_events_by_user_id(self, id_: int) -> list[EventModel]:
         """
-        Fetch related events by user_id.
+        Fetch related events by id_.
 
-        :param user_id: UUID of the User.
+        :param id_: ID of the User.
 
         :return: List of related events of type `model`.
         """
@@ -60,11 +60,11 @@ class CRUDUser(AbstractCRUDUser):
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_events_by_user_id(self, user_id: int) -> list[EventModel]:
+    async def get_events_by_user_id(self, id_: int) -> list[EventModel]:
         stmt = (
             select(EventModel)
             .options(joinedload(EventModel.calendar).joinedload(CalendarModel.reservation_service))
-            .where(EventModel.user_id == user_id)
+            .where(EventModel.user_id == id_)
         )
         result = await self.db.execute(stmt)
 

@@ -9,10 +9,24 @@ class FastApiDocs:
     NAME = f"Reservation System of the {settings.CLUB_NAME} Club"
     DESCRIPTION = (
         f"Reservation System of the {settings.CLUB_NAME} Club API is "
-        "a REST API that offers you an access to our "
-        "application!"
+        "a REST API that offers you an access to application!\n\n"
+        "## Basic rules to follow\n"
+        "- `POST`\n\n"
+        "  - Creates a record in collection\n\n"
+        "  - Calls an action\n"
+        "- `PUT`\n\n"
+        "  - Updates object\n"
+        "- `DELETE`\n\n"
+        "  - Delete object\n\n"
+        "## Authentication\n"
+        "The application uses OAuth2 for authentication. "
+        "Access tokens can be obtained exclusively via HTTPS to ensure secure communication.\n\n"
+        "Issued access tokens are fully compatible with the Reservation System API (v1)"
+        " and can be used seamlessly across all supported endpoints.\n"
+        "### Supported grant types:\n"
+        "- authorization_code"
     )
-    VERSION = "1.0.0"
+    VERSION = "2.0.0"
     AUTHORISATION_TAG = {
         "name": "auth",
         "description": "Authorisation in IS.",

@@ -125,33 +125,33 @@ class BaseCRUDRouter[
             return await service.get_all(include_removed)
 
     def register_get_by_id(self):
-        """Register the GET /{obj_id} endpoint to retrieve an entity by its ID."""
+        """Register the GET /{id} endpoint to retrieve an entity by its ID."""
         schema_detail: type[TReadDetail] = self.schema_detail
         service_dep: Callable[..., TService] = self.service_dep
 
         @self.router.get(
-            "/{obj_id}",
+            "/{id}",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
         async def get_by_id(
             service: Annotated[service_dep, Depends(service_dep)],
-            obj_id: Annotated[str | int, Path()],
+            id_: Annotated[str | int, Path(alias="id")],
             include_removed: bool = Query(False),
         ):
             """
             Get object by its uuid.
 
             :param service: Service providing business logic of this object.
-            :param obj_id: uuid of the object.
+            :param id_: id of the object.
             :param include_removed: include removed object or not.
 
             :return: Object with id equal to id
                      or None if no such object exists.
             """
-            obj = await service.get(obj_id, include_removed)
-            return await self._handle_not_found(obj, obj_id)
+            obj = await service.get(id_, include_removed)
+            return await self._handle_not_found(obj, id_)
 
     def register_create(self):
         """Register the POST / endpoint to create a new entity."""
@@ -213,13 +213,13 @@ class BaseCRUDRouter[
             return objs_result
 
     def register_update(self):
-        """Register the PUT /{obj_id} endpoint to update an existing entity."""
+        """Register the PUT /{id} endpoint to update an existing entity."""
         schema_update: type[TUpdate] = self.schema_update
         schema_detail: type[TReadDetail] = self.schema_detail
         service_dep: Callable[..., TService] = self.service_dep
 
         @self.router.put(
-            "/{obj_id}",
+            "/{id}",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403"],
             status_code=status.HTTP_200_OK,
@@ -227,31 +227,31 @@ class BaseCRUDRouter[
         async def update(
             service: Annotated[service_dep, Depends(service_dep)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            obj_id: Annotated[str | int, Path()],
+            id_: Annotated[str | int, Path(alias="id")],
             obj_update: schema_update,
         ):
             """
-            Update object with uuid equal to 'obj_id'.
+            Update object with id equal to 'id'.
 
             Only users with special roles can update object.
 
             :param service: Service providing business logic of this object.
             :param user: UserLite who make this request.
-            :param obj_id: id of the object.
+            :param id_: id of the object.
             :param obj_update: ObjectUpdate schema.
 
             :returns ObjectSchema: the updated object.
             """
-            obj = await service.update_with_permission_checks(obj_id, obj_update, user)
-            return await self._handle_not_found(obj, obj_id)
+            obj = await service.update_with_permission_checks(id_, obj_update, user)
+            return await self._handle_not_found(obj, id_)
 
     def register_restore(self):
-        """Register the PUT /{obj_id}/restore endpoint to restore soft delete entity."""
+        """Register the PUT /{id}/restore endpoint to restore soft delete entity."""
         schema_detail: type[TReadDetail] = self.schema_detail
         service_dep: Callable[..., TService] = self.service_dep
 
         @self.router.put(
-            "/{obj_id}/restore",
+            "/{id}/restore",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403"],
             status_code=status.HTTP_200_OK,
@@ -259,29 +259,29 @@ class BaseCRUDRouter[
         async def restore(
             service: Annotated[service_dep, Depends(service_dep)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            obj_id: Annotated[str | int, Path()],
+            id_: Annotated[str | int, Path(alias="id")],
         ):
             """
-            Retrieve deleted object with id equal to 'obj_id'.
+            Retrieve deleted object with id equal to 'id'.
 
             Only users with special roles can update object.
 
             :param service: Service providing business logic of this object.
             :param user: UserLite who make this request.
-            :param obj_id: id of the object.
+            :param id_: id of the object.
 
             :returns ObjectSchema: the restored object.
             """
-            obj = await service.restore_with_permission_checks(obj_id, user)
-            return await self._handle_not_found(obj, obj_id)
+            obj = await service.restore_with_permission_checks(id_, user)
+            return await self._handle_not_found(obj, id_)
 
     def register_delete(self):
-        """Register the DELETE /{obj_id} endpoint to delete an entity."""
+        """Register the DELETE /{id} endpoint to delete an entity."""
         schema_lite: type[TReadLite] = self.schema_lite
         service_dep: Callable[..., TService] = self.service_dep
 
         @self.router.delete(
-            "/{obj_id}",
+            "/{id}",
             response_model=schema_lite,
             responses=ERROR_RESPONSES["400_401_403_404"],
             status_code=status.HTTP_200_OK,
@@ -289,23 +289,23 @@ class BaseCRUDRouter[
         async def delete(
             service: Annotated[service_dep, Depends(service_dep)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            obj_id: Annotated[str | int, Path()],
+            id_: Annotated[str | int, Path(alias="id")],
             hard_remove: bool = Query(False),
         ):
             """
-            Delete object with obj_id equal to 'id'.
+            Delete object with id equal to 'id'.
 
             Only users with special roles can delete object.
 
             :param service: Service providing business logic of this object.
             :param user: UserLite who make this request.
-            :param obj_id: id of the object.
+            :param id_: id of the object.
             :param hard_remove: hard remove of the object or not.
 
             :returns ObjectSchema: the deleted object.
             """
-            obj = await service.delete_with_permission_checks(obj_id, user, hard_remove)
-            return await self._handle_not_found(obj, obj_id)
+            obj = await service.delete_with_permission_checks(id_, user, hard_remove)
+            return await self._handle_not_found(obj, id_)
 
     # ---------- helpers ----------
     async def _handle_not_found(self, obj: TReadDetail, identifier: Any) -> TReadDetail:

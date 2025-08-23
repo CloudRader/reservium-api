@@ -57,14 +57,14 @@ class AbstractMiniServiceService(
     @abstractmethod
     async def update_with_permission_checks(
         self,
-        uuid: str,
+        id_: str,
         mini_service_update: MiniServiceUpdate,
         user: UserLite,
     ) -> MiniServiceDetail | None:
         """
         Update a Mini Service in the database.
 
-        :param uuid: The uuid of the Mini Service.
+        :param id_: The id of the Mini Service.
         :param mini_service_update: MiniServiceUpdate SchemaLite for update.
         :param user: the UserSchema for control permissions of the mini service.
 
@@ -74,13 +74,13 @@ class AbstractMiniServiceService(
     @abstractmethod
     async def restore_with_permission_checks(
         self,
-        uuid: str | int | None,
+        id_: str | int | None,
         user: UserLite,
     ) -> MiniServiceDetail | None:
         """
         Retrieve removed mini service from soft removed.
 
-        :param uuid: The ID of the mini service to retrieve from removed.
+        :param id_: The id of the mini service to retrieve from removed.
         :param user: the UserSchema for control permissions of the mini service.
 
         :return: the updated Mini Service.
@@ -89,14 +89,14 @@ class AbstractMiniServiceService(
     @abstractmethod
     async def delete_with_permission_checks(
         self,
-        uuid: str,
+        id_: str,
         user: UserLite,
         hard_remove: bool = False,
     ) -> MiniServiceDetail | None:
         """
         Delete a Mini Service in the database.
 
-        :param uuid: The uuid of the Mini Service.
+        :param id_: The id of the Mini Service.
         :param user: the UserSchema for control permissions of the mini service.
         :param hard_remove: hard remove of the reservation service or not.
 
@@ -168,11 +168,11 @@ class MiniServiceService(AbstractMiniServiceService):
 
     async def update_with_permission_checks(
         self,
-        uuid: str,
+        id_: str,
         mini_service_update: MiniServiceUpdate,
         user: UserLite,
     ) -> MiniServiceDetail | None:
-        mini_service_to_update = await self.get(uuid)
+        mini_service_to_update = await self.get(id_)
 
         if mini_service_to_update is None:
             return None
@@ -188,14 +188,14 @@ class MiniServiceService(AbstractMiniServiceService):
                 f"You must be the {reservation_service.name} manager to update mini services.",
             )
 
-        return await self.update(uuid, mini_service_update)
+        return await self.update(id_, mini_service_update)
 
     async def restore_with_permission_checks(
         self,
-        uuid: str | int | None,
+        id_: str | int | None,
         user: UserLite,
     ) -> MiniServiceDetail | None:
-        mini_service = await self.crud.get(uuid, True)
+        mini_service = await self.crud.get(id_, True)
 
         if mini_service.deleted_at is None:
             raise BaseAppError("A mini service was not soft deleted.")
@@ -211,15 +211,15 @@ class MiniServiceService(AbstractMiniServiceService):
                 f"You must be the {reservation_service.name} manager to retrieve mini services.",
             )
 
-        return await self.crud.retrieve_removed_object(uuid)
+        return await self.crud.retrieve_removed_object(id_)
 
     async def delete_with_permission_checks(
         self,
-        uuid: str,
+        id_: str,
         user: UserLite,
         hard_remove: bool = False,
     ) -> MiniServiceDetail | None:
-        mini_service = await self.crud.get(uuid, True)
+        mini_service = await self.crud.get(id_, True)
 
         if mini_service is None:
             return None
@@ -253,9 +253,9 @@ class MiniServiceService(AbstractMiniServiceService):
                 )
 
         if hard_remove:
-            return await self.crud.remove(uuid)
+            return await self.crud.remove(id_)
 
-        return await self.crud.soft_remove(uuid)
+        return await self.crud.soft_remove(id_)
 
     async def get_by_name(
         self,

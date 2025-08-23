@@ -105,28 +105,28 @@ async def test_update_user_with_none(user_crud):
 @pytest.mark.asyncio
 async def test_get_with_none(user_crud):
     """Test retrieving an object with None as ID (should return None)."""
-    result = await user_crud.get(uuid=None)
+    result = await user_crud.get(id_=None)
     assert result is None
 
 
 @pytest.mark.asyncio
 async def test_retrieve_removed_object_with_none(user_crud):
     """Test retrieving a soft-removed object with None ID (should return None)."""
-    result = await user_crud.retrieve_removed_object(uuid=None)
+    result = await user_crud.retrieve_removed_object(id_=None)
     assert result is None
 
 
 @pytest.mark.asyncio
 async def test_remove_with_none(user_crud):
     """Test removing an object with None as ID (should return None)."""
-    result = await user_crud.remove(uuid=None)
+    result = await user_crud.remove(id_=None)
     assert result is None
 
 
 @pytest.mark.asyncio
 async def test_soft_remove_with_none(user_crud):
     """Test soft-removing an object with None as ID (should return None)."""
-    result = await user_crud.soft_remove(uuid=None)
+    result = await user_crud.soft_remove(id_=None)
     assert result is None
 
 

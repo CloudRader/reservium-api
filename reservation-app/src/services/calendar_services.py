@@ -58,14 +58,14 @@ class AbstractCalendarService(
     @abstractmethod
     async def update_with_permission_checks(
         self,
-        calendar_id: str,
+        id_: str,
         calendar_update: CalendarUpdate,
         user: UserLite,
     ) -> CalendarDetail | None:
         """
         Update a Calendar in the database.
 
-        :param calendar_id: The id of the Calendar.
+        :param id_: The id of the Calendar.
         :param calendar_update: CalendarUpdate SchemaLite for update.
         :param user: the UserSchema for control permissions of the calendar.
 
@@ -75,13 +75,13 @@ class AbstractCalendarService(
     @abstractmethod
     async def restore_with_permission_checks(
         self,
-        uuid: str | int | None,
+        id_: str | int | None,
         user: UserLite,
     ) -> CalendarDetail | None:
         """
         Retrieve removed calendar from soft removed.
 
-        :param uuid: The ID of the calendar to retrieve from removed.
+        :param id_: The ID of the calendar to retrieve from removed.
         :param user: the UserSchema for control permissions of the calendar.
 
         :return: the updated CalendarDetail.
@@ -90,14 +90,14 @@ class AbstractCalendarService(
     @abstractmethod
     async def delete_with_permission_checks(
         self,
-        calendar_id: str,
+        id_: str,
         user: UserLite,
         hard_remove: bool = False,
     ) -> CalendarDetail | None:
         """
         Delete a Calendar in the database.
 
-        :param calendar_id: The id of the Calendar.
+        :param id_: The id of the Calendar.
         :param user: the UserSchema for control permissions of the calendar.
         :param hard_remove: hard remove of the calendar or not.
 
@@ -137,7 +137,7 @@ class AbstractCalendarService(
     @abstractmethod
     async def get_mini_services_by_calendar(self, calendar_id: str) -> list[str] | None:
         """
-        Retrieve a list mini services instance by its calendar.
+        Retrieve a list mini services instance by its calendar id.
 
         :param calendar_id: The id of the Calendar.
 
@@ -243,11 +243,11 @@ class CalendarService(AbstractCalendarService):
 
     async def update_with_permission_checks(
         self,
-        calendar_id: str,
+        id_: str,
         calendar_update: CalendarUpdate,
         user: UserLite,
     ) -> CalendarDetail | None:
-        calendar_to_update = await self.get(calendar_id)
+        calendar_to_update = await self.get(id_)
 
         if calendar_to_update is None:
             return None
@@ -267,14 +267,14 @@ class CalendarService(AbstractCalendarService):
             calendar_to_update,
             calendar_update.mini_services_id,
         )
-        return await self.update(calendar_id, calendar_update)
+        return await self.update(id_, calendar_update)
 
     async def restore_with_permission_checks(
         self,
-        uuid: str | int | None,
+        id_: str | int | None,
         user: UserLite,
     ) -> CalendarDetail | None:
-        calendar = await self.get(uuid, True)
+        calendar = await self.get(id_, True)
 
         if calendar.deleted_at is None:
             raise BaseAppError("A calendar was not soft deleted.")
@@ -290,15 +290,15 @@ class CalendarService(AbstractCalendarService):
                 f"You must be the {reservation_service.name} manager to create calendars.",
             )
 
-        return await self.crud.retrieve_removed_object(uuid)
+        return await self.crud.retrieve_removed_object(id_)
 
     async def delete_with_permission_checks(
         self,
-        calendar_id: str,
+        id_: str,
         user: UserLite,
         hard_remove: bool = False,
     ) -> CalendarDetail | None:
-        calendar = await self.get(calendar_id, True)
+        calendar = await self.get(id_, True)
 
         if calendar is None:
             return None
@@ -332,9 +332,9 @@ class CalendarService(AbstractCalendarService):
                 await self.update(calendar_to_update.id, update_exist_calendar)
 
         if hard_remove:
-            return await self.crud.remove(calendar_id)
+            return await self.crud.remove(id_)
 
-        return await self.crud.soft_remove(calendar_id)
+        return await self.crud.soft_remove(id_)
 
     async def google_calendars_available_for_import(
         self,

@@ -46,24 +46,24 @@ class CalendarRouter(
         self.register_routes()
 
         @router.get(
-            "/{calendar_id}/mini_services",
+            "/{id}/mini_services",
             status_code=status.HTTP_200_OK,
             deprecated=True,
         )
         async def get_mini_services_by_calendar(
             service: Annotated[CalendarService, Depends(CalendarService)],
-            calendar_id: Annotated[str, Path()],
+            id_: Annotated[str, Path(alias="id")],
         ) -> Any:
             """
             Get mini services by its calendar (DEPRECATED!!!).
 
             :param service: CalendarDetail service.
-            :param calendar_id: id of the calendar.
+            :param id_: id of the calendar.
 
             :return: List mini services with type equal to service type
                      or None if no such calendars exists.
             """
-            return await service.get_mini_services_by_calendar(calendar_id)
+            return await service.get_mini_services_by_calendar(id_)
 
         @router.get(
             "/google/importable",

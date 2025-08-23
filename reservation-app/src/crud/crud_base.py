@@ -25,11 +25,11 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
     @abstractmethod
     async def get(
         self,
-        uuid: str | int,
+        id_: str | int,
         include_removed: bool = False,
     ) -> Model | None:
         """
-        Retrieve a single record by its UUID.
+        Retrieve a single record by its id_.
 
         If include_removed is True retrieve a single record
         including marked as deleted.
@@ -64,29 +64,29 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
     @abstractmethod
     async def retrieve_removed_object(
         self,
-        uuid: str | int | None,
+        id_: str | int | None,
     ) -> Model | None:
         """Retrieve removed object from soft removed."""
 
     @abstractmethod
-    async def remove(self, uuid: str | int | None) -> Model | None:
-        """Remove a record by its UUID."""
+    async def remove(self, id_: str | int | None) -> Model | None:
+        """Remove a record by its id_."""
 
     @abstractmethod
-    async def soft_remove(self, uuid: str | int | None) -> Model | None:
+    async def soft_remove(self, id_: str | int | None) -> Model | None:
         """
-        Soft remove a record by its UUID.
+        Soft remove a record by its id_.
 
         Change attribute deleted_at to time of deletion
         """
 
     @abstractmethod
-    async def check_uuid_and_return_obj_from_db_by_uuid(
+    async def _check_id_and_return_obj_from_db_by_id(
         self,
-        uuid: str | int | None,
+        id_: str | int | None,
     ) -> Model | None:
         """
-        Retrieve a database object by its primary key (UUID, string, or integer).
+        Retrieve a database object by its primary key (string or integer).
 
         If the identifier is provided.
         """
@@ -105,12 +105,12 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
 
     async def get(
         self,
-        uuid: str | int,
+        id_: str | int,
         include_removed: bool = False,
     ) -> Model | None:
-        if uuid is None:
+        if id_ is None:
             return None
-        stmt = select(self.model).filter(self.model.id == uuid)
+        stmt = select(self.model).filter(self.model.id == id_)
         if include_removed:
             stmt = stmt.execution_options(include_deleted=True)
         result = await self.db.execute(stmt)
@@ -155,12 +155,12 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
 
     async def retrieve_removed_object(
         self,
-        uuid: str | int | None,
+        id_: str | int | None,
     ) -> Model | None:
-        if uuid is None:
+        if id_ is None:
             return None
         stmt = (
-            select(self.model).execution_options(include_deleted=True).filter(self.model.id == uuid)
+            select(self.model).execution_options(include_deleted=True).filter(self.model.id == id_)
         )
         result = await self.db.execute(stmt)
         obj = result.scalar_one_or_none()
@@ -171,9 +171,9 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         await self.db.commit()
         return obj
 
-    async def remove(self, uuid: str | int | None) -> Model | None:
+    async def remove(self, id_: str | int | None) -> Model | None:
         stmt = (
-            select(self.model).execution_options(include_deleted=True).filter(self.model.id == uuid)
+            select(self.model).execution_options(include_deleted=True).filter(self.model.id == id_)
         )
         result = await self.db.execute(stmt)
         obj = result.scalar_one_or_none()
@@ -183,25 +183,25 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         await self.db.commit()
         return obj
 
-    async def soft_remove(self, uuid: str | int | None) -> Model | None:
-        obj = await self.check_uuid_and_return_obj_from_db_by_uuid(uuid)
+    async def soft_remove(self, id_: str | int | None) -> Model | None:
+        obj = await self._check_id_and_return_obj_from_db_by_id(id_)
         if obj is None or obj.deleted_at is not None:
             return None
         obj.deleted_at = datetime.now(UTC)
         self.db.add(obj)
         await self.db.commit()
         stmt = (
-            select(self.model).execution_options(include_deleted=True).filter(self.model.id == uuid)
+            select(self.model).execution_options(include_deleted=True).filter(self.model.id == id_)
         )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def check_uuid_and_return_obj_from_db_by_uuid(
+    async def _check_id_and_return_obj_from_db_by_id(
         self,
-        uuid: str | int | None,
+        id_: str | int | None,
     ) -> Model | None:
-        if uuid is None:
+        if id_ is None:
             return None
-        stmt = select(self.model).filter(self.model.id == uuid)
+        stmt = select(self.model).filter(self.model.id == id_)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
