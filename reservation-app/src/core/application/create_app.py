@@ -61,7 +61,7 @@ def create_app():
             "https://develop.reservation.buk.cvut.cz",
             "https://reservation.buk.cvut.cz",
             "https://is.buk.cvut.cz",
-            "localhost:3000",
+            "http://localhost:3000",
         ],
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "DELETE"],

@@ -27,7 +27,7 @@ class MiniServiceRouter(
     API router for managing Mini Services.
 
     This class extends `BaseCRUDRouter` to automatically register standard
-    CRUD routes for the `MiniServiceDetail` entity and adds custom endpoints
+    CRUD routes for the `MiniServices` entity and adds custom endpoints
     specific to Mini Services.
     """
 

@@ -34,7 +34,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 class AbstractReservationServiceService(
     CrudServiceBase[
-        ReservationServiceLite,
+        ReservationServiceDetail,
         ReservationServiceDetail,
         CRUDReservationService,
         ReservationServiceCreate,

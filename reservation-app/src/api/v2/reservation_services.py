@@ -27,7 +27,7 @@ class ReservationServiceRouter(
     BaseCRUDRouter[
         ReservationServiceCreate,
         ReservationServiceUpdate,
-        ReservationServiceLite,
+        ReservationServiceDetail,
         ReservationServiceDetail,
         ReservationServiceService,
     ]
@@ -36,7 +36,7 @@ class ReservationServiceRouter(
     API router for managing Reservation Services.
 
     This class extends `BaseCRUDRouter` to automatically register standard
-    CRUD routes for the `ReservationServiceDetail` entity and adds custom endpoints
+    CRUD routes for the `ReservationServices` entity and adds custom endpoints
     specific to Reservation Services.
     """
 
@@ -46,7 +46,7 @@ class ReservationServiceRouter(
             service_dep=ReservationServiceService,
             schema_create=ReservationServiceCreate,
             schema_update=ReservationServiceUpdate,
-            schema_lite=ReservationServiceLite,
+            schema_lite=ReservationServiceDetail,
             schema_detail=ReservationServiceDetail,
             entity_name=Entity.RESERVATION_SERVICE,
         )
