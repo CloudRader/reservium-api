@@ -1,5 +1,6 @@
 """Defines an abstract base class for working with the IS authorization."""
 
+import secrets
 from abc import ABC, abstractmethod
 from urllib.parse import urlencode
 
@@ -62,6 +63,7 @@ class IsAuthService(AbstractIsAuthService):
             "redirect_uri": self.redirect_uri,
             "response_type": self.response_type,
             "scope": self.scope,
+            "state": secrets.token_urlsafe(16),
         }
         return f"{self.oauth_url}?{urlencode(params)}"
 
