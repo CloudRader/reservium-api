@@ -20,7 +20,6 @@ from core.schemas import (
     MiniServiceDetail,
     ReservationServiceCreate,
     ReservationServiceDetail,
-    ReservationServiceLite,
     ReservationServiceUpdate,
     UserLite,
 )
@@ -182,45 +181,45 @@ class AbstractReservationServiceService(
         """
 
     @abstractmethod
-    async def get_calendars_by_alias(
+    async def get_calendars_by_id(
         self,
-        alias: str,
+        id_: str,
         include_removed: bool = False,
     ) -> list[CalendarDetail]:
         """
         Retrieve all calendars linked to a given Reservation Service.
 
-        :param alias: The alias of the Reservation Service.
+        :param id_: The id of the Reservation Service.
         :param include_removed: Include removed calendars or not.
 
         :return: List of CalendarDetail objects linked to the reservation service.
         """
 
     @abstractmethod
-    async def get_mini_services_by_alias(
+    async def get_mini_services_by_id(
         self,
-        alias: str,
+        id_: str,
         include_removed: bool = False,
     ) -> list[MiniServiceDetail]:
         """
         Retrieve all mini services linked to a given Reservation Service.
 
-        :param alias: The alias of the Reservation Service.
+        :param id_: The id of the Reservation Service.
         :param include_removed: Include removed calendars or not.
 
         :return: List of MiniServiceDetail objects linked to the reservation service.
         """
 
     @abstractmethod
-    async def get_events_by_alias(
+    async def get_events_by_id(
         self,
-        alias: str,
+        id_: str,
         event_state: EventState | None = None,
     ) -> list[EventDetail]:
         """
         Retrieve all events linked to a given Reservation Service.
 
-        :param alias: The alias of the Reservation Service.
+        :param id_: The id of the Reservation Service.
         :param event_state: event state of the event.
 
         :return: List of EventWithExtraDetails objects linked to the reservation service.
@@ -352,57 +351,49 @@ class ReservationServiceService(AbstractReservationServiceService):
 
         return reservation_services
 
-    async def get_calendars_by_alias(
+    async def get_calendars_by_id(
         self,
-        alias: str,
+        id_: str,
         include_removed: bool = False,
     ) -> list[CalendarDetail]:
-        reservation_service = await self.__get_reservation_service_if_exist(alias)
+        reservation_service = await self.__get_reservation_service_if_exist(id_)
 
         return await self.crud.get_related_entities_by_reservation_service_id(
             CalendarModel, reservation_service.id, include_removed=include_removed
         )
 
-    async def get_mini_services_by_alias(
+    async def get_mini_services_by_id(
         self,
-        alias: str,
+        id_: str,
         include_removed: bool = False,
     ) -> list[MiniServiceDetail]:
-        reservation_service = await self.__get_reservation_service_if_exist(alias)
+        reservation_service = await self.__get_reservation_service_if_exist(id_)
 
         return await self.crud.get_related_entities_by_reservation_service_id(
             MiniServiceModel, reservation_service.id, include_removed=include_removed
         )
 
-    async def __get_reservation_service_if_exist(self, alias: str) -> ReservationServiceDetail:
-        """
-        Retrieve a Reservation Service by its ID or raise an error if not found.
-
-        :param alias: alias of the Reservation Service to retrieve.
-
-        :return: The Reservation Service instance if found.
-        """
-        reservation_service = await self.get_by_alias(alias)
-        if reservation_service is None:
-            raise EntityNotFoundError(Entity.RESERVATION_SERVICE, alias)
-        return reservation_service
-
-    async def get_events_by_alias(
+    async def get_events_by_id(
         self,
-        alias: str,
+        id_: str,
         event_state: EventState | None = None,
     ) -> list[EventDetail]:
-        reservation_service = await self.crud.get_by_alias(
-            alias,
-        )
-
-        if not reservation_service:
-            raise BaseAppError(
-                "A reservation service with this alias isn't exist.",
-                status_code=404,
-            )
+        reservation_service = await self.__get_reservation_service_if_exist(id_)
 
         return await self.crud.get_events_by_reservation_service_id(
             reservation_service.id,
             event_state,
         )
+
+    async def __get_reservation_service_if_exist(self, id_: str) -> ReservationServiceDetail:
+        """
+        Retrieve a Reservation Service by its ID or raise an error if not found.
+
+        :param id_: id of the Reservation Service to retrieve.
+
+        :return: The Reservation Service instance if found.
+        """
+        reservation_service = await self.get(id_, include_removed=True)
+        if reservation_service is None:
+            raise EntityNotFoundError(Entity.RESERVATION_SERVICE, id_)
+        return reservation_service

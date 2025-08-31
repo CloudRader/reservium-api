@@ -153,6 +153,8 @@ class CRUDReservationService(AbstractCRUDReservationService):
 
     def __init__(self, db: AsyncSession):
         super().__init__(ReservationServiceModel, db)
+        self.calendar_model = CalendarModel
+        self.event_model = EventModel
 
     async def get_by_name(
         self,
@@ -222,18 +224,20 @@ class CRUDReservationService(AbstractCRUDReservationService):
         event_state: EventState | None = None,
     ) -> list[EventModel]:
         stmt = (
-            select(EventModel)
-            .join(CalendarModel, EventModel.calendar_id == CalendarModel.id)
-            .filter(CalendarModel.reservation_service_id == reservation_service_id)
+            select(self.event_model)
+            .join(self.calendar_model, self.event_model.calendar_id == self.calendar_model.id)
+            .filter(self.calendar_model.reservation_service_id == reservation_service_id)
             .options(
-                joinedload(EventModel.calendar),
-                joinedload(EventModel.user),
+                joinedload(self.event_model.calendar).joinedload(
+                    self.calendar_model.reservation_service
+                ),
+                joinedload(self.event_model.user),
             )
-            .order_by(EventModel.reservation_start.desc())
+            .order_by(self.event_model.reservation_start.desc())
         )
 
         if event_state is not None:
-            stmt = stmt.filter(EventModel.event_state == event_state)
+            stmt = stmt.filter(self.event_model.event_state == event_state)
 
         result = await self.db.execute(stmt)
         return list(result.scalars().all())

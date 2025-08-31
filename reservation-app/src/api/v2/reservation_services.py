@@ -13,7 +13,6 @@ from core.schemas import (
     MiniServiceDetail,
     ReservationServiceCreate,
     ReservationServiceDetail,
-    ReservationServiceLite,
     ReservationServiceUpdate,
 )
 from core.schemas.event import EventDetail
@@ -120,70 +119,70 @@ class ReservationServiceRouter(
             return await self._handle_not_found(reservation_service, alias)
 
         @router.get(
-            "/{alias}/calendars",
+            "/{id}/calendars",
             response_model=list[CalendarDetail],
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
         async def get_calendars_by_reservation_service(
             service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-            alias: Annotated[str, Path()],
+            id_: Annotated[str, Path(alias="id")],
             include_removed: bool = Query(False),
         ) -> Any:
             """
             Get all calendars linked to a reservation service by its ID.
 
             :param service: Reservation Service ser.
-            :param alias: alias of the reservation service.
+            :param id_: id of the reservation service.
             :param include_removed: include removed calendars or not.
 
             :return: List of CalendarDetail objects linked to the reservation service.
             """
-            return await service.get_calendars_by_alias(alias, include_removed)
+            return await service.get_calendars_by_id(id_, include_removed)
 
         @router.get(
-            "/{alias}/mini-services",
+            "/{id}/mini-services",
             response_model=list[MiniServiceDetail],
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
         async def get_mini_services_by_reservation_service(
             service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-            alias: Annotated[str, Path()],
+            id_: Annotated[str, Path(alias="id")],
             include_removed: bool = Query(False),
         ) -> Any:
             """
             Get all mini services linked to a reservation service by its ID.
 
             :param service: Reservation Service ser.
-            :param alias: alias of the reservation service.
+            :param id_: id of the reservation service.
             :param include_removed: include removed calendars or not.
 
             :return: List of MiniServiceDetail objects linked to the reservation service.
             """
-            return await service.get_mini_services_by_alias(alias, include_removed)
+            return await service.get_mini_services_by_id(id_, include_removed)
 
         @router.get(
-            "/{alias}/events",
+            "/{id}/events",
             response_model=list[EventDetail],
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
         async def get_events_by_reservation_service(
             service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-            alias: Annotated[str, Path()],
+            id_: Annotated[str, Path(alias="id")],
             event_state: Annotated[EventState | None, Query()] = None,
         ) -> Any:
             """
             Get all events linked to a reservation service by its alias.
 
             :param service: EventExtra service.
-            :param alias: alias of the reservation service.
+            :param id_: id of the reservation service.
             :param event_state: event state of the event.
 
             :return: List of EventExtra objects linked to the reservation service.
             """
-            return await service.get_events_by_alias(alias, event_state)
+            return await service.get_events_by_id(id_, event_state)
 
 
 ReservationServiceRouter()
