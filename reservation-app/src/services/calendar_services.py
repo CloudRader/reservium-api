@@ -52,7 +52,7 @@ class AbstractCalendarService(
         self,
         calendar_create: CalendarCreate,
         user: UserLite,
-    ) -> CalendarDetail | None:
+    ) -> CalendarDetail:
         """
         Create a Calendar in the database.
 
@@ -68,7 +68,7 @@ class AbstractCalendarService(
         id_: str,
         calendar_update: CalendarUpdate,
         user: UserLite,
-    ) -> CalendarDetail | None:
+    ) -> CalendarDetail:
         """
         Update a Calendar in the database.
 
@@ -84,7 +84,7 @@ class AbstractCalendarService(
         self,
         id_: str | int | None,
         user: UserLite,
-    ) -> CalendarDetail | None:
+    ) -> CalendarDetail:
         """
         Retrieve removed calendar from soft removed.
 
@@ -100,7 +100,7 @@ class AbstractCalendarService(
         id_: str,
         user: UserLite,
         hard_remove: bool = False,
-    ) -> CalendarDetail | None:
+    ) -> CalendarDetail:
         """
         Delete a Calendar in the database.
 
@@ -172,16 +172,16 @@ class CalendarService(AbstractCalendarService):
         self,
         db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
+        super().__init__(CRUDCalendar(db), Entity.CALENDAR)
         self.reservation_service_service = ReservationServiceService(db)
         self.mini_service_service = MiniServiceService(db)
         self.entity_name = Entity.CALENDAR
-        super().__init__(CRUDCalendar(db))
 
     async def create_with_permission_checks(
         self,
         calendar_create: CalendarCreate,
         user: UserLite,
-    ) -> CalendarDetail | None:
+    ) -> CalendarDetail:
         if await self.get(calendar_create.id, True):
             raise BaseAppError("A calendar with this id already exist.")
         if await self.get_by_reservation_type(calendar_create.reservation_type, True):
@@ -191,8 +191,6 @@ class CalendarService(AbstractCalendarService):
             calendar_create.reservation_service_id,
         )
 
-        if reservation_service is None:
-            raise BaseAppError("A reservation service of calendar isn't exist.")
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to create calendars.",
@@ -229,18 +227,13 @@ class CalendarService(AbstractCalendarService):
         id_: str,
         calendar_update: CalendarUpdate,
         user: UserLite,
-    ) -> CalendarDetail | None:
+    ) -> CalendarDetail:
         calendar_to_update = await self.get(id_)
-
-        if calendar_to_update is None:
-            return None
 
         reservation_service = await self.reservation_service_service.get(
             calendar_to_update.reservation_service_id,
         )
 
-        if reservation_service is None:
-            raise BaseAppError("A reservation service of calendar isn't exist.")
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to create calendars.",
@@ -258,35 +251,27 @@ class CalendarService(AbstractCalendarService):
         self,
         id_: str | int | None,
         user: UserLite,
-    ) -> CalendarDetail | None:
+    ) -> CalendarDetail:
         calendar = await self.get(id_, True)
-
-        if calendar.deleted_at is None:
-            raise BaseAppError("A calendar was not soft deleted.")
 
         reservation_service = await self.reservation_service_service.get(
             str(calendar.reservation_service_id),
         )
 
-        if reservation_service is None:
-            raise BaseAppError("A reservation service of calendar isn't exist.")
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to create calendars.",
             )
 
-        return await self.crud.retrieve_removed_object(id_)
+        return await self.restore(id_)
 
     async def delete_with_permission_checks(
         self,
         id_: str,
         user: UserLite,
         hard_remove: bool = False,
-    ) -> CalendarDetail | None:
+    ) -> CalendarDetail:
         calendar = await self.get(id_, True)
-
-        if calendar is None:
-            return None
 
         if hard_remove and not user.section_head:
             raise PermissionDeniedError(
@@ -297,8 +282,6 @@ class CalendarService(AbstractCalendarService):
             calendar.reservation_service_id,
         )
 
-        if reservation_service is None:
-            raise BaseAppError("A reservation service of calendar isn't exist.")
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to create calendars.",
@@ -317,9 +300,9 @@ class CalendarService(AbstractCalendarService):
                 await self.update(calendar_to_update.id, update_exist_calendar)
 
         if hard_remove:
-            return await self.crud.remove(id_)
+            return await self.remove(id_)
 
-        return await self.crud.soft_remove(id_)
+        return await self.soft_remove(id_)
 
     async def google_calendars_available_for_import(
         self,

@@ -8,18 +8,18 @@ from abc import ABC, abstractmethod
 from typing import Annotated
 
 from core import db_session
-from core.application.exceptions import BaseAppError, PermissionDeniedError
+from core.application.exceptions import BaseAppError, Entity, PermissionDeniedError
 from core.schemas import (
-    CalendarUpdate,
     MiniServiceCreate,
     MiniServiceDetail,
     MiniServiceLite,
     MiniServiceUpdate,
     UserLite,
 )
-from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService
+from crud import CRUDCalendar, CRUDMiniService
 from fastapi import Depends
 from services import CrudServiceBase
+from services.reservation_service_services import ReservationServiceService
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -44,7 +44,7 @@ class AbstractMiniServiceService(
         self,
         mini_service_create: MiniServiceCreate,
         user: UserLite,
-    ) -> MiniServiceDetail | None:
+    ) -> MiniServiceDetail:
         """
         Create a Mini Service in the database.
 
@@ -60,7 +60,7 @@ class AbstractMiniServiceService(
         id_: str,
         mini_service_update: MiniServiceUpdate,
         user: UserLite,
-    ) -> MiniServiceDetail | None:
+    ) -> MiniServiceDetail:
         """
         Update a Mini Service in the database.
 
@@ -74,9 +74,9 @@ class AbstractMiniServiceService(
     @abstractmethod
     async def restore_with_permission_checks(
         self,
-        id_: str | int | None,
+        id_: str | int,
         user: UserLite,
-    ) -> MiniServiceDetail | None:
+    ) -> MiniServiceDetail:
         """
         Retrieve removed mini service from soft removed.
 
@@ -92,7 +92,7 @@ class AbstractMiniServiceService(
         id_: str,
         user: UserLite,
         hard_remove: bool = False,
-    ) -> MiniServiceDetail | None:
+    ) -> MiniServiceDetail:
         """
         Delete a Mini Service in the database.
 
@@ -141,24 +141,22 @@ class MiniServiceService(AbstractMiniServiceService):
         self,
         db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
+        super().__init__(CRUDMiniService(db), Entity.MINI_SERVICE)
         self.calendar_crud = CRUDCalendar(db)
-        self.reservation_service_crud = CRUDReservationService(db)
-        super().__init__(CRUDMiniService(db))
+        self.reservation_service_service = ReservationServiceService(db)
 
     async def create_with_permission_checks(
         self,
         mini_service_create: MiniServiceCreate,
         user: UserLite,
-    ) -> MiniServiceDetail | None:
+    ) -> MiniServiceDetail:
         if await self.crud.get_by_name(mini_service_create.name, True):
             raise BaseAppError("A reservation service with this name already exist.")
 
-        reservation_service = await self.reservation_service_crud.get(
+        reservation_service = await self.reservation_service_service.get(
             mini_service_create.reservation_service_id,
         )
 
-        if reservation_service is None:
-            raise BaseAppError("A reservation service of mini service isn't exist.")
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to create mini services.",
@@ -171,18 +169,13 @@ class MiniServiceService(AbstractMiniServiceService):
         id_: str,
         mini_service_update: MiniServiceUpdate,
         user: UserLite,
-    ) -> MiniServiceDetail | None:
+    ) -> MiniServiceDetail:
         mini_service_to_update = await self.get(id_)
 
-        if mini_service_to_update is None:
-            return None
-
-        reservation_service = await self.reservation_service_crud.get(
+        reservation_service = await self.reservation_service_service.get(
             mini_service_to_update.reservation_service_id,
         )
 
-        if reservation_service is None:
-            raise BaseAppError("A reservation service of mini service isn't exist.")
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to update mini services.",
@@ -192,70 +185,48 @@ class MiniServiceService(AbstractMiniServiceService):
 
     async def restore_with_permission_checks(
         self,
-        id_: str | int | None,
+        id_: str | int,
         user: UserLite,
-    ) -> MiniServiceDetail | None:
-        mini_service = await self.crud.get(id_, True)
+    ) -> MiniServiceDetail:
+        mini_service = await self.get(id_, True)
 
-        if mini_service.deleted_at is None:
-            raise BaseAppError("A mini service was not soft deleted.")
-
-        reservation_service = await self.reservation_service_crud.get(
+        reservation_service = await self.reservation_service_service.get(
             str(mini_service.reservation_service_id),
         )
 
-        if reservation_service is None:
-            raise BaseAppError("A reservation service of mini service isn't exist.")
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to retrieve mini services.",
             )
 
-        return await self.crud.retrieve_removed_object(id_)
+        return await self.restore(id_)
 
     async def delete_with_permission_checks(
         self,
         id_: str,
         user: UserLite,
         hard_remove: bool = False,
-    ) -> MiniServiceDetail | None:
-        mini_service = await self.crud.get(id_, True)
-
-        if mini_service is None:
-            return None
+    ) -> MiniServiceDetail:
+        mini_service = await self.get(id_, True)
 
         if hard_remove and not user.section_head:
             raise PermissionDeniedError(
                 "You must be the head of PS to totally delete mini services.",
             )
 
-        reservation_service = await self.reservation_service_crud.get(
+        reservation_service = await self.reservation_service_service.get(
             mini_service.reservation_service_id,
         )
 
-        if reservation_service is None:
-            raise BaseAppError("A reservation service of mini service isn't exist.")
         if reservation_service.alias not in user.roles:
             raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to delete mini services.",
             )
 
-        for calendar in reservation_service.calendars:
-            if mini_service.name in calendar.mini_services:
-                list_of_mini_services = calendar.mini_services.copy()
-                list_of_mini_services.remove(mini_service.name)
-                update_exist_calendar = CalendarUpdate(
-                    mini_services=list_of_mini_services,
-                )
-                await self.calendar_crud.update(
-                    db_obj=calendar,
-                    obj_in=update_exist_calendar,
-                )
-
         if hard_remove:
-            return await self.crud.remove(id_)
+            return await self.remove(id_)
 
-        return await self.crud.soft_remove(id_)
+        return await self.soft_remove(id_)
 
     async def get_by_name(
         self,

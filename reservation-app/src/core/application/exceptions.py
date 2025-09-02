@@ -17,9 +17,9 @@ class Message(BaseModel):
 class Entity(Enum):
     """Enum for entity names."""
 
-    USER = "UserLite"
-    CALENDAR = "CalendarDetail"
-    EVENT = "EventExtra"
+    USER = "User"
+    CALENDAR = "Calendar"
+    EVENT = "Event"
     MINI_SERVICE = "Mini Service"
     RESERVATION_SERVICE = "Reservation Service"
     EMAIL = "Email"

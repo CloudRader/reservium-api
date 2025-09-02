@@ -27,26 +27,11 @@ class AbstractCRUDCalendar(
     """
 
     @abstractmethod
-    async def get_by_reservation_type(
-        self,
-        reservation_type: str,
-        include_removed: bool = False,
-    ) -> CalendarModel | None:
-        """
-        Retrieve a Calendar instance by its reservation type.
-
-        :param reservation_type: The reservation type of the Calendar.
-        :param include_removed: Include removed object or not.
-
-        :return: The Calendar instance if found, None otherwise.
-        """
-
-    @abstractmethod
     async def create_with_mini_services(
         self,
         calendar_create: CalendarCreate | dict[str, Any],
         mini_services: list[MiniServiceModel],
-    ) -> CalendarModel | None:
+    ) -> CalendarModel:
         """
         Create a new Calendar instance with associated mini services.
 
@@ -65,7 +50,7 @@ class AbstractCRUDCalendar(
         db_obj: CalendarModel,
         obj_in: CalendarUpdate | dict[str, Any],
         mini_services: list[MiniServiceModel],
-    ) -> CalendarModel | None:
+    ) -> CalendarModel:
         """
         Update an existing Calendar instance, including its associated mini services.
 
@@ -78,6 +63,21 @@ class AbstractCRUDCalendar(
         :param mini_services: List of MiniServiceModel objects to associate with the calendar.
 
         :return: The updated CalendarModel instance with updated mini services.
+        """
+
+    @abstractmethod
+    async def get_by_reservation_type(
+        self,
+        reservation_type: str,
+        include_removed: bool = False,
+    ) -> CalendarModel | None:
+        """
+        Retrieve a Calendar instance by its reservation type.
+
+        :param reservation_type: The reservation type of the Calendar.
+        :param include_removed: Include removed object or not.
+
+        :return: The Calendar instance if found, None otherwise.
         """
 
 
@@ -96,7 +96,7 @@ class CRUDCalendar(AbstractCRUDCalendar):
         self,
         calendar_create: CalendarCreate | dict[str, Any],
         mini_services: list[MiniServiceModel],
-    ) -> CalendarModel | None:
+    ) -> CalendarModel:
         obj_in_data = (
             calendar_create if isinstance(calendar_create, dict) else calendar_create.model_dump()
         )
@@ -115,10 +115,7 @@ class CRUDCalendar(AbstractCRUDCalendar):
         db_obj: CalendarModel,
         obj_in: CalendarUpdate | dict[str, Any],
         mini_services: list[MiniServiceModel],
-    ) -> CalendarModel | None:
-        if db_obj is None or obj_in is None:
-            return None
-
+    ) -> CalendarModel:
         update_data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
 
         update_data.pop("mini_services", None)

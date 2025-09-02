@@ -11,6 +11,7 @@ from typing import Annotated, Any
 from core import db_session
 from core.application.exceptions import (
     BaseAppError,
+    Entity,
     PermissionDeniedError,
     SoftValidationError,
 )
@@ -252,7 +253,7 @@ class EventService(AbstractEventService):
         self,
         db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
-        super().__init__(CRUDEvent(db))
+        super().__init__(CRUDEvent(db), Entity.EVENT)
         self.reservation_service_crud = CRUDReservationService(db)
         self.calendar_crud = CRUDCalendar(db)
         self.user_crud = CRUDUser(db)

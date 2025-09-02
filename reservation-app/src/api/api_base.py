@@ -1,10 +1,10 @@
 """Base module for generating CRUD routes in FastAPI."""
 
 from collections.abc import Callable
-from typing import Annotated, Any, TypeVar
+from typing import Annotated, TypeVar
 
 from api.user_authenticator import get_current_user
-from core.application.exceptions import ERROR_RESPONSES, BaseAppError, Entity, EntityNotFoundError
+from core.application.exceptions import ERROR_RESPONSES, BaseAppError, Entity
 from core.schemas.user import UserLite
 from fastapi import APIRouter, Depends, Path, Query, status
 from pydantic import BaseModel
@@ -150,8 +150,7 @@ class BaseCRUDRouter[
             :return: Object with id equal to id
                      or None if no such object exists.
             """
-            obj = await service.get(id_, include_removed)
-            return await self._handle_not_found(obj, id_)
+            return await service.get(id_, include_removed)
 
     def register_create(self):
         """Register the POST / endpoint to create a new entity."""
@@ -242,8 +241,7 @@ class BaseCRUDRouter[
 
             :returns ObjectSchema: the updated object.
             """
-            obj = await service.update_with_permission_checks(id_, obj_update, user)
-            return await self._handle_not_found(obj, id_)
+            return await service.update_with_permission_checks(id_, obj_update, user)
 
     def register_restore(self):
         """Register the PUT /{id}/restore endpoint to restore soft delete entity."""
@@ -272,8 +270,7 @@ class BaseCRUDRouter[
 
             :returns ObjectSchema: the restored object.
             """
-            obj = await service.restore_with_permission_checks(id_, user)
-            return await self._handle_not_found(obj, id_)
+            return await service.restore_with_permission_checks(id_, user)
 
     def register_delete(self):
         """Register the DELETE /{id} endpoint to delete an entity."""
@@ -304,15 +301,7 @@ class BaseCRUDRouter[
 
             :returns ObjectSchema: the deleted object.
             """
-            obj = await service.delete_with_permission_checks(id_, user, hard_remove)
-            return await self._handle_not_found(obj, id_)
-
-    # ---------- helpers ----------
-    async def _handle_not_found(self, obj: TReadDetail, identifier: Any) -> TReadDetail:
-        """Raise EntityNotFoundError if obj falsy, otherwise return it."""
-        if not obj:
-            raise EntityNotFoundError(self.entity_name, identifier)
-        return obj
+            return await service.delete_with_permission_checks(id_, user, hard_remove)
 
     @staticmethod
     async def _create_single_object(

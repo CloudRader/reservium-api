@@ -8,6 +8,9 @@ from abc import ABC, abstractmethod
 from typing import Annotated
 
 from core import db_session
+from core.application.exceptions import (
+    Entity,
+)
 from core.schemas import (
     Role,
     Room,
@@ -88,9 +91,9 @@ class UserService(AbstractUserService):
         self,
         db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
+        super().__init__(CRUDUser(db), Entity.USER)
         self.reservation_service_crud = CRUDReservationService(db)
         self.event_service = EventService(db)
-        super().__init__(CRUDUser(db))
 
     async def create_user(
         self,
