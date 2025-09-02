@@ -8,7 +8,12 @@ from abc import ABC, abstractmethod
 from typing import Annotated
 
 from core import db_session
-from core.application.exceptions import BaseAppError, PermissionDeniedError
+from core.application.exceptions import (
+    BaseAppError,
+    Entity,
+    PermissionDeniedError,
+)
+from core.models import MiniServiceModel
 from core.schemas import (
     CalendarCreate,
     CalendarDetail,
@@ -18,9 +23,11 @@ from core.schemas import (
     UserLite,
 )
 from core.schemas.google_calendar import GoogleCalendarCalendar
-from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService
+from crud import CRUDCalendar
 from fastapi import Depends
 from services import CrudServiceBase
+from services.mini_service_services import MiniServiceService
+from services.reservation_service_services import ReservationServiceService
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -157,22 +164,6 @@ class AbstractCalendarService(
         :return: Reservation Service of this calendar if found, None otherwise.
         """
 
-    @abstractmethod
-    async def update_mini_services(
-        self,
-        calendar: CalendarDetail | None,
-        mini_services_id: list[str] | None,
-    ) -> CalendarDetail | None:
-        """
-        Update the list of mini services associated with a given calendar.
-
-        :param calendar: The calendar instance to update. If None, the method returns None.
-        :param mini_services_id: A list of mini services id to associate with the calendar.
-
-        :return: The updated calendar instance with the new mini services,
-                 or None if the input calendar is None.
-        """
-
 
 class CalendarService(AbstractCalendarService):
     """Class CalendarService represent service that work with Calendar."""
@@ -181,8 +172,9 @@ class CalendarService(AbstractCalendarService):
         self,
         db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
-        self.reservation_service_crud = CRUDReservationService(db)
-        self.mini_service_crud = CRUDMiniService(db)
+        self.reservation_service_service = ReservationServiceService(db)
+        self.mini_service_service = MiniServiceService(db)
+        self.entity_name = Entity.CALENDAR
         super().__init__(CRUDCalendar(db))
 
     async def create_with_permission_checks(
@@ -195,7 +187,7 @@ class CalendarService(AbstractCalendarService):
         if await self.get_by_reservation_type(calendar_create.reservation_type, True):
             raise BaseAppError("A calendar with this reservation type already exist.")
 
-        reservation_service = await self.reservation_service_crud.get(
+        reservation_service = await self.reservation_service_service.get(
             calendar_create.reservation_service_id,
         )
 
@@ -206,18 +198,9 @@ class CalendarService(AbstractCalendarService):
                 f"You must be the {reservation_service.name} manager to create calendars.",
             )
 
-        # if calendar_create.mini_services_id:
-        #     for mini_service_id in calendar_create.mini_services_id:
-        #         if (
-        #             mini_service_id
-        #             not in await self.mini_service_crud.get_ids_by_reservation_service_id(
-        #                 reservation_service.id
-        #             )
-        #         ):
-        #             raise BaseAppError(
-        #                 "These mini services do not exist in the db "
-        #                 "that you want to add to this calendar."
-        #             )
+        mini_services_in_calendar = await self._prepare_calendar_mini_services(
+            calendar_create.reservation_service_id, calendar_create.mini_services
+        )
 
         if calendar_create.collision_with_calendar is not None:
             for collision in calendar_create.collision_with_calendar:
@@ -239,7 +222,7 @@ class CalendarService(AbstractCalendarService):
                         f"Failed to update collisions on the calendar with this id {collision}",
                     )
 
-        return await self.create(calendar_create)
+        return await self.crud.create_with_mini_services(calendar_create, mini_services_in_calendar)
 
     async def update_with_permission_checks(
         self,
@@ -252,7 +235,7 @@ class CalendarService(AbstractCalendarService):
         if calendar_to_update is None:
             return None
 
-        reservation_service = await self.reservation_service_crud.get(
+        reservation_service = await self.reservation_service_service.get(
             calendar_to_update.reservation_service_id,
         )
 
@@ -263,11 +246,13 @@ class CalendarService(AbstractCalendarService):
                 f"You must be the {reservation_service.name} manager to create calendars.",
             )
 
-        await self.update_mini_services(
-            calendar_to_update,
-            calendar_update.mini_services_id,
+        mini_services_in_calendar = await self._prepare_calendar_mini_services(
+            calendar_to_update.reservation_service_id, calendar_update.mini_services
         )
-        return await self.update(id_, calendar_update)
+
+        return await self.crud.update_with_mini_services(
+            calendar_to_update, calendar_update, mini_services_in_calendar
+        )
 
     async def restore_with_permission_checks(
         self,
@@ -279,7 +264,7 @@ class CalendarService(AbstractCalendarService):
         if calendar.deleted_at is None:
             raise BaseAppError("A calendar was not soft deleted.")
 
-        reservation_service = await self.reservation_service_crud.get(
+        reservation_service = await self.reservation_service_service.get(
             str(calendar.reservation_service_id),
         )
 
@@ -308,7 +293,7 @@ class CalendarService(AbstractCalendarService):
                 "You must be the head of PS to totally delete calendars.",
             )
 
-        reservation_service = await self.reservation_service_crud.get(
+        reservation_service = await self.reservation_service_service.get(
             calendar.reservation_service_id,
         )
 
@@ -382,7 +367,7 @@ class CalendarService(AbstractCalendarService):
         self,
         reservation_service_id: str,
     ) -> ReservationServiceDetail | None:
-        reservation_service = await self.reservation_service_crud.get(
+        reservation_service = await self.reservation_service_service.get(
             reservation_service_id,
         )
 
@@ -391,20 +376,29 @@ class CalendarService(AbstractCalendarService):
 
         return reservation_service
 
-    async def update_mini_services(
+    async def _prepare_calendar_mini_services(
         self,
-        calendar: CalendarDetail | None,
-        mini_services_id: list[str] | None,
-    ) -> CalendarDetail | None:
-        if mini_services_id is None:
-            return calendar
-        mini_services = []
-        for mini_service_id in mini_services_id:
-            mini_service = await self.mini_service_crud.get(mini_service_id)
-            if mini_service is None:
+        reservation_service_id: str,
+        mini_services_ids: list[str],
+    ) -> list[MiniServiceModel]:
+        """
+        Validate mini service IDs.
+
+        Prepare the corresponding MiniService objects for association with a calendar.
+        Ensures that all provided mini service IDs exist for the given reservation service.
+        """
+        mini_services_in_calendar = []
+        mini_services = await self.reservation_service_service.get_mini_services_by_id(
+            reservation_service_id
+        )
+        existing_mini_services_by_id = {ms.id: ms for ms in mini_services}
+
+        for mini_service_id in mini_services_ids:
+            if mini_service_id not in existing_mini_services_by_id:
                 raise BaseAppError(
-                    "These mini services do not exist in the db "
-                    "that you want to change to this calendar.",
+                    f"Mini service {mini_service_id} does not exist or does not belong "
+                    f"to this reservation service.",
                 )
-            mini_services.append(mini_service)
-        return await self.crud.update_mini_services(calendar, mini_services)
+            mini_services_in_calendar.append(existing_mini_services_by_id[mini_service_id])
+
+        return mini_services_in_calendar

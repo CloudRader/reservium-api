@@ -6,6 +6,7 @@ implementation (CRUDCalendar) using SQLAlchemy.
 """
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 from core.models import CalendarModel, MiniServiceModel
 from core.schemas import CalendarCreate, CalendarUpdate
@@ -41,19 +42,42 @@ class AbstractCRUDCalendar(
         """
 
     @abstractmethod
-    async def update_mini_services(
+    async def create_with_mini_services(
         self,
-        calendar: CalendarModel | None,
+        calendar_create: CalendarCreate | dict[str, Any],
         mini_services: list[MiniServiceModel],
     ) -> CalendarModel | None:
         """
-        Update the list of mini services associated with a given calendar.
+        Create a new Calendar instance with associated mini services.
 
-        :param calendar: The calendar instance to update. If None, the method returns None.
-        :param mini_services: A list of mini service model instances to associate with the calendar.
+        This method is similar to the base `create` method but additionally
+        attaches a list of `MiniServiceModel` instances to the created calendar.
 
-        :return: The updated calendar instance with the new mini services,
-                 or None if the input calendar is None.
+        :param calendar_create: Data used to create the Calendar (schema or dict).
+        :param mini_services: List of MiniServiceModel objects to associate with the calendar.
+
+        :return: The created CalendarModel instance with mini services attached.
+        """
+
+    @abstractmethod
+    async def update_with_mini_services(
+        self,
+        db_obj: CalendarModel,
+        obj_in: CalendarUpdate | dict[str, Any],
+        mini_services: list[MiniServiceModel],
+    ) -> CalendarModel | None:
+        """
+        Update an existing Calendar instance, including its associated mini services.
+
+        This method extends the base `update` functionality by ensuring
+        the provided list of `MiniServiceModel` objects replaces the existing
+        mini services linked to the calendar.
+
+        :param db_obj: The existing CalendarModel instance to update.
+        :param obj_in: Data to update the Calendar (schema or dict).
+        :param mini_services: List of MiniServiceModel objects to associate with the calendar.
+
+        :return: The updated CalendarModel instance with updated mini services.
         """
 
 
@@ -68,6 +92,47 @@ class CRUDCalendar(AbstractCRUDCalendar):
     def __init__(self, db: AsyncSession):
         super().__init__(CalendarModel, db)
 
+    async def create_with_mini_services(
+        self,
+        calendar_create: CalendarCreate | dict[str, Any],
+        mini_services: list[MiniServiceModel],
+    ) -> CalendarModel | None:
+        obj_in_data = (
+            calendar_create if isinstance(calendar_create, dict) else calendar_create.model_dump()
+        )
+
+        obj_in_data.pop("mini_services", None)
+        db_obj = self.model(**obj_in_data)
+        db_obj.mini_services = mini_services
+
+        self.db.add(db_obj)
+        await self.db.commit()
+        await self.db.refresh(db_obj)
+        return db_obj
+
+    async def update_with_mini_services(
+        self,
+        db_obj: CalendarModel,
+        obj_in: CalendarUpdate | dict[str, Any],
+        mini_services: list[MiniServiceModel],
+    ) -> CalendarModel | None:
+        if db_obj is None or obj_in is None:
+            return None
+
+        update_data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
+
+        update_data.pop("mini_services", None)
+
+        for field, value in update_data.items():
+            setattr(db_obj, field, value)
+
+        db_obj.mini_services = mini_services
+
+        self.db.add(db_obj)
+        await self.db.commit()
+        await self.db.refresh(db_obj)
+        return db_obj
+
     async def get_by_reservation_type(
         self,
         reservation_type: str,
@@ -78,17 +143,3 @@ class CRUDCalendar(AbstractCRUDCalendar):
             stmt = stmt.execution_options(include_deleted=True)
         result = await self.db.execute(stmt)
         return result.scalars().first()
-
-    async def update_mini_services(
-        self,
-        calendar: CalendarModel | None,
-        mini_services: list[MiniServiceModel],
-    ) -> CalendarModel | None:
-        if calendar is None:
-            return None
-        calendar.mini_services = mini_services
-
-        self.db.add(calendar)
-        await self.db.commit()
-        await self.db.refresh(calendar)
-        return calendar

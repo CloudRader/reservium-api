@@ -36,6 +36,7 @@ class CalendarCreate(CalendarBase):
     club_member_rules: Rules
     active_member_rules: Rules
     manager_rules: Rules
+    mini_services: list[str] = Field(default_factory=list)
 
 
 class CalendarUpdate(CalendarBase):
@@ -48,7 +49,7 @@ class CalendarUpdate(CalendarBase):
     club_member_rules: Rules | None = None
     active_member_rules: Rules | None = None
     manager_rules: Rules | None = None
-    mini_services_id: list[str] | None = None
+    mini_services: list[str] = Field(default_factory=list)
 
 
 class CalendarLite(CalendarBase):
