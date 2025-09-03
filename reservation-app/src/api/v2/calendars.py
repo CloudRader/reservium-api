@@ -4,7 +4,7 @@ from typing import Annotated, Any
 
 from api import get_current_user
 from api.api_base import BaseCRUDRouter
-from core.application.exceptions import ERROR_RESPONSES, BaseAppError, Entity
+from core.application.exceptions import ERROR_RESPONSES, Entity
 from core.schemas import CalendarCreate, CalendarDetail, CalendarLite, CalendarUpdate, UserLite
 from fastapi import APIRouter, Depends, Path, status
 from integrations.google import GoogleCalendarService
@@ -181,10 +181,7 @@ class CalendarRouter(
                     )
                 ).id
 
-            calendar = await service.create_with_permission_checks(calendar_create, user)
-            if not calendar:
-                raise BaseAppError()
-            return calendar
+            return service.create_with_permission_checks(calendar_create, user)
 
 
 CalendarRouter()

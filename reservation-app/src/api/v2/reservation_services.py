@@ -88,11 +88,9 @@ class ReservationServiceRouter(
             :param name: service alias of the mini service.
             :param include_removed: include removed reservation service or not.
 
-            :return: Reservation Service with name equal to name
-                     or None if no such reservation service exists.
+            :return: Reservation Service with name equal to name.
             """
-            reservation_service = await service.get_by_name(name, include_removed)
-            return await self._handle_not_found(reservation_service, name)
+            return await service.get_by_name(name, include_removed)
 
         @router.get(
             "/alias/{alias}",
@@ -112,11 +110,9 @@ class ReservationServiceRouter(
             :param alias: service alias of the mini service.
             :param include_removed: include removed reservation service or not.
 
-            :return: Reservation Service with alias equal to alias
-                     or None if no such reservation service exists.
+            :return: Reservation Service with alias equal to alias.
             """
-            reservation_service = await service.get_by_alias(alias, include_removed)
-            return await self._handle_not_found(reservation_service, alias)
+            return await service.get_by_alias(alias, include_removed)
 
         @router.get(
             "/{id}/calendars",

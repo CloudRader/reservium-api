@@ -8,7 +8,12 @@ from abc import ABC, abstractmethod
 from typing import Annotated
 
 from core import db_session
-from core.application.exceptions import BaseAppError, Entity, PermissionDeniedError
+from core.application.exceptions import (
+    BaseAppError,
+    Entity,
+    EntityNotFoundError,
+    PermissionDeniedError,
+)
 from core.schemas import (
     MiniServiceCreate,
     MiniServiceDetail,
@@ -108,14 +113,14 @@ class AbstractMiniServiceService(
         self,
         name: str,
         include_removed: bool = False,
-    ) -> MiniServiceDetail | None:
+    ) -> MiniServiceDetail:
         """
         Retrieve a Mini Service instance by its name.
 
         :param name: The name of the Mini Service.
         :param include_removed: Include removed object or not.
 
-        :return: The Mini Service instance if found, None otherwise.
+        :return: The Mini Service instance.
         """
 
     @abstractmethod
@@ -123,14 +128,14 @@ class AbstractMiniServiceService(
         self,
         room_id: int,
         include_removed: bool = False,
-    ) -> MiniServiceDetail | None:
+    ) -> MiniServiceDetail:
         """
         Retrieve a Mini Service instance by its room id.
 
         :param room_id: The room id of the Mini Service.
         :param include_removed: Include removed object or not.
 
-        :return: The Mini Service instance if found, None otherwise.
+        :return: The Mini Service instance.
         """
 
 
@@ -232,12 +237,18 @@ class MiniServiceService(AbstractMiniServiceService):
         self,
         name: str,
         include_removed: bool = False,
-    ) -> MiniServiceDetail | None:
-        return await self.crud.get_by_name(name, include_removed)
+    ) -> MiniServiceDetail:
+        mini_service = await self.crud.get_by_name(name, include_removed)
+        if mini_service is None:
+            raise EntityNotFoundError(self.entity_name, name)
+        return mini_service
 
     async def get_by_room_id(
         self,
         room_id: int,
         include_removed: bool = False,
-    ) -> MiniServiceDetail | None:
-        return await self.crud.get_by_room_id(room_id, include_removed)
+    ) -> MiniServiceDetail:
+        mini_service = await self.crud.get_by_room_id(room_id, include_removed)
+        if mini_service is None:
+            raise EntityNotFoundError(self.entity_name, room_id)
+        return mini_service

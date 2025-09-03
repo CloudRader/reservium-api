@@ -11,6 +11,7 @@ from core import db_session
 from core.application.exceptions import (
     BaseAppError,
     Entity,
+    EntityNotFoundError,
     PermissionDeniedError,
 )
 from core.models import CalendarModel, EventState, MiniServiceModel
@@ -114,14 +115,14 @@ class AbstractReservationServiceService(
         self,
         alias: str,
         include_removed: bool = False,
-    ) -> ReservationServiceDetail | None:
+    ) -> ReservationServiceDetail:
         """
         Retrieve a Reservation Service instance by its alias.
 
         :param alias: The alias of the Reservation Service.
         :param include_removed: Include removed object or not.
 
-        :return: The Reservation Services instance if found, None otherwise.
+        :return: The Reservation Services instance.
         """
 
     @abstractmethod
@@ -129,14 +130,14 @@ class AbstractReservationServiceService(
         self,
         name: str,
         include_removed: bool = False,
-    ) -> ReservationServiceDetail | None:
+    ) -> ReservationServiceDetail:
         """
         Retrieve a Reservation Service instance by its name.
 
         :param name: The name of the Reservation Service.
         :param include_removed: Include removed object or not.
 
-        :return: The Reservation Service instance if found, None otherwise.
+        :return: The Reservation Service instance.
         """
 
     @abstractmethod
@@ -144,14 +145,14 @@ class AbstractReservationServiceService(
         self,
         room_id: int,
         include_removed: bool = False,
-    ) -> ReservationServiceDetail | None:
+    ) -> ReservationServiceDetail:
         """
         Retrieve a Reservation Service instance by its room id.
 
         :param room_id: The room id of the Reservation Service.
         :param include_removed: Include removed object or not.
 
-        :return: The Reservation Service instance if found, None otherwise.
+        :return: The Reservation Service instance.
         """
 
     @abstractmethod
@@ -295,22 +296,31 @@ class ReservationServiceService(AbstractReservationServiceService):
         self,
         alias: str,
         include_removed: bool = False,
-    ) -> ReservationServiceDetail | None:
-        return await self.crud.get_by_alias(alias, include_removed)
+    ) -> ReservationServiceDetail:
+        reservation_service = await self.crud.get_by_alias(alias, include_removed)
+        if reservation_service is None:
+            raise EntityNotFoundError(self.entity_name, alias)
+        return reservation_service
 
     async def get_by_name(
         self,
         name: str,
         include_removed: bool = False,
-    ) -> ReservationServiceDetail | None:
-        return await self.crud.get_by_name(name, include_removed)
+    ) -> ReservationServiceDetail:
+        reservation_service = await self.crud.get_by_name(name, include_removed)
+        if reservation_service is None:
+            raise EntityNotFoundError(self.entity_name, name)
+        return reservation_service
 
     async def get_by_room_id(
         self,
         room_id: int,
         include_removed: bool = False,
-    ) -> ReservationServiceDetail | None:
-        return await self.crud.get_by_room_id(room_id, include_removed)
+    ) -> ReservationServiceDetail:
+        reservation_service = await self.crud.get_by_room_id(room_id, include_removed)
+        if reservation_service is None:
+            raise EntityNotFoundError(self.entity_name, room_id)
+        return reservation_service
 
     async def get_public_services(
         self,

@@ -62,11 +62,9 @@ class MiniServiceRouter(
             :param name: name of the mini service.
             :param include_removed: include removed mini service or not.
 
-            :return: Mini Service with name equal to name
-                     or None if no such mini service exists.
+            :return: Mini Service with name equal to name.
             """
-            mini_service = await service.get_by_name(name, include_removed)
-            return await self._handle_not_found(mini_service, name)
+            return service.get_by_name(name, include_removed)
 
 
 MiniServiceRouter()
