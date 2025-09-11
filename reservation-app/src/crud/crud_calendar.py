@@ -135,7 +135,7 @@ class CRUDCalendar(AbstractCRUDCalendar):
             calendar_create if isinstance(calendar_create, dict) else calendar_create.model_dump()
         )
 
-        collision_ids = obj_in_data.pop("collisions", [])
+        collision_ids = obj_in_data.pop("collision_ids", [])
         obj_in_data.pop("mini_services", None)
 
         db_obj = self.model(**obj_in_data)
@@ -160,7 +160,7 @@ class CRUDCalendar(AbstractCRUDCalendar):
     ) -> CalendarModel:
         update_data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
 
-        collision_ids = update_data.pop("collisions", [])
+        collision_ids = update_data.pop("collision_ids", [])
         update_data.pop("mini_services", None)
 
         for field, value in update_data.items():

@@ -36,7 +36,7 @@ class CalendarCreate(CalendarBase):
     active_member_rules: Rules
     manager_rules: Rules
 
-    collisions: list[str] = Field(default_factory=list)
+    collision_ids: list[str] = Field(default_factory=list)
     mini_services: list[str] = Field(default_factory=list)
 
 
@@ -50,7 +50,7 @@ class CalendarUpdate(CalendarBase):
     active_member_rules: Rules | None = None
     manager_rules: Rules | None = None
 
-    collisions: list[str] = Field(default_factory=list)
+    collision_ids: list[str] = Field(default_factory=list)
     mini_services: list[str] = Field(default_factory=list)
 
 
