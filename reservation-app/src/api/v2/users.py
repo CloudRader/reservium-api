@@ -9,7 +9,7 @@ from core.application.exceptions import (
     PermissionDeniedError,
 )
 from core.schemas import UserLite
-from core.schemas.event import EventDetail
+from core.schemas.event import EventDetail, EventTimeline
 from fastapi import APIRouter, Depends, FastAPI, status
 from services import UserService
 
@@ -80,12 +80,32 @@ async def get_events_by_user(
     """
     Get all events linked to a user by its ID.
 
-    :param service: UserLite service.
+    :param service: User service.
     :param user: UserLite who make this request.
 
     :return: List of EventWithExtraDetails objects linked to the user.
     """
-    events = await service.get_events_by_user(user)
-    if events is None:
-        raise BaseAppError()
-    return events
+    return await service.get_events_by_user(user)
+
+
+@router.get(
+    "/me/events-timeline",
+    response_model=EventTimeline,
+    responses=ERROR_RESPONSES["400_404"],
+    status_code=status.HTTP_200_OK,
+)
+async def get_events_by_user_filter_past_and_upcoming(
+    service: Annotated[UserService, Depends(UserService)],
+    user: Annotated[UserLite, Depends(get_current_user)],
+) -> Any:
+    """
+    Retrieve the user's events, grouped into past and upcoming.
+
+    :param service: User service.
+    :param user: UserLite who make this request.
+
+    :return: Dictionary with two lists of events:
+             - ``past``: events that have already ended,
+             - ``upcoming``: events that are scheduled in the future.
+    """
+    return await service.get_events_by_user_filter_past_and_upcoming(user)

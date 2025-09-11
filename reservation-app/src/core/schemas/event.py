@@ -137,6 +137,13 @@ class EventDetail(EventLite):
     calendar: "CalendarWithReservationServiceInfo"
 
 
+class EventTimeline(BaseModel):
+    """Extend properties of event to return via API."""
+
+    past: list[EventDetail]
+    upcoming: list[EventDetail]
+
+
 from core.schemas.user import UserLite  # noqa
 from core.schemas.calendar import CalendarWithReservationServiceInfo, CalendarLite  # noqa
 

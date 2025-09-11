@@ -1,7 +1,7 @@
 """
 Define an abstract base class AbstractUserService.
 
-This class works with UserLite.
+This class works with User.
 """
 
 from abc import ABC, abstractmethod
@@ -21,7 +21,7 @@ from core.schemas import (
     UserLite,
     UserUpdate,
 )
-from core.schemas.event import EventDetail
+from core.schemas.event import EventDetail, EventTimeline
 from crud import CRUDReservationService, CRUDUser
 from fastapi import Depends
 from services import CrudServiceBase, EventService
@@ -53,7 +53,7 @@ class AbstractUserService(
         room: Room,
     ) -> UserLite:
         """
-        Create a UserLite in the database.
+        Create a User in the database.
 
         :param user_data: Received data from IS.
         :param roles: List of user roles in IS.
@@ -66,7 +66,7 @@ class AbstractUserService(
     @abstractmethod
     async def get_by_username(self, username: str) -> UserLite:
         """
-        Retrieve a UserLite instance by its username.
+        Retrieve a User instance by its username.
 
         :param username: The username of the UserLite.
 
@@ -78,9 +78,23 @@ class AbstractUserService(
         """
         Retrieve all events linked to a given UserLite.
 
-        :param user: The UserLite object in database.
+        :param user: The User object in database.
 
         :return: List of EventWithCalendarInfo objects linked to the user.
+        """
+
+    @abstractmethod
+    async def get_events_by_user_filter_past_and_upcoming(
+        self, user: UserLite
+    ) -> list[EventDetail]:
+        """
+        Retrieve all events linked to the given user and split them into past and upcoming.
+
+        :param user: The User object in database.
+
+        :return: EventTimeline object containing two lists:
+             - ``past``: events that have already ended,
+             - ``upcoming``: events scheduled for the future.
         """
 
 
@@ -147,3 +161,6 @@ class UserService(AbstractUserService):
 
     async def get_events_by_user(self, user: UserLite) -> list[EventDetail]:
         return await self.crud.get_events_by_user_id(user.id)
+
+    async def get_events_by_user_filter_past_and_upcoming(self, user: UserLite) -> EventTimeline:
+        return await self.crud.get_events_by_user_filter_past_and_upcoming(user.id)

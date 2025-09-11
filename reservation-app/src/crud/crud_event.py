@@ -25,6 +25,19 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventLite, EventUpdate], ABC):
     """
 
     @abstractmethod
+    async def get(
+        self,
+        id_: str | int,
+        include_removed: bool = False,
+    ) -> EventModel | None:
+        """
+        Retrieve a single record by its id_.
+
+        If include_removed is True retrieve a single record
+        including marked as deleted.
+        """
+
+    @abstractmethod
     async def get_by_user_id(
         self,
         user_id: int,
@@ -89,6 +102,28 @@ class CRUDEvent(AbstractCRUDEvent):
 
     def __init__(self, db: AsyncSession):
         super().__init__(EventModel, db)
+        self.state = EventState
+        self.calendar_model = CalendarModel
+        self.reservation_service_model = ReservationServiceModel
+
+    async def get(
+        self,
+        id_: str | int,
+        include_removed: bool = False,
+    ) -> EventModel | None:
+        if id_ is None:
+            return None
+        stmt = (
+            select(self.model)
+            .options(
+                joinedload(self.model.calendar).joinedload(self.calendar_model.reservation_service),
+                joinedload(self.model.user),
+            )
+            .execution_options(include_deleted=include_removed)
+            .filter(self.model.id == id_)
+        )
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
 
     async def get_by_user_id(self, user_id: int) -> list[EventModel] | None:
         stmt = (
@@ -106,7 +141,7 @@ class CRUDEvent(AbstractCRUDEvent):
         obj = await self._check_id_and_return_obj_from_db_by_id(id_)
         if obj is None:
             return None
-        obj.event_state = EventState.CONFIRMED
+        obj.event_state = self.state.CONFIRMED
         self.db.add(obj)
         await self.db.commit()
         return obj
@@ -133,22 +168,22 @@ class CRUDEvent(AbstractCRUDEvent):
         event_state: EventState | None = None,
     ) -> list[EventModel]:
         stmt = (
-            select(EventModel)
-            .join(CalendarModel, EventModel.calendar_id == CalendarModel.id)
+            select(self.model)
+            .join(self.calendar_model, self.model.calendar_id == self.calendar_model.id)
             .join(
-                ReservationServiceModel,
-                CalendarModel.reservation_service_id == ReservationServiceModel.id,
+                self.reservation_service_model,
+                self.calendar_model.reservation_service_id == self.reservation_service_model.id,
             )
-            .filter(ReservationServiceModel.alias.in_(aliases))
+            .filter(self.reservation_service_model.alias.in_(aliases))
             .options(
-                joinedload(EventModel.calendar).joinedload(CalendarModel.reservation_service),
-                joinedload(EventModel.user),
+                joinedload(self.model.calendar).joinedload(self.calendar_model.reservation_service),
+                joinedload(self.model.user),
             )
-            .order_by(EventModel.reservation_start.desc())
+            .order_by(self.model.reservation_start.desc())
         )
 
         if event_state is not None:
-            stmt = stmt.filter(EventModel.event_state == event_state)
+            stmt = stmt.filter(self.model.event_state == event_state)
 
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
