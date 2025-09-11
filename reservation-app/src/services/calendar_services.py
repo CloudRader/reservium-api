@@ -305,12 +305,15 @@ class CalendarService(AbstractCalendarService):
         new_calendar_candidates: list[GoogleCalendarCalendar] = []
 
         for calendar in google_calendars:
-            if (
-                calendar.access_role == "owner"
-                and not calendar.primary
-                and await self.get(calendar.id) is None
-            ):
-                new_calendar_candidates.append(calendar)
+            if calendar.access_role == "owner" and not calendar.primary:
+                try:
+                    await self.get(calendar.id)
+                    exists = True
+                except EntityNotFoundError:
+                    exists = False
+
+                if not exists:
+                    new_calendar_candidates.append(calendar)
 
         return new_calendar_candidates
 
