@@ -141,7 +141,7 @@ class BaseCRUDRouter[
             include_removed: bool = Query(False),
         ):
             """
-            Get object by its uuid.
+            Get object by its id.
 
             :param service: Service providing business logic of this object.
             :param id_: id of the object.

@@ -99,9 +99,11 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
     ) -> Model | None:
         if id_ is None:
             return None
-        stmt = select(self.model).filter(self.model.id == id_)
-        if include_removed:
-            stmt = stmt.execution_options(include_deleted=True)
+        stmt = (
+            select(self.model)
+            .execution_options(include_deleted=include_removed)
+            .filter(self.model.id == id_)
+        )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 

@@ -6,6 +6,7 @@ from urllib.parse import urlparse, urlunparse
 from api.v2.emails import create_email_meta, preparing_email
 from core.models import EventState
 from core.schemas import CalendarDetail, EventCreate, ReservationServiceDetail, UserLite
+from core.schemas.calendar import CalendarDetailWithCollisions
 from core.schemas.google_calendar import GoogleCalendarEventCreate
 from integrations.google import GoogleCalendarService
 from pytz import timezone
@@ -41,7 +42,7 @@ async def control_collision(
     google_calendar_service,
     start_datetime,
     end_datetime,
-    calendar: CalendarDetail,
+    calendar: CalendarDetailWithCollisions,
 ) -> bool:
     """
     Check if there is already another reservation at that time.
@@ -57,9 +58,9 @@ async def control_collision(
         return False
 
     check_collision: list = []
-    collisions: list = calendar.collision_with_calendar
+    collisions: list = calendar.collision_ids
     collisions.append(calendar.id)
-    if calendar.collision_with_calendar:
+    if calendar.collision_ids:
         for calendar_id in collisions:
             check_collision.extend(
                 await google_calendar_service.fetch_events_in_time_range(

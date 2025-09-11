@@ -9,10 +9,12 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from core.models import CalendarModel, MiniServiceModel
+from core.models.calendar_collisions_association import CalendarCollisionAssociationTable
 from core.schemas import CalendarCreate, CalendarUpdate
 from crud import CRUDBase
-from sqlalchemy import select
+from sqlalchemy import delete, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 
 class AbstractCRUDCalendar(
@@ -27,42 +29,58 @@ class AbstractCRUDCalendar(
     """
 
     @abstractmethod
-    async def create_with_mini_services(
+    async def get_with_collisions(
+        self,
+        id_: str | int,
+        include_removed: bool = False,
+    ):
+        """
+        Retrieve a single record by its id_ with collisions.
+
+        If include_removed is True retrieve a single record
+        including marked as deleted.
+        """
+
+    @abstractmethod
+    async def create_with_mini_services_and_collisions(
         self,
         calendar_create: CalendarCreate | dict[str, Any],
         mini_services: list[MiniServiceModel],
     ) -> CalendarModel:
         """
-        Create a new Calendar instance with associated mini services.
+        Create a new Calendar instance with associated mini services and collisions.
 
-        This method is similar to the base `create` method but additionally
-        attaches a list of `MiniServiceModel` instances to the created calendar.
+        This method extends the base create method by:
+        - Attaching multiple MiniServiceModel instances to the created calendar.
+        - Creating symmetric collision relationships with other Calendar instances
+          as specified in the input.
 
         :param calendar_create: Data used to create the Calendar (schema or dict).
         :param mini_services: List of MiniServiceModel objects to associate with the calendar.
 
-        :return: The created CalendarModel instance with mini services attached.
+        :return: The created CalendarModel instance with mini services and collisions attached.
         """
 
     @abstractmethod
-    async def update_with_mini_services(
+    async def update_with_mini_services_and_collisions(
         self,
         db_obj: CalendarModel,
         obj_in: CalendarUpdate | dict[str, Any],
         mini_services: list[MiniServiceModel],
     ) -> CalendarModel:
         """
-        Update an existing Calendar instance, including its associated mini services.
+        Update an existing Calendar instance including mini services and collisions.
 
-        This method extends the base `update` functionality by ensuring
-        the provided list of `MiniServiceModel` objects replaces the existing
-        mini services linked to the calendar.
+        This method extends the base update functionality by:
+        - Replacing the existing mini services with the provided list.
+        - Updating symmetric collision relationships for the calendar.
+          Existing collisions are removed and replaced according to the input.
 
         :param db_obj: The existing CalendarModel instance to update.
         :param obj_in: Data to update the Calendar (schema or dict).
         :param mini_services: List of MiniServiceModel objects to associate with the calendar.
 
-        :return: The updated CalendarModel instance with updated mini services.
+        :return: The updated CalendarModel instance with updated mini services and collisions.
         """
 
     @abstractmethod
@@ -92,7 +110,23 @@ class CRUDCalendar(AbstractCRUDCalendar):
     def __init__(self, db: AsyncSession):
         super().__init__(CalendarModel, db)
 
-    async def create_with_mini_services(
+    async def get_with_collisions(
+        self,
+        id_: str | int,
+        include_removed: bool = False,
+    ):
+        if id_ is None:
+            return None
+        stmt = (
+            select(self.model)
+            .execution_options(include_deleted=include_removed)
+            .filter(self.model.id == id_)
+        )
+        stmt = stmt.options(selectinload(CalendarModel.collisions))
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def create_with_mini_services_and_collisions(
         self,
         calendar_create: CalendarCreate | dict[str, Any],
         mini_services: list[MiniServiceModel],
@@ -101,16 +135,24 @@ class CRUDCalendar(AbstractCRUDCalendar):
             calendar_create if isinstance(calendar_create, dict) else calendar_create.model_dump()
         )
 
+        collision_ids = obj_in_data.pop("collisions", [])
         obj_in_data.pop("mini_services", None)
+
         db_obj = self.model(**obj_in_data)
         db_obj.mini_services = mini_services
+
+        self.db.add(db_obj)
+        await self.db.flush()
+
+        if collision_ids:
+            await self._add_symmetric_collisions(db_obj, collision_ids)
 
         self.db.add(db_obj)
         await self.db.commit()
         await self.db.refresh(db_obj)
         return db_obj
 
-    async def update_with_mini_services(
+    async def update_with_mini_services_and_collisions(
         self,
         db_obj: CalendarModel,
         obj_in: CalendarUpdate | dict[str, Any],
@@ -118,12 +160,25 @@ class CRUDCalendar(AbstractCRUDCalendar):
     ) -> CalendarModel:
         update_data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
 
+        collision_ids = update_data.pop("collisions", [])
         update_data.pop("mini_services", None)
 
         for field, value in update_data.items():
             setattr(db_obj, field, value)
 
         db_obj.mini_services = mini_services
+
+        self.db.add(db_obj)
+        await self.db.flush()
+
+        if collision_ids:
+            stmt_delete = delete(CalendarCollisionAssociationTable).where(
+                (CalendarCollisionAssociationTable.calendar_id == db_obj.id)
+                | (CalendarCollisionAssociationTable.collides_with_id == db_obj.id)
+            )
+
+            await self.db.execute(stmt_delete)
+            await self._add_symmetric_collisions(db_obj, collision_ids)
 
         self.db.add(db_obj)
         await self.db.commit()
@@ -140,3 +195,22 @@ class CRUDCalendar(AbstractCRUDCalendar):
             stmt = stmt.execution_options(include_deleted=True)
         result = await self.db.execute(stmt)
         return result.scalars().first()
+
+    async def _add_symmetric_collisions(
+        self,
+        calendar: CalendarModel,
+        collision_ids: list[str],
+    ) -> None:
+        """Add symmetric collisions for a given calendar."""
+        collision_ids = [cid for cid in collision_ids if cid != calendar.id]
+        if not collision_ids:
+            return
+
+        collisions_bulk = []
+        for cid in collision_ids:
+            collisions_bulk.append({"calendar_id": calendar.id, "collides_with_id": cid})
+            collisions_bulk.append({"calendar_id": cid, "collides_with_id": calendar.id})
+
+        if collisions_bulk:
+            stmt = insert(CalendarCollisionAssociationTable).values(collisions_bulk)
+            await self.db.execute(stmt)

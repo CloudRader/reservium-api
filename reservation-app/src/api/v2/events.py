@@ -61,9 +61,8 @@ async def create(
     """
     services = await is_service.get_services_data(token.credentials)
 
-    calendar = await calendar_service.get(event_create.calendar_id)
-    if not calendar:
-        raise EntityNotFoundError(Entity.CALENDAR, event_create.calendar_id)
+    calendar = await calendar_service.get_with_collisions(event_create.calendar_id)
+
     reservation_service = await calendar_service.get_reservation_service_of_this_calendar(
         calendar.reservation_service_id,
     )

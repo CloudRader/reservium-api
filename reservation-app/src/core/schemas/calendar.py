@@ -21,7 +21,6 @@ class CalendarBase(BaseModel):
     """Shared properties of Calendar."""
 
     id: str | None = None
-    collision_with_calendar: list[str] = Field(default_factory=list)
     more_than_max_people_with_permission: bool | None = None
     color: str | None = None
 
@@ -36,6 +35,8 @@ class CalendarCreate(CalendarBase):
     club_member_rules: Rules
     active_member_rules: Rules
     manager_rules: Rules
+
+    collisions: list[str] = Field(default_factory=list)
     mini_services: list[str] = Field(default_factory=list)
 
 
@@ -45,10 +46,11 @@ class CalendarUpdate(CalendarBase):
     reservation_type: str | None = None
     max_people: int | None = Field(None, ge=1)
     collision_with_itself: bool | None = None
-    collision_with_calendar: list[str] = Field(default_factory=list)
     club_member_rules: Rules | None = None
     active_member_rules: Rules | None = None
     manager_rules: Rules | None = None
+
+    collisions: list[str] = Field(default_factory=list)
     mini_services: list[str] = Field(default_factory=list)
 
 
@@ -78,6 +80,12 @@ class CalendarDetail(CalendarLite):
     active_member_rules: Rules
     manager_rules: Rules
     mini_services: list["MiniServiceLite"] = Field(default_factory=list)
+
+
+class CalendarDetailWithCollisions(CalendarDetail):
+    """Additional properties of calendar to return via API."""
+
+    collision_ids: list[str] = Field(default_factory=list)
 
 
 from core.schemas.reservation_service import ReservationServiceLite  # noqa

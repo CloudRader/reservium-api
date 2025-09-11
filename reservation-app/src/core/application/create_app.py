@@ -40,7 +40,7 @@ def create_app():
     """
     from api.routers import router
     from core.application.docs import fastapi_docs
-    from core.application.exceptions import BaseAppError, app_exception_handler
+    from core.application.exceptions import register_errors_handlers
 
     app = FastAPI(
         title=fastapi_docs.NAME,
@@ -53,7 +53,7 @@ def create_app():
 
     app.include_router(router)
 
-    app.add_exception_handler(BaseAppError, app_exception_handler)
+    register_errors_handlers(app)
 
     app.add_middleware(
         CORSMiddleware,

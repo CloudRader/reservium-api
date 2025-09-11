@@ -9,7 +9,6 @@ from typing import Annotated
 
 from core import db_session
 from core.application.exceptions import (
-    BaseAppError,
     Entity,
     EntityNotFoundError,
     PermissionDeniedError,
@@ -155,9 +154,6 @@ class MiniServiceService(AbstractMiniServiceService):
         mini_service_create: MiniServiceCreate,
         user: UserLite,
     ) -> MiniServiceDetail:
-        if await self.crud.get_by_name(mini_service_create.name, True):
-            raise BaseAppError("A reservation service with this name already exist.")
-
         reservation_service = await self.reservation_service_service.get(
             mini_service_create.reservation_service_id,
         )

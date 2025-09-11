@@ -6,7 +6,8 @@ from api import get_current_user
 from api.api_base import BaseCRUDRouter
 from core.application.exceptions import ERROR_RESPONSES, Entity
 from core.schemas import CalendarCreate, CalendarDetail, CalendarLite, CalendarUpdate, UserLite
-from fastapi import APIRouter, Depends, Path, status
+from core.schemas.calendar import CalendarDetailWithCollisions
+from fastapi import APIRouter, Depends, Path, Query, status
 from integrations.google import GoogleCalendarService
 from services import CalendarService
 
@@ -156,6 +157,29 @@ class CalendarRouter(
 
             return calendars_result
 
+        @router.get(
+            "/{id}/collisions",
+            response_model=CalendarDetailWithCollisions,
+            responses=ERROR_RESPONSES["404"],
+            status_code=status.HTTP_200_OK,
+        )
+        async def get_with_collisions(
+            service: Annotated[CalendarService, Depends(CalendarService)],
+            id_: Annotated[str, Path(alias="id")],
+            include_removed: bool = Query(False),
+        ) -> Any:
+            """
+            Get calendar with collisions by its uuid.
+
+            :param service: Service providing business logic of this calendar.
+            :param id_: id of the calendar.
+            :param include_removed: include removed calendar or not.
+
+            :return: Calendar with id equal to id with collisions
+                     or None if no such object exists.
+            """
+            return await service.get_with_collisions(id_, include_removed)
+
         async def _create_single_object(
             service: CalendarService,
             google_calendar_service: GoogleCalendarService,
@@ -181,7 +205,7 @@ class CalendarRouter(
                     )
                 ).id
 
-            return service.create_with_permission_checks(calendar_create, user)
+            return await service.create_with_permission_checks(calendar_create, user)
 
 
 CalendarRouter()

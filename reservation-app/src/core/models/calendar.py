@@ -6,8 +6,7 @@ from core.models.base_class import Base
 from core.models.soft_delete_mixin import SoftDeleteMixin
 from core.models.types.rules_type import RulesType
 from core.schemas.calendar import Rules
-from sqlalchemy import ForeignKey, String
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
@@ -28,10 +27,6 @@ class Calendar(Base, SoftDeleteMixin):
         default=True,
     )
     collision_with_itself: Mapped[bool] = mapped_column(default=False, nullable=False)
-    collision_with_calendar: Mapped[list[str]] = mapped_column(
-        ARRAY(String),
-        nullable=True,
-    )
 
     club_member_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=True)
     active_member_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
@@ -51,3 +46,18 @@ class Calendar(Base, SoftDeleteMixin):
         back_populates="calendars",
         lazy="selectin",
     )
+
+    collisions: Mapped[list["Calendar"]] = relationship(
+        "Calendar",
+        secondary="calendar_collision_association",
+        primaryjoin="Calendar.id==CalendarCollisionAssociationTable.calendar_id",
+        secondaryjoin="Calendar.id==CalendarCollisionAssociationTable.collides_with_id",
+        lazy="selectin",
+        back_populates="collisions",
+        remote_side="Calendar.id",
+    )
+
+    @property
+    def collision_ids(self) -> list[str]:
+        """Return only the IDs of calendars this one collides with."""
+        return [c.id for c in self.collisions or []]

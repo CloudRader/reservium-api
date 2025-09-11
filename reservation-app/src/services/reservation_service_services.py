@@ -9,7 +9,6 @@ from typing import Annotated
 
 from core import db_session
 from core.application.exceptions import (
-    BaseAppError,
     Entity,
     EntityNotFoundError,
     PermissionDeniedError,
@@ -239,11 +238,6 @@ class ReservationServiceService(AbstractReservationServiceService):
         reservation_service_create: ReservationServiceCreate,
         user: UserLite,
     ) -> ReservationServiceDetail:
-        if await self.crud.get_by_name(reservation_service_create.name, True):
-            raise BaseAppError("A reservation service with this name already exist.")
-        if await self.crud.get_by_alias(reservation_service_create.alias, True):
-            raise BaseAppError("A reservation service with this alias already exist.")
-
         if not user.section_head:
             raise PermissionDeniedError(
                 "You must be the head of PS to create services.",

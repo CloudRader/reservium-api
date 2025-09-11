@@ -1,11 +1,13 @@
 """Package for App Exceptions."""
 
+import re
 from enum import Enum
 from typing import Any
 
-from fastapi import Request, status
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Request, status
+from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
 
 
 class Message(BaseModel):
@@ -37,6 +39,38 @@ def get_exception_response_detail(status_code: int, desc: str) -> dict:
     return {status_code: {"model": Message, "description": desc}}
 
 
+def parse_integrity_error(exc: IntegrityError) -> tuple[int, dict[str, Any]]:
+    """Parse DB integrity error and map to HTTP response."""
+    orig = getattr(exc, "orig", None)
+    text = str(orig or exc)
+
+    constraint = getattr(orig, "constraint_name", None)
+    detail = getattr(orig, "detail", None)
+
+    constraint_map = {
+        "uq_": (status.HTTP_409_CONFLICT, "Duplicate value for unique field(s)."),
+        "pk_": (status.HTTP_409_CONFLICT, "Duplicate primary key."),
+        "fk_": (status.HTTP_400_BAD_REQUEST, "Invalid reference: related record not found."),
+        "ck_": (status.HTTP_400_BAD_REQUEST, "Invalid value: violates check constraint."),
+    }
+
+    if constraint:
+        for prefix, (code, message) in constraint_map.items():
+            if constraint.startswith(prefix):
+                return code, {"message": message, "constraint": constraint}
+
+    match = re.search(r"DETAIL:\s+Key\s+\((.*?)\)=\((.*?)\)\s+already exists", text)
+    if match:
+        fields, values = match.groups()
+        return status.HTTP_409_CONFLICT, {
+            "message": f"Duplicate value for field(s): {fields}",
+            "fields": fields,
+            "values": values,
+        }
+
+    return status.HTTP_400_BAD_REQUEST, {"message": detail or text or "Database integrity error."}
+
+
 class BaseAppError(Exception):
     """Base exception class for custom exceptions."""
 
@@ -53,9 +87,9 @@ class BaseAppError(Exception):
         self.status_code = status_code or self.STATUS_CODE
         self.details = kwargs  # Extra context if needed
 
-    def to_response(self) -> JSONResponse:
-        """Convert exception to a JSONResponse."""
-        return JSONResponse(
+    def to_response(self) -> ORJSONResponse:
+        """Convert exception to a ORJSONResponse."""
+        return ORJSONResponse(
             status_code=self.status_code,
             content={"message": self.message, **self.details},
         )
@@ -64,11 +98,6 @@ class BaseAppError(Exception):
     def response(cls) -> dict:
         """Return OpenAPI response documentation for this exception."""
         return get_exception_response_detail(cls.STATUS_CODE, cls.DESCRIPTION)
-
-
-def app_exception_handler(request: Request, exc: BaseAppError) -> JSONResponse:  # noqa: ARG001
-    """Handle BaseAppError exceptions."""
-    return exc.to_response()
 
 
 class SoftValidationError(BaseAppError):
@@ -171,6 +200,35 @@ class ExternalAPIError(BaseAppError):
             status_code=self.STATUS_CODE,
             **kwargs,
         )
+
+
+class DatabaseIntegrityError(BaseAppError):
+    """Wrap SQLAlchemy IntegrityError for FastAPI style exceptions."""
+
+    STATUS_CODE = status.HTTP_400_BAD_REQUEST
+    DESCRIPTION = "Database integrity error."
+
+    def __init__(self, exc: IntegrityError):
+        code, content = parse_integrity_error(exc)
+        super().__init__(
+            message=content.get("message", self.DESCRIPTION),
+            status_code=code,
+            **{k: v for k, v in content.items() if k != "message"},
+        )
+
+
+def register_errors_handlers(app: FastAPI) -> None:
+    """Register global error handlers."""
+
+    @app.exception_handler(IntegrityError)
+    async def handle_integrity_error(request: Request, exc: IntegrityError):  # noqa: ARG001
+        """Wrap IntegrityError into DatabaseIntegrityError."""
+        raise DatabaseIntegrityError(exc)
+
+    @app.exception_handler(BaseAppError)
+    def app_exception_handler(request: Request, exc: BaseAppError) -> ORJSONResponse:  # noqa: ARG001
+        """Handle BaseAppError exceptions."""
+        return exc.to_response()
 
 
 ERROR_RESPONSES = {

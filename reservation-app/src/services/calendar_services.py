@@ -11,6 +11,7 @@ from core import db_session
 from core.application.exceptions import (
     BaseAppError,
     Entity,
+    EntityNotFoundError,
     PermissionDeniedError,
 )
 from core.models import MiniServiceModel
@@ -22,6 +23,7 @@ from core.schemas import (
     ReservationServiceDetail,
     UserLite,
 )
+from core.schemas.calendar import CalendarDetailWithCollisions
 from core.schemas.google_calendar import GoogleCalendarCalendar
 from crud import CRUDCalendar
 from fastapi import Depends
@@ -46,6 +48,19 @@ class AbstractCalendarService(
 
     Provides CRUD operations for a specific CalendarModel.
     """
+
+    @abstractmethod
+    async def get_with_collisions(
+        self,
+        id_: str | int,
+        include_removed: bool = False,
+    ) -> CalendarDetailWithCollisions:
+        """
+        Retrieve a single record by its id_ with collisions.
+
+        If include_removed is True retrieve a single record
+        including marked as deleted.
+        """
 
     @abstractmethod
     async def create_with_permission_checks(
@@ -177,16 +192,21 @@ class CalendarService(AbstractCalendarService):
         self.mini_service_service = MiniServiceService(db)
         self.entity_name = Entity.CALENDAR
 
+    async def get_with_collisions(
+        self,
+        id_: str | int,
+        include_removed: bool = False,
+    ) -> CalendarDetailWithCollisions:
+        calendar = await self.crud.get_with_collisions(id_, include_removed)
+        if calendar is None:
+            raise EntityNotFoundError(self.entity_name, id_)
+        return calendar
+
     async def create_with_permission_checks(
         self,
         calendar_create: CalendarCreate,
         user: UserLite,
     ) -> CalendarDetail:
-        if await self.get(calendar_create.id, True):
-            raise BaseAppError("A calendar with this id already exist.")
-        if await self.get_by_reservation_type(calendar_create.reservation_type, True):
-            raise BaseAppError("A calendar with this reservation type already exist.")
-
         reservation_service = await self.reservation_service_service.get(
             calendar_create.reservation_service_id,
         )
@@ -200,27 +220,9 @@ class CalendarService(AbstractCalendarService):
             calendar_create.reservation_service_id, calendar_create.mini_services
         )
 
-        if calendar_create.collision_with_calendar is not None:
-            for collision in calendar_create.collision_with_calendar:
-                existing_calendar = await self.get(collision)
-                if existing_calendar is None:
-                    raise BaseAppError(
-                        "These calendar do not exist in the db "
-                        "that you want to add to this calendar collision.",
-                    )
-                collision_calendar_to_update = set(
-                    existing_calendar.collision_with_calendar,
-                )
-                collision_calendar_to_update.add(calendar_create.id)
-                update_exist_calendar = CalendarUpdate(
-                    collision_with_calendar=list(collision_calendar_to_update),
-                )
-                if not await self.update(collision, update_exist_calendar):
-                    raise BaseAppError(
-                        f"Failed to update collisions on the calendar with this id {collision}",
-                    )
-
-        return await self.crud.create_with_mini_services(calendar_create, mini_services_in_calendar)
+        return await self.crud.create_with_mini_services_and_collisions(
+            calendar_create, mini_services_in_calendar
+        )
 
     async def update_with_permission_checks(
         self,
@@ -231,7 +233,7 @@ class CalendarService(AbstractCalendarService):
         calendar_to_update = await self.get(id_)
 
         reservation_service = await self.reservation_service_service.get(
-            calendar_to_update.reservation_service_id,
+            calendar_to_update.reservation_service_id
         )
 
         if reservation_service.alias not in user.roles:
@@ -243,7 +245,7 @@ class CalendarService(AbstractCalendarService):
             calendar_to_update.reservation_service_id, calendar_update.mini_services
         )
 
-        return await self.crud.update_with_mini_services(
+        return await self.crud.update_with_mini_services_and_collisions(
             calendar_to_update, calendar_update, mini_services_in_calendar
         )
 
@@ -286,18 +288,6 @@ class CalendarService(AbstractCalendarService):
             raise PermissionDeniedError(
                 f"You must be the {reservation_service.name} manager to create calendars.",
             )
-
-        for calendar_to_update in reservation_service.calendars:
-            if (
-                calendar_to_update.collision_with_calendar
-                and calendar.id in calendar_to_update.collision_with_calendar
-            ):
-                collision_to_update = calendar_to_update.collision_with_calendar.copy()
-                collision_to_update.remove(calendar.id)
-                update_exist_calendar = CalendarUpdate(
-                    collision_with_calendar=collision_to_update,
-                )
-                await self.update(calendar_to_update.id, update_exist_calendar)
 
         if hard_remove:
             return await self.remove(id_)
