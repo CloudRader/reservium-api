@@ -112,16 +112,9 @@ class BaseCRUDRouter[
         )
         async def get_all(
             service: Annotated[service_dep, Depends(service_dep)],
-            include_removed: bool = Query(False),
+            include_removed: bool = Query(False, description="Include `removed objects` or not."),
         ):
-            """
-            Get all objects from database.
-
-            :param service: Service providing business logic of this object.
-            :param include_removed: include removed object or not.
-
-            :return: List of all objects or None if there are no objects in db.
-            """
+            """Get all objects."""
             return await service.get_all(include_removed)
 
     def register_get_by_id(self):
@@ -137,19 +130,10 @@ class BaseCRUDRouter[
         )
         async def get_by_id(
             service: Annotated[service_dep, Depends(service_dep)],
-            id_: Annotated[str | int, Path(alias="id")],
-            include_removed: bool = Query(False),
+            id_: Annotated[str | int, Path(alias="id", description="The ID of the object.")],
+            include_removed: bool = Query(False, description="Include `removed object` or not."),
         ):
-            """
-            Get object by its id.
-
-            :param service: Service providing business logic of this object.
-            :param id_: id of the object.
-            :param include_removed: include removed object or not.
-
-            :return: Object with id equal to id
-                     or None if no such object exists.
-            """
+            """Get object."""
             return await service.get(id_, include_removed)
 
     def register_create(self):
@@ -169,15 +153,7 @@ class BaseCRUDRouter[
             user: Annotated[UserLite, Depends(get_current_user)],
             obj_create: schema_create,
         ):
-            """
-            Create object, only users with special roles can create object.
-
-            :param service: Service providing business logic of this object.
-            :param user: UserLite who make this request.
-            :param obj_create: ObjectCreate schema.
-
-            :returns ObjectSchema: the created object.
-            """
+            """Create object, only users with special roles can create object."""
             return await self._create_single_object(service, user, obj_create)
 
     def register_create_multiple(self):
@@ -197,15 +173,7 @@ class BaseCRUDRouter[
             user: Annotated[UserLite, Depends(get_current_user)],
             objs_create: list[schema_create],
         ):
-            """
-            Create objects, only users with special roles can create object.
-
-            :param service: Service providing business logic of this object.
-            :param user: UserLite who make this request.
-            :param objs_create: ObjectsCreate schema.
-
-            :returns list created ObjectSchema: the created objects.
-            """
+            """Create multiple objects in a single request."""
             objs_result: list[schema_detail] = []
             for obj_create in objs_create:
                 objs_result.append(await self._create_single_object(service, user, obj_create))
@@ -226,21 +194,10 @@ class BaseCRUDRouter[
         async def update(
             service: Annotated[service_dep, Depends(service_dep)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            id_: Annotated[str | int, Path(alias="id")],
+            id_: Annotated[str | int, Path(alias="id", description="The ID of the object.")],
             obj_update: schema_update,
         ):
-            """
-            Update object with id equal to 'id'.
-
-            Only users with special roles can update object.
-
-            :param service: Service providing business logic of this object.
-            :param user: UserLite who make this request.
-            :param id_: id of the object.
-            :param obj_update: ObjectUpdate schema.
-
-            :returns ObjectSchema: the updated object.
-            """
+            """Update object, only users with special roles can update object."""
             return await service.update_with_permission_checks(id_, obj_update, user)
 
     def register_restore(self):
@@ -257,19 +214,9 @@ class BaseCRUDRouter[
         async def restore(
             service: Annotated[service_dep, Depends(service_dep)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            id_: Annotated[str | int, Path(alias="id")],
+            id_: Annotated[str | int, Path(alias="id", description="The ID of the object.")],
         ):
-            """
-            Retrieve deleted object with id equal to 'id'.
-
-            Only users with special roles can update object.
-
-            :param service: Service providing business logic of this object.
-            :param user: UserLite who make this request.
-            :param id_: id of the object.
-
-            :returns ObjectSchema: the restored object.
-            """
+            """Restore a soft-deleted object, only users with special roles can restore object."""
             return await service.restore_with_permission_checks(id_, user)
 
     def register_delete(self):
@@ -286,21 +233,10 @@ class BaseCRUDRouter[
         async def delete(
             service: Annotated[service_dep, Depends(service_dep)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            id_: Annotated[str | int, Path(alias="id")],
-            hard_remove: bool = Query(False),
+            id_: Annotated[str | int, Path(alias="id", description="The ID of the object.")],
+            hard_remove: bool = Query(False, description="`Hard remove` the object or not."),
         ):
-            """
-            Delete object with id equal to 'id'.
-
-            Only users with special roles can delete object.
-
-            :param service: Service providing business logic of this object.
-            :param user: UserLite who make this request.
-            :param id_: id of the object.
-            :param hard_remove: hard remove of the object or not.
-
-            :returns ObjectSchema: the deleted object.
-            """
+            """Delete object, only users with special roles can delete object."""
             return await service.delete_with_permission_checks(id_, user, hard_remove)
 
     @staticmethod
