@@ -13,7 +13,6 @@ This is to confirm that the following reservation time change request has been a
 
 📝 Description:
 Name: {{ user_name }}
-Room: {{ user_room }}
 Participants: {{ event_guests }}
 Purpose: {{ event_purpose }}
 

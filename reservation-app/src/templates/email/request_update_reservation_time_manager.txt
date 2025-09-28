@@ -18,7 +18,6 @@ A {{ user_name }} has submitted a request to update the time of an existing rese
 
 📝 Description:
 Name: {{ user_name }}
-Room: {{ user_room }}
 Participants: {{ event_guests }}
 Purpose: {{ event_purpose }}
 

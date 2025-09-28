@@ -20,7 +20,6 @@ We regret to inform you that your reservation request has not been approved afte
 
 📝 Description:
 Name: {{ user_name }}
-Room: {{ user_room }}
 Participants: {{ event_guests }}
 Purpose: {{ event_purpose }}
 

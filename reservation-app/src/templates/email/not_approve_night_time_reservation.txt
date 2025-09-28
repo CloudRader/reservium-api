@@ -17,7 +17,6 @@ If you don’t hear back within a few days, feel free to contact the manager dir
 
 📝 Description:
 Name: {{ user_name }}
-Room: {{ user_room }}
 Participants: {{ event_guests }}
 Purpose: {{ event_purpose }}
 

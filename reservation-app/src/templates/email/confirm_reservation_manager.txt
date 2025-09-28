@@ -14,7 +14,6 @@ A new reservation has just been made. Here are the details:
 
 📝 Description:
 Name: {{ user_name }}
-Room: {{ user_room }}
 Participants: {{ event_guests }}
 Purpose: {{ event_purpose }}
 

@@ -18,7 +18,6 @@ class UserCreate(UserBase):
     id: int
     username: str
     full_name: str
-    room_number: str
     active_member: bool
     section_head: bool
 
@@ -28,7 +27,6 @@ class UserUpdate(UserBase):
 
     username: str | None = None
     full_name: str | None = None
-    room_number: str | None = None
     active_member: bool | None = None
     section_head: bool | None = None
 
@@ -40,7 +38,6 @@ class UserLite(UserBase):
     deleted_at: datetime | None = None
     username: str
     full_name: str
-    room_number: str
     active_member: bool
     section_head: bool
 

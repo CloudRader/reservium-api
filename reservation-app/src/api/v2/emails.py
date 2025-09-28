@@ -199,7 +199,6 @@ def construct_body_context(
             else None
         ),
         "user_name": user.full_name,
-        "user_room": user.room_number,
         "event_guests": event.guests,
         "event_purpose": event.purpose,
         "additionals": additional_services,

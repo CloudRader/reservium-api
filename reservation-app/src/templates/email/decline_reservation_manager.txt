@@ -16,7 +16,6 @@ This is a confirmation that the following reservation request has been reviewed 
 
 📝 Description:
 Name: {{ user_name }}
-Room: {{ user_room }}
 Participants: {{ event_guests }}
 Purpose: {{ event_purpose }}
 

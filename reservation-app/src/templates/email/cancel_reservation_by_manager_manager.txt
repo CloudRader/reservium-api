@@ -16,7 +16,6 @@ A reservation has been cancelled by a manager. Below are the details:
 
 📝 Description:
 Name: {{ user_name }}
-Room: {{ user_room }}
 Participants: {{ event_guests }}
 Purpose: {{ event_purpose }}
 

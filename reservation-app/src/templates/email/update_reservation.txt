@@ -19,7 +19,6 @@ A manager has updated the details of your reservation. Below you’ll find the n
 
 📝 Description:
 Name: {{ user_name }}
-Room: {{ user_room }}
 Participants: {{ event_guests }}
 Purpose: {{ event_purpose }}
 

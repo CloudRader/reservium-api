@@ -19,7 +19,6 @@ Unfortunately, your request to change the reservation time has been reviewed and
 
 📝 Description:
 Name: {{ user_name }}
-Room: {{ user_room }}
 Participants: {{ event_guests }}
 Purpose: {{ event_purpose }}
 

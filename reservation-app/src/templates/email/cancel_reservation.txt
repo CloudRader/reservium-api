@@ -16,7 +16,6 @@ If this was a mistake, or you’d like to reschedule, you can create a new reser
 
 📝 Description:
 Name: {{ user_name }}
-Room: {{ user_room }}
 Participants: {{ event_guests }}
 Purpose: {{ event_purpose }}
 

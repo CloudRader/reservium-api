@@ -24,7 +24,6 @@ Your request to change the time of your reservation has been received and is now
 
 📝 Description:
 Name: {{ user_name }}
-Room: {{ user_room }}
 Participants: {{ event_guests }}
 Purpose: {{ event_purpose }}
 

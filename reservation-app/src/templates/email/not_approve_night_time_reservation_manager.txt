@@ -13,7 +13,6 @@ A reservation has been submitted for a night-time slot that may require your rev
 
 📝 Description:
 Name: {{ user_name }}
-Room: {{ user_room }}
 Participants: {{ event_guests }}
 Purpose: {{ event_purpose }}
 
