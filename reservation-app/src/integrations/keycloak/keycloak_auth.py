@@ -5,10 +5,10 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from core import settings
-from core.application.exceptions import UnauthorizedError
+from core.application.exceptions import PermissionDeniedError, UnauthorizedError
 from core.schemas import UserKeycloak
 from keycloak import KeycloakOpenID
-from keycloak.exceptions import KeycloakAuthenticationError
+from keycloak.exceptions import KeycloakAuthenticationError, KeycloakGetError
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +83,7 @@ class KeycloakAuthService(AbstractKeycloakAuthService):
         try:
             return self.keycloak_openid.token(username, password)
         except KeycloakAuthenticationError as e:
-            logger.info(f"Keycloak authentication failed: {e}")
+            logger.info("Keycloak authentication failed: %s", e)
             raise UnauthorizedError(
                 message="Invalid username or password",
             ) from e
@@ -93,7 +93,7 @@ class KeycloakAuthService(AbstractKeycloakAuthService):
             # Validate token and get user info
             return self.keycloak_openid.userinfo(token)
         except KeycloakAuthenticationError as e:
-            logger.info(f"Token validation failed: {e}")
+            logger.info("Token validation failed: %s", e)
             raise UnauthorizedError(
                 message="Invalid or expired token",
             ) from e
@@ -102,16 +102,21 @@ class KeycloakAuthService(AbstractKeycloakAuthService):
         try:
             return UserKeycloak(**(self.keycloak_openid.userinfo(token)))
         except KeycloakAuthenticationError as e:
-            logger.info(f"Failed to get user info: {e}")
+            logger.info("Failed to get user info: %s", e)
             raise UnauthorizedError(
                 message="Failed to retrieve user information",
+            ) from e
+        except KeycloakGetError as e:
+            logger.info("Insufficient token permissions: %s", e)
+            raise PermissionDeniedError(
+                message="Token lacks required permissions",
             ) from e
 
     async def refresh_token(self, refresh_token: str) -> dict[str, Any]:
         try:
             return self.keycloak_openid.refresh_token(refresh_token)
         except KeycloakAuthenticationError as e:
-            logger.info(f"Token refresh failed: {e}")
+            logger.info("Token refresh failed: %s", e)
             raise UnauthorizedError(
                 message="Invalid or expired refresh token",
             ) from e
@@ -120,5 +125,5 @@ class KeycloakAuthService(AbstractKeycloakAuthService):
         try:
             self.keycloak_openid.logout(refresh_token)
         except KeycloakAuthenticationError as e:
-            logger.info(f"Logout failed: {e}")
+            logger.info("Logout failed: %s", e)
             # Don't raise exception for logout failures

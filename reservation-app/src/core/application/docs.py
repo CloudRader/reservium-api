@@ -19,10 +19,7 @@ class FastApiDocs:
         "- `DELETE`\n\n"
         "  - Delete object\n\n"
         "## Authentication\n"
-        "The application uses OAuth2 for authentication. "
-        "Access tokens can be obtained exclusively via HTTPS to ensure secure communication.\n\n"
-        "Issued access tokens are fully compatible with the Reservation System API (v1)"
-        " and can be used seamlessly across all supported endpoints.\n"
+        "The application uses OAuth2 for authentication.\n\n"
         "### Supported grant types:\n"
         "- authorization_code"
     )
