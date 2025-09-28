@@ -119,18 +119,13 @@ class MailConfig(BaseModel):
     VALIDATE_CERTS: bool
 
 
-class ISConfig(BaseModel):
-    """Config for IS."""
+class KeycloakConfig(BaseModel):
+    """Config for Keycloak."""
 
+    SERVER_URL: str
+    REALM: str
     CLIENT_ID: str
     CLIENT_SECRET: str
-    REDIRECT_URI: str
-    BASE_URL: str
-    OAUTH_TOKEN: str
-    OAUTH: str
-    RESPONSE_TYPE: str
-    GRANT_TYPE: str
-    SCOPE: str
 
 
 class GoogleConfig(BaseModel):
@@ -158,13 +153,12 @@ class Settings(BaseSettings):
 
     APP_NAME: str
     CLUB_NAME: str
-    SECRET_KEY: str
 
     RUN: RunConfig
     LOGGING: LoggingConfig = LoggingConfig()
     DB: DatabaseConfig
     MAIL: MailConfig
-    IS: ISConfig
+    KEYCLOAK: KeycloakConfig
     GOOGLE: GoogleConfig
     DORMITORY_ACCESS_SYSTEM: DormitoryAccessSystemConfig
 

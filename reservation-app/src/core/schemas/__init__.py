@@ -6,18 +6,6 @@ from .access_card_system import (
     VarSymbolDelete,
 )
 from .calendar import CalendarCreate, CalendarDetail, CalendarLite, CalendarUpdate, Rules
-from .data_is import (
-    InformationFromIS,
-    LimitObject,
-    Role,
-    RoleList,
-    Room,
-    Service,
-    ServiceList,
-    ServiceValidity,
-    UserIS,
-    Zone,
-)
 from .email import EmailCreate, EmailMeta, RegistrationFormCreate
 from .event import (
     EventCreate,
@@ -26,6 +14,7 @@ from .event import (
     EventUpdate,
     EventUpdateTime,
 )
+from .keycloak import UserKeycloak
 from .mini_service import (
     MiniServiceCreate,
     MiniServiceDetail,
@@ -65,18 +54,9 @@ __all__ = [
     "EventUpdateTime",
     "EmailCreate",
     "RegistrationFormCreate",
-    "UserIS",
-    "RoleList",
-    "Role",
-    "ServiceList",
-    "ServiceValidity",
-    "InformationFromIS",
-    "Zone",
-    "Room",
-    "LimitObject",
-    "Service",
     "EmailMeta",
     "VarSymbolCreateUpdate",
     "VarSymbolDelete",
     "ClubAccessSystemRequest",
+    "UserKeycloak",
 ]
