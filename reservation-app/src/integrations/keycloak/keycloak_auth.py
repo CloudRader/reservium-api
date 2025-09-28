@@ -7,6 +7,7 @@ from typing import Any
 from core import settings
 from core.application.exceptions import PermissionDeniedError, UnauthorizedError
 from core.schemas import UserKeycloak
+from jwcrypto.common import JWException
 from keycloak import KeycloakOpenID
 from keycloak.exceptions import KeycloakAuthenticationError, KeycloakGetError
 
@@ -35,6 +36,21 @@ class AbstractKeycloakAuthService(ABC):
         :param token: The access token to validate.
 
         :return: A dictionary with decoded token or user information if valid.
+        """
+
+    @abstractmethod
+    async def decode_token(self, token: str) -> dict[str, Any]:
+        """
+        Decode a Keycloak token.
+
+        This method decodes the given token using Keycloak's public key
+        and ensures it is valid. If the token is invalid or expired,
+        an HTTP 401 Unauthorized error is raised.
+
+        :param token: The access token to decode.
+
+        :return: A dictionary containing the decoded token information.
+        :raises JWException: If the token is invalid or expired.
         """
 
     @abstractmethod
@@ -93,6 +109,15 @@ class KeycloakAuthService(AbstractKeycloakAuthService):
             # Validate token and get user info
             return self.keycloak_openid.userinfo(token)
         except KeycloakAuthenticationError as e:
+            logger.info("Token validation failed: %s", e)
+            raise UnauthorizedError(
+                message="Invalid or expired token",
+            ) from e
+
+    async def decode_token(self, token: str) -> dict[str, Any]:
+        try:
+            return self.keycloak_openid.decode_token(token)
+        except JWException as e:
             logger.info("Token validation failed: %s", e)
             raise UnauthorizedError(
                 message="Invalid or expired token",
