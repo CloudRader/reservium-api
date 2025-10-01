@@ -142,7 +142,7 @@ class PermissionDeniedError(BaseAppError):
     """Exception raised when a user does not have the required permissions."""
 
     STATUS_CODE = status.HTTP_403_FORBIDDEN
-    DESCRIPTION = "UserLite does not have the required permissions."
+    DESCRIPTION = "User does not have the required permissions."
 
     def __init__(self, message: str | None = None, **kwargs):
         super().__init__(
