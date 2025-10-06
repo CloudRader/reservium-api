@@ -12,12 +12,9 @@ from core.application.exceptions import (
     Entity,
 )
 from core.schemas import (
-    Role,
-    Room,
-    ServiceValidity,
     UserCreate,
     UserDetail,
-    UserIS,
+    UserKeycloak,
     UserLite,
     UserUpdate,
 )
@@ -47,18 +44,12 @@ class AbstractUserService(
     @abstractmethod
     async def create_user(
         self,
-        user_data: UserIS,
-        roles: list[Role],
-        services: list[ServiceValidity],
-        room: Room,
+        user_data: UserKeycloak,
     ) -> UserLite:
         """
         Create a User in the database.
 
         :param user_data: Received data from IS.
-        :param roles: List of user roles in IS.
-        :param services: List of user services in IS.
-        :param room: Room of user in IS.
 
         :return: the created UserLite.
         """
@@ -111,34 +102,31 @@ class UserService(AbstractUserService):
 
     async def create_user(
         self,
-        user_data: UserIS,
-        roles: list[Role],
-        services: list[ServiceValidity],
-        room: Room,
+        user_data: UserKeycloak,
     ) -> UserLite:
-        user = await self.get_by_username(user_data.username)
+        user = await self.get(user_data.ldap_id)
 
         user_roles = []
 
-        for role in roles:
-            if role.role == "service_admin":
-                for manager in role.limit_objects:
-                    if manager.alias in await self.reservation_service_crud.get_all_aliases():
-                        user_roles.append(manager.alias)
+        services_aliases = await self.reservation_service_crud.get_all_aliases()
+        for role in user_data.roles:
+            if role.startswith("service_admin:"):
+                service_name = role.split(":", 1)[1]
+                if service_name in services_aliases:
+                    user_roles.append(service_name)
 
         active_member = False
-        for service in services:
-            if service.service.alias == "active":
+        for service in user_data.services:
+            if service == "active":
                 active_member = True
 
         section_head = False
-        if user_data.note.strip() == "head":
+        if "superuser" in user_data.roles:
             active_member = True
             section_head = True
 
         if user:
             user_update = UserUpdate(
-                room_number=room.door_number,
                 active_member=active_member,
                 section_head=section_head,
                 roles=user_roles,
@@ -146,10 +134,9 @@ class UserService(AbstractUserService):
             return await self.update(user.id, user_update)
 
         user_create = UserCreate(
-            id=user_data.id,
+            id=user_data.ldap_id,
             username=user_data.username,
             full_name=f"{user_data.first_name} {user_data.surname}",
-            room_number=room.door_number,
             active_member=active_member,
             section_head=section_head,
             roles=user_roles,
