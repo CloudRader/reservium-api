@@ -157,26 +157,26 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def get_mini_services_by_calendar(self, calendar_id: str) -> list[str] | None:
+    async def get_mini_services_by_calendar(self, calendar_id: str) -> list[str]:
         """
         Retrieve a list mini services instance by its calendar id.
 
         :param calendar_id: The id of the Calendar.
 
-        :return: The str of mini services if found, None otherwise.
+        :return: The list of mini services.
         """
 
     @abstractmethod
-    async def get_reservation_service_of_this_calendar(
+    async def get_reservation_service(
         self,
-        reservation_service_id: str,
-    ) -> ReservationServiceDetail | None:
+        id_: str,
+    ) -> ReservationServiceDetail:
         """
         Retrieve the reservation service of this calendar by reservation service id.
 
-        :param reservation_service_id: The id of the Reservation Service.
+        :param id_: The id of the calendar.
 
-        :return: Reservation Service of this calendar if found, None otherwise.
+        :return: Reservation Service of this calendar if found.
         """
 
 
@@ -327,11 +327,8 @@ class CalendarService(AbstractCalendarService):
             include_removed,
         )
 
-    async def get_mini_services_by_calendar(self, calendar_id: str) -> list[str] | None:
-        calendar = await self.crud.get(calendar_id)
-
-        if calendar is None:
-            return None
+    async def get_mini_services_by_calendar(self, calendar_id: str) -> list[str]:
+        calendar = await self.get(calendar_id)
 
         mini_services_name = []
         for mini_service in calendar.mini_services:
@@ -339,18 +336,12 @@ class CalendarService(AbstractCalendarService):
 
         return mini_services_name
 
-    async def get_reservation_service_of_this_calendar(
+    async def get_reservation_service(
         self,
-        reservation_service_id: str,
-    ) -> ReservationServiceDetail | None:
-        reservation_service = await self.reservation_service_service.get(
-            reservation_service_id,
-        )
-
-        if not reservation_service:
-            return None
-
-        return reservation_service
+        id_: str,
+    ) -> ReservationServiceDetail:
+        calendar = await self.get(id_, True)
+        return await self.reservation_service_service.get(calendar.reservation_service_id, True)
 
     async def _prepare_calendar_mini_services(
         self,

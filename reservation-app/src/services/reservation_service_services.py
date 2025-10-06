@@ -223,6 +223,21 @@ class AbstractReservationServiceService(
         :return: List of EventWithExtraDetails objects linked to the reservation service.
         """
 
+    @abstractmethod
+    async def get_reservation_service(
+        self,
+        id_: str,
+    ) -> ReservationServiceDetail:
+        """
+        Retrieve the reservation service.
+
+        Need for unify method in api base.
+
+        :param id_: The id of the Reservation Service.
+
+        :return: Reservation Service of this mini service if found.
+        """
+
 
 class ReservationServiceService(AbstractReservationServiceService):
     """Class MiniServiceService represent service that work with Mini Service."""
@@ -380,3 +395,9 @@ class ReservationServiceService(AbstractReservationServiceService):
             reservation_service.id,
             event_state,
         )
+
+    async def get_reservation_service(
+        self,
+        id_: str,
+    ) -> ReservationServiceDetail:
+        return await self.get(id_, True)

@@ -18,6 +18,7 @@ from core.schemas import (
     MiniServiceDetail,
     MiniServiceLite,
     MiniServiceUpdate,
+    ReservationServiceDetail,
     UserLite,
 )
 from crud import CRUDCalendar, CRUDMiniService
@@ -137,6 +138,19 @@ class AbstractMiniServiceService(
         :return: The Mini Service instance.
         """
 
+    @abstractmethod
+    async def get_reservation_service(
+        self,
+        id_: str,
+    ) -> ReservationServiceDetail:
+        """
+        Retrieve the reservation service of this mini service by reservation service id.
+
+        :param id_: The id of the mini service.
+
+        :return: Reservation Service of this mini service if found.
+        """
+
 
 class MiniServiceService(AbstractMiniServiceService):
     """Class MiniServiceService represent service that work with Mini Service."""
@@ -248,3 +262,10 @@ class MiniServiceService(AbstractMiniServiceService):
         if mini_service is None:
             raise EntityNotFoundError(self.entity_name, room_id)
         return mini_service
+
+    async def get_reservation_service(
+        self,
+        id_: str,
+    ) -> ReservationServiceDetail:
+        mini_service = await self.get(id_, True)
+        return await self.reservation_service_service.get(mini_service.reservation_service_id, True)
