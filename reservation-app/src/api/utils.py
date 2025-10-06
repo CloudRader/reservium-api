@@ -60,15 +60,14 @@ async def control_collision(
     check_collision: list = []
     collisions: list = calendar.collision_ids
     collisions.append(calendar.id)
-    if calendar.collision_ids:
-        for calendar_id in collisions:
-            check_collision.extend(
-                await google_calendar_service.fetch_events_in_time_range(
-                    calendar_id,
-                    start_datetime,
-                    end_datetime,
-                ),
-            )
+    for calendar_id in collisions:
+        check_collision.extend(
+            await google_calendar_service.fetch_events_in_time_range(
+                calendar_id,
+                start_datetime,
+                end_datetime,
+            ),
+        )
 
     return await check_collision_time(
         check_collision,
