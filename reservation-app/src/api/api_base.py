@@ -3,7 +3,7 @@
 from collections.abc import Callable
 from typing import Annotated, TypeVar
 
-from api.user_authenticator import get_current_user
+from api import get_current_user
 from core.application.exceptions import ERROR_RESPONSES, BaseAppError, Entity
 from core.schemas.user import UserLite
 from fastapi import APIRouter, Depends, Path, Query, status

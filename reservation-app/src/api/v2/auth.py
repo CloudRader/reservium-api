@@ -1,12 +1,11 @@
 """API controllers for authorisation in IS(Information System of the club)."""
 
-from typing import Annotated, Any
+from typing import Annotated
 
-from api import authenticate_user
-from core.application.exceptions import ERROR_RESPONSES
-from fastapi import APIRouter, Depends, FastAPI, Query, status
-from fastapi.responses import RedirectResponse
-from integrations.information_system import IsAuthService, IsService
+from core import settings
+from fastapi import APIRouter, Depends, FastAPI, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2AuthorizationCodeBearer
+from integrations.keycloak import KeycloakAuthService
 from services import UserService
 
 app = FastAPI()
@@ -14,64 +13,46 @@ app = FastAPI()
 router = APIRouter()
 
 
-@router.get(
-    "/login_dev",
-    status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+http_bearer = HTTPBearer()
+
+
+oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    authorizationUrl=f"{settings.KEYCLOAK.SERVER_URL}/realms/{settings.KEYCLOAK.REALM}"
+    f"/protocol/openid-connect/auth?scope=openid roles",
+    tokenUrl=f"{settings.KEYCLOAK.SERVER_URL}/realms/{settings.KEYCLOAK.REALM}/protocol/openid-connect/token",
 )
-async def login_local_dev(
-    is_auth_service: Annotated[IsAuthService, Depends(IsAuthService)],
-):
-    """
-    Authenticate a user, construct authorization URL and redirect to authorization page of IS.
-
-    This endpoint for local authorization.
-    """
-    return RedirectResponse(await is_auth_service.generate_is_oauth_redirect_uri())
 
 
 @router.get(
+    "/token-swagger",
+    status_code=status.HTTP_200_OK,
+)
+async def get_token(token: str = Depends(oauth2_scheme)) -> dict:
+    """
+    Retrieve the OAuth2 access token from the authorization code flow.
+
+    This endpoint is intended for use with Swagger UI. When a user
+    authenticates via Keycloak through the Swagger interface,
+    FastAPI's `OAuth2AuthorizationCodeBearer` dependency automatically
+    handles the OAuth2 code exchange and injects the resulting access token.
+    """
+    return {"access_token": token}
+
+
+@router.post(
     "/login",
     status_code=status.HTTP_200_OK,
 )
 async def login(
-    is_auth_service: Annotated[IsAuthService, Depends(IsAuthService)],
-):
-    """Authenticate a user, construct authorization URL and sent it for authorization."""
-    return await is_auth_service.generate_is_oauth_redirect_uri()
-
-
-@router.get(
-    "/callback",
-    responses=ERROR_RESPONSES["401"],
-    status_code=status.HTTP_200_OK,
-)
-async def callback(
     user_service: Annotated[UserService, Depends(UserService)],
-    is_auth_service: Annotated[IsAuthService, Depends(IsAuthService)],
-    is_service: Annotated[IsService, Depends(IsService)],
-    code: str = Query(...),
-) -> Any:
-    """
-    Handle callback after authorization on IS.
+    keycloak_service: Annotated[KeycloakAuthService, Depends(KeycloakAuthService)],
+    token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
+):
+    """Authenticate a user."""
+    user_info = await keycloak_service.get_user_info(token.credentials)
+    user = await user_service.create_user(user_info)
 
-    :param user_service: UserLite service.
-    :param is_auth_service: IsAuthService service.
-    :param is_service: IsService service.
-    :param code: Code received, needed to get the user token.
-
-    :return: Authorized  UserLite schema.
-    """
-    token_response = await is_auth_service.get_token_response(code)
-
-    user = await authenticate_user(user_service, is_service, token_response.access_token)
-
-    return {
-        "username": user.username,
-        "token_type": token_response.token_type,
-        "access_token": token_response.access_token,
-        "expires_in": token_response.expires_in,
-        "scope": token_response.scope,
-    }
+    return user
 
 
 @router.get("/logout")

@@ -6,7 +6,7 @@ from api import (
     get_current_user,
 )
 from api.api_base import BaseCRUDRouter
-from api.user_authenticator import http_bearer
+from api.dependencies import http_bearer
 from api.utils import control_collision, process_event_approval
 from api.v2.emails import create_email_meta, preparing_email
 from core.application.exceptions import (
@@ -29,7 +29,7 @@ from core.schemas.google_calendar import GoogleCalendarEventCreate
 from fastapi import APIRouter, Body, Depends, Path, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
 from integrations.google import GoogleCalendarService
-from integrations.information_system import IsService
+from integrations.keycloak import KeycloakAuthService
 from pytz import timezone
 from services import CalendarService, EventService
 
@@ -100,7 +100,7 @@ class EventRouter(
         async def create(
             service: Annotated[EventService, Depends(EventService)],
             calendar_service: Annotated[CalendarService, Depends(CalendarService)],
-            is_service: Annotated[IsService, Depends(IsService)],
+            keycloak_service: Annotated[KeycloakAuthService, Depends(KeycloakAuthService)],
             user: Annotated[UserLite, Depends(get_current_user)],
             token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
             event_create: EventCreate,
@@ -110,19 +110,19 @@ class EventRouter(
 
             :param service: EventExtra service.
             :param calendar_service: CalendarDetail service.
-            :param is_service: IS service.
+            :param keycloak_service: Keycloak service.
             :param user: UserLite who make this request.
             :param token: Token for user identification.
             :param event_create: EventCreate schema.
 
             :returns EventExtra json object: the created event or exception otherwise.
             """
-            services = await is_service.get_services_data(token.credentials)
+            user_info = await keycloak_service.get_user_info(token.credentials)
 
             calendar = await calendar_service.get_with_collisions(event_create.calendar_id)
 
-            reservation_service = await calendar_service.get_reservation_service_of_this_calendar(
-                calendar.reservation_service_id,
+            reservation_service = await calendar_service.get_reservation_service(
+                calendar.id,
             )
 
             google_calendar_service = GoogleCalendarService()
@@ -136,7 +136,7 @@ class EventRouter(
                 raise SoftValidationError("There's already a reservation for that time.")
 
             event_body = GoogleCalendarEventCreate(
-                **await service.post_event(event_create, services, user, calendar)
+                **await service.post_event(event_create, user_info.services, user, calendar)
             )
             if not event_body:
                 raise BaseAppError(message="Could not create event.")
