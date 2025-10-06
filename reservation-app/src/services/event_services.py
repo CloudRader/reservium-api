@@ -24,7 +24,6 @@ from core.schemas import (
     EventUpdateTime,
     ReservationServiceDetail,
     Rules,
-    ServiceValidity,
     UserLite,
 )
 from core.schemas.event import EventLite
@@ -51,7 +50,7 @@ class AbstractEventService(
     async def post_event(
         self,
         event_input: EventCreate,
-        services: list[ServiceValidity],
+        services: list[str],
         user: UserLite,
         calendar: CalendarDetail,
     ) -> Any:
@@ -261,7 +260,7 @@ class EventService(AbstractEventService):
     async def post_event(
         self,
         event_input: EventCreate,
-        services: list[ServiceValidity],
+        services: list[str],
         user: UserLite,
         calendar: CalendarDetail,
     ) -> Any:
@@ -516,7 +515,7 @@ class EventService(AbstractEventService):
     async def _control_conditions_and_permissions(
         self,
         user: UserLite,
-        services: list[ServiceValidity],
+        services: list[str],
         event_input: EventCreate,
         calendar: CalendarDetail,
     ):
@@ -564,7 +563,7 @@ class EventService(AbstractEventService):
 
     def _first_standard_check(
         self,
-        services: list[ServiceValidity],
+        services: list[str],
         reservation_service: ReservationServiceDetail,
         start_time,
     ):
@@ -628,9 +627,9 @@ class EventService(AbstractEventService):
         }
 
     @staticmethod
-    def _service_availability_check(services: list[ServiceValidity], service_alias) -> bool:
+    def _service_availability_check(services: list[str], service_alias) -> bool:
         """Check if the user is reserving the service user has."""
-        return any(service.service.alias == service_alias for service in services)
+        return any(service == service_alias for service in services)
 
     @staticmethod
     def _check_max_user_reservation_hours(start_datetime, end_datetime, user_rules: Rules):
@@ -675,7 +674,6 @@ class EventService(AbstractEventService):
             formatted_services = ", ".join(event_input.additional_services)
         return (
             f"Name: {user.full_name}\n"
-            f"Room: {user.room_number}\n"
             f"Participants: {event_input.guests}\n"
             f"Purpose: {event_input.purpose}\n"
             f"\n"
