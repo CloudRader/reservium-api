@@ -2,9 +2,7 @@ stages:
   - build
 
 variables:
-  CI_REGISTRY: registry.git.sh.cvut.cz
-  CI_REGISTRY_IMAGE: registry.git.sh.cvut.cz/buk/reservation/backend
-  IMAGE: $CI_REGISTRY_IMAGE/reservation-app
+  IMAGE: $DOCKER_HUB_USER/reservation-backend
   VERSION: $CI_COMMIT_SHORT_SHA
   VERSION_TAG: latest
 
@@ -16,31 +14,33 @@ build-and-push-image:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $BUILD_ON_BRANCH != null && $CI_COMMIT_BRANCH == $BUILD_ON_BRANCH && $CI_OPEN_MERGE_REQUESTS == null
   image:
-    name: docker:27.1.1
+    name: docker:stable-git
     entrypoint: [""]
   services:
-    - docker:27.1.1-dind
+    - docker:stable-git-dind
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
-    DOCKER_DRIVER: overlay2
     DOCKER_BUILDKIT: '1'
     GIT_STRATEGY: clone
   script:
-    - echo "Logging in to GitLab Container Registry..."
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - echo "Logging in to Docker Hub..."
+    - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
 
-    - export SERVICE_IMAGE=$IMAGE:$VERSION
-    - export SERVICE_IMAGE_VERSION_TAG=$IMAGE:$VERSION_TAG
-    - export SERVICE_IMAGE_GIT=$IMAGE:git-$CI_COMMIT_SHA
+    # Prepare tags
+    - export SERVICE_IMAGE="$IMAGE:$VERSION"
+    - export SERVICE_IMAGE_VERSION_TAG="$IMAGE:$VERSION_TAG"
+    - export SERVICE_IMAGE_GIT="$IMAGE:git-$CI_COMMIT_SHA"
 
+    # Build the Docker image
     - echo "Building and tagging image..."
-    - docker build -t $SERVICE_IMAGE -t $SERVICE_IMAGE_VERSION_TAG -t $SERVICE_IMAGE_GIT ${BUILD_CONTEXT:-.} ${dockerfile_arg:-}
+    - docker build -t "$SERVICE_IMAGE" -t "$SERVICE_IMAGE_VERSION_TAG" -t "$SERVICE_IMAGE_GIT" ${BUILD_CONTEXT:-.} ${dockerfile_arg:-}
 
+    # Push all tags to Docker Hub
     - echo "Pushing image tags..."
-    - docker push $SERVICE_IMAGE
-    - docker push $SERVICE_IMAGE_VERSION_TAG
-    - docker push $SERVICE_IMAGE_GIT
+    - docker push "$SERVICE_IMAGE"
+    - docker push "$SERVICE_IMAGE_VERSION_TAG"
+    - docker push "$SERVICE_IMAGE_GIT"
 
 # ---------- PROMOTE ----------
 promote-image:
@@ -48,26 +48,31 @@ promote-image:
   rules:
     - if: $CI_COMMIT_TAG
   image:
-    name: docker:27.1.1
+    name: docker:stable-git
     entrypoint: [""]
   services:
-    - docker:27.1.1-dind
+    - docker:stable-git-dind
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
     GIT_STRATEGY: none
   script:
-    - echo "Logging in to GitLab Container Registry..."
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    # Log in to Docker Hub
+    - echo "Logging in to Docker Hub..."
+    - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
 
-    - IMAGE_FROM=$IMAGE:git-$CI_COMMIT_SHA
-    - IMAGE_TO=$IMAGE:${CI_COMMIT_TAG}
-    - LEGACY_IMAGE_TO=$IMAGE:${CI_COMMIT_TAG#v}
+    # Define images
+    - IMAGE_FROM="$IMAGE:git-$CI_COMMIT_SHA"
+    - IMAGE_TO="$IMAGE:$CI_COMMIT_TAG"
+    - LEGACY_IMAGE_TO="$IMAGE:${CI_COMMIT_TAG#v}"
 
+    # Promote image tags
     - echo "Pulling and tagging image for promotion..."
-    - docker pull $IMAGE_FROM
-    - docker tag $IMAGE_FROM $IMAGE_TO
-    - docker tag $IMAGE_FROM $LEGACY_IMAGE_TO
-    - docker push $IMAGE_TO
-    - docker push $LEGACY_IMAGE_TO
+    - docker pull "$IMAGE_FROM"
+    - docker tag "$IMAGE_FROM" "$IMAGE_TO"
+    - docker tag "$IMAGE_FROM" "$LEGACY_IMAGE_TO"
+
+    # Push promoted tags
+    - docker push "$IMAGE_TO"
+    - docker push "$LEGACY_IMAGE_TO"
