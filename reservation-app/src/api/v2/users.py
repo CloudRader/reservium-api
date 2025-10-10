@@ -10,7 +10,7 @@ from core.application.exceptions import (
 )
 from core.schemas import UserLite
 from core.schemas.event import EventDetail, EventTimeline
-from fastapi import APIRouter, Depends, FastAPI, status
+from fastapi import APIRouter, Depends, FastAPI, Query, status
 from services import UserService
 
 app = FastAPI()
@@ -76,16 +76,18 @@ async def get_me(
 async def get_events_by_user(
     service: Annotated[UserService, Depends(UserService)],
     user: Annotated[UserLite, Depends(get_current_user)],
+    page: int = Query(1, ge=1, description="Page number for pagination. Starts at 1."),
+    limit: int = Query(
+        20, ge=1, le=100, description="Number of events per page (pagination limit)."
+    ),
+    past: bool | None = Query(
+        None,
+        description="Filter events by time. `True` for past events, `False` for future events, "
+        "`None` for all events.",
+    ),
 ) -> Any:
-    """
-    Get all events linked to a user by its ID.
-
-    :param service: User service.
-    :param user: UserLite who make this request.
-
-    :return: List of EventWithExtraDetails objects linked to the user.
-    """
-    return await service.get_events_by_user(user)
+    """Get events linked to a user by its ID."""
+    return await service.get_events_by_user(user, page, limit, past)
 
 
 @router.get(

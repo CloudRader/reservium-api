@@ -36,11 +36,21 @@ class AbstractCRUDUser(CRUDBase[UserModel, UserCreate, UserUpdate], ABC):
         """
 
     @abstractmethod
-    async def get_events_by_user_id(self, id_: int) -> list[EventModel]:
+    async def get_events_by_user_id(
+        self,
+        id_: int,
+        page: int = 1,
+        limit: int = 20,
+        past: bool | None = None,
+    ) -> list[EventModel]:
         """
-        Fetch related events by id_.
+        Fetch related events for a specific user with pagination and time filtering.
 
         :param id_: ID of the User.
+        :param page: The page number for pagination. Defaults to 1.
+        :param limit: The maximum number of events to return per page. Defaults to 20.
+        :param past: Filter for event time. `True` for past events, `False` for future events.
+            `None` to fetch all events (no time filtering).
 
         :return: List of related events of type `model`.
         """
@@ -77,17 +87,32 @@ class CRUDUser(AbstractCRUDUser):
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_events_by_user_id(self, id_: int) -> list[EventModel]:
+    async def get_events_by_user_id(
+        self,
+        id_: int,
+        page: int = 1,
+        limit: int = 20,
+        past: bool | None = None,
+    ) -> list[EventModel]:
+        now = datetime.now()
+
         stmt = (
             select(self.event_model)
             .options(
                 joinedload(self.event_model.calendar).joinedload(CalendarModel.reservation_service)
             )
-            .order_by(self.event_model.reservation_start.desc())
             .where(self.event_model.user_id == id_)
+            .order_by(self.event_model.reservation_start.desc())
         )
-        result = await self.db.execute(stmt)
+        if past:
+            stmt = stmt.where(self.event_model.reservation_end < now)
+        elif past is False:
+            stmt = stmt.where(self.event_model.reservation_start > now)
 
+        offset = (page - 1) * limit
+        stmt = stmt.offset(offset).limit(limit)
+
+        result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
     async def get_events_by_user_filter_past_and_upcoming(

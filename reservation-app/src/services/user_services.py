@@ -65,11 +65,21 @@ class AbstractUserService(
         """
 
     @abstractmethod
-    async def get_events_by_user(self, user: UserLite) -> list[EventDetail]:
+    async def get_events_by_user(
+        self,
+        user: UserLite,
+        page: int = 1,
+        limit: int = 20,
+        past: bool | None = None,
+    ) -> list[EventDetail]:
         """
         Retrieve all events linked to a given UserLite.
 
         :param user: The User object in database.
+        :param page: The page number for pagination. Defaults to 1.
+        :param limit: The maximum number of events to return per page. Defaults to 20.
+        :param past: Filter for event time. `True` for past events, `False` for future events.
+            `None` to fetch all events (no time filtering).
 
         :return: List of EventWithCalendarInfo objects linked to the user.
         """
@@ -146,8 +156,14 @@ class UserService(AbstractUserService):
     async def get_by_username(self, username: str) -> UserLite:
         return await self.crud.get_by_username(username)
 
-    async def get_events_by_user(self, user: UserLite) -> list[EventDetail]:
-        return await self.crud.get_events_by_user_id(user.id)
+    async def get_events_by_user(
+        self,
+        user: UserLite,
+        page: int = 1,
+        limit: int = 20,
+        past: bool | None = None,
+    ) -> list[EventDetail]:
+        return await self.crud.get_events_by_user_id(user.id, page, limit, past)
 
     async def get_events_by_user_filter_past_and_upcoming(self, user: UserLite) -> EventTimeline:
         return await self.crud.get_events_by_user_filter_past_and_upcoming(user.id)
