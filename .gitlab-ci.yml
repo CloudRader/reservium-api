@@ -1,0 +1,31 @@
+stages:
+  - build
+
+variables:
+  IMAGE_NAME: $CI_REGISTRY_IMAGE/reservation-app
+  IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+  IMAGE: $IMAGE_NAME:$IMAGE_TAG
+
+before_script:
+  - echo "Logging in to GitLab Container Registry..."
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+
+build:
+  stage: build
+  image: docker:27.1.1
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $BUILD_ON_BRANCH != null && $CI_COMMIT_BRANCH == $BUILD_ON_BRANCH && $CI_OPEN_MERGE_REQUESTS == null
+  services:
+    - docker:27.1.1-dind
+  script:
+    - echo "Building Docker image..."
+    - docker build -t "$IMAGE" -f Dockerfile .
+    - echo "Pushing image to GitLab Registry..."
+    - docker push "$IMAGE"
+  artifacts:
+    reports:
+      dotenv: build.env
+  after_script:
+    - echo "IMAGE=$IMAGE" >> build.env
