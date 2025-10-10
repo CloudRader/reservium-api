@@ -17,7 +17,7 @@ build-and-push-image:
     name: docker:stable-git
     entrypoint: [""]
   services:
-    - docker:stable-git-dind
+    - docker:27.1.1-dind
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
@@ -51,7 +51,7 @@ promote-image:
     name: docker:stable-git
     entrypoint: [""]
   services:
-    - docker:stable-git-dind
+    - docker:27.1.1-dind
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
