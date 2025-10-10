@@ -2,6 +2,8 @@ stages:
   - build
 
 variables:
+  CI_REGISTRY: registry.git.sh.cvut.cz
+  CI_REGISTRY_IMAGE: registry.git.sh.cvut.cz/buk/reservation/backend
   IMAGE: $CI_REGISTRY_IMAGE/reservation-app
   VERSION: $CI_COMMIT_SHORT_SHA
   VERSION_TAG: latest
