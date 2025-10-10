@@ -4,10 +4,13 @@ services:
     image: postgres:17.6
     restart: on-failure
     environment:
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: devdb
+      POSTGRES_DB: ${DB__POSTGRES_DB}
+      POSTGRES_USER: ${DB__POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DB__POSTGRES_PASSWORD}
+      POSTGRES_PORT: ${DB__POSTGRES_PORT}
       POSTGRES_DATA: /var/lib/postgresql/data
+    env_file:
+      - ./reservation-app/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -20,9 +23,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-#    image: darkrader/reservation-backend:latest
-    environment:
-      - DB__POSTGRES_SERVER=db
+#    image: reservationbuk/reservation-backend:latest
     depends_on:
       - db
     restart: on-failure
