@@ -21,6 +21,7 @@ build-and-push-image:
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
     DOCKER_BUILDKIT: '1'
     GIT_STRATEGY: clone
   script:
@@ -38,7 +39,6 @@ build-and-push-image:
     - docker push $SERVICE_IMAGE
     - docker push $SERVICE_IMAGE_VERSION_TAG
     - docker push $SERVICE_IMAGE_GIT
-  privileged: true
 
 # ---------- PROMOTE ----------
 promote-image:
@@ -53,6 +53,7 @@ promote-image:
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
     GIT_STRATEGY: none
   script:
     - echo "Logging in to GitLab Container Registry..."
@@ -68,4 +69,3 @@ promote-image:
     - docker tag $IMAGE_FROM $LEGACY_IMAGE_TO
     - docker push $IMAGE_TO
     - docker push $LEGACY_IMAGE_TO
-  privileged: true
