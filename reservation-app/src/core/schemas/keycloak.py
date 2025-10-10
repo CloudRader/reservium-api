@@ -1,6 +1,6 @@
 """DTO schemes for Data from Keycloak."""
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UserKeycloak(BaseModel):
@@ -12,8 +12,7 @@ class UserKeycloak(BaseModel):
     name: str
     given_name: str
     family_name: str
-    email: str
+    email: EmailStr
     email_verified: bool
-    roles: list[str]
-    services: list[str]
-    tags: str
+    roles: list[str] = Field(default_factory=list)
+    services: list[str] = Field(default_factory=list)
