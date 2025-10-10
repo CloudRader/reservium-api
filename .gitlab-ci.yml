@@ -1,10 +1,46 @@
 stages:
+  - test
   - build
 
 variables:
   IMAGE: $DOCKER_HUB_USER/reservation-backend
   VERSION: $CI_COMMIT_SHORT_SHA
   VERSION_TAG: latest
+
+# ---------- TEST ----------
+mypy-check:
+  stage: test
+  image: python:3.13
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_TAG == null
+  before_script:
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install --upgrade pip
+    - pip install uv
+    - uv sync
+    - cd reservation-app
+    - chmod +x ./scripts/mypy.sh
+  script:
+    - ./scripts/mypy.sh
+  interruptible: true
+
+ruff-check:
+  stage: test
+  image: python:3.13
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_TAG == null
+  before_script:
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install --upgrade pip
+    - pip install uv
+    - uv sync
+    - cd reservation-app
+    - chmod +x ./scripts/lint_ruff.sh
+  script:
+    - ./scripts/lint_ruff.sh
+  interruptible: true
 
 # ---------- BUILD ----------
 build-and-push-image:

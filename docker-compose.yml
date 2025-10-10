@@ -35,6 +35,7 @@ services:
 #          target: /usr/src/app/src
     volumes:
       - ./reservation-app/src:/usr/src/app/src
+      - ./reservation-app/.env:/usr/src/app/.env:ro
     ports:
       - "8000:8000"
     networks:
