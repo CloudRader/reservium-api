@@ -1,5 +1,6 @@
 """API controllers for events."""
 
+import logging
 from typing import Annotated, Any
 
 from api import (
@@ -32,6 +33,8 @@ from integrations.google import GoogleCalendarService
 from integrations.keycloak import KeycloakAuthService
 from pytz import timezone
 from services import CalendarService, EventService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -88,7 +91,10 @@ class EventRouter(
 
             :return: List of EventDetail objects.
             """
-            return await service.get_events_by_user_roles(user, event_state)
+            logger.info("User %s fetching events by roles (state=%s)", user.id, event_state)
+            events = await service.get_events_by_user_roles(user, event_state)
+            logger.debug("Fetched %d events for user %s", len(events), user.id)
+            return events
 
         self.register_routes()
 
@@ -117,6 +123,10 @@ class EventRouter(
 
             :returns EventExtra json object: the created event or exception otherwise.
             """
+            logger.info(
+                "User %s creating new event in calendar %s", user.id, event_create.calendar_id
+            )
+
             user_info = await keycloak_service.get_user_info(token.credentials)
 
             calendar = await calendar_service.get_with_collisions(event_create.calendar_id)
@@ -133,12 +143,14 @@ class EventRouter(
                 event_create.end_datetime,
                 calendar,
             ):
+                logger.warning("Collision detected for event by user %s", user.id)
                 raise SoftValidationError("There's already a reservation for that time.")
 
             event_body = GoogleCalendarEventCreate(
                 **await service.post_event(event_create, user_info.services, user, calendar)
             )
             if not event_body:
+                logger.error("Failed to create event for user %s", user.id)
                 raise BaseAppError(message="Could not create event.")
 
             return await process_event_approval(
@@ -176,10 +188,11 @@ class EventRouter(
 
             :returns EventModel: the updated event.
             """
+            logger.info(
+                "User %s approving time change for event %s (approve=%s)", user.id, id_, approve
+            )
             google_calendar_service = GoogleCalendarService()
             event: EventDetail = await service.get(id_)
-            if not event:
-                raise EntityNotFoundError(Entity.EVENT, id_)
 
             event_update: EventUpdate = EventUpdate(
                 event_state=EventState.CONFIRMED,
@@ -188,6 +201,7 @@ class EventRouter(
             )
 
             if not approve:
+                logger.debug("Approving requested time change for event %s", id_)
                 event_to_update = await service.approve_update_reservation_time(
                     id_,
                     event_update,
@@ -206,6 +220,7 @@ class EventRouter(
                     ),
                 )
             else:
+                logger.debug("Declining requested time change for event %s", id_)
                 event_from_google_calendar = await google_calendar_service.get_event(
                     event.calendar_id, id_
                 )
@@ -240,6 +255,7 @@ class EventRouter(
                     event.calendar_id, id_, event_from_google_calendar
                 )
 
+            logger.debug("Time change request processed for event %s: %s", id_, event_to_update)
             return event_to_update
 
         @router.put(
@@ -268,10 +284,9 @@ class EventRouter(
 
             :returns ObjectSchema: the updated object.
             """
+            logger.info("User %s updating event %s with reason: %s", user.id, id_, reason)
             google_calendar_service = GoogleCalendarService()
             event = await service.update_with_permission_checks(id_, event_update, user)
-            if not event:
-                raise EntityNotFoundError(Entity.EVENT, id_)
 
             event_to_update = await google_calendar_service.get_event(event.calendar_id, event.id)
             event_to_update.description = service._description_of_event(user, event)
@@ -287,6 +302,7 @@ class EventRouter(
                 ),
             )
 
+            logger.debug("Event updated: %s", event)
             return event
 
         @router.put(
@@ -315,13 +331,15 @@ class EventRouter(
 
             :returns EventModel: the updated event.
             """
+            logger.info(
+                "User %s requesting time change for event %s (reason=%s)", user.id, id_, reason
+            )
             event: EventDetail = await service.request_update_reservation_time(
                 id_,
                 event_update,
                 user,
             )
-            if not event:
-                raise EntityNotFoundError(Entity.EVENT, id_)
+
             await preparing_email(
                 service,
                 event,
@@ -331,6 +349,8 @@ class EventRouter(
                     reason,
                 ),
             )
+
+            logger.debug("Time change request processed for event: %s", event)
             return event
 
         @router.put(
@@ -359,15 +379,17 @@ class EventRouter(
 
             :returns EventModel: the updated reservation.
             """
+            logger.info(
+                "User %s processing reservation approval for event %s (approve=%s)",
+                user.id,
+                id_,
+                approve,
+            )
             google_calendar_service = GoogleCalendarService()
             if approve:
                 event = await service.confirm_event(id_, user)
-                if not event:
-                    raise EntityNotFoundError(Entity.EVENT, id_)
             else:
                 event = await service.cancel_event(id_, user)
-                if not event:
-                    raise EntityNotFoundError(Entity.EVENT, id_)
 
             if approve:
                 calendar = await service.get_calendar_of_this_event(event)
@@ -390,7 +412,7 @@ class EventRouter(
                         manager_notes,
                     ),
                 )
-
+                logger.debug("Reservation approved: %s", event)
             else:
                 await google_calendar_service.delete_event(event.calendar_id, event.id)
 
@@ -403,6 +425,7 @@ class EventRouter(
                         manager_notes,
                     ),
                 )
+                logger.debug("Reservation declined: %s", event)
 
             return event
 
@@ -430,10 +453,9 @@ class EventRouter(
 
             :returns EventModel: the canceled reservation.
             """
+            logger.info("User %s cancelling event %s (reason=%s)", user.id, id_, cancel_reason)
             google_calendar_service = GoogleCalendarService()
             event = await service.cancel_event(id_, user)
-            if not event:
-                raise EntityNotFoundError(Entity.EVENT, id_)
 
             await google_calendar_service.delete_event(event.calendar_id, event.id)
 
@@ -454,6 +476,7 @@ class EventRouter(
                     ),
                 )
 
+            logger.debug("Event cancelled: %s", event)
             return event
 
         @router.delete(
@@ -478,9 +501,9 @@ class EventRouter(
 
             :returns EventModel: the deleted event.
             """
+            logger.info("User %s hard deleting event %s", user.id, id_)
             event = await service.delete_with_permission_checks(id_, user)
-            if not event:
-                raise EntityNotFoundError(Entity.EVENT, id_)
+            logger.debug("Event hard deleted: %s", event)
             return event
 
 

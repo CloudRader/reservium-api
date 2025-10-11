@@ -1,5 +1,6 @@
 """Base module for generating CRUD routes in FastAPI."""
 
+import logging
 from collections.abc import Callable
 from typing import Annotated, TypeVar
 
@@ -9,6 +10,8 @@ from core.schemas.user import UserLite
 from fastapi import APIRouter, Depends, Path, Query, status
 from pydantic import BaseModel
 from services.service_base import CrudServiceBase
+
+logger = logging.getLogger(__name__)
 
 TCreate = TypeVar("TCreate", bound=BaseModel)
 TUpdate = TypeVar("TUpdate", bound=BaseModel)
@@ -115,7 +118,12 @@ class BaseCRUDRouter[
             include_removed: bool = Query(False, description="Include `removed objects` or not."),
         ):
             """Get all objects."""
-            return await service.get_all(include_removed)
+            logger.info(
+                "Fetching all %s (include_removed=%s)", self.entity_name.value, include_removed
+            )
+            result = await service.get_all(include_removed)
+            logger.debug("Fetched %d objects", len(result))
+            return result
 
     def register_get_by_id(self):
         """Register the GET /{id} endpoint to retrieve an entity by its ID."""
@@ -134,7 +142,15 @@ class BaseCRUDRouter[
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ):
             """Get object."""
-            return await service.get(id_, include_removed)
+            logger.info(
+                "Fetching %s by id=%s (include_removed=%s)",
+                self.entity_name.value,
+                id_,
+                include_removed,
+            )
+            obj = await service.get(id_, include_removed)
+            logger.debug("Fetched %s: %s", self.entity_name.value, obj)
+            return obj
 
     def register_create(self):
         """Register the POST / endpoint to create a new entity."""
@@ -154,7 +170,10 @@ class BaseCRUDRouter[
             obj_create: schema_create,
         ):
             """Create object, only users with special roles can create object."""
-            return await self._create_single_object(service, user, obj_create)
+            logger.info("User %s creating %s: %s", user.id, self.entity_name.value, obj_create)
+            obj = await self._create_single_object(service, user, obj_create)
+            logger.debug("Created %s: %s", self.entity_name.value, obj)
+            return obj
 
     def register_create_multiple(self):
         """Register the POST / endpoint to create multiple entities."""
@@ -174,9 +193,17 @@ class BaseCRUDRouter[
             objs_create: list[schema_create],
         ):
             """Create multiple objects in a single request."""
+            logger.info(
+                "User %s creating multiple %s: count=%d",
+                user.id,
+                self.entity_name.value,
+                len(objs_create),
+            )
             objs_result: list[schema_detail] = []
             for obj_create in objs_create:
-                objs_result.append(await self._create_single_object(service, user, obj_create))
+                obj = await self._create_single_object(service, user, obj_create)
+                logger.debug("Created %s: %s", self.entity_name.value, obj)
+                objs_result.append(obj)
             return objs_result
 
     def register_update(self):
@@ -198,7 +225,16 @@ class BaseCRUDRouter[
             obj_update: schema_update,
         ):
             """Update object, only users with special roles can update object."""
-            return await service.update_with_permission_checks(id_, obj_update, user)
+            logger.info(
+                "User %s updating %s id=%s with data: %s",
+                user.id,
+                self.entity_name.value,
+                id_,
+                obj_update,
+            )
+            obj = await service.update_with_permission_checks(id_, obj_update, user)
+            logger.debug("Updated %s: %s", self.entity_name.value, obj)
+            return obj
 
     def register_restore(self):
         """Register the PUT /{id}/restore endpoint to restore soft delete entity."""
@@ -217,7 +253,10 @@ class BaseCRUDRouter[
             id_: Annotated[str | int, Path(alias="id", description="The ID of the object.")],
         ):
             """Restore a soft-deleted object, only users with special roles can restore object."""
-            return await service.restore_with_permission_checks(id_, user)
+            logger.info("User %s restoring %s id=%s", user.id, self.entity_name.value, id_)
+            obj = await service.restore_with_permission_checks(id_, user)
+            logger.debug("Restored object: %s", obj)
+            return obj
 
     def register_delete(self):
         """Register the DELETE /{id} endpoint to delete an entity."""
@@ -237,7 +276,16 @@ class BaseCRUDRouter[
             hard_remove: bool = Query(False, description="`Hard remove` the object or not."),
         ):
             """Delete object, only users with special roles can delete object."""
-            return await service.delete_with_permission_checks(id_, user, hard_remove)
+            logger.info(
+                "User %s deleting %s id=%s (hard_remove=%s)",
+                user.id,
+                self.entity_name.value,
+                id_,
+                hard_remove,
+            )
+            obj = await service.delete_with_permission_checks(id_, user, hard_remove)
+            logger.debug("Deleted object: %s", obj)
+            return obj
 
     @staticmethod
     async def _create_single_object(

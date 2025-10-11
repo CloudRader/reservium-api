@@ -1,5 +1,6 @@
 """API controllers for reservation services."""
 
+import logging
 from typing import Annotated, Any
 
 from api.api_base import BaseCRUDRouter
@@ -18,6 +19,8 @@ from core.schemas import (
 from core.schemas.event import EventDetail
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import ReservationServiceService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -66,7 +69,10 @@ class ReservationServiceRouter(
             :return: List of all public reservation services or None if
             there are no reservation services in db.
             """
-            return await service.get_public_services()
+            logger.info("Fetching public reservation services")
+            reservation_services = await service.get_public_services()
+            logger.debug("Fetched %d reservation services", len(reservation_services))
+            return reservation_services
 
         self.register_routes()
 
@@ -90,7 +96,14 @@ class ReservationServiceRouter(
 
             :return: Reservation Service with name equal to name.
             """
-            return await service.get_by_name(name, include_removed)
+            logger.debug(
+                "Request received: get_by_name(name=%s, include_removed=%s)",
+                name,
+                include_removed,
+            )
+            reservation_service = await service.get_by_name(name, include_removed)
+            logger.debug("Fetched reservation service: %s", reservation_service)
+            return reservation_service
 
         @router.get(
             "/alias/{alias}",
@@ -112,7 +125,14 @@ class ReservationServiceRouter(
 
             :return: Reservation Service with alias equal to alias.
             """
-            return await service.get_by_alias(alias, include_removed)
+            logger.debug(
+                "Request received: get_by_alias(alias=%s, include_removed=%s)",
+                alias,
+                include_removed,
+            )
+            reservation_service = await service.get_by_alias(alias, include_removed)
+            logger.debug("Fetched reservation service: %s", reservation_service)
+            return reservation_service
 
         @router.get(
             "/{id}/calendars",
@@ -134,7 +154,14 @@ class ReservationServiceRouter(
 
             :return: List of CalendarDetail objects linked to the reservation service.
             """
-            return await service.get_calendars_by_id(id_, include_removed)
+            logger.info(
+                "Fetching all calendars for reservation service (id=%s, include_removed=%s)",
+                id_,
+                include_removed,
+            )
+            calendars = await service.get_calendars_by_id(id_, include_removed)
+            logger.debug("Fetched %d calendars", len(calendars))
+            return calendars
 
         @router.get(
             "/{id}/mini-services",
@@ -156,7 +183,14 @@ class ReservationServiceRouter(
 
             :return: List of MiniServiceDetail objects linked to the reservation service.
             """
-            return await service.get_mini_services_by_id(id_, include_removed)
+            logger.info(
+                "Fetching all mini services for reservation service (id=%s, include_removed=%s)",
+                id_,
+                include_removed,
+            )
+            mini_services = await service.get_mini_services_by_id(id_, include_removed)
+            logger.debug("Fetched %d mini services", len(mini_services))
+            return mini_services
 
         @router.get(
             "/{id}/events",
@@ -178,7 +212,14 @@ class ReservationServiceRouter(
 
             :return: List of EventExtra objects linked to the reservation service.
             """
-            return await service.get_events_by_id(id_, event_state)
+            logger.info(
+                "Fetching all events for reservation service (id=%s, event_state=%s)",
+                id_,
+                event_state,
+            )
+            events = await service.get_events_by_id(id_, event_state)
+            logger.debug("Fetched %d events", len(events))
+            return events
 
 
 ReservationServiceRouter()

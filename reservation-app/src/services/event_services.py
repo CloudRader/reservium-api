@@ -440,8 +440,8 @@ class EventService(AbstractEventService):
         self,
         id_: str,
         user: UserLite,
-    ) -> EventLite | None:
-        event: EventLite = await self.get(id_)
+    ) -> EventDetail | None:
+        event: EventDetail = await self.get(id_)
         if not event:
             return None
 
@@ -487,7 +487,7 @@ class EventService(AbstractEventService):
         return await self.crud.remove(id_)
 
     async def confirm_event(self, id_: str | None, user: UserLite) -> EventDetail | None:
-        event: EventLite = await self.get(id_)
+        event: EventDetail = await self.get(id_)
         if not event:
             return None
 

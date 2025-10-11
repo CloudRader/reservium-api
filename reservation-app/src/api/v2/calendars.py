@@ -1,5 +1,6 @@
 """API controllers for calendars."""
 
+import logging
 from typing import Annotated, Any
 
 from api import get_current_user
@@ -10,6 +11,8 @@ from core.schemas.calendar import CalendarDetailWithCollisions
 from fastapi import APIRouter, Depends, Path, Query, status
 from integrations.google import GoogleCalendarService
 from services import CalendarService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -120,9 +123,12 @@ class CalendarRouter(
 
             :returns CalendarModel: the created calendar.
             """
-            return await _create_single_object(
+            logger.info("User %s creating calendar: %s", user.id, calendar_create)
+            calendar = await _create_single_object(
                 service, google_calendar_service, user, calendar_create
             )
+            logger.debug("Created calendar: %s", calendar)
+            return calendar
 
         @router.post(
             "/batch",
@@ -149,11 +155,16 @@ class CalendarRouter(
 
             :returns CalendarModel: the created calendar.
             """
+            logger.info(
+                "User %s creating multiple calendars: count=%d", user.id, len(calendars_create)
+            )
             calendars_result: list[CalendarDetail] = []
             for calendar in calendars_create:
-                calendars_result.append(
-                    await _create_single_object(service, google_calendar_service, user, calendar),
+                calendar = await _create_single_object(
+                    service, google_calendar_service, user, calendar
                 )
+                logger.debug("Created calendar: %s", calendar)
+                calendars_result.append(calendar)
 
             return calendars_result
 
@@ -178,7 +189,14 @@ class CalendarRouter(
             :return: Calendar with id equal to id with collisions
                      or None if no such object exists.
             """
-            return await service.get_with_collisions(id_, include_removed)
+            logger.info(
+                "Fetching calendar with collisions for id=%s (include_removed=%s)",
+                id_,
+                include_removed,
+            )
+            calendars = await service.get_with_collisions(id_, include_removed)
+            logger.debug("Fetched calendar with collisions: %s", calendars)
+            return calendars
 
         async def _create_single_object(
             service: CalendarService,

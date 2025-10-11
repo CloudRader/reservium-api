@@ -1,5 +1,6 @@
 """API controllers for authorisation in IS(Information System of the club)."""
 
+import logging
 from typing import Annotated
 
 from core import settings
@@ -7,6 +8,8 @@ from fastapi import APIRouter, Depends, FastAPI, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2AuthorizationCodeBearer
 from integrations.keycloak import KeycloakAuthService
 from services import UserService
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -49,8 +52,11 @@ async def login(
     token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
 ):
     """Authenticate a user."""
+    logger.info("Login attempt started with bearer token.")
+
     user_info = await keycloak_service.get_user_info(token.credentials)
     user = await user_service.create_user(user_info)
+    logger.info("User %s successfully authenticated and synced.", user.id)
 
     return user
 

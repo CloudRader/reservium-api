@@ -1,5 +1,6 @@
 """Module for authenticator functions."""
 
+import logging
 from collections.abc import Callable
 from typing import Annotated, Any, TypeVar
 
@@ -10,6 +11,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from integrations.keycloak import KeycloakAuthService
 from integrations.spicedb import SpiceDbService
 from services import UserService
+
+logger = logging.getLogger(__name__)
 
 http_bearer = HTTPBearer()
 
@@ -101,5 +104,7 @@ async def get_current_user(
 
     :return: User object.
     """
+    logger.debug("Retrieving current user from token.")
     user_keycloak = await keycloak_service.get_user_info(token.credentials)
+
     return await user_service.get(user_keycloak.ldap_id)

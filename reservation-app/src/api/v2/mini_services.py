@@ -1,5 +1,6 @@
 """API controllers for mini services."""
 
+import logging
 from typing import Annotated, Any
 
 from api.api_base import BaseCRUDRouter
@@ -10,6 +11,8 @@ from core.application.exceptions import (
 from core.schemas import MiniServiceCreate, MiniServiceDetail, MiniServiceLite, MiniServiceUpdate
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import MiniServiceService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -64,7 +67,14 @@ class MiniServiceRouter(
 
             :return: Mini Service with name equal to name.
             """
-            return service.get_by_name(name, include_removed)
+            logger.debug(
+                "Request received: get_by_name(name=%s, include_removed=%s)",
+                name,
+                include_removed,
+            )
+            mini_service = await service.get_by_name(name, include_removed)
+            logger.debug("Fetched Mini service: %s", mini_service)
+            return mini_service
 
 
 MiniServiceRouter()

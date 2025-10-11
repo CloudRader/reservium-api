@@ -1,17 +1,19 @@
 """API controllers for users."""
 
-from typing import Annotated, Any
+import logging
+from typing import Annotated
 
 from api import get_current_user
 from core.application.exceptions import (
     ERROR_RESPONSES,
-    BaseAppError,
     PermissionDeniedError,
 )
 from core.schemas import UserLite
 from core.schemas.event import EventDetail, EventTimeline
 from fastapi import APIRouter, Depends, FastAPI, Query, status
 from services import UserService
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -21,30 +23,28 @@ router = APIRouter()
 @router.get(
     "/",
     response_model=list[UserLite],
-    responses=ERROR_RESPONSES["400_401_403"],
+    responses=ERROR_RESPONSES["401_403"],
     status_code=status.HTTP_200_OK,
 )
 async def get_all(
     service: Annotated[UserService, Depends(UserService)],
     user: Annotated[UserLite, Depends(get_current_user)],
-) -> Any:
+):
     """
     Retrieve all users from the database.
 
     This endpoint is accessible only to users with the 'section_head' role.
     It returns a list of all registered users.
-
-    :param service: UserLite service.
-    :param user: UserLite who make this request.
-
-    :return: All users in database.
     """
+    logger.info("User %s requested list of all users.", user.id)
+
     if not user.section_head:
+        logger.warning("Permission denied for user %s (not section_head).", user.id)
         raise PermissionDeniedError("Permission Denied.")
 
     users = await service.get_all()
-    if users is None:
-        raise BaseAppError()
+
+    logger.info("Returned %d users for section head %s.", len(users), user.id)
     return users
 
 
@@ -55,16 +55,11 @@ async def get_all(
     status_code=status.HTTP_200_OK,
 )
 async def get_me(
-    current_user: Annotated[UserLite, Depends(get_current_user)],
-) -> Any:
-    """
-    Get currently authenticated user.
-
-    :param current_user: Current user.
-
-    :return: Current user.
-    """
-    return current_user
+    user: Annotated[UserLite, Depends(get_current_user)],
+):
+    """Get currently authenticated user."""
+    logger.debug("Returning profile for user %s.", user.id)
+    return user
 
 
 @router.get(
@@ -85,8 +80,11 @@ async def get_events_by_user(
         description="Filter events by time. `True` for past events, `False` for future events, "
         "`None` for all events.",
     ),
-) -> Any:
+):
     """Get events linked to a user by its ID."""
+    logger.info(
+        "User %s requested events (page=%s, limit=%s, past=%s).", user.id, page, limit, past
+    )
     return await service.get_events_by_user(user, page, limit, past)
 
 
@@ -99,15 +97,6 @@ async def get_events_by_user(
 async def get_events_by_user_filter_past_and_upcoming(
     service: Annotated[UserService, Depends(UserService)],
     user: Annotated[UserLite, Depends(get_current_user)],
-) -> Any:
-    """
-    Retrieve the user's events, grouped into past and upcoming.
-
-    :param service: User service.
-    :param user: UserLite who make this request.
-
-    :return: Dictionary with two lists of events:
-             - ``past``: events that have already ended,
-             - ``upcoming``: events that are scheduled in the future.
-    """
+):
+    """Retrieve the user's events, grouped into past and upcoming."""
     return await service.get_events_by_user_filter_past_and_upcoming(user)

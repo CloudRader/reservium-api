@@ -125,7 +125,9 @@ class KeycloakAuthService(AbstractKeycloakAuthService):
 
     async def get_user_info(self, token: str) -> UserKeycloak:
         try:
-            return UserKeycloak(**(self.keycloak_openid.userinfo(token)))
+            user_info = UserKeycloak(**(self.keycloak_openid.userinfo(token)))
+            logger.debug("Retrieved user info from Keycloak for sub=%s", user_info.sub)
+            return user_info
         except KeycloakAuthenticationError as e:
             logger.info("Failed to get user info: %s", e)
             raise UnauthorizedError(
