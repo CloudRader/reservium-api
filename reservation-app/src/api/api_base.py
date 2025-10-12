@@ -64,6 +64,7 @@ class BaseCRUDRouter[
         entity_name: Entity,
         enable_create: bool = True,
         enable_read: bool = True,
+        enable_read_all: bool = True,
         enable_create_multiple: bool = True,
         enable_update: bool = True,
         enable_restore: bool = True,
@@ -81,12 +82,13 @@ class BaseCRUDRouter[
         self.enable_create = enable_create
         self.enable_create_multiple = enable_create_multiple
         self.enable_read = enable_read
+        self.enable_read_all = enable_read_all
         self.enable_update = enable_update
         self.enable_restore = enable_restore
         self.enable_delete = enable_delete
 
         self._ROUTES = [
-            ("enable_read", self.register_get_all),
+            ("enable_read_all", self.register_get_all),
             ("enable_read", self.register_get_by_id),
             ("enable_create", self.register_create),
             ("enable_create_multiple", self.register_create_multiple),

@@ -3,6 +3,7 @@
 import logging
 from typing import Annotated, Any
 
+from api import get_current_user
 from api.api_base import BaseCRUDRouter
 from core.application.exceptions import (
     ERROR_RESPONSES,
@@ -17,6 +18,7 @@ from core.schemas import (
     ReservationServiceUpdate,
 )
 from core.schemas.event import EventDetail
+from core.schemas.user import UserLite
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import ReservationServiceService
 
@@ -51,6 +53,7 @@ class ReservationServiceRouter(
             schema_lite=ReservationServiceDetail,
             schema_detail=ReservationServiceDetail,
             entity_name=Entity.RESERVATION_SERVICE,
+            enable_read_all=False,
         )
 
         @router.get(
@@ -61,16 +64,41 @@ class ReservationServiceRouter(
         async def get_public(
             service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
         ) -> Any:
-            """
-            Get all public reservation services from database.
-
-            :param service: Reservation Service ser.
-
-            :return: List of all public reservation services or None if
-            there are no reservation services in db.
-            """
+            """Get all public reservation services."""
             logger.info("Fetching public reservation services")
             reservation_services = await service.get_public_services()
+            logger.debug("Fetched %d reservation services", len(reservation_services))
+            return reservation_services
+
+        @router.get(
+            "/",
+            response_model=list[ReservationServiceDetail],
+            responses=ERROR_RESPONSES["401_403"],
+            status_code=status.HTTP_200_OK,
+        )
+        async def get_reservation_services(
+            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            user: Annotated[UserLite, Depends(get_current_user)],
+            include_removed: bool = Query(False, description="Include `removed objects` or not."),
+        ) -> Any:
+            """
+            Retrieve available reservation services.
+
+            - If the requesting user is an **active member**, all reservation services are returned.
+            - If the user is **not an active member**, public reservation services are returned.
+            """
+            logger.info(
+                "Fetching reservation services (include_removed=%s)",
+                self.entity_name.value,
+                include_removed,
+            )
+            if user.active_member:
+                if include_removed:
+                    reservation_services = await service.get_all_services_include_all_removed()
+                else:
+                    reservation_services = await service.get_all(include_removed)
+            else:
+                reservation_services = await service.get_public_services()
             logger.debug("Fetched %d reservation services", len(reservation_services))
             return reservation_services
 
