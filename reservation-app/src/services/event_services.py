@@ -298,21 +298,11 @@ class EventService(AbstractEventService):
         self,
         event: EventLite,
     ) -> ReservationServiceDetail:
-        if not event:
-            raise BaseAppError("This event does not exist in db.", status_code=404)
-
         calendar: CalendarDetail = await self.calendar_crud.get(event.calendar_id)
-        if not calendar:
-            raise BaseAppError("A calendar of this event isn't exist.", status_code=404)
 
         reservation_service: ReservationServiceDetail = await self.reservation_service_crud.get(
             calendar.reservation_service_id
         )
-        if not reservation_service:
-            raise BaseAppError(
-                "A reservation service of this event isn't exist.",
-                status_code=404,
-            )
 
         return reservation_service
 
@@ -320,12 +310,7 @@ class EventService(AbstractEventService):
         self,
         event: EventLite,
     ) -> CalendarDetail:
-        if not event:
-            raise BaseAppError("This event does not exist in db.", status_code=404)
-
         calendar: CalendarDetail = await self.calendar_crud.get(event.calendar_id)
-        if not calendar:
-            raise BaseAppError("A calendar of this event isn't exist.", status_code=404)
 
         return calendar
 
@@ -333,13 +318,7 @@ class EventService(AbstractEventService):
         self,
         event: EventLite,
     ) -> UserLite:
-        if not event:
-            raise BaseAppError("This event does not exist in db.", status_code=404)
-
         user = await self.user_crud.get(event.user_id)
-
-        if not user:
-            raise BaseAppError("A user of this event isn't exist.", status_code=404)
 
         return user
 
@@ -353,9 +332,6 @@ class EventService(AbstractEventService):
         user: UserLite,
     ) -> EventLite | None:
         event_to_update = await self.get(id_)
-
-        if event_to_update is None:
-            return None
 
         if event_to_update.event_state == EventState.CANCELED:
             raise BaseAppError("You can't change canceled reservation.")
@@ -378,9 +354,6 @@ class EventService(AbstractEventService):
         user: UserLite,
     ) -> EventDetail | None:
         event_to_update = await self.get(id_)
-
-        if event_to_update is None:
-            return None
 
         reservation_service = await self.get_reservation_service_of_this_event(event_to_update)
 
@@ -407,9 +380,6 @@ class EventService(AbstractEventService):
         user: UserLite,
     ) -> EventDetail | None:
         event_to_update = await self.get(id_)
-
-        if not event_to_update:
-            return None
 
         if event_to_update.user_id != user.id:
             raise PermissionDeniedError(
@@ -442,8 +412,6 @@ class EventService(AbstractEventService):
         user: UserLite,
     ) -> EventDetail | None:
         event: EventDetail = await self.get(id_)
-        if not event:
-            return None
 
         if event.event_state == EventState.CANCELED:
             raise BaseAppError("You can't cancel canceled reservation.")
@@ -471,9 +439,6 @@ class EventService(AbstractEventService):
     ) -> ReservationServiceDetail | None:
         event = await self.crud.get(id_, True)
 
-        if event is None:
-            return None
-
         reservation_service = await self.get_reservation_service_of_this_event(event)
 
         if event.event_state != EventState.CANCELED:
@@ -488,8 +453,6 @@ class EventService(AbstractEventService):
 
     async def confirm_event(self, id_: str | None, user: UserLite) -> EventDetail | None:
         event: EventDetail = await self.get(id_)
-        if not event:
-            return None
 
         if event.event_state != EventState.NOT_APPROVED:
             raise BaseAppError(

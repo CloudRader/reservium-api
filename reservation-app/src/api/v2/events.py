@@ -114,13 +114,6 @@ class EventRouter(
             """
             Post event to google calendar.
 
-            :param service: EventExtra service.
-            :param calendar_service: CalendarDetail service.
-            :param keycloak_service: Keycloak service.
-            :param user: UserLite who make this request.
-            :param token: Token for user identification.
-            :param event_create: EventCreate schema.
-
             :returns EventExtra json object: the created event or exception otherwise.
             """
             logger.info(
@@ -171,22 +164,14 @@ class EventRouter(
         async def approve_time_change_request(
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            id_: Annotated[str, Path(alias="id")],
-            approve: bool = Query(False),
+            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
+            approve: bool = Query(False, description="Approve this update or not."),
             manager_notes: Annotated[str, Body()] = "-",
         ) -> Any:
             """
             Approve updating reservation time.
 
             Only users with special roles can approve this update.
-
-            :param service: EventExtra service.
-            :param user: UserLite who make this request.
-            :param id_: id of the event.
-            :param approve: Approve this update or not.
-            :param manager_notes: Note for update or decline update reservation time.
-
-            :returns EventModel: the updated event.
             """
             logger.info(
                 "User %s approving time change for event %s (approve=%s)", user.id, id_, approve
@@ -267,7 +252,7 @@ class EventRouter(
         async def update(
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            id_: Annotated[str, Path(alias="id")],
+            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
             event_update: Annotated[EventUpdate, Body()],
             reason: Annotated[str, Body()] = "",
         ) -> Any:
@@ -275,14 +260,6 @@ class EventRouter(
             Update object.
 
             Only users with special roles can update object.
-
-            :param service: Service providing business logic of this object.
-            :param user: UserLite who make this request.
-            :param id_: id of the object.
-            :param event_update: ObjectUpdate schema.
-            :param reason: Annotated[str, Body()] = "",
-
-            :returns ObjectSchema: the updated object.
             """
             logger.info("User %s updating event %s with reason: %s", user.id, id_, reason)
             google_calendar_service = GoogleCalendarService()
@@ -314,23 +291,11 @@ class EventRouter(
         async def request_time_change(
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            id_: Annotated[str, Path(alias="id")],
+            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
             event_update: Annotated[EventUpdateTime, Body()],
             reason: Annotated[str, Body()] = "",
         ) -> Any:
-            """
-            Request Update reservation time.
-
-            Only user that create this reservation can request it.
-
-            :param service: EventExtra service.
-            :param user: UserLite who make this request.
-            :param id_: id of the event.
-            :param event_update: EventUpdate schema.
-            :param reason: Reason to change reservation time.
-
-            :returns EventModel: the updated event.
-            """
+            """Request Update reservation time."""
             logger.info(
                 "User %s requesting time change for event %s (reason=%s)", user.id, id_, reason
             )
@@ -362,22 +327,14 @@ class EventRouter(
         async def approve_reservation(
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            id_: Annotated[str, Path(alias="id")],
-            approve: bool = Query(False),
+            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
+            approve: bool = Query(False, description="Approve this reservation or not."),
             manager_notes: Annotated[str, Body()] = "-",
         ) -> Any:
             """
             Approve reservation.
 
             Only users with special roles can approve reservation.
-
-            :param service: EventExtra service.
-            :param user: UserLite who make this approve.
-            :param id_: uuid of the event.
-            :param approve: Approve this reservation or not.
-            :param manager_notes: Note for approve or decline reservation.
-
-            :returns EventModel: the updated reservation.
             """
             logger.info(
                 "User %s processing reservation approval for event %s (approve=%s)",
@@ -438,20 +395,13 @@ class EventRouter(
         async def cancel(
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            id_: Annotated[str, Path(alias="id")],
+            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
             cancel_reason: Annotated[str, Body()] = "",
         ) -> Any:
             """
             Cancel event.
 
             Only user who make this reservation can cancel this reservation.
-
-            :param service: EventExtra service.
-            :param user: UserLite who make this reservation.
-            :param id_: id of the event.
-            :param cancel_reason: reason cancellation this reservation.
-
-            :returns EventModel: the canceled reservation.
             """
             logger.info("User %s cancelling event %s (reason=%s)", user.id, id_, cancel_reason)
             google_calendar_service = GoogleCalendarService()
@@ -488,18 +438,12 @@ class EventRouter(
         async def delete(
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            id_: Annotated[str, Path(alias="id")],
+            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
         ) -> Any:
             """
             Delete event.
 
             Only managers and if event have state canceled.
-
-            :param service: EventExtra service.
-            :param user: UserLite who make this reservation.
-            :param id_: id of the event.
-
-            :returns EventModel: the deleted event.
             """
             logger.info("User %s hard deleting event %s", user.id, id_)
             event = await service.delete_with_permission_checks(id_, user)
