@@ -87,11 +87,7 @@ class ReservationServiceRouter(
             - If the requesting user is an **active member**, all reservation services are returned.
             - If the user is **not an active member**, public reservation services are returned.
             """
-            logger.info(
-                "Fetching reservation services (include_removed=%s)",
-                self.entity_name.value,
-                include_removed,
-            )
+            logger.info("Fetching reservation services (include_removed=%s)", include_removed)
             if user.active_member:
                 if include_removed:
                     reservation_services = await service.get_all_services_include_all_removed()
