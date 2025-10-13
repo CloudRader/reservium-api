@@ -93,21 +93,6 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def restore_with_permission_checks(
-        self,
-        id_: str | int | None,
-        user: UserLite,
-    ) -> CalendarDetail:
-        """
-        Retrieve removed calendar from soft removed.
-
-        :param id_: The ID of the calendar to retrieve from removed.
-        :param user: the UserSchema for control permissions of the calendar.
-
-        :return: the updated CalendarDetail.
-        """
-
-    @abstractmethod
     async def delete_with_permission_checks(
         self,
         id_: str,
@@ -235,24 +220,6 @@ class CalendarService(AbstractCalendarService):
         return await self.crud.update_with_mini_services_and_collisions(
             calendar_to_update, calendar_update, mini_services_in_calendar
         )
-
-    async def restore_with_permission_checks(
-        self,
-        id_: str | int | None,
-        user: UserLite,
-    ) -> CalendarDetail:
-        calendar = await self.get(id_, True)
-
-        reservation_service = await self.reservation_service_service.get(
-            str(calendar.reservation_service_id),
-        )
-
-        if reservation_service.alias not in user.roles:
-            raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to create calendars.",
-            )
-
-        return await self.restore(id_)
 
     async def delete_with_permission_checks(
         self,

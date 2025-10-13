@@ -19,21 +19,24 @@ PERMISSION_MAP = {
     Entity.RESERVATION_SERVICE: {
         "create": "admin",
         "create_multiple": "admin",
-        "manage": "admin",
+        "update": "admin",
+        "restore": "admin",
         "delete": "admin",
         "hard_remove": "admin",
     },
     Entity.CALENDAR: {
         "create": "manage",
         "create_multiple": "admin",
-        "manage": "manage",
+        "update": "manage",
+        "restore": "manage",
         "delete": "manage",
         "hard_remove": "admin",
     },
     Entity.MINI_SERVICE: {
         "create": "manage",
         "create_multiple": "admin",
-        "manage": "manage",
+        "update": "manage",
+        "restore": "manage",
         "delete": "manage",
         "hard_remove": "admin",
     },
@@ -148,6 +151,7 @@ def check_create_multiple_permissions[TService, TBody](
 
 def check_update_permissions[TService](
     service_dep: Callable[..., TService],
+    action: str,
 ):
     """Dependency for update actions."""
 
@@ -158,9 +162,22 @@ def check_update_permissions[TService](
         service: Annotated[TService, Depends(service_dep)],
     ):
         entity = getattr(service, "entity_name", None)
-        permission = PERMISSION_MAP.get(entity, {}).get("update") or ""
-        reservation_service = await service.get_reservation_service(id_)
         token_info = await keycloak_service.decode_token(token.credentials)
+        entity_value = getattr(entity, "value", None)
+
+        if action == "update":
+            logger.info(
+                "User %s updating %s id=%s",
+                token_info["preferred_username"],
+                entity_value,
+                id_,
+            )
+        else:
+            logger.info(
+                "User %s restoring %s id=%s", token_info["preferred_username"], entity_value, id_
+            )
+        permission = PERMISSION_MAP.get(entity, {}).get(action) or ""
+        reservation_service = await service.get_reservation_service(id_)
 
         if await check_admin_permission(permission, token_info):
             return

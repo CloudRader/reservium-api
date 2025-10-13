@@ -62,21 +62,6 @@ class AbstractMiniServiceService(
         """
 
     @abstractmethod
-    async def restore_with_permission_checks(
-        self,
-        id_: str | int,
-        user: UserLite,
-    ) -> MiniServiceDetail:
-        """
-        Retrieve removed mini service from soft removed.
-
-        :param id_: The id of the mini service to retrieve from removed.
-        :param user: the UserSchema for control permissions of the mini service.
-
-        :return: the updated Mini Service.
-        """
-
-    @abstractmethod
     async def delete_with_permission_checks(
         self,
         id_: str,
@@ -166,24 +151,6 @@ class MiniServiceService(AbstractMiniServiceService):
             )
 
         return await self.update(id_, mini_service_update)
-
-    async def restore_with_permission_checks(
-        self,
-        id_: str | int,
-        user: UserLite,
-    ) -> MiniServiceDetail:
-        mini_service = await self.get(id_, True)
-
-        reservation_service = await self.reservation_service_service.get(
-            str(mini_service.reservation_service_id),
-        )
-
-        if reservation_service.alias not in user.roles:
-            raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to retrieve mini services.",
-            )
-
-        return await self.restore(id_)
 
     async def delete_with_permission_checks(
         self,

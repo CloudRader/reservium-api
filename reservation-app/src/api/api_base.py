@@ -217,24 +217,16 @@ class BaseCRUDRouter[
             "/{id}",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403"],
-            dependencies=[Depends(check_update_permissions(service_dep))],
+            dependencies=[Depends(check_update_permissions(service_dep, "update"))],
             status_code=status.HTTP_200_OK,
         )
         async def update(
             service: Annotated[service_dep, Depends(service_dep)],
-            user: Annotated[UserLite, Depends(get_current_user)],
             id_: Annotated[str | int, Path(alias="id", description="The ID of the object.")],
             obj_update: schema_update,
         ):
             """Update object, only users with special roles can update object."""
-            logger.info(
-                "User %s updating %s id=%s with data: %s",
-                user.id,
-                self.entity_name.value,
-                id_,
-                obj_update,
-            )
-            obj = await service.update_with_permission_checks(id_, obj_update, user)
+            obj = await service.update(id_, obj_update)
             logger.debug("Updated %s: %s", self.entity_name.value, obj)
             return obj
 
@@ -247,17 +239,15 @@ class BaseCRUDRouter[
             "/{id}/restore",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403"],
-            dependencies=[Depends(check_update_permissions(service_dep))],
+            dependencies=[Depends(check_update_permissions(service_dep, "restore"))],
             status_code=status.HTTP_200_OK,
         )
         async def restore(
             service: Annotated[service_dep, Depends(service_dep)],
-            user: Annotated[UserLite, Depends(get_current_user)],
             id_: Annotated[str | int, Path(alias="id", description="The ID of the object.")],
         ):
             """Restore a soft-deleted object, only users with special roles can restore object."""
-            logger.info("User %s restoring %s id=%s", user.id, self.entity_name.value, id_)
-            obj = await service.restore_with_permission_checks(id_, user)
+            obj = await service.restore(id_)
             logger.debug("Restored object: %s", obj)
             return obj
 

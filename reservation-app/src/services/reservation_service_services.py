@@ -63,21 +63,6 @@ class AbstractReservationServiceService(
         """
 
     @abstractmethod
-    async def restore_with_permission_checks(
-        self,
-        id_: str | int,
-        user: UserLite,
-    ) -> ReservationServiceDetail:
-        """
-        Retrieve removed object from soft removed.
-
-        :param id_: The id of the object to retrieve from removed.
-        :param user: the UserSchema for control permissions of the reservation service.
-
-        :return: the updated Reservation Service.
-        """
-
-    @abstractmethod
     async def delete_with_permission_checks(
         self,
         id_: str,
@@ -245,18 +230,6 @@ class ReservationServiceService(AbstractReservationServiceService):
             )
 
         return await self.update(id_, reservation_service_update)
-
-    async def restore_with_permission_checks(
-        self,
-        id_: str | int,
-        user: UserLite,
-    ) -> ReservationServiceDetail:
-        if not user.section_head:
-            raise PermissionDeniedError(
-                "You must be the head of PS to retrieve removed services.",
-            )
-
-        return await self.restore(id_)
 
     async def delete_with_permission_checks(
         self,
