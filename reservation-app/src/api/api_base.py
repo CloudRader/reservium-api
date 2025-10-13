@@ -4,7 +4,13 @@ import logging
 from collections.abc import Callable
 from typing import Annotated, TypeVar
 
-from api import get_current_user
+from api import (
+    check_create_multiple_permissions,
+    check_create_permissions,
+    check_delete_permissions,
+    check_update_permissions,
+    get_current_user,
+)
 from core.application.exceptions import ERROR_RESPONSES, BaseAppError, Entity
 from core.schemas.user import UserLite
 from fastapi import APIRouter, Depends, Path, Query, status
@@ -163,17 +169,16 @@ class BaseCRUDRouter[
         @self.router.post(
             "/",
             response_model=schema_detail,
-            responses=ERROR_RESPONSES["400_401_403"],
+            responses=ERROR_RESPONSES["400_401_403_409"],
+            dependencies=[Depends(check_create_permissions(service_dep, schema_create))],
             status_code=status.HTTP_201_CREATED,
         )
         async def create(
             service: Annotated[service_dep, Depends(service_dep)],
-            user: Annotated[UserLite, Depends(get_current_user)],
             obj_create: schema_create,
         ):
             """Create object, only users with special roles can create object."""
-            logger.info("User %s creating %s: %s", user.id, self.entity_name.value, obj_create)
-            obj = await self._create_single_object(service, user, obj_create)
+            obj = await self._create_single_object(service, obj_create)
             logger.debug("Created %s: %s", self.entity_name.value, obj)
             return obj
 
@@ -186,24 +191,18 @@ class BaseCRUDRouter[
         @self.router.post(
             "/batch",
             response_model=list[schema_detail],
-            responses=ERROR_RESPONSES["400_401_403"],
+            responses=ERROR_RESPONSES["400_401_403_409"],
+            dependencies=[Depends(check_create_multiple_permissions(service_dep))],
             status_code=status.HTTP_201_CREATED,
         )
         async def create_multiple(
             service: Annotated[service_dep, Depends(service_dep)],
-            user: Annotated[UserLite, Depends(get_current_user)],
             objs_create: list[schema_create],
         ):
             """Create multiple objects in a single request."""
-            logger.info(
-                "User %s creating multiple %s: count=%d",
-                user.id,
-                self.entity_name.value,
-                len(objs_create),
-            )
             objs_result: list[schema_detail] = []
             for obj_create in objs_create:
-                obj = await self._create_single_object(service, user, obj_create)
+                obj = await self._create_single_object(service, obj_create)
                 logger.debug("Created %s: %s", self.entity_name.value, obj)
                 objs_result.append(obj)
             return objs_result
@@ -218,6 +217,7 @@ class BaseCRUDRouter[
             "/{id}",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403"],
+            dependencies=[Depends(check_update_permissions(service_dep))],
             status_code=status.HTTP_200_OK,
         )
         async def update(
@@ -247,6 +247,7 @@ class BaseCRUDRouter[
             "/{id}/restore",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403"],
+            dependencies=[Depends(check_update_permissions(service_dep))],
             status_code=status.HTTP_200_OK,
         )
         async def restore(
@@ -269,6 +270,7 @@ class BaseCRUDRouter[
             "/{id}",
             response_model=schema_lite,
             responses=ERROR_RESPONSES["400_401_403_404"],
+            dependencies=[Depends(check_delete_permissions(service_dep))],
             status_code=status.HTTP_200_OK,
         )
         async def delete(
@@ -292,19 +294,17 @@ class BaseCRUDRouter[
     @staticmethod
     async def _create_single_object(
         service: TService,
-        user: UserLite,
         obj_create: TCreate,
     ) -> TReadDetail:
         """
         Help creating a single object with permission checks.
 
         :param service: Service providing business logic of this object.
-        :param user: Authenticated user performing the creation.
         :param obj_create: Data required to create the object.
 
         :return: The created Object instance.
         """
-        obj = await service.create_with_permission_checks(obj_create, user)
+        obj = await service.create(obj_create)
         if not obj:
             raise BaseAppError()
         return obj

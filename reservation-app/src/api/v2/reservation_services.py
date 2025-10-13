@@ -109,17 +109,9 @@ class ReservationServiceRouter(
         async def get_by_name(
             service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
             name: Annotated[str, Path()],
-            include_removed: bool = Query(False),
+            include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
-            """
-            Get reservation services by its name.
-
-            :param service: Mini Service ser.
-            :param name: service alias of the mini service.
-            :param include_removed: include removed reservation service or not.
-
-            :return: Reservation Service with name equal to name.
-            """
+            """Get reservation services by its name."""
             logger.debug(
                 "Request received: get_by_name(name=%s, include_removed=%s)",
                 name,
@@ -138,17 +130,9 @@ class ReservationServiceRouter(
         async def get_by_alias(
             service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
             alias: Annotated[str, Path()],
-            include_removed: bool = Query(False),
+            include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
-            """
-            Get reservation services by its alias.
-
-            :param service: Mini Service ser.
-            :param alias: service alias of the mini service.
-            :param include_removed: include removed reservation service or not.
-
-            :return: Reservation Service with alias equal to alias.
-            """
+            """Get reservation services by its alias."""
             logger.debug(
                 "Request received: get_by_alias(alias=%s, include_removed=%s)",
                 alias,
@@ -166,18 +150,10 @@ class ReservationServiceRouter(
         )
         async def get_calendars_by_reservation_service(
             service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-            id_: Annotated[str, Path(alias="id")],
-            include_removed: bool = Query(False),
+            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
+            include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
-            """
-            Get all calendars linked to a reservation service by its ID.
-
-            :param service: Reservation Service ser.
-            :param id_: id of the reservation service.
-            :param include_removed: include removed calendars or not.
-
-            :return: List of CalendarDetail objects linked to the reservation service.
-            """
+            """Get all calendars linked to a reservation service."""
             logger.info(
                 "Fetching all calendars for reservation service (id=%s, include_removed=%s)",
                 id_,
@@ -195,18 +171,10 @@ class ReservationServiceRouter(
         )
         async def get_mini_services_by_reservation_service(
             service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-            id_: Annotated[str, Path(alias="id")],
-            include_removed: bool = Query(False),
+            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
+            include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
-            """
-            Get all mini services linked to a reservation service by its ID.
-
-            :param service: Reservation Service ser.
-            :param id_: id of the reservation service.
-            :param include_removed: include removed calendars or not.
-
-            :return: List of MiniServiceDetail objects linked to the reservation service.
-            """
+            """Get all mini services linked to a reservation service."""
             logger.info(
                 "Fetching all mini services for reservation service (id=%s, include_removed=%s)",
                 id_,
@@ -224,18 +192,10 @@ class ReservationServiceRouter(
         )
         async def get_events_by_reservation_service(
             service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-            id_: Annotated[str, Path(alias="id")],
+            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
             event_state: Annotated[EventState | None, Query()] = None,
         ) -> Any:
-            """
-            Get all events linked to a reservation service by its alias.
-
-            :param service: EventExtra service.
-            :param id_: id of the reservation service.
-            :param event_state: event state of the event.
-
-            :return: List of EventExtra objects linked to the reservation service.
-            """
+            """Get all events linked to a reservation service."""
             logger.info(
                 "Fetching all events for reservation service (id=%s, event_state=%s)",
                 id_,

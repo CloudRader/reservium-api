@@ -177,6 +177,20 @@ class MethodNotAllowedError(BaseAppError):
         super().__init__(message=message, entity=entity.value)
 
 
+class ConflictError(BaseAppError):
+    """Exception raised when a conflict occurs (e.g. duplicate resource)."""
+
+    STATUS_CODE = status.HTTP_409_CONFLICT
+    DESCRIPTION = "Conflict: resource already exists."
+
+    def __init__(self, message: str | None = None, **kwargs):
+        super().__init__(
+            message=message or self.DESCRIPTION,
+            status_code=self.STATUS_CODE,
+            **kwargs,
+        )
+
+
 class NotImplementedFunctionError(BaseAppError):
     """Exception for when a functionality is not yet implemented."""
 
@@ -262,5 +276,11 @@ ERROR_RESPONSES = {
         **UnauthorizedError.response(),
         **PermissionDeniedError.response(),
         **EntityNotFoundError.response(),
+    },
+    "400_401_403_409": {
+        **BaseAppError.response(),
+        **UnauthorizedError.response(),
+        **PermissionDeniedError.response(),
+        **ConflictError.response(),
     },
 }

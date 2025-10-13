@@ -45,21 +45,6 @@ class AbstractMiniServiceService(
     """
 
     @abstractmethod
-    async def create_with_permission_checks(
-        self,
-        mini_service_create: MiniServiceCreate,
-        user: UserLite,
-    ) -> MiniServiceDetail:
-        """
-        Create a Mini Service in the database.
-
-        :param mini_service_create: MiniServiceCreate SchemaLite for create.
-        :param user: the UserSchema for control permissions of the mini service.
-
-        :return: the created Mini Service.
-        """
-
-    @abstractmethod
     async def update_with_permission_checks(
         self,
         id_: str,
@@ -162,22 +147,6 @@ class MiniServiceService(AbstractMiniServiceService):
         super().__init__(CRUDMiniService(db), Entity.MINI_SERVICE)
         self.calendar_crud = CRUDCalendar(db)
         self.reservation_service_service = ReservationServiceService(db)
-
-    async def create_with_permission_checks(
-        self,
-        mini_service_create: MiniServiceCreate,
-        user: UserLite,
-    ) -> MiniServiceDetail:
-        reservation_service = await self.reservation_service_service.get(
-            mini_service_create.reservation_service_id,
-        )
-
-        if reservation_service.alias not in user.roles:
-            raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to create mini services.",
-            )
-
-        return await self.crud.create(mini_service_create)
 
     async def update_with_permission_checks(
         self,

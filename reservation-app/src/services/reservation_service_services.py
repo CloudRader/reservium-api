@@ -46,21 +46,6 @@ class AbstractReservationServiceService(
     """
 
     @abstractmethod
-    async def create_with_permission_checks(
-        self,
-        reservation_service_create: ReservationServiceCreate,
-        user: UserLite,
-    ) -> ReservationServiceDetail:
-        """
-        Create a Reservation Service in the database.
-
-        :param reservation_service_create: ReservationServiceCreate SchemaLite for create.
-        :param user: the UserSchema for control permissions of the reservation service.
-
-        :return: the created Reservation Service.
-        """
-
-    @abstractmethod
     async def update_with_permission_checks(
         self,
         id_: str,
@@ -247,18 +232,6 @@ class ReservationServiceService(AbstractReservationServiceService):
         db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
         super().__init__(CRUDReservationService(db), Entity.RESERVATION_SERVICE)
-
-    async def create_with_permission_checks(
-        self,
-        reservation_service_create: ReservationServiceCreate,
-        user: UserLite,
-    ) -> ReservationServiceDetail:
-        if not user.section_head:
-            raise PermissionDeniedError(
-                "You must be the head of PS to create services.",
-            )
-
-        return await self.crud.create(reservation_service_create)
 
     async def update_with_permission_checks(
         self,

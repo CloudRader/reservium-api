@@ -63,16 +63,14 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def create_with_permission_checks(
+    async def create(
         self,
         calendar_create: CalendarCreate,
-        user: UserLite,
     ) -> CalendarDetail:
         """
         Create a Calendar in the database.
 
         :param calendar_create: CalendarCreate SchemaLite for create.
-        :param user: the UserSchema for control permissions of the calendar.
 
         :return: the created Calendar.
         """
@@ -190,7 +188,6 @@ class CalendarService(AbstractCalendarService):
         super().__init__(CRUDCalendar(db), Entity.CALENDAR)
         self.reservation_service_service = ReservationServiceService(db)
         self.mini_service_service = MiniServiceService(db)
-        self.entity_name = Entity.CALENDAR
 
     async def get_with_collisions(
         self,
@@ -202,20 +199,10 @@ class CalendarService(AbstractCalendarService):
             raise EntityNotFoundError(self.entity_name, id_)
         return calendar
 
-    async def create_with_permission_checks(
+    async def create(
         self,
         calendar_create: CalendarCreate,
-        user: UserLite,
     ) -> CalendarDetail:
-        reservation_service = await self.reservation_service_service.get(
-            calendar_create.reservation_service_id,
-        )
-
-        if reservation_service.alias not in user.roles:
-            raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to create calendars.",
-            )
-
         mini_services_in_calendar = await self._prepare_calendar_mini_services(
             calendar_create.reservation_service_id, calendar_create.mini_services
         )

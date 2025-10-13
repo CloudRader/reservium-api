@@ -56,17 +56,9 @@ class MiniServiceRouter(
         async def get_by_name(
             service: Annotated[MiniServiceService, Depends(MiniServiceService)],
             name: Annotated[str, Path()],
-            include_removed: bool = Query(False),
+            include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
-            """
-            Get mini service by its name.
-
-            :param service: Mini Service ser.
-            :param name: name of the mini service.
-            :param include_removed: include removed mini service or not.
-
-            :return: Mini Service with name equal to name.
-            """
+            """Get mini service by its name."""
             logger.debug(
                 "Request received: get_by_name(name=%s, include_removed=%s)",
                 name,
