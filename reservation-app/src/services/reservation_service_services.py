@@ -11,7 +11,6 @@ from core import db_session
 from core.application.exceptions import (
     Entity,
     EntityNotFoundError,
-    PermissionDeniedError,
 )
 from core.models import CalendarModel, EventState, MiniServiceModel
 from core.schemas import (
@@ -20,7 +19,6 @@ from core.schemas import (
     ReservationServiceCreate,
     ReservationServiceDetail,
     ReservationServiceUpdate,
-    UserLite,
 )
 from core.schemas.event import EventDetail
 from crud import CRUDReservationService
@@ -44,23 +42,6 @@ class AbstractReservationServiceService(
 
     Provides CRUD operations for a specific ReservationServiceModel.
     """
-
-    @abstractmethod
-    async def delete_with_permission_checks(
-        self,
-        id_: str,
-        user: UserLite,
-        hard_remove: bool = False,
-    ) -> ReservationServiceDetail:
-        """
-        Delete a Reservation Service in the database.
-
-        :param id_: The id of the Reservation Service.
-        :param user: the UserSchema for control permissions of the reservation service.
-        :param hard_remove: hard remove of the reservation service or not.
-
-        :return: the deleted Reservation Service.
-        """
 
     @abstractmethod
     async def get_by_alias(
@@ -200,22 +181,6 @@ class ReservationServiceService(AbstractReservationServiceService):
         db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
         super().__init__(CRUDReservationService(db), Entity.RESERVATION_SERVICE)
-
-    async def delete_with_permission_checks(
-        self,
-        id_: str,
-        user: UserLite,
-        hard_remove: bool = False,
-    ) -> ReservationServiceDetail:
-        if not user.section_head:
-            raise PermissionDeniedError(
-                "You must be the head of PS to delete services.",
-            )
-
-        if hard_remove:
-            return await self.remove(id_)
-
-        return await self.soft_remove(id_)
 
     async def get_by_alias(
         self,

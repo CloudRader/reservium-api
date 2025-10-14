@@ -104,21 +104,12 @@ class AbstractCRUDService[
         """
 
     @abstractmethod
-    async def remove(self, id_: str | int) -> SchemaDetail:
+    async def delete(self, id_: str | int, hard_remove: bool = False) -> SchemaDetail:
         """
         Delete an object from the database.
 
         :param id_: The ID of the object to delete.
-        """
-
-    @abstractmethod
-    async def soft_remove(self, id_: str | int) -> SchemaDetail:
-        """
-        Soft remove a record by its id_.
-
-        Change attribute deleted_at to time of deletion
-
-        :param id_: The ID of the object to delete.
+        :param hard_remove: hard remove the object or not.
         """
 
 
@@ -175,17 +166,10 @@ class CrudServiceBase(
             raise EntityNotFoundError(self.entity_name, id_)
         return await self.crud.restore(obj)
 
-    async def remove(self, id_: str | int) -> SchemaDetail:
-        obj = await self.crud.remove(id_)
-        if obj is None:
-            raise EntityNotFoundError(self.entity_name, id_)
-        return obj
-
-    async def soft_remove(self, id_: str | int) -> SchemaDetail:
+    async def delete(self, id_: str | int, hard_remove: bool = False) -> SchemaDetail:
         obj = await self.get(id_, True)
+        if hard_remove:
+            return await self.crud.remove(id_)
         if obj.deleted_at is not None:  # type: ignore
             raise BaseAppError(f"A {self.entity_name.value} is already soft deleted.")
-        soft_remove_obj = await self.crud.soft_remove(obj)
-        if soft_remove_obj is None:
-            raise EntityNotFoundError(self.entity_name, id_)
-        return obj
+        return await self.crud.soft_remove(obj)

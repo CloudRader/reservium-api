@@ -200,12 +200,23 @@ def check_delete_permissions[TService](
         hard_remove: bool = Query(False, description="`Hard remove` the object or not."),
     ):
         entity = getattr(service, "entity_name", None)
+        token_info = await keycloak_service.decode_token(token.credentials)
+        entity_value = getattr(entity, "value", None)
+
+        logger.info(
+            "User %s deleting %s id=%s (hard_remove=%s)",
+            token_info["preferred_username"],
+            entity_value,
+            id_,
+            hard_remove,
+        )
+
         if hard_remove:
             permission = PERMISSION_MAP.get(entity, {}).get("hard_remove") or ""
         else:
             permission = PERMISSION_MAP.get(entity, {}).get("delete") or ""
+
         reservation_service = await service.get_reservation_service(id_)
-        token_info = await keycloak_service.decode_token(token.credentials)
 
         if await check_admin_permission(permission, token_info):
             return

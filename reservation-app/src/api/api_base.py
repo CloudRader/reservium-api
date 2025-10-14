@@ -9,10 +9,8 @@ from api import (
     check_create_permissions,
     check_delete_permissions,
     check_update_permissions,
-    get_current_user,
 )
 from core.application.exceptions import ERROR_RESPONSES, BaseAppError, Entity
-from core.schemas.user import UserLite
 from fastapi import APIRouter, Depends, Path, Query, status
 from pydantic import BaseModel
 from services.service_base import CrudServiceBase
@@ -216,7 +214,7 @@ class BaseCRUDRouter[
         @self.router.put(
             "/{id}",
             response_model=schema_detail,
-            responses=ERROR_RESPONSES["400_401_403"],
+            responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[Depends(check_update_permissions(service_dep, "update"))],
             status_code=status.HTTP_200_OK,
         )
@@ -238,7 +236,7 @@ class BaseCRUDRouter[
         @self.router.put(
             "/{id}/restore",
             response_model=schema_detail,
-            responses=ERROR_RESPONSES["400_401_403"],
+            responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[Depends(check_update_permissions(service_dep, "restore"))],
             status_code=status.HTTP_200_OK,
         )
@@ -265,19 +263,11 @@ class BaseCRUDRouter[
         )
         async def delete(
             service: Annotated[service_dep, Depends(service_dep)],
-            user: Annotated[UserLite, Depends(get_current_user)],
             id_: Annotated[str | int, Path(alias="id", description="The ID of the object.")],
             hard_remove: bool = Query(False, description="`Hard remove` the object or not."),
         ):
             """Delete object, only users with special roles can delete object."""
-            logger.info(
-                "User %s deleting %s id=%s (hard_remove=%s)",
-                user.id,
-                self.entity_name.value,
-                id_,
-                hard_remove,
-            )
-            obj = await service.delete_with_permission_checks(id_, user, hard_remove)
+            obj = await service.delete(id_, hard_remove)
             logger.debug("Deleted object: %s", obj)
             return obj
 

@@ -11,7 +11,6 @@ from core import db_session
 from core.application.exceptions import (
     Entity,
     EntityNotFoundError,
-    PermissionDeniedError,
 )
 from core.schemas import (
     MiniServiceCreate,
@@ -19,7 +18,6 @@ from core.schemas import (
     MiniServiceLite,
     MiniServiceUpdate,
     ReservationServiceDetail,
-    UserLite,
 )
 from crud import CRUDCalendar, CRUDMiniService
 from fastapi import Depends
@@ -43,23 +41,6 @@ class AbstractMiniServiceService(
 
     Provides CRUD operations for a specific MiniServiceModel.
     """
-
-    @abstractmethod
-    async def delete_with_permission_checks(
-        self,
-        id_: str,
-        user: UserLite,
-        hard_remove: bool = False,
-    ) -> MiniServiceDetail:
-        """
-        Delete a Mini Service in the database.
-
-        :param id_: The id of the Mini Service.
-        :param user: the UserSchema for control permissions of the mini service.
-        :param hard_remove: hard remove of the reservation service or not.
-
-        :return: the deleted Mini Service.
-        """
 
     @abstractmethod
     async def get_by_name(
@@ -115,33 +96,6 @@ class MiniServiceService(AbstractMiniServiceService):
         super().__init__(CRUDMiniService(db), Entity.MINI_SERVICE)
         self.calendar_crud = CRUDCalendar(db)
         self.reservation_service_service = ReservationServiceService(db)
-
-    async def delete_with_permission_checks(
-        self,
-        id_: str,
-        user: UserLite,
-        hard_remove: bool = False,
-    ) -> MiniServiceDetail:
-        mini_service = await self.get(id_, True)
-
-        if hard_remove and not user.section_head:
-            raise PermissionDeniedError(
-                "You must be the head of PS to totally delete mini services.",
-            )
-
-        reservation_service = await self.reservation_service_service.get(
-            mini_service.reservation_service_id,
-        )
-
-        if reservation_service.alias not in user.roles:
-            raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to delete mini services.",
-            )
-
-        if hard_remove:
-            return await self.remove(id_)
-
-        return await self.soft_remove(id_)
 
     async def get_by_name(
         self,

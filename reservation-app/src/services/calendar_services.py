@@ -63,23 +63,6 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def delete_with_permission_checks(
-        self,
-        id_: str,
-        user: UserLite,
-        hard_remove: bool = False,
-    ) -> CalendarDetail:
-        """
-        Delete a Calendar in the database.
-
-        :param id_: The id of the Calendar.
-        :param user: the UserSchema for control permissions of the calendar.
-        :param hard_remove: hard remove of the calendar or not.
-
-        :return: the deleted Calendar.
-        """
-
-    @abstractmethod
     async def google_calendars_available_for_import(
         self,
         user: UserLite,
@@ -180,33 +163,6 @@ class CalendarService(AbstractCalendarService):
         return await self.crud.update_with_mini_services_and_collisions(
             calendar_to_update, calendar_update, mini_services_in_calendar
         )
-
-    async def delete_with_permission_checks(
-        self,
-        id_: str,
-        user: UserLite,
-        hard_remove: bool = False,
-    ) -> CalendarDetail:
-        calendar = await self.get(id_, True)
-
-        if hard_remove and not user.section_head:
-            raise PermissionDeniedError(
-                "You must be the head of PS to totally delete calendars.",
-            )
-
-        reservation_service = await self.reservation_service_service.get(
-            calendar.reservation_service_id,
-        )
-
-        if reservation_service.alias not in user.roles:
-            raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to create calendars.",
-            )
-
-        if hard_remove:
-            return await self.remove(id_)
-
-        return await self.soft_remove(id_)
 
     async def google_calendars_available_for_import(
         self,

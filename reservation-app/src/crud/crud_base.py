@@ -69,11 +69,11 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
         """Retrieve removed object from soft removed."""
 
     @abstractmethod
-    async def remove(self, id_: str | int) -> Model | None:
+    async def remove(self, id_: str | int) -> Model:
         """Remove a record by its id_."""
 
     @abstractmethod
-    async def soft_remove(self, obj: Model) -> Model | None:
+    async def soft_remove(self, obj: Model) -> Model:
         """
         Soft remove a record by its id_.
 
@@ -150,19 +150,17 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         await self.db.commit()
         return obj
 
-    async def remove(self, id_: str | int) -> Model | None:
+    async def remove(self, id_: str | int) -> Model:
         stmt = (
             select(self.model).execution_options(include_deleted=True).filter(self.model.id == id_)
         )
         result = await self.db.execute(stmt)
-        obj = result.scalar_one_or_none()
-        if obj is None:
-            return None
+        obj = result.scalar_one()
         await self.db.delete(obj)
         await self.db.commit()
         return obj
 
-    async def soft_remove(self, obj: Model) -> Model | None:
+    async def soft_remove(self, obj: Model) -> Model:
         obj.deleted_at = datetime.now(UTC)
         self.db.add(obj)
         await self.db.commit()
@@ -172,7 +170,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
             .filter(self.model.id == obj.id)
         )
         result = await self.db.execute(stmt)
-        return result.scalar_one_or_none()
+        return result.scalar_one()
 
     async def _check_id_and_return_obj_from_db_by_id(
         self,
