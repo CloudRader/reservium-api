@@ -4,13 +4,12 @@ Define an abstract base class AbstractUserService.
 This class works with User.
 """
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Annotated
 
 from core import db_session
-from core.application.exceptions import (
-    Entity,
-)
+from core.application.exceptions import Entity, EntityNotFoundError
 from core.schemas import (
     UserCreate,
     UserDetail,
@@ -23,6 +22,8 @@ from crud import CRUDReservationService, CRUDUser
 from fastapi import Depends
 from services import CrudServiceBase, EventService
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 
 class AbstractUserService(
@@ -114,7 +115,11 @@ class UserService(AbstractUserService):
         self,
         user_data: UserKeycloak,
     ) -> UserLite:
-        user = await self.get(user_data.ldap_id)
+        try:
+            user = await self.get(user_data.ldap_id)
+        except EntityNotFoundError:
+            user = None
+            logger.info("User with LDAP ID %s not found, creating in db.", user_data.ldap_id)
 
         user_roles = []
 
@@ -145,8 +150,8 @@ class UserService(AbstractUserService):
 
         user_create = UserCreate(
             id=user_data.ldap_id,
-            username=user_data.username,
-            full_name=f"{user_data.first_name} {user_data.surname}",
+            username=user_data.preferred_username,
+            full_name=user_data.name,
             active_member=active_member,
             section_head=section_head,
             roles=user_roles,
