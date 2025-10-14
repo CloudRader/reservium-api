@@ -63,36 +63,6 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def create(
-        self,
-        calendar_create: CalendarCreate,
-    ) -> CalendarDetail:
-        """
-        Create a Calendar in the database.
-
-        :param calendar_create: CalendarCreate SchemaLite for create.
-
-        :return: the created Calendar.
-        """
-
-    @abstractmethod
-    async def update_with_permission_checks(
-        self,
-        id_: str,
-        calendar_update: CalendarUpdate,
-        user: UserLite,
-    ) -> CalendarDetail:
-        """
-        Update a Calendar in the database.
-
-        :param id_: The id of the Calendar.
-        :param calendar_update: CalendarUpdate SchemaLite for update.
-        :param user: the UserSchema for control permissions of the calendar.
-
-        :return: the updated Calendar.
-        """
-
-    @abstractmethod
     async def delete_with_permission_checks(
         self,
         id_: str,
@@ -196,22 +166,12 @@ class CalendarService(AbstractCalendarService):
             calendar_create, mini_services_in_calendar
         )
 
-    async def update_with_permission_checks(
+    async def update(
         self,
         id_: str,
         calendar_update: CalendarUpdate,
-        user: UserLite,
     ) -> CalendarDetail:
         calendar_to_update = await self.get(id_)
-
-        reservation_service = await self.reservation_service_service.get(
-            calendar_to_update.reservation_service_id
-        )
-
-        if reservation_service.alias not in user.roles:
-            raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to create calendars.",
-            )
 
         mini_services_in_calendar = await self._prepare_calendar_mini_services(
             calendar_to_update.reservation_service_id, calendar_update.mini_services

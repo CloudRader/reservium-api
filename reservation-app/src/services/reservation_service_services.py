@@ -46,23 +46,6 @@ class AbstractReservationServiceService(
     """
 
     @abstractmethod
-    async def update_with_permission_checks(
-        self,
-        id_: str,
-        reservation_service_update: ReservationServiceUpdate,
-        user: UserLite,
-    ) -> ReservationServiceDetail:
-        """
-        Update a Reservation Service in the database.
-
-        :param id_: The id of the Reservation Service.
-        :param reservation_service_update: ReservationServiceUpdate SchemaLite for update.
-        :param user: the UserSchema for control permissions of the reservation service.
-
-        :return: the updated Reservation Service.
-        """
-
-    @abstractmethod
     async def delete_with_permission_checks(
         self,
         id_: str,
@@ -217,19 +200,6 @@ class ReservationServiceService(AbstractReservationServiceService):
         db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
         super().__init__(CRUDReservationService(db), Entity.RESERVATION_SERVICE)
-
-    async def update_with_permission_checks(
-        self,
-        id_: str,
-        reservation_service_update: ReservationServiceUpdate,
-        user: UserLite,
-    ) -> ReservationServiceDetail:
-        if not user.section_head:
-            raise PermissionDeniedError(
-                "You must be the head of PS to update services.",
-            )
-
-        return await self.update(id_, reservation_service_update)
 
     async def delete_with_permission_checks(
         self,

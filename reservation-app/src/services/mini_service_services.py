@@ -45,23 +45,6 @@ class AbstractMiniServiceService(
     """
 
     @abstractmethod
-    async def update_with_permission_checks(
-        self,
-        id_: str,
-        mini_service_update: MiniServiceUpdate,
-        user: UserLite,
-    ) -> MiniServiceDetail:
-        """
-        Update a Mini Service in the database.
-
-        :param id_: The id of the Mini Service.
-        :param mini_service_update: MiniServiceUpdate SchemaLite for update.
-        :param user: the UserSchema for control permissions of the mini service.
-
-        :return: the updated Mini Service.
-        """
-
-    @abstractmethod
     async def delete_with_permission_checks(
         self,
         id_: str,
@@ -132,25 +115,6 @@ class MiniServiceService(AbstractMiniServiceService):
         super().__init__(CRUDMiniService(db), Entity.MINI_SERVICE)
         self.calendar_crud = CRUDCalendar(db)
         self.reservation_service_service = ReservationServiceService(db)
-
-    async def update_with_permission_checks(
-        self,
-        id_: str,
-        mini_service_update: MiniServiceUpdate,
-        user: UserLite,
-    ) -> MiniServiceDetail:
-        mini_service_to_update = await self.get(id_)
-
-        reservation_service = await self.reservation_service_service.get(
-            mini_service_to_update.reservation_service_id,
-        )
-
-        if reservation_service.alias not in user.roles:
-            raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to update mini services.",
-            )
-
-        return await self.update(id_, mini_service_update)
 
     async def delete_with_permission_checks(
         self,
