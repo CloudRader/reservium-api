@@ -157,7 +157,7 @@ class EventRouter(
 
         @router.put(
             "/{id}/approve-time-change-request",
-            response_model=EventDetail,
+            response_model=EventLite,
             responses=ERROR_RESPONSES["400_401_403"],
             status_code=status.HTTP_200_OK,
         )
@@ -245,7 +245,7 @@ class EventRouter(
 
         @router.put(
             "/{id}",
-            response_model=EventDetail,
+            response_model=EventLite,
             responses=ERROR_RESPONSES["400_401_403"],
             status_code=status.HTTP_200_OK,
         )
@@ -284,7 +284,7 @@ class EventRouter(
 
         @router.put(
             "/{id}/request-time-change",
-            response_model=EventDetail,
+            response_model=EventLite,
             responses=ERROR_RESPONSES["400_401_403"],
             status_code=status.HTTP_200_OK,
         )
@@ -320,7 +320,7 @@ class EventRouter(
 
         @router.put(
             "/{id}/approve",
-            response_model=EventDetail,
+            response_model=EventLite,
             responses=ERROR_RESPONSES["400_401_403_404"],
             status_code=status.HTTP_200_OK,
         )
@@ -388,7 +388,7 @@ class EventRouter(
 
         @router.delete(
             "/{id}",
-            response_model=EventDetail,
+            response_model=EventLite,
             responses=ERROR_RESPONSES["400_401_403_404"],
             status_code=status.HTTP_200_OK,
         )
@@ -431,7 +431,7 @@ class EventRouter(
 
         @router.delete(
             "/{id}/hard",
-            response_model=EventDetail,
+            response_model=EventLite,
             responses=ERROR_RESPONSES["400_401_403_404"],
             status_code=status.HTTP_200_OK,
         )
