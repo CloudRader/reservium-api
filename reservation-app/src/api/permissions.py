@@ -53,7 +53,9 @@ async def check_admin_permission(
 ) -> bool:
     """Verify that the current user has the admin role."""
     if permission == "admin":
-        roles = token_info["resource_access"][settings.KEYCLOAK.CLIENT_ID]["roles"]
+        roles = token_info.get("resource_access", {}).get(settings.KEYCLOAK.CLIENT_ID, {}).get("roles", [])
+        if not roles:
+            raise PermissionDeniedError(message="You don't have roles for this application.")
         if permission not in roles:
             raise PermissionDeniedError(message="You must be an admin to do this operation.")
         return True
