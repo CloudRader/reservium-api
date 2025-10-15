@@ -87,7 +87,7 @@ class AbstractEventService(
     @abstractmethod
     async def get_reservation_service_of_this_event(
         self,
-        event: EventDetail,
+        event: EventLite,
     ) -> ReservationServiceDetail:
         """
         Retrieve the ReservationServiceDetail instance associated with this event.
@@ -100,7 +100,7 @@ class AbstractEventService(
     @abstractmethod
     async def get_calendar_of_this_event(
         self,
-        event: EventDetail,
+        event: EventLite,
     ) -> CalendarDetail:
         """
         Retrieve the CalendarDetail instance associated with this event.
@@ -113,7 +113,7 @@ class AbstractEventService(
     @abstractmethod
     async def get_user_of_this_event(
         self,
-        event: EventDetail,
+        event: EventLite,
     ) -> UserLite:
         """
         Retrieve the UserLite instance associated with this event.
@@ -141,7 +141,7 @@ class AbstractEventService(
         id_: str,
         event_update: EventUpdate,
         user: UserLite,
-    ) -> EventDetail | None:
+    ) -> EventLite | None:
         """
         Approve update a reservation time of the EventExtra in the database.
 
@@ -158,7 +158,7 @@ class AbstractEventService(
         id_: str,
         event_update: EventUpdate,
         user: UserLite,
-    ) -> EventDetail | None:
+    ) -> EventLite | None:
         """
         Update a reservation of the EventExtra in the database.
 
@@ -175,7 +175,7 @@ class AbstractEventService(
         id_: str,
         event_update: EventUpdateTime,
         user: UserLite,
-    ) -> EventDetail | None:
+    ) -> EventLite | None:
         """
         Update a reservation time of the EventExtra in the database.
 
@@ -191,7 +191,7 @@ class AbstractEventService(
         self,
         id_: str,
         user: UserLite,
-    ) -> EventDetail | None:
+    ) -> EventLite | None:
         """
         Cancel an EventExtra in the database.
 
@@ -207,7 +207,7 @@ class AbstractEventService(
         self,
         id_: str,
         user: UserLite,
-    ) -> ReservationServiceDetail | None:
+    ) -> EventLite | None:
         """
         Delete an EventExtra in the database.
 
@@ -218,7 +218,7 @@ class AbstractEventService(
         """
 
     @abstractmethod
-    async def confirm_event(self, id_: str | None, user: UserLite) -> EventDetail | None:
+    async def confirm_event(self, id_: str | None, user: UserLite) -> EventLite | None:
         """
         Confirm event.
 
@@ -352,7 +352,7 @@ class EventService(AbstractEventService):
         id_: str,
         event_update: EventUpdate,
         user: UserLite,
-    ) -> EventDetail | None:
+    ) -> EventLite | None:
         event_to_update = await self.get(id_)
 
         reservation_service = await self.get_reservation_service_of_this_event(event_to_update)
@@ -378,7 +378,7 @@ class EventService(AbstractEventService):
         id_: str,
         event_update: EventUpdateTime,
         user: UserLite,
-    ) -> EventDetail | None:
+    ) -> EventLite | None:
         event_to_update = await self.get(id_)
 
         if event_to_update.user_id != user.id:
@@ -410,8 +410,8 @@ class EventService(AbstractEventService):
         self,
         id_: str,
         user: UserLite,
-    ) -> EventDetail | None:
-        event: EventDetail = await self.get(id_)
+    ) -> EventLite | None:
+        event = await self.get(id_)
 
         if event.event_state == EventState.CANCELED:
             raise BaseAppError("You can't cancel canceled reservation.")
@@ -436,7 +436,7 @@ class EventService(AbstractEventService):
         self,
         id_: str,
         user: UserLite,
-    ) -> ReservationServiceDetail | None:
+    ) -> EventLite | None:
         event = await self.crud.get(id_, True)
 
         reservation_service = await self.get_reservation_service_of_this_event(event)
@@ -451,8 +451,8 @@ class EventService(AbstractEventService):
 
         return await self.crud.remove(id_)
 
-    async def confirm_event(self, id_: str | None, user: UserLite) -> EventDetail | None:
-        event: EventDetail = await self.get(id_)
+    async def confirm_event(self, id_: str | None, user: UserLite) -> EventLite | None:
+        event = await self.get(id_)
 
         if event.event_state != EventState.NOT_APPROVED:
             raise BaseAppError(
@@ -629,7 +629,7 @@ class EventService(AbstractEventService):
     @staticmethod
     def _description_of_event(
         user: UserLite,
-        event_input: EventCreate | EventDetail,
+        event_input: EventCreate | EventLite,
     ):
         """Describe the event in google calendar."""
         formatted_services: str = "-"

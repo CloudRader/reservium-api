@@ -299,7 +299,7 @@ class EventRouter(
             logger.info(
                 "User %s requesting time change for event %s (reason=%s)", user.id, id_, reason
             )
-            event: EventDetail = await service.request_update_reservation_time(
+            event: EventLite = await service.request_update_reservation_time(
                 id_,
                 event_update,
                 user,

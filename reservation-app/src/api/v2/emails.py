@@ -10,7 +10,7 @@ from core.schemas import (
     CalendarLite,
     EmailCreate,
     EmailMeta,
-    EventDetail,
+    EventLite,
     RegistrationFormCreate,
     ReservationServiceLite,
     UserLite,
@@ -97,7 +97,7 @@ async def send_email(email_create: EmailCreate) -> Any:
 
 async def preparing_email(
     service_event: Annotated[EventService, Depends(EventService)],
-    event: EventDetail,
+    event: EventLite,
     email_meta: EmailMeta,
 ) -> Any:
     """
@@ -164,7 +164,7 @@ def construct_email(
 
 
 def construct_body_context(
-    event: EventDetail,
+    event: EventLite,
     user: UserLite,
     reservation_service: ReservationServiceLite,
     calendar: CalendarLite,
