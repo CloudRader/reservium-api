@@ -81,12 +81,15 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventLite, EventUpdate], ABC):
         self,
         aliases: list[str],
         event_state: EventState | None = None,
+        past: bool | None = None,
     ) -> list[EventModel]:
         """
         Retrieve events for the given reservation service aliases.
 
         :param aliases: List of reservation service aliases to filter events by.
         :param event_state: Event state of the event.
+        :param past: Filter for event time. `True` for past events, `False` for future events.
+            `None` to fetch all events (no time filtering).
 
         :return: Matching list of EventModel.
         """
@@ -166,7 +169,10 @@ class CRUDEvent(AbstractCRUDEvent):
         self,
         aliases: list[str],
         event_state: EventState | None = None,
+        past: bool | None = None,
     ) -> list[EventModel]:
+        now = datetime.now()
+
         stmt = (
             select(self.model)
             .join(self.calendar_model, self.model.calendar_id == self.calendar_model.id)
@@ -184,6 +190,11 @@ class CRUDEvent(AbstractCRUDEvent):
 
         if event_state is not None:
             stmt = stmt.filter(self.model.event_state == event_state)
+
+        if past:
+            stmt = stmt.filter(self.model.reservation_end < now)
+        elif past is False:
+            stmt = stmt.filter(self.model.reservation_start > now)
 
         result = await self.db.execute(stmt)
         return list(result.scalars().all())

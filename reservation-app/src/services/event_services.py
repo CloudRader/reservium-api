@@ -234,12 +234,15 @@ class AbstractEventService(
         self,
         user: UserLite,
         event_state: EventState | None = None,
+        past: bool | None = None,
     ) -> list[EventDetail]:
         """
         Retrieve events for the given user roles.
 
         :param user: the UserSchema for control permissions users
         :param event_state: EventExtra state of the event.
+        :param past: Filter for event time. `True` for past events, `False` for future events.
+            `None` to fetch all events (no time filtering).
 
         :return: Matching list of EventDetail.
         """
@@ -472,8 +475,9 @@ class EventService(AbstractEventService):
         self,
         user: UserLite,
         event_state: EventState | None = None,
+        past: bool | None = None,
     ) -> list[EventDetail]:
-        return await self.crud.get_events_by_aliases(user.roles, event_state)
+        return await self.crud.get_events_by_aliases(user.roles, event_state, past)
 
     async def _control_conditions_and_permissions(
         self,

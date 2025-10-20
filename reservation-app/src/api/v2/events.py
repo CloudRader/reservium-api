@@ -80,19 +80,20 @@ class EventRouter(
         async def get_by_user_roles(
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            event_state: Annotated[EventState | None, Query()] = None,
+            event_state: Annotated[
+                EventState | None, Query(description="Filter events by their state.")
+            ] = None,
+            past: bool | None = Query(
+                None,
+                description="Filter events by time. `True` for past events, `False` for "
+                "future events, `None` for all events.",
+            ),
         ) -> Any:
-            """
-            Get all events.
-
-            :param service: EventExtra Service.
-            :param user: UserLite who make this request.
-            :param event_state: event state of the event.
-
-            :return: List of EventDetail objects.
-            """
-            logger.info("User %s fetching events by roles (state=%s)", user.id, event_state)
-            events = await service.get_events_by_user_roles(user, event_state)
+            """Get events for the current user based on their roles and filters."""
+            logger.info(
+                "User %s fetching events by roles (state=%s, past=%s)", user.id, event_state, past
+            )
+            events = await service.get_events_by_user_roles(user, event_state, past)
             logger.debug("Fetched %d events for user %s", len(events), user.id)
             return events
 
