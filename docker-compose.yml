@@ -38,6 +38,8 @@ services:
       - ./reservation-app/.env:/usr/src/app/.env:ro
     ports:
       - "8000:8000"
+    environment:
+      DB__POSTGRES_SERVER: db
     networks:
       - internal
 

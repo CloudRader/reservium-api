@@ -206,7 +206,7 @@ def construct_body_context(
         "manager_email": reservation_service.contact_mail,
         "reservation_service": reservation_service.name,
         "reason": reason,
-        "club_name": settings.CLUB_NAME,
+        "club_name": settings.ORGANIZATION_NAME,
     }
 
     return context

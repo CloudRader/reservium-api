@@ -16,13 +16,13 @@ LOG_DEFAULT_FORMAT = (
 class RunConfig(BaseModel):
     """Config for running application."""
 
-    SERVER_HOST: str
-    SERVER_PORT: int
-    SERVER_USE_RELOAD: bool
-    SERVER_USE_PROXY_HEADERS: bool
-    USE_GUNICORN: bool
-    WORKERS: int
-    TIMEOUT: int
+    SERVER_HOST: str = "0.0.0.0"
+    SERVER_PORT: int = 8000
+    SERVER_USE_RELOAD: bool = False
+    SERVER_USE_PROXY_HEADERS: bool = False
+    USE_GUNICORN: bool = False
+    WORKERS: int = 1
+    TIMEOUT: int = 900
 
 
 class LoggingConfig(BaseModel):
@@ -75,12 +75,12 @@ class LoggingConfig(BaseModel):
 class DatabaseConfig(BaseModel):
     """Config for db."""
 
-    POSTGRES_SERVER: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
-    POSTGRES_PORT: int
-    SQLALCHEMY_SCHEME: str
+    POSTGRES_SERVER: str = "localhost"
+    POSTGRES_PORT: int = 5432
+    SQLALCHEMY_SCHEME: str = "postgresql+asyncpg"
 
     NAMING_CONVENTION: dict[str, str] = {
         "ix": "ix_%(column_0_label)s",
@@ -110,13 +110,13 @@ class MailConfig(BaseModel):
 
     USERNAME: str
     PASSWORD: str
-    PORT: int
-    SERVER: str
     FROM_NAME: str
-    TLS: bool
-    SSL: bool
-    USE_CREDENTIALS: bool
-    VALIDATE_CERTS: bool
+    PORT: int = 587
+    SERVER: str = "smtp.gmail.com"
+    TLS: bool = True
+    SSL: bool = True
+    USE_CREDENTIALS: bool = True
+    VALIDATE_CERTS: bool = True
 
 
 class KeycloakConfig(BaseModel):
@@ -140,28 +140,28 @@ class GoogleConfig(BaseModel):
 
     CLIENT_ID: str
     PROJECT_ID: str
-    AUTH_URI: str
-    TOKEN_URI: str
-    AUTH_PROVIDER_X509_CERT_URL: str
     CLIENT_SECRET: str
     REDIRECT_URIS: list[str]
     SCOPES: list[str]
+    AUTH_URI: str = "https://accounts.google.com/o/oauth2/auth"
+    TOKEN_URI: str = "https://oauth2.googleapis.com/token"
+    AUTH_PROVIDER_X509_CERT_URL: str = "https://www.googleapis.com/oauth2/v1/certs"
 
 
 class DormitoryAccessSystemConfig(BaseModel):
     """Config for dormitory access system."""
 
     API_KEY: str
-    API_URL: str
+    API_URL: str = "https://agata-new.suz.cvut.cz/pristupAPI/api.php"
 
 
 class Settings(BaseSettings):
     """Settings class."""
 
-    APP_NAME: str
-    CLUB_NAME: str
+    APP_NAME: str = "Reservation System"
+    ORGANIZATION_NAME: str = "Organization Name"
 
-    RUN: RunConfig
+    RUN: RunConfig = RunConfig()
     LOGGING: LoggingConfig = LoggingConfig()
     DB: DatabaseConfig
     MAIL: MailConfig

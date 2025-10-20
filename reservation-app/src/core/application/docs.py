@@ -6,9 +6,9 @@ from core.config import settings
 class FastApiDocs:
     """Information for fastapi documentation."""
 
-    NAME = f"Reservation System of the {settings.CLUB_NAME} Club"
+    NAME = f"Reservation System of the {settings.ORGANIZATION_NAME}"
     DESCRIPTION = (
-        f"Reservation System of the {settings.CLUB_NAME} Club API is "
+        f"Reservation System of the {settings.ORGANIZATION_NAME} API is "
         "a REST API that offers you an access to application!\n\n"
         "## Basic rules to follow\n"
         "- `POST`\n\n"
