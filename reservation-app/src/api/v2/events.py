@@ -27,7 +27,7 @@ from core.schemas import (
     UserLite,
 )
 from core.schemas.google_calendar import GoogleCalendarEventCreate
-from fastapi import APIRouter, Body, Depends, Path, Query, status
+from fastapi import APIRouter, BackgroundTasks, Body, Depends, Path, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
 from integrations.google import GoogleCalendarService
 from integrations.keycloak import KeycloakAuthService
@@ -104,6 +104,7 @@ class EventRouter(
             status_code=status.HTTP_201_CREATED,
         )
         async def create(
+            background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
             calendar_service: Annotated[CalendarService, Depends(CalendarService)],
             keycloak_service: Annotated[KeycloakAuthService, Depends(KeycloakAuthService)],
@@ -147,6 +148,7 @@ class EventRouter(
                 raise BaseAppError(message="Could not create event.")
 
             return await process_event_approval(
+                background_tasks,
                 service,
                 user,
                 calendar,
@@ -162,6 +164,7 @@ class EventRouter(
             status_code=status.HTTP_200_OK,
         )
         async def approve_time_change_request(
+            background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
             id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
@@ -203,6 +206,7 @@ class EventRouter(
                         "Request Update Reservation Time Has Been Declined",
                         manager_notes,
                     ),
+                    background_tasks,
                 )
             else:
                 logger.debug("Declining requested time change for event %s", id_)
@@ -234,6 +238,7 @@ class EventRouter(
                         "Request Update Reservation Time Has Been Approved",
                         manager_notes,
                     ),
+                    background_tasks,
                 )
 
                 await google_calendar_service.update_event(
@@ -250,6 +255,7 @@ class EventRouter(
             status_code=status.HTTP_200_OK,
         )
         async def update(
+            background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
             id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
@@ -277,6 +283,7 @@ class EventRouter(
                     "Update Reservation By Manager",
                     reason,
                 ),
+                background_tasks,
             )
 
             logger.debug("Event updated: %s", event)
@@ -289,6 +296,7 @@ class EventRouter(
             status_code=status.HTTP_200_OK,
         )
         async def request_time_change(
+            background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
             id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
@@ -313,6 +321,7 @@ class EventRouter(
                     "Request Update Reservation Time",
                     reason,
                 ),
+                background_tasks,
             )
 
             logger.debug("Time change request processed for event: %s", event)
@@ -325,6 +334,7 @@ class EventRouter(
             status_code=status.HTTP_200_OK,
         )
         async def approve_reservation(
+            background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
             id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
@@ -368,6 +378,7 @@ class EventRouter(
                         "Reservation Has Been Approved",
                         manager_notes,
                     ),
+                    background_tasks,
                 )
                 logger.debug("Reservation approved: %s", event)
             else:
@@ -381,6 +392,7 @@ class EventRouter(
                         "Reservation Has Been Declined",
                         manager_notes,
                     ),
+                    background_tasks,
                 )
                 logger.debug("Reservation declined: %s", event)
 
@@ -393,6 +405,7 @@ class EventRouter(
             status_code=status.HTTP_200_OK,
         )
         async def cancel(
+            background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
             id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
@@ -414,6 +427,7 @@ class EventRouter(
                     service,
                     event,
                     create_email_meta("cancel_reservation", "Cancel Reservation"),
+                    background_tasks,
                 )
             else:
                 await preparing_email(
@@ -424,6 +438,7 @@ class EventRouter(
                         "Cancel Reservation by Manager",
                         cancel_reason,
                     ),
+                    background_tasks,
                 )
 
             logger.debug("Event cancelled: %s", event)

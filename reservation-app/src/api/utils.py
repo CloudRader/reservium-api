@@ -8,6 +8,7 @@ from core.models import EventState
 from core.schemas import CalendarDetail, EventCreate, ReservationServiceDetail, UserLite
 from core.schemas.calendar import CalendarDetailWithCollisions
 from core.schemas.google_calendar import GoogleCalendarEventCreate
+from fastapi import BackgroundTasks
 from integrations.google import GoogleCalendarService
 from pytz import timezone
 from services import EventService
@@ -141,6 +142,7 @@ def control_available_reservation_time(start_datetime, end_datetime) -> bool:
 
 
 async def process_event_approval(
+    background_tasks: BackgroundTasks,
     service: EventService,
     user: UserLite,
     calendar: CalendarDetail,
@@ -154,6 +156,7 @@ async def process_event_approval(
     Creates the event in Google CalendarDetail and updates the local event state accordingly.
     Sends notification emails if the event is approved or not.
 
+    :param background_tasks: BackgroundTasks object used to run the email sending asynchronously.
     :param service: EventExtra service.
     :param user: UserLite who make this request.
     :param calendar: CalendarDetail object in db.
@@ -188,6 +191,7 @@ async def process_event_approval(
                 "confirm_reservation",
                 f"{reservation_service.name} Reservation Confirmation",
             ),
+            background_tasks,
         )
         return event_google_calendar
 
@@ -207,5 +211,6 @@ async def process_event_approval(
             service,
             event,
             create_email_meta("not_approve_night_time_reservation", event_summary),
+            background_tasks,
         )
     return {"message": event_summary}

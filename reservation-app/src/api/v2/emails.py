@@ -15,7 +15,7 @@ from core.schemas import (
     ReservationServiceLite,
     UserLite,
 )
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Depends, status
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from services import EmailService, EventService
@@ -46,6 +46,7 @@ async def send_registration_form(
     service: Annotated[EmailService, Depends(EmailService)],
     user: Annotated[UserLite, Depends(get_current_user)],
     registration_form: RegistrationFormCreate,
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Send email with PDF attachment with reservation request to dorm head's email address.
@@ -53,12 +54,13 @@ async def send_registration_form(
     :param service: Email service.
     :param user: UserLite who make this request.
     :param registration_form: RegistrationFormCreate schema.
+    :param background_tasks: BackgroundTasks object used to run the email sending asynchronously.
 
     :returns Dictionary: Confirming that the registration form has been sent.
     """
     email_create = service.prepare_registration_form(registration_form, user.full_name)
 
-    await send_email(email_create)
+    await send_email(email_create, background_tasks)
 
     if email_create.attachment and os.path.exists(email_create.attachment):
         os.remove(email_create.attachment)
@@ -66,7 +68,7 @@ async def send_registration_form(
     return {"message": "Registration form has been sent"}
 
 
-async def send_email(email_create: EmailCreate) -> Any:
+async def send_email(email_create: EmailCreate, background_tasks: BackgroundTasks) -> Any:
     """
     Send an email asynchronously.
 
@@ -74,6 +76,7 @@ async def send_email(email_create: EmailCreate) -> Any:
     sent in the background to avoid blocking the request-response cycle.
 
     :param email_create: Email Create schema.
+    :param background_tasks: BackgroundTasks object used to run the email sending asynchronously.
 
     :returns Dictionary: Confirming that the email has been sent.
     """
@@ -86,8 +89,7 @@ async def send_email(email_create: EmailCreate) -> Any:
     )
 
     fm = FastMail(email_connection)
-    # background_tasks.add_task(fm.send_message, message)
-    await fm.send_message(message)
+    background_tasks.add_task(fm.send_message, message)
 
     if email_create.attachment and os.path.exists(email_create.attachment):
         os.remove(email_create.attachment)
@@ -99,6 +101,7 @@ async def preparing_email(
     service_event: Annotated[EventService, Depends(EventService)],
     event: EventLite,
     email_meta: EmailMeta,
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Prepare and send both member and manager information emails based on an event.
@@ -106,6 +109,8 @@ async def preparing_email(
     :param service_event: EventExtra service to resolve event relationships.
     :param event: The EventExtra object in db.
     :param email_meta: Email metadata containing template name, subject and reason.
+    :param background_tasks: BackgroundTasks object used to run the email sending asynchronously.
+
     :return: Dictionary confirming the emails have been sent.
     """
     calendar = await service_event.get_calendar_of_this_event(event)
@@ -126,7 +131,7 @@ async def preparing_email(
     template_for_member = f"{email_meta.template_name}.txt"
     body = render_email_template(template_for_member, context)
     email_create = construct_email(str(event.email), email_meta.subject, body)
-    await send_email(email_create)
+    await send_email(email_create, background_tasks)
 
     # Mail for manager
     template_for_manager = f"{email_meta.template_name}_manager.txt"
@@ -137,7 +142,7 @@ async def preparing_email(
         email_subject,
         body,
     )
-    await send_email(email_create)
+    await send_email(email_create, background_tasks)
 
     return {"message": "Emails has been sent successfully"}
 

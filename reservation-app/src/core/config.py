@@ -114,7 +114,7 @@ class MailConfig(BaseModel):
     PORT: int = 587
     SERVER: str = "smtp.gmail.com"
     TLS: bool = True
-    SSL: bool = True
+    SSL: bool = False
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
 
