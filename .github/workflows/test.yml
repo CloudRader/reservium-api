@@ -44,7 +44,7 @@ jobs:
         run: |
           cd reservation-app
           chmod +x ./scripts/mypy.sh
-          ./scripts/mypy.sh
+          uv run ./scripts/mypy.sh
 
   ruff-check:
     name: Ruff Check
