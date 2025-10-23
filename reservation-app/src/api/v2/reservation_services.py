@@ -1,0 +1,209 @@
+"""API controllers for reservation services."""
+
+import logging
+from typing import Annotated, Any
+
+from api import get_current_user
+from api.api_base import BaseCRUDRouter
+from core.application.exceptions import (
+    ERROR_RESPONSES,
+    Entity,
+)
+from core.models.event import EventState
+from core.schemas import (
+    CalendarDetail,
+    MiniServiceDetail,
+    ReservationServiceCreate,
+    ReservationServiceDetail,
+    ReservationServiceUpdate,
+)
+from core.schemas.event import EventDetail
+from core.schemas.user import UserLite
+from fastapi import APIRouter, Depends, Path, Query, status
+from services import ReservationServiceService
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter()
+
+
+class ReservationServiceRouter(
+    BaseCRUDRouter[
+        ReservationServiceCreate,
+        ReservationServiceUpdate,
+        ReservationServiceDetail,
+        ReservationServiceDetail,
+        ReservationServiceService,
+    ]
+):
+    """
+    API router for managing Reservation Services.
+
+    This class extends `BaseCRUDRouter` to automatically register standard
+    CRUD routes for the `ReservationServices` entity and adds custom endpoints
+    specific to Reservation Services.
+    """
+
+    def __init__(self):
+        super().__init__(
+            router=router,
+            service_dep=ReservationServiceService,
+            schema_create=ReservationServiceCreate,
+            schema_update=ReservationServiceUpdate,
+            schema_lite=ReservationServiceDetail,
+            schema_detail=ReservationServiceDetail,
+            entity_name=Entity.RESERVATION_SERVICE,
+            enable_read_all=False,
+        )
+
+        @router.get(
+            "/public",
+            response_model=list[ReservationServiceDetail],
+            status_code=status.HTTP_200_OK,
+        )
+        async def get_public(
+            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+        ) -> Any:
+            """Get all public reservation services."""
+            logger.info("Fetching public reservation services")
+            reservation_services = await service.get_public_services()
+            logger.debug("Fetched %d reservation services", len(reservation_services))
+            return reservation_services
+
+        @router.get(
+            "/",
+            response_model=list[ReservationServiceDetail],
+            responses=ERROR_RESPONSES["401_403"],
+            status_code=status.HTTP_200_OK,
+        )
+        async def get_reservation_services(
+            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            user: Annotated[UserLite, Depends(get_current_user)],
+            include_removed: bool = Query(False, description="Include `removed objects` or not."),
+        ) -> Any:
+            """
+            Retrieve available reservation services.
+
+            - If the requesting user is an **active member**, all reservation services are returned.
+            - If the user is **not an active member**, public reservation services are returned.
+            """
+            logger.info("Fetching reservation services (include_removed=%s)", include_removed)
+            if user.active_member:
+                if include_removed:
+                    reservation_services = await service.get_all_services_include_all_removed()
+                else:
+                    reservation_services = await service.get_all(include_removed)
+            else:
+                reservation_services = await service.get_public_services()
+            logger.debug("Fetched %d reservation services", len(reservation_services))
+            return reservation_services
+
+        self.register_routes()
+
+        @router.get(
+            "/name/{name}",
+            response_model=ReservationServiceDetail,
+            responses=ERROR_RESPONSES["404"],
+            status_code=status.HTTP_200_OK,
+        )
+        async def get_by_name(
+            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            name: Annotated[str, Path()],
+            include_removed: bool = Query(False, description="Include `removed object` or not."),
+        ) -> Any:
+            """Get reservation services by its name."""
+            logger.debug(
+                "Request received: get_by_name(name=%s, include_removed=%s)",
+                name,
+                include_removed,
+            )
+            reservation_service = await service.get_by_name(name, include_removed)
+            logger.debug("Fetched reservation service: %s", reservation_service)
+            return reservation_service
+
+        @router.get(
+            "/alias/{alias}",
+            response_model=ReservationServiceDetail,
+            responses=ERROR_RESPONSES["404"],
+            status_code=status.HTTP_200_OK,
+        )
+        async def get_by_alias(
+            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            alias: Annotated[str, Path()],
+            include_removed: bool = Query(False, description="Include `removed object` or not."),
+        ) -> Any:
+            """Get reservation services by its alias."""
+            logger.debug(
+                "Request received: get_by_alias(alias=%s, include_removed=%s)",
+                alias,
+                include_removed,
+            )
+            reservation_service = await service.get_by_alias(alias, include_removed)
+            logger.debug("Fetched reservation service: %s", reservation_service)
+            return reservation_service
+
+        @router.get(
+            "/{id}/calendars",
+            response_model=list[CalendarDetail],
+            responses=ERROR_RESPONSES["404"],
+            status_code=status.HTTP_200_OK,
+        )
+        async def get_calendars_by_reservation_service(
+            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
+            include_removed: bool = Query(False, description="Include `removed object` or not."),
+        ) -> Any:
+            """Get all calendars linked to a reservation service."""
+            logger.info(
+                "Fetching all calendars for reservation service (id=%s, include_removed=%s)",
+                id_,
+                include_removed,
+            )
+            calendars = await service.get_calendars_by_id(id_, include_removed)
+            logger.debug("Fetched %d calendars", len(calendars))
+            return calendars
+
+        @router.get(
+            "/{id}/mini-services",
+            response_model=list[MiniServiceDetail],
+            responses=ERROR_RESPONSES["404"],
+            status_code=status.HTTP_200_OK,
+        )
+        async def get_mini_services_by_reservation_service(
+            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
+            include_removed: bool = Query(False, description="Include `removed object` or not."),
+        ) -> Any:
+            """Get all mini services linked to a reservation service."""
+            logger.info(
+                "Fetching all mini services for reservation service (id=%s, include_removed=%s)",
+                id_,
+                include_removed,
+            )
+            mini_services = await service.get_mini_services_by_id(id_, include_removed)
+            logger.debug("Fetched %d mini services", len(mini_services))
+            return mini_services
+
+        @router.get(
+            "/{id}/events",
+            response_model=list[EventDetail],
+            responses=ERROR_RESPONSES["404"],
+            status_code=status.HTTP_200_OK,
+        )
+        async def get_events_by_reservation_service(
+            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
+            event_state: Annotated[EventState | None, Query()] = None,
+        ) -> Any:
+            """Get all events linked to a reservation service."""
+            logger.info(
+                "Fetching all events for reservation service (id=%s, event_state=%s)",
+                id_,
+                event_state,
+            )
+            events = await service.get_events_by_id(id_, event_state)
+            logger.debug("Fetched %d events", len(events))
+            return events
+
+
+ReservationServiceRouter()
