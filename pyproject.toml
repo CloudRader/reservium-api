@@ -1,47 +1,47 @@
 [project]
-name = "buk-reservation"
-version = "0.1.0"
-description = "Reservation System of the Buben Club"
+name = "reservium-api"
+version = "2.0.0"
+description = "Reservium: a ready to go reservation system"
 authors = [{ name = "Artem Kuznetsov", email = "artyom.20century@gmail.com" }]
 requires-python = "~=3.12.0"
 dependencies = [
-    "fastapi>=0.116.1",
-    "uvicorn[standard]>=0.35",
-    "pydantic[email]>=2.11.5",
-    "pydantic-settings>=2.9.1",
-    "sqlalchemy[asyncio]>=2.0.41",
-    "asyncpg>=0.30.0",
-    "pytz~=2025.2",
-    "alembic>=1.16.4",
-    "sqlalchemy-easy-softdelete>=0.8.3",
-    "fastapi-mail>=1.5.0",
-    "itsdangerous>=2.2.0",
-    "requests-oauthlib>=2.0.0",
-    "pypdf>=5.8.0",
-    "httpx>=0.28.1",
-    "google-auth>=2.40.2",
-    "google-auth-oauthlib>=1.2.2",
-    "google-api-python-client>=2.177.0",
-    "python-dateutil>=2.9.0.post0",
-    "orjson>=3.11.1",
-    "gunicorn>=23.0.0",
-    "aiohttp>=3.12.15",
-    "python-keycloak>=5.8.1",
-    "jwcrypto>=1.5.6",
-    "authzed>=1.22.1",
+    "fastapi==0.116.1",
+    "uvicorn[standard]==0.35",
+    "pydantic[email]==2.11.7",
+    "pydantic-settings==2.10.1",
+    "sqlalchemy[asyncio]==2.0.41",
+    "asyncpg==0.30.0",
+    "pytz==2025.2",
+    "alembic==1.16.4",
+    "sqlalchemy-easy-softdelete==0.8.3",
+    "fastapi-mail==1.5.0",
+    "itsdangerous==2.2.0",
+    "requests-oauthlib==2.0.0",
+    "pypdf==5.8.0",
+    "httpx==0.28.1",
+    "google-auth==2.40.3",
+    "google-auth-oauthlib==1.2.2",
+    "google-api-python-client==2.177.0",
+    "python-dateutil==2.9.0.post0",
+    "orjson==3.11.1",
+    "gunicorn==23.0.0",
+    "aiohttp==3.12.15",
+    "python-keycloak==5.8.1",
+    "jwcrypto==1.5.6",
+    "authzed==1.22.1",
 ]
 
 [dependency-groups]
 dev = [
-    "pytest>=8.2.0",
-    "pytest-asyncio>=1.1.0",
-    "pytest-cov>=6.2.1",
-    "mypy>=1.10.0",
-    "testcontainers>=4.10.0",
-    "types-pytz>=2025.2.0.20250516",
-    "types-python-dateutil>=2.9.0.20250516",
-    "black>=25.1.0",
-    "ruff>=0.12.5",
+    "pytest==8.4.1",
+    "pytest-asyncio==1.1.0",
+    "pytest-cov==6.2.1",
+    "mypy==1.17.0",
+    "testcontainers==4.12.0",
+    "types-pytz==2025.2.0.20250516",
+    "types-python-dateutil==2.9.0.20250708",
+    "black==25.1.0",
+    "ruff==0.12.5",
 ]
 
 [tool.uv]

@@ -193,91 +193,6 @@ wheels = [
 ]
 
 [[package]]
-name = "buk-reservation"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "aiohttp" },
-    { name = "alembic" },
-    { name = "asyncpg" },
-    { name = "authzed" },
-    { name = "fastapi" },
-    { name = "fastapi-mail" },
-    { name = "google-api-python-client" },
-    { name = "google-auth" },
-    { name = "google-auth-oauthlib" },
-    { name = "gunicorn" },
-    { name = "httpx" },
-    { name = "itsdangerous" },
-    { name = "jwcrypto" },
-    { name = "orjson" },
-    { name = "pydantic", extra = ["email"] },
-    { name = "pydantic-settings" },
-    { name = "pypdf" },
-    { name = "python-dateutil" },
-    { name = "python-keycloak" },
-    { name = "pytz" },
-    { name = "requests-oauthlib" },
-    { name = "sqlalchemy", extra = ["asyncio"] },
-    { name = "sqlalchemy-easy-softdelete" },
-    { name = "uvicorn", extra = ["standard"] },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "black" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-    { name = "testcontainers" },
-    { name = "types-python-dateutil" },
-    { name = "types-pytz" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aiohttp", specifier = ">=3.12.15" },
-    { name = "alembic", specifier = ">=1.16.4" },
-    { name = "asyncpg", specifier = ">=0.30.0" },
-    { name = "authzed", specifier = ">=1.22.1" },
-    { name = "fastapi", specifier = ">=0.116.1" },
-    { name = "fastapi-mail", specifier = ">=1.5.0" },
-    { name = "google-api-python-client", specifier = ">=2.177.0" },
-    { name = "google-auth", specifier = ">=2.40.2" },
-    { name = "google-auth-oauthlib", specifier = ">=1.2.2" },
-    { name = "gunicorn", specifier = ">=23.0.0" },
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "itsdangerous", specifier = ">=2.2.0" },
-    { name = "jwcrypto", specifier = ">=1.5.6" },
-    { name = "orjson", specifier = ">=3.11.1" },
-    { name = "pydantic", extras = ["email"], specifier = ">=2.11.5" },
-    { name = "pydantic-settings", specifier = ">=2.9.1" },
-    { name = "pypdf", specifier = ">=5.8.0" },
-    { name = "python-dateutil", specifier = ">=2.9.0.post0" },
-    { name = "python-keycloak", specifier = ">=5.8.1" },
-    { name = "pytz", specifier = "~=2025.2" },
-    { name = "requests-oauthlib", specifier = ">=2.0.0" },
-    { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.41" },
-    { name = "sqlalchemy-easy-softdelete", specifier = ">=0.8.3" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.35" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "black", specifier = ">=25.1.0" },
-    { name = "mypy", specifier = ">=1.10.0" },
-    { name = "pytest", specifier = ">=8.2.0" },
-    { name = "pytest-asyncio", specifier = ">=1.1.0" },
-    { name = "pytest-cov", specifier = ">=6.2.1" },
-    { name = "ruff", specifier = ">=0.12.5" },
-    { name = "testcontainers", specifier = ">=4.10.0" },
-    { name = "types-python-dateutil", specifier = ">=2.9.0.20250516" },
-    { name = "types-pytz", specifier = ">=2025.2.0.20250516" },
-]
-
-[[package]]
 name = "cachetools"
 version = "5.5.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1334,6 +1249,91 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f3/61/d7545dafb7ac2230c70d38d31cbfe4cc64f7144dc41f6e4e4b78ecd9f5bb/requests-toolbelt-1.0.0.tar.gz", hash = "sha256:7681a0a3d047012b5bdc0ee37d7f8f07ebe76ab08caeccfc3921ce23c88d5bc6", size = 206888, upload-time = "2023-05-01T04:11:33.229Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/3f/51/d4db610ef29373b879047326cbf6fa98b6c1969d6f6dc423279de2b1be2c/requests_toolbelt-1.0.0-py2.py3-none-any.whl", hash = "sha256:cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06", size = 54481, upload-time = "2023-05-01T04:11:28.427Z" },
+]
+
+[[package]]
+name = "reservium-api"
+version = "2.0.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "aiohttp" },
+    { name = "alembic" },
+    { name = "asyncpg" },
+    { name = "authzed" },
+    { name = "fastapi" },
+    { name = "fastapi-mail" },
+    { name = "google-api-python-client" },
+    { name = "google-auth" },
+    { name = "google-auth-oauthlib" },
+    { name = "gunicorn" },
+    { name = "httpx" },
+    { name = "itsdangerous" },
+    { name = "jwcrypto" },
+    { name = "orjson" },
+    { name = "pydantic", extra = ["email"] },
+    { name = "pydantic-settings" },
+    { name = "pypdf" },
+    { name = "python-dateutil" },
+    { name = "python-keycloak" },
+    { name = "pytz" },
+    { name = "requests-oauthlib" },
+    { name = "sqlalchemy", extra = ["asyncio"] },
+    { name = "sqlalchemy-easy-softdelete" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "black" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+    { name = "testcontainers" },
+    { name = "types-python-dateutil" },
+    { name = "types-pytz" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aiohttp", specifier = "==3.12.15" },
+    { name = "alembic", specifier = "==1.16.4" },
+    { name = "asyncpg", specifier = "==0.30.0" },
+    { name = "authzed", specifier = "==1.22.1" },
+    { name = "fastapi", specifier = "==0.116.1" },
+    { name = "fastapi-mail", specifier = "==1.5.0" },
+    { name = "google-api-python-client", specifier = "==2.177.0" },
+    { name = "google-auth", specifier = "==2.40.3" },
+    { name = "google-auth-oauthlib", specifier = "==1.2.2" },
+    { name = "gunicorn", specifier = "==23.0.0" },
+    { name = "httpx", specifier = "==0.28.1" },
+    { name = "itsdangerous", specifier = "==2.2.0" },
+    { name = "jwcrypto", specifier = "==1.5.6" },
+    { name = "orjson", specifier = "==3.11.1" },
+    { name = "pydantic", extras = ["email"], specifier = "==2.11.7" },
+    { name = "pydantic-settings", specifier = "==2.10.1" },
+    { name = "pypdf", specifier = "==5.8.0" },
+    { name = "python-dateutil", specifier = "==2.9.0.post0" },
+    { name = "python-keycloak", specifier = "==5.8.1" },
+    { name = "pytz", specifier = "==2025.2" },
+    { name = "requests-oauthlib", specifier = "==2.0.0" },
+    { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.0.41" },
+    { name = "sqlalchemy-easy-softdelete", specifier = "==0.8.3" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.35" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "black", specifier = "==25.1.0" },
+    { name = "mypy", specifier = "==1.17.0" },
+    { name = "pytest", specifier = "==8.4.1" },
+    { name = "pytest-asyncio", specifier = "==1.1.0" },
+    { name = "pytest-cov", specifier = "==6.2.1" },
+    { name = "ruff", specifier = "==0.12.5" },
+    { name = "testcontainers", specifier = "==4.12.0" },
+    { name = "types-python-dateutil", specifier = "==2.9.0.20250708" },
+    { name = "types-pytz", specifier = "==2025.2.0.20250516" },
 ]
 
 [[package]]
