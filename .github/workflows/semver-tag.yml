@@ -53,7 +53,7 @@ jobs:
               patch) PATCH=$((PATCH+1)) ;;
             esac
 
-            NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+            NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
           fi
 
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
