@@ -29,6 +29,6 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t $IMAGE_NAME:$VERSION -t $IMAGE_NAME:$VERSION_TAG -t $IMAGE_NAME:$GIT_TAG .
-          docker push $IMAGE_NAME:$VERSION
+          docker build -t $IMAGE_NAME:$VERSION -t $IMAGE_NAME:$VERSION_LATEST -t $IMAGE_NAME:$VERSION_TAG .
+          docker push $IMAGE_NAME:$VERSION_LATEST
           docker push $IMAGE_NAME:$VERSION_TAG
