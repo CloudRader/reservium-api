@@ -10,8 +10,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any
 
-from core.schemas import EmailCreate, RegistrationFormCreate, UserLite
 from core import settings
+from core.schemas import EmailCreate, RegistrationFormCreate, UserLite
 from pypdf import PdfReader, PdfWriter
 
 
@@ -96,7 +96,8 @@ class EmailService(AbstractEmailService):
                 f"Request to reserve an event for a member {full_name}.\n\n"
                 "If you reserve less than 5 days in advance, your reservation may not be reviewed. "
                 "Please take note of this.\n\n"
-                "If your reservation is approved by the head of the dormitory (you will receive a reply to this email), "
+                "If your reservation is approved by the head of the dormitory "
+                "(you will receive a reply to this email), "
                 "please go to the reception to sign the reservation form. "
                 "If you do not do so, your reservation will not be valid.\n\n"
                 "With appreciation,\n"
