@@ -273,7 +273,12 @@ class EventRouter(
             event = await service.update_with_permission_checks(id_, event_update, user)
 
             event_to_update = await google_calendar_service.get_event(event.calendar_id, event.id)
+
             event_to_update.description = service._description_of_event(user, event)
+            prague = timezone("Europe/Prague")
+            event_to_update.start.date_time = prague.localize(event.reservation_start).isoformat()
+            event_to_update.end.date_time = prague.localize(event.reservation_end).isoformat()
+
             await google_calendar_service.update_event(event.calendar_id, event.id, event_to_update)
 
             await preparing_email(

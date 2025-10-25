@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import Any
 
 from core.schemas import EmailCreate, RegistrationFormCreate, UserLite
+from core import settings
 from pypdf import PdfReader, PdfWriter
 
 
@@ -83,10 +84,24 @@ class EmailService(AbstractEmailService):
         with open(output_path, "wb") as output_pdf:
             writer.write(output_pdf)
 
+        emails = [registration_form.email, registration_form.manager_contact_mail]
+
+        if settings.MAIL.SENT_DORMITORY_HEAD:
+            emails.append(settings.MAIL.DORMITORY_HEAD_EMAIL)
+
         email_create = EmailCreate(
-            email=[registration_form.email, registration_form.manager_contact_mail],
-            subject="EventExtra Registration",
-            body=(f"Request to reserve an event for a member {full_name}"),
+            email=emails,
+            subject="Event Registration Form for Approval",
+            body=(
+                f"Request to reserve an event for a member {full_name}.\n\n"
+                "If you reserve less than 5 days in advance, your reservation may not be reviewed. "
+                "Please take note of this.\n\n"
+                "If your reservation is approved by the head of the dormitory (you will receive a reply to this email), "
+                "please go to the reception to sign the reservation form. "
+                "If you do not do so, your reservation will not be valid.\n\n"
+                "With appreciation,\n"
+                f"Your {settings.ORGANIZATION_NAME} Team"
+            ),
             attachment=output_path,
         )
 

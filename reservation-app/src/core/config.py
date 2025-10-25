@@ -117,6 +117,8 @@ class MailConfig(BaseModel):
     SSL: bool = False
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
+    SENT_DORMITORY_HEAD: bool = False
+    DORMITORY_HEAD_EMAIL: str = ""
 
 
 class KeycloakConfig(BaseModel):
