@@ -1,0 +1,34 @@
+name: Docker Build and Push
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Set image tags
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "IMAGE_NAME=${{ secrets.DOCKER_HUB_USER }}/reservium-api" >> $GITHUB_ENV
+          echo "VERSION_LATEST=latest" >> $GITHUB_ENV
+          echo "VERSION_TAG=$TAG_NAME" >> $GITHUB_ENV
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t $IMAGE_NAME:$VERSION -t $IMAGE_NAME:$VERSION_TAG -t $IMAGE_NAME:$GIT_TAG .
+          docker push $IMAGE_NAME:$VERSION
+          docker push $IMAGE_NAME:$VERSION_TAG

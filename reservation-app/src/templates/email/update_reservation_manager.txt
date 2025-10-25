@@ -1,0 +1,36 @@
+📧 Reservation Updated by Manager
+
+A reservation has been modified by {{ user_name }}.
+Please review the updated information and the reason for this change below.
+
+📝 Reason for Update:
+{{ reason }}
+
+🔖 Updated Reservation Details:
+
+📌 Reservation Service:
+{{ reservation_service }}
+
+📅 Reservation Type:
+{{ reservation_type }}
+
+🕒 Time:
+{{ start_time }} – {{ end_time }}
+
+📝 Description:
+Name: {{ user_name }}
+Participants: {{ event_guests }}
+Purpose: {{ event_purpose }}
+
+Additionals: {{ additionals }}
+
+
+📝 Manager Notes:
+{{ reason }}
+
+🔔 Action Required:
+	•	This update was made by {{ user_name }}.
+	•	Please ensure that the updated reservation time does not conflict with other events or cause operational issues.
+
+With coordination,
+Your Club {{ club_name }} Reservation System

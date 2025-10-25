@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
-set -e # stop script execution after failure of any command
+set -e  # Exit on first error
 
-env_file_path="environment-dev.yml"
-lock_file_path="conda-lock.yml"
+# Optional: explicitly create the virtual environment in `.venv`
+uv venv .venv
 
-conda-lock -f $env_file_path --lockfile $lock_file_path --platform=linux-aarch64
+# Activate virtual environment
+source .venv/bin/activate
+
+# Lock dependencies (update uv.lock from pyproject.toml)
+uv pip compile pyproject.toml --output-file=uv.lock
+
+# Sync the virtual environment with the lock file
+uv sync
+
+echo "Environment ready using uv and uv.lock"

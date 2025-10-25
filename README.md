@@ -1,90 +1,210 @@
-# Buk Reservation System
+# BUK Reservation System
 
+## Overview
 
-## Description of web application
+**BUK Reservation System** is a web-based application designed to automate and streamline room reservations for the **Buben Student Club**. It simplifies the booking process for both users and managers by integrating with the club's internal information system (**IS.BUK**) and Google Calendar. This allows automatic user data retrieval and real-time calendar synchronization.
 
-This is a reservation system that allows you to reserve a club room from the **Buben Student Club**. It automates the reservation process and simplifies the process for both the manager and the reservationist. The application communicates with the student information system IS, which takes the data needed for booking about users and adds the created event to Google calendar.
+* **Production API documentation**: [api.reservation.buk.cvut.cz/docs](https://api.reservation.buk.cvut.cz/docs)
+* **Development API documentation**: [api.develop.reservation.buk.cvut.cz/docs](https://api.develop.reservation.buk.cvut.cz/docs)
 
-The basic framework I used is FastAPI for building APIs with Python based on standard Python type hints. My app is only backend, the fronend which is also used on our server is written by my colleague from the club. His repository can be found at this [link](https://github.com/daniilk11/react-reservation-system).
+---
 
-All the dependencies I use are in the environment-dev.yml file.
+## Running the Application Locally 🛫
 
-## Documentation on my app can be found on this link https://rezervace.buk.cvut.cz:8000/docs#
+### 1. Environment Configuration
 
+First, create and configure a `.env.secret` file inside the `app/` directory. Below is an example with test credentials:
 
-## How to run the application 🛫
+```ini
+SECRET_KEY=ee8f822eeb5166d09ffc55b43c4a1d55c4a7725df56d540789b5fd0f2ffbdb07
+DORMITORY_ACCESS_SYSTEM_API_KEY=E73C6B0794A6E69BD125CFAF98327BFBF6719A1E9BD87F2A4D1ACB41F9E45F30
 
+CLIENT_ID=**YOUR_CLIENT_ID**
+CLIENT_SECRET=**YOUR_CLIENT_SECRET**
+REDIRECT_URI=https://**YOUR_PUBLIC_IP**:8000/users/callback
 
-### Run using our **server**
-A container with the actual application code is running on the club's server.
-Other ways to run it are problematic because you need to authorize your specific IP so you can run the code on your localhost, keep in mind, you must be logged in to IS to use our reservation app.
+IS_SCOPES=http://is.buk.dev.buk.cvut.cz:3000/api/v1
+IS_OAUTH_TOKEN=http://is.buk.dev.buk.cvut.cz:3000/oauth/token
+IS_OAUTH=http://is.buk.dev.buk.cvut.cz:3000/oauth
 
-> 1) go to https://rezervace.buk.cvut.cz:80
-> 2) enjoy the app ✨ 
+GOOGLE_SCOPES=https://www.googleapis.com/auth/calendar
+GOOGLE_CLIENT_ID=932482201036-gqfrbee9mk3rqd4ntb2v3sm11hnd2ii4.apps.googleusercontent.com
+GOOGLE_PROJECT_ID=reservationsystemdevbuk
+GOOGLE_CLIENT_SECRET=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
 
-
-### Run using **docker**
-Unfortunately it is possible only if you are registered on IS, also your IP address is added to the authorized applications there and you you're inside our network.
-
-> 1) run `$ docker compose up`
-> 2) after docker compose finishes and runs up containers, go to https://{your IP address}:8000/
-> 3) enjoy the app ✨ 
-> 4) run `$ docker compose exec backend bash`
-> 5) run `$ source /venv/bin/activate` to activate virtual environment
-> 6) run `$ cd app/`
-> 7) run `$ ./scripts/run_tests.sh` to run tests.
-> 8) run `$ ./scripts/pylint.sh` to run pylinter.
-> 9) run `$ ./scripts/mypy.sh` to run mypy.
-
-
-### Run using **conda** 🐍:
-Unfortunately it is possible only if you are registered on IS, also your IP address is added to the authorized applications there and you you're inside our network.
-
-Installing conda:
-
-> 1) Follow official installation guide  https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
-> 2) It is recommended to install Miniconda, because it will take less disk space.
-
-Running using conda:
-
-> 1) using conda install conda-lock package, running `$ conda install conda-lock` 
-> 2) in the project root run `$ ./scripts/create_or_update_env.sh` to create buk-reservation environment to run the
-     application
-> 3) run `$ conda activate buk-reservation` to activate new installed environment
-> 4) run `$ docker compose up db` to run postgresql database
-> 5) run `$ cd app/app/` and then `$ python -m main` to start application
-> 6) go to https://{your IP address}:8000/ and enjoy the app ✨
-> 7) run `$ cd ../` and then `$ ./scripts/run_tests.sh -c` to run tests with coverage.
-> 8) run `$ ./scripts/pylint.sh` to run pylinter.
-> 9) run `$ ./scripts/mypy.sh` to run mypy.
-
-
-## Pylint
-
-I use pylint to check quality of my code. There is a script to run pylint on the whole codebase.
-To run it just run the script:
-
-```shell
- $ cd app/
- $ ./scripts/pylint.sh
+MAIL_USERNAME=develop@buk.cvut.cz
+MAIL_PASSWORD=bxmeypdhtjocmweb
 ```
 
-## Mypy
+Next, create a `token.json` file inside `app/app/` with a test token:
 
-I use mypy as static type checker for Python. There is a script to run mypy on the whole codebase.
-To run it just run the script:
-
-```shell
- $ cd app/
- $ ./scripts/mypy.sh
+```json
+{
+  "token": "...",
+  "refresh_token": "...",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "client_id": "...",
+  "client_secret": "...",
+  "scopes": ["https://www.googleapis.com/auth/calendar"],
+  "expiry": "2025-05-12T11:10:23.924400Z"
+}
 ```
 
-## Pytest
+> This token will be automatically refreshed. It must be present initially to start the app.
 
-I use pytest as testing framework. There is a script to run pytest on the whole codebase.
-To run it just run the script:
+---
 
-```shell
- $ cd app/
- $ ./scripts/run_tests.sh
+### 2. Obtaining OAuth Credentials from IS.BUK
+
+To retrieve your `CLIENT_ID`, `CLIENT_SECRET`, and `REDIRECT_URI`:
+
+1. Go to [IS.BUK Dev](http://is.buk.dev.buk.cvut.cz:3000)
+2. Log in with the test user:
+   `Username`: `test.head`
+   `Password`: `testheadbuk`
+3. Navigate to: **System → OAuth API applications**
+4. Create a new application:
+
+   * **Name**: Any identifiable name
+   * **Callback URL**: `https://<your-public-ip>:8000/users/callback`
+   * **Manager**: Assign `test.head`
+5. After creation, you will receive your `CLIENT_ID` and `CLIENT_SECRET`.
+
+> ⚠️ **Make sure your IP is public and accessible**, as IS.BUK must be able to send callbacks to it.
+
+---
+
+### 3. Local SSL Configuration (for development only)
+
+In `app/app/main.py`, enable SSL for local testing by:
+
+```python
+# Add to the top of the file
+import os
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+# Uncomment these lines at the bottom 
+ssl_keyfile="certification/key.pem",
+ssl_certfile="certification/cert.pem"
 ```
+
+---
+
+### 4. Running the Application with Docker
+
+1. Start the containers:
+
+```bash
+docker compose up -d
+```
+
+2. Open a shell inside the backend container:
+
+```bash
+docker compose exec backend bash
+```
+
+3. Inside the container:
+
+```bash
+source /venv/bin/activate
+cd app/
+alembic upgrade head  # Run latest DB migrations
+```
+
+4. Optional scripts:
+
+```bash
+./scripts/run_tests.sh     # Run tests
+./scripts/pylint.sh        # Run Pylint
+./scripts/mypy.sh          # Run MyPy
+```
+
+> ⚠️ **These scripts may not run properly inside the container. It’s recommended to execute them locally.**
+> 
+> If you previously uncommented any code for container testing, left it uncommenting.
+
+---
+
+## API Testing
+
+To test the API:
+
+1. Visit: `https://<your-public-ip>:8000/docs`
+2. Authenticate using the test endpoint:
+
+```http
+POST /users/login_dev
+```
+
+Use one of the following test accounts:
+
+| Username       | Password         | Role Description                               |
+| -------------- | ---------------- | ---------------------------------------------- |
+| `test.user`    | `testuserbuk`    | Regular user                                   |
+| `test.manager` | `testmanagerbuk` | User with manager-level permissions            |
+| `test.active`  | `testactivebuk`  | Active member with extended privileges         |
+| `test.head`    | `testheadbuk`    | Superuser with access to all IS.BUK operations |
+
+After login, revisit the `/docs` page to use the API with proper authorization headers.
+
+> 🚨 If SSL-related issues occur locally, try using `http://` instead of `https://`.
+
+---
+
+## Testing with Frontend UI
+
+* Development frontend: [develop.reservation.buk.cvut.cz](https://develop.reservation.buk.cvut.cz)
+* Development backend API: [api.develop.reservation.buk.cvut.cz/docs](https://api.develop.reservation.buk.cvut.cz/docs)
+
+You can log in using test users listed above.
+
+> ⚠️ Note: The local database is independent from the development server's database. Test data does not sync across environments.
+
+* Production frontend: [reservation.buk.cvut.cz](https://reservation.buk.cvut.cz)
+* Production backend API: [api.reservation.buk.cvut.cz/docs](https://api.reservation.buk.cvut.cz/docs)
+
+> ⚠️ You must be a registered club member with a real IS.BUK account to use the production system.
+
+---
+
+## Code Quality Tools
+
+### ✉️ Pylint
+
+Run static code quality checks:
+
+```bash
+chmod -x ./scripts/pylint.sh  # Optional: remove executable bit
+./scripts/pylint.sh
+```
+
+### 💡 MyPy
+
+Run type checks:
+
+```bash
+chmod -x ./scripts/mypy.sh  # Optional
+./scripts/mypy.sh
+```
+
+### ✅ Pytest
+
+Run the test suite:
+
+```bash
+chmod -x ./scripts/run_tests.sh  # Optional
+./scripts/run_tests.sh
+```
+
+---
+
+## Notes
+
+* The application uses **FastAPI** and **PostgreSQL**.
+* Testcontainers are used for isolated database testing.
+* All Docker services are defined in `docker-compose.yml`.
+* SSL certificates are configured in `certification/`, used only for local development.
+
+---
+
