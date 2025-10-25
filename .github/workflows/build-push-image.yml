@@ -2,8 +2,10 @@ name: Docker Build and Push
 
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - main
+#    tags:
+#      - '*'
 
 jobs:
   build-and-push-image:
