@@ -1,17 +1,18 @@
 name: Docker Build and Push
 
 on:
-  push:
-    branches:
-      - main
-#    tags:
-#      - '*'
+  workflow_run:
+    workflows: ["SemVer Tag"]
+    types:
+      - completed
 
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -24,10 +25,11 @@ jobs:
 
       - name: Set image tags
         run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
           echo "IMAGE_NAME=${{ secrets.DOCKER_HUB_USER }}/reservium-api" >> $GITHUB_ENV
           echo "VERSION_LATEST=latest" >> $GITHUB_ENV
-          echo "VERSION_TAG=v2.0.0" >> $GITHUB_ENV
+          echo "VERSION_TAG=$LATEST_TAG" >> $GITHUB_ENV
 
       - name: Build and push Docker image
         run: |
