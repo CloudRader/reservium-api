@@ -3,6 +3,6 @@
   "extends": [
     "config:recommended"
   ]
-  "baseBranches": ["devel"],
+  "baseBranches": ["develop"],
   "prConcurrentLimit": 5
 }
