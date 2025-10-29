@@ -41,4 +41,9 @@ fi
 # get additional args
 mypy_args+=("$@")
 
-mypy "${mypy_args[@]}"
+if [ ! -f "mypy.toml" ]; then
+  echo "⚠️  mypy.toml not found, using default config."
+  mypy "${mypy_args[@]}"
+else
+  mypy --config-file mypy.toml "${mypy_args[@]}"
+fi

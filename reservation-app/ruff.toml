@@ -1,0 +1,34 @@
+line-length = 100
+exclude = [".venv"]
+src = ["reservation-app"]
+
+[lint]
+select = [
+    "A",   # flake8-builtins (e.g. shadowing built-in names)
+    "AIR", # Airflow‑specific rule set
+    "ARG", # flake8-unused-arguments
+    "B",   # flake8-bugbear (bug-prone patterns)
+    "BLE", # flake8-blind-except — disallow overly broad exception catching (e.g. bare `except:`)
+    "C90", # mccabe complexity
+    "COM", # flake8-commas (e.g. trailing commas)
+    "D",   # pydocstyle (docstring conventions)
+    "E",   # pycodestyle errors
+    "EXE", # flake8-executable — check file executability and shebang correctness
+    "F",   # pyflakes (undefined names, etc.)
+    "FLY", # flynt (string formatting suggestions)
+    "I",   # isort (import sorting)
+    "ICN", # flake8-import-conventions — enforce import naming conventions
+    "N",   # pep8-naming
+    "PD",  # pandas‑vet (pandas-specific patterns)
+    "SIM", # flake8-simplify — simplify redundant code structures
+    "UP",  # pyupgrade (modern Python syntax)
+    "TC",  # flake8‑type‑checking
+    "W",   # pycodestyle warnings
+]
+ignore = ["COM812", "D102", "D107", "D203", "D212"]
+exclude = ["src/migrations/versions/*"]
+
+[format]
+quote-style = "double"
+line-ending = "auto"
+indent-style = "space"

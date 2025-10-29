@@ -1,0 +1,19 @@
+[tool.mypy]
+files = ["src", "tests"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "src.core.models.soft_delete_mixin"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "src.api.api_base"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "src.api.permissions"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "requests"
+ignore_missing_imports = true
