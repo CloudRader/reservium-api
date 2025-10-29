@@ -36,6 +36,7 @@ while getopts "crf:" opt; do
 done
 
 cd tests
+
 if [ $GENERATE_COVERAGE_REPORT -eq 1 ]; then
   if [ $USE_FAIL_UNDER -eq 1 ]; then
     pytest --cov=$src_dir --cov-report=term --cov-branch --cov-report=html:coverage --cov-report=xml:coverage.xml --cov-fail-under="$COVERAGE_LIMIT_PERCENTAGE"

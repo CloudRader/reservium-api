@@ -1,5 +1,7 @@
 """Tests for MiniServiceDetail Pydantic Schemas."""
 
+from datetime import datetime
+
 import pytest
 from core.models import EventState
 from core.schemas.event import (
@@ -18,8 +20,8 @@ def test_event_create_valid():
         purpose="Birthday party",
         guests=5,
         email="coolEmail@buk.cvut.cz",
-        reservation_start="2025-05-12T11:00",
-        reservation_end="2025-05-12T16:00",
+        reservation_start=datetime.fromisoformat("2025-05-12T11:00"),
+        reservation_end=datetime.fromisoformat("2025-05-12T16:00"),
         event_state=EventState.CONFIRMED,
         user_id=21412,
         calendar_id="wfwafwjag2@goog.com",
@@ -44,8 +46,8 @@ def test_event_in_db_base_schema():
         purpose="Birthday party",
         guests=5,
         email="coolEmail@buk.cvut.cz",
-        reservation_start="2025-05-12T11:00",
-        reservation_end="2025-05-12T16:00",
+        reservation_start=datetime.fromisoformat("2025-05-12T11:00"),
+        reservation_end=datetime.fromisoformat("2025-05-12T16:00"),
         event_state=EventState.CONFIRMED,
         user_id=21412,
         calendar_id="wfwafwjag2@goog.com",
@@ -66,8 +68,8 @@ def test_event_schema_extends_base():
         purpose="Birthday party",
         guests=5,
         email="coolEmail@buk.cvut.cz",
-        reservation_start="2025-05-12T11:00",
-        reservation_end="2025-05-12T16:00",
+        reservation_start=datetime.fromisoformat("2025-05-12T11:00"),
+        reservation_end=datetime.fromisoformat("2025-05-12T16:00"),
         event_state=EventState.CONFIRMED,
         user_id=21412,
         calendar_id="wfwafwjag2@goog.com",

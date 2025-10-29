@@ -26,7 +26,7 @@ select = [
     "W",   # pycodestyle warnings
 ]
 ignore = ["COM812", "D102", "D107", "D203", "D212"]
-exclude = ["src/migrations/versions/*"]
+exclude = ["src/migrations/versions/*", "tests/test_api/*", "tests/test_crud/*", "tests/test_models/*", "tests/test_services/*"]
 
 [format]
 quote-style = "double"

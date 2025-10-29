@@ -61,12 +61,10 @@ def test_reservation_service_in_db_base_schema(valid_rules):
         max_people=10,
         more_than_max_people_with_permission=True,
         collision_with_itself=True,
-        collision_with_calendar=["other_calendar_id"],
         club_member_rules=valid_rules,
         active_member_rules=valid_rules,
         manager_rules=valid_rules,
         reservation_service_id=service_id,
-        # mini_services=["Bar"],
     )
     mini_service = MiniServiceDetail(
         id=uuid4().hex,

@@ -143,8 +143,8 @@ class GoogleConfig(BaseModel):
     CLIENT_ID: str
     PROJECT_ID: str
     CLIENT_SECRET: str
-    REDIRECT_URIS: list[str]
-    SCOPES: list[str]
+    REDIRECT_URIS: list[str] = ["http://localhost"]
+    SCOPES: list[str] = ["https://www.googleapis.com/auth/calendar"]
     AUTH_URI: str = "https://accounts.google.com/o/oauth2/auth"
     TOKEN_URI: str = "https://oauth2.googleapis.com/token"
     AUTH_PROVIDER_X509_CERT_URL: str = "https://www.googleapis.com/oauth2/v1/certs"
