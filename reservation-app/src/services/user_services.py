@@ -17,7 +17,7 @@ from core.schemas import (
     UserLite,
     UserUpdate,
 )
-from core.schemas.event import EventDetail, EventTimeline
+from core.schemas.event import EventDetail
 from crud import CRUDReservationService, CRUDUser
 from fastapi import Depends
 from services import CrudServiceBase, EventService
@@ -83,20 +83,6 @@ class AbstractUserService(
             `None` to fetch all events (no time filtering).
 
         :return: List of EventWithCalendarInfo objects linked to the user.
-        """
-
-    @abstractmethod
-    async def get_events_by_user_filter_past_and_upcoming(
-        self, user: UserLite
-    ) -> list[EventDetail]:
-        """
-        Retrieve all events linked to the given user and split them into past and upcoming.
-
-        :param user: The User object in database.
-
-        :return: EventTimeline object containing two lists:
-             - ``past``: events that have already ended,
-             - ``upcoming``: events scheduled for the future.
         """
 
 
@@ -169,6 +155,3 @@ class UserService(AbstractUserService):
         past: bool | None = None,
     ) -> list[EventDetail]:
         return await self.crud.get_events_by_user_id(user.id, page, limit, past)
-
-    async def get_events_by_user_filter_past_and_upcoming(self, user: UserLite) -> EventTimeline:
-        return await self.crud.get_events_by_user_filter_past_and_upcoming(user.id)

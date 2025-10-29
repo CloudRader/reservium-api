@@ -10,9 +10,8 @@ from datetime import datetime
 
 from core.models import CalendarModel, EventModel, UserModel
 from core.schemas import UserCreate, UserUpdate
-from core.schemas.event import EventDetail, EventTimeline
 from crud import CRUDBase
-from sqlalchemy import case, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -53,20 +52,6 @@ class AbstractCRUDUser(CRUDBase[UserModel, UserCreate, UserUpdate], ABC):
             `None` to fetch all events (no time filtering).
 
         :return: List of related events of type `model`.
-        """
-
-    @abstractmethod
-    async def get_events_by_user_filter_past_and_upcoming(
-        self,
-        id_: int,
-    ) -> EventTimeline:
-        """
-        Retrieve events for a given user, split into past and upcoming categories.
-
-        :param id_: ID of the User.
-
-        :return: EventTimeline containing two lists of EventLite objects:
-             ``past`` and ``upcoming``.
         """
 
 
@@ -114,33 +99,3 @@ class CRUDUser(AbstractCRUDUser):
 
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
-
-    async def get_events_by_user_filter_past_and_upcoming(
-        self,
-        id_: int,
-    ) -> EventTimeline:
-        now = datetime.now()
-
-        stmt = (
-            select(
-                self.event_model,
-                case(
-                    (self.event_model.reservation_end < now, "past"),
-                    (self.event_model.reservation_start > now, "upcoming"),
-                ).label("status"),
-            )
-            .options(
-                joinedload(self.event_model.calendar).joinedload(CalendarModel.reservation_service)
-            )
-            .filter(self.event_model.user_id == id_)
-            .order_by(self.event_model.reservation_start.asc())
-        )
-
-        result = await self.db.execute(stmt)
-        rows = result.all()
-
-        grouped: dict = {"past": [], "upcoming": []}
-        for event, status in rows:
-            grouped[status].append(EventDetail.model_validate(event))
-
-        return EventTimeline(**grouped)
