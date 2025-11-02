@@ -80,3 +80,40 @@ jobs:
           cd reservation-app
           chmod +x ./scripts/lint_ruff.sh
           ./scripts/lint_ruff.sh
+
+  pytest:
+    name: Pytest with Coverage
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.13
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.9.5"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Run pytest with coverage
+        run: |
+          cd reservation-app
+          chmod +x ./scripts/test_with_coverage.sh
+          uv run ./scripts/test_with_coverage.sh -c
+          
