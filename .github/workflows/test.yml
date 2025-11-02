@@ -114,6 +114,5 @@ jobs:
       - name: Run pytest with coverage
         run: |
           cd reservation-app
-          chmod +x ./scripts/test_with_coverage.sh
-          uv run ./scripts/test_with_coverage.sh -c
-          
+          chmod +x ./scripts/pytest.sh
+          uv run ./scripts/pytest.sh -c
