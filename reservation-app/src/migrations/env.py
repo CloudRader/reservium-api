@@ -14,8 +14,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-load_dotenv(dotenv_path=".env.template")
-load_dotenv(dotenv_path=".env", override=True)
+load_dotenv(dotenv_path="../.env")
 
 # ruff: noqa: E402, F403
 from core import settings
