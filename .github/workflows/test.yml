@@ -79,7 +79,7 @@ jobs:
         run: |
           cd reservation-app
           chmod +x ./scripts/lint_ruff.sh
-          ./scripts/lint_ruff.sh
+          uv run ./scripts/lint_ruff.sh
 
   pytest:
     name: Pytest with Coverage
