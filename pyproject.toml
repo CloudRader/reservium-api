@@ -36,6 +36,7 @@ dev = [
     "pytest==8.4.2",
     "pytest-asyncio==1.2.0",
     "pytest-cov==6.3.0",
+    "pytest-env==1.2.0",
     "mypy==1.18.2",
     "testcontainers==4.13.2",
     "types-pytz==2025.2.0.20250809",
