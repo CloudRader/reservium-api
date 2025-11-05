@@ -124,3 +124,4 @@ jobs:
           flags: unittests
           name: reservation-api
           fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
