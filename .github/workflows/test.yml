@@ -117,8 +117,10 @@ jobs:
           chmod +x ./scripts/pytest.sh
           uv run ./scripts/pytest.sh -c -r
 
-      - name: Upload coverage artifacts
-        uses: actions/upload-artifact@v5
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          name: coverage-report
-          path: reservation-app/tests/coverage.xml
+          files: reservation-app/tests/coverage.xml
+          flags: unittests
+          name: reservation-api
+          fail_ci_if_error: true
