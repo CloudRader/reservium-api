@@ -115,4 +115,4 @@ jobs:
         run: |
           cd reservation-app
           chmod +x ./scripts/pytest.sh
-          uv run ./scripts/pytest.sh -c
+          uv run ./scripts/pytest.sh -c -r

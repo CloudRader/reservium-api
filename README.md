@@ -1,5 +1,6 @@
 # 🌀 Reservium API
 [![Test](https://github.com/CloudRader/reservium-api/actions/workflows/test.yml/badge.svg)](https://github.com/CloudRader/reservium-api/actions/workflows/test.yml)
+![Coverage](https://coverage-badge.samuelcolvin.workers.dev/CloudRader/reservium-api.svg?branch=feature/pytest-job-workflow)
 
 **Reservium** — a ready-to-go reservation system.
 
