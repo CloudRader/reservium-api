@@ -50,20 +50,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Run Ruff and capture the output
-ruff_output=$(ruff check "${ruff_args[@]}" "${dirs[@]}" || true)
+dirs=${dirs[@]:-"src tests"}
 
-echo "$ruff_output"
-
-error_count=$(grep -cE '^[^:]+:[0-9]+:[0-9]+: [A-Z][0-9]{3}' <<< "$ruff_output" || true)
-
-if [ "$error_count" -gt "$FAIL_UNDER_LIMIT" ]; then
-  echo "Found $error_count issues (limit: $FAIL_UNDER_LIMIT)"
-  if [ "$error_count" -gt "$FAIL_UNDER_LIMIT" ]; then
-    echo "❌ Too many linting issues"
-    exit 1
-  fi
-fi
-
-echo "✅ Ruff check completed."
-exit 0
+ruff check "${ruff_args[@]}" $dirs
+echo "✅ Ruff check passed"
