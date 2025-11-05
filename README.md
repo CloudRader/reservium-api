@@ -1,4 +1,5 @@
 # 🌀 Reservium API
+[![Test](https://github.com/CloudRader/reservium-api/actions/workflows/test.yml/badge.svg)](https://github.com/CloudRader/reservium-api/actions/workflows/test.yml)
 
 **Reservium** — a ready-to-go reservation system.
 
