@@ -116,3 +116,11 @@ jobs:
           cd reservation-app
           chmod +x ./scripts/pytest.sh
           uv run ./scripts/pytest.sh -c -r
+          
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: coverage-report
+          path: |
+            reservation-app/coverage.xml
+            reservation-app/htmlcov
