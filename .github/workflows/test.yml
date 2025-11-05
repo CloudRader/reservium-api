@@ -121,6 +121,4 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: coverage-report
-          path: |
-            tests/coverage.xml
-            tests/coverage
+          path: reservation-app/tests/coverage.xml
