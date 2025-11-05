@@ -58,7 +58,7 @@ class TestDatabaseSession:
 @pytest_asyncio.fixture(scope="session")
 async def pg_container():
     """Start and yield a PostgreSQL container for the test session."""
-    container = PostgresContainer("postgres:15")
+    container = PostgresContainer("postgres:18")
     container.start()
     try:
         yield container

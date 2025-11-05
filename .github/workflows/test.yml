@@ -79,7 +79,7 @@ jobs:
         run: |
           cd reservation-app
           chmod +x ./scripts/lint_ruff.sh
-          ./scripts/lint_ruff.sh
+          uv run ./scripts/lint_ruff.sh
 
   pytest:
     name: Pytest with Coverage
@@ -115,4 +115,13 @@ jobs:
         run: |
           cd reservation-app
           chmod +x ./scripts/pytest.sh
-          uv run ./scripts/pytest.sh -c
+          uv run ./scripts/pytest.sh -c -r
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: reservation-app/tests/coverage.xml
+          flags: unittests
+          name: reservation-api
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
