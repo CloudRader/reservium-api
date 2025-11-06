@@ -27,7 +27,7 @@ def uvicorn_run():
         "main:app",
         host=settings.RUN.SERVER_HOST,
         port=settings.RUN.SERVER_PORT,
-        # reload=settings.RUN.SERVER_USE_RELOAD,
+        reload=settings.RUN.SERVER_USE_RELOAD,
         proxy_headers=settings.RUN.SERVER_USE_PROXY_HEADERS,
         log_config=settings.LOGGING.LOG_CONFIG,
     )
