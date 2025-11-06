@@ -45,11 +45,10 @@ class DatabaseSession:
         current async task, ensuring that all database operations within the
         scope share the same session.
         """
-        session = async_scoped_session(
+        return async_scoped_session(
             session_factory=self.session_factory,
             scopefunc=current_task,
         )
-        return session
 
     async def session_dependency(self) -> AsyncGenerator[AsyncSession, None]:
         """

@@ -68,8 +68,7 @@ async def reservation_access_authorize(
 
     :return: Boolean result indicating whether access is granted.
     """
-    result = await service.reservation_access_authorize(event_service, access_request)
-    return result
+    return await service.reservation_access_authorize(event_service, access_request)
 
 
 # Can be uncommented for testing dormitory card system

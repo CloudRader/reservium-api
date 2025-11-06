@@ -22,6 +22,7 @@ select = [
     "ICN", # flake8-import-conventions — enforce import naming conventions
     "N",   # pep8-naming
     "PD",  # pandas‑vet (pandas-specific patterns)
+    "RET", # flake8-return (unnecessary returns)
     "SIM", # flake8-simplify — simplify redundant code structures
     "UP",  # pyupgrade (modern Python syntax)
     "TC",  # flake8‑type‑checking
