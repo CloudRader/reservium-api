@@ -5,43 +5,44 @@ description = "Reservium: a ready to go reservation system"
 authors = [{ name = "Artem Kuznetsov", email = "artyom.20century@gmail.com" }]
 requires-python = "~=3.12.0"
 dependencies = [
-    "fastapi==0.116.1",
-    "uvicorn[standard]==0.35",
-    "pydantic[email]==2.11.7",
-    "pydantic-settings==2.10.1",
-    "sqlalchemy[asyncio]==2.0.41",
+    "fastapi==0.121.0",
+    "uvicorn[standard]==0.38.0",
+    "pydantic[email]==2.12.4",
+    "pydantic-settings==2.11.0",
+    "sqlalchemy[asyncio]==2.0.44",
     "asyncpg==0.30.0",
     "pytz==2025.2",
-    "alembic==1.16.4",
+    "alembic==1.17.1",
     "sqlalchemy-easy-softdelete==0.8.3",
     "fastapi-mail==1.5.0",
     "itsdangerous==2.2.0",
     "requests-oauthlib==2.0.0",
-    "pypdf==5.8.0",
+    "pypdf==6.1.3",
     "httpx==0.28.1",
     "google-auth==2.40.3",
-    "google-auth-oauthlib==1.2.2",
-    "google-api-python-client==2.177.0",
+    "google-auth-oauthlib==1.2.3",
+    "google-api-python-client==2.187.0",
     "python-dateutil==2.9.0.post0",
-    "orjson==3.11.1",
+    "orjson==3.11.4",
     "gunicorn==23.0.0",
-    "aiohttp==3.12.15",
+    "aiohttp==3.13.2",
     "python-keycloak==5.8.1",
     "jwcrypto==1.5.6",
-    "authzed==1.22.1",
+    "authzed==1.23.0",
 ]
 
 [dependency-groups]
 dev = [
-    "pytest==8.4.1",
-    "pytest-asyncio==1.1.0",
-    "pytest-cov==6.2.1",
-    "mypy==1.17.0",
-    "testcontainers==4.12.0",
-    "types-pytz==2025.2.0.20250516",
-    "types-python-dateutil==2.9.0.20250708",
+    "pytest==8.4.2",
+    "pytest-asyncio==1.2.0",
+    "pytest-cov==7.0.0",
+    "pytest-env==1.2.0",
+    "mypy==1.18.2",
+    "testcontainers==4.13.2",
+    "types-pytz==2025.2.0.20250809",
+    "types-python-dateutil==2.9.0.20251008",
     "black==25.1.0",
-    "ruff==0.12.5",
+    "ruff==0.14.3",
 ]
 
 [tool.uv]
@@ -50,39 +51,3 @@ package = false
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.ruff]
-line-length = 100
-exclude = [".venv"]
-src = ["reservation-app"]
-
-[tool.ruff.lint]
-select = [
-    "A",   # flake8-builtins (e.g. shadowing built-in names)
-    "AIR", # Airflow‑specific rule set
-    "ARG", # flake8-unused-arguments
-    "B",   # flake8-bugbear (bug-prone patterns)
-    "BLE", # flake8-blind-except — disallow overly broad exception catching (e.g. bare `except:`)
-    "C90", # mccabe complexity
-    "COM", # flake8-commas (e.g. trailing commas)
-    "D",   # pydocstyle (docstring conventions)
-    "E",   # pycodestyle errors
-    "EXE", # flake8-executable — check file executability and shebang correctness
-    "F",   # pyflakes (undefined names, etc.)
-    "FLY", # flynt (string formatting suggestions)
-    "I",   # isort (import sorting)
-    "ICN", # flake8-import-conventions — enforce import naming conventions
-    "N",   # pep8-naming
-    "PD",  # pandas‑vet (pandas-specific patterns)
-    "SIM", # flake8-simplify — simplify redundant code structures
-    "UP",  # pyupgrade (modern Python syntax)
-    "TC",  # flake8‑type‑checking
-    "W",   # pycodestyle warnings
-]
-ignore = ["COM812", "D102", "D107", "D203", "D212"]
-exclude = ["reservation-app/src/migrations/versions/*"]
-
-[tool.ruff.format]
-quote-style = "double"
-line-ending = "auto"
-indent-style = "space"

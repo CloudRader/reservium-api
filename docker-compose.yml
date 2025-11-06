@@ -1,29 +1,52 @@
 services:
   db:
-    container_name: reservation-db
-    image: postgres:17.6
+    container_name: db
+    image: postgres:18
     restart: on-failure
     environment:
-      POSTGRES_DB: ${DB__POSTGRES_DB}
       POSTGRES_USER: ${DB__POSTGRES_USER}
       POSTGRES_PASSWORD: ${DB__POSTGRES_PASSWORD}
-      POSTGRES_PORT: ${DB__POSTGRES_PORT}
-      POSTGRES_DATA: /var/lib/postgresql/data
-    env_file:
-      - ./reservation-app/.env
+      POSTGRES_DB: ${DB__POSTGRES_DB}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     ports:
       - "5432:5432"
     networks:
       - internal
 
-  backend:
+  reservium-api:
     container_name: reservation-backend
     build:
       context: .
       dockerfile: Dockerfile
 #    image: reservationbuk/reservation-backend:latest
+    environment:
+      ORGANIZATION_NAME: "Buben Club"
+
+      DB__POSTGRES_USER: ${DB__POSTGRES_USER}
+      DB__POSTGRES_PASSWORD: ${DB__POSTGRES_PASSWORD}
+      DB__POSTGRES_DB: ${DB__POSTGRES_DB}
+      DB__POSTGRES_SERVER: db
+
+      MAIL__USERNAME: ${MAIL__USERNAME}
+      MAIL__PASSWORD: ${MAIL__PASSWORD}
+      MAIL__FROM_NAME: ${MAIL__FROM_NAME}
+      MAIL__SENT_DORMITORY_HEAD: true
+      MAIL__DORMITORY_HEAD_EMAIL: develop@buk.cvut.cz
+
+      KEYCLOAK__SERVER_URL: ${KEYCLOAK__SERVER_URL}
+      KEYCLOAK__REALM: ${KEYCLOAK__REALM}
+      KEYCLOAK__CLIENT_ID: ${KEYCLOAK__CLIENT_ID}
+      KEYCLOAK__CLIENT_SECRET: ${KEYCLOAK__CLIENT_SECRET}
+
+      SPICEDB__SERVER_URL: ${SPICEDB__SERVER_URL}
+      SPICEDB__CLIENT_SECRET: ${SPICEDB__CLIENT_SECRET}
+
+      GOOGLE__PROJECT_ID: ${GOOGLE__PROJECT_ID}
+      GOOGLE__CLIENT_ID: ${GOOGLE__CLIENT_ID}
+      GOOGLE__CLIENT_SECRET: ${GOOGLE__CLIENT_SECRET}
+
+      DORMITORY_ACCESS_SYSTEM__API_KEY: ${DORMITORY_ACCESS_SYSTEM__API_KEY}
     depends_on:
       - db
     restart: on-failure
@@ -35,11 +58,8 @@ services:
 #          target: /usr/src/app/src
     volumes:
       - ./reservation-app/src:/usr/src/app/src
-      - ./reservation-app/.env:/usr/src/app/.env:ro
     ports:
       - "8000:8000"
-    environment:
-      DB__POSTGRES_SERVER: db
     networks:
       - internal
 

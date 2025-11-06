@@ -157,42 +157,37 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
         )
 
     async def add_var_symbol(self, access_body: VarSymbolCreateUpdate) -> dict:
-        data = {
+        return {
             "funkce": "AddVarSymbolSkupina",
             "varsymbol": access_body.var_symbol,
             "skupina": access_body.group,
             "platnostod": access_body.valid_from,
             "platnostdo": access_body.valid_to,
         }
-        return data
 
     async def del_var_symbol(
         self,
         access_body: VarSymbolDelete,
     ) -> dict:
-        data = {
+        return {
             "funkce": "DelVarSymbolSkupina",
             "varsymbol": access_body.var_symbol,
             "skupina": access_body.group,
         }
-        return data
 
     async def get_groups_for_use(self):
-        data = {
+        return {
             "funkce": "GetSkupinyForUse",
         }
-        return data
 
     async def get_access_var_symbol(
         self,
         var_symbol: str,
     ) -> dict:
-        data = {"funkce": "GetPristupVarSymbol", "varsymbol": var_symbol}
-        return data
+        return {"funkce": "GetPristupVarSymbol", "varsymbol": var_symbol}
 
     async def get_access_group(
         self,
         group: str,
     ) -> dict:
-        data = {"funkce": "GetPristupSkupina", "skupina": group}
-        return data
+        return {"funkce": "GetPristupSkupina", "skupina": group}

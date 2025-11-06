@@ -173,7 +173,6 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
         try:
             calendars_dict = self.service.calendarList().list().execute().get("items", [])
             return [GoogleCalendarCalendar(**calendar) for calendar in calendars_dict]
-            # return self.service.calendarList().list().execute().get("items", [])
         except HttpError as exc:
             raise BaseAppError("Failed to list Google calendars.") from exc
 

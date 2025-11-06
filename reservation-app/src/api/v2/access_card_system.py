@@ -23,7 +23,7 @@ def send_request(data: dict[str, Any]) -> dict[str, Any]:
 
     :param data: Dictionary representing the request payload.
 
-    :returns: Dictionary response parsed from the API’s JSON reply.
+    :returns: Dictionary response parsed from the API JSON reply.
     :raises HTTPException: If the API returns a non-200 status code.
     """
     headers = {
@@ -68,8 +68,7 @@ async def reservation_access_authorize(
 
     :return: Boolean result indicating whether access is granted.
     """
-    result = await service.reservation_access_authorize(event_service, access_request)
-    return result
+    return await service.reservation_access_authorize(event_service, access_request)
 
 
 # Can be uncommented for testing dormitory card system

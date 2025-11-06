@@ -4,11 +4,14 @@ from uuid import uuid4
 
 import pytest
 import pytest_asyncio
+from datetime import datetime
 from core.models import (
     CalendarModel,
     MiniServiceModel,
     ReservationServiceModel,
     UserModel,
+    EventModel,
+    EventState,
 )
 from core.schemas import Rules
 
@@ -32,7 +35,6 @@ async def test_user(async_session):
         id=2142,
         username="TestUser",
         full_name="test testovi",
-        room_number="6343",
         active_member=False,
         section_head=False,
         roles=["Bar", "Consoles"],
@@ -106,7 +108,6 @@ async def test_calendar(
         max_people=10,
         more_than_max_people_with_permission=True,
         collision_with_itself=True,
-        collision_with_calendar=["other_calendar_id"],
         club_member_rules=rules_club_member,
         active_member_rules=rules_club_member,
         manager_rules=rules_club_member,
@@ -117,3 +118,27 @@ async def test_calendar(
     await async_session.commit()
     await async_session.refresh(calendar)
     return calendar
+
+
+@pytest_asyncio.fixture
+async def test_event(async_session, test_user, test_calendar):
+    """Creates and returns a sample event for testing."""
+
+    event = EventModel(
+        id="test_event_1",
+        purpose="Test Event",
+        guests=10,
+        email="user@example.com",
+        reservation_start=datetime(2025, 5, 12, 10, 0),
+        reservation_end=datetime(2025, 5, 12, 12, 0),
+        requested_reservation_start=None,
+        requested_reservation_end=None,
+        event_state=EventState.NOT_APPROVED,
+        user_id=test_user.id,
+        calendar_id=test_calendar.id,
+        additional_services=["Projector", "Whiteboard"],
+    )
+    async_session.add(event)
+    await async_session.commit()
+    await async_session.refresh(event)
+    return event

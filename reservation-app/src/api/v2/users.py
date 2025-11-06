@@ -9,7 +9,7 @@ from core.application.exceptions import (
     PermissionDeniedError,
 )
 from core.schemas import UserLite
-from core.schemas.event import EventDetail, EventTimeline
+from core.schemas.event import EventDetail
 from fastapi import APIRouter, Depends, FastAPI, Query, status
 from services import UserService
 
@@ -86,17 +86,3 @@ async def get_events_by_user(
         "User %s requested events (page=%s, limit=%s, past=%s).", user.id, page, limit, past
     )
     return await service.get_events_by_user(user, page, limit, past)
-
-
-@router.get(
-    "/me/events-timeline",
-    response_model=EventTimeline,
-    responses=ERROR_RESPONSES["400_404"],
-    status_code=status.HTTP_200_OK,
-)
-async def get_events_by_user_filter_past_and_upcoming(
-    service: Annotated[UserService, Depends(UserService)],
-    user: Annotated[UserLite, Depends(get_current_user)],
-):
-    """Retrieve the user's events, grouped into past and upcoming."""
-    return await service.get_events_by_user_filter_past_and_upcoming(user)

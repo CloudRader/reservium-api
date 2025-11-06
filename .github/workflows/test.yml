@@ -31,7 +31,7 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v7
         with:
-          version: "0.8.3"
+          version: "0.9.7"
           enable-cache: true
           cache-dependency-glob: |
             pyproject.toml
@@ -67,7 +67,7 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v7
         with:
-          version: "0.8.3"
+          version: "0.9.7"
           enable-cache: true
           cache-dependency-glob: |
             pyproject.toml
@@ -79,4 +79,49 @@ jobs:
         run: |
           cd reservation-app
           chmod +x ./scripts/lint_ruff.sh
-          ./scripts/lint_ruff.sh
+          uv run ./scripts/lint_ruff.sh
+
+  pytest:
+    name: Pytest with Coverage
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.13
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.9.7"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Run pytest with coverage
+        run: |
+          cd reservation-app
+          chmod +x ./scripts/pytest.sh
+          uv run ./scripts/pytest.sh -c -r
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: reservation-app/tests/coverage.xml
+          flags: unittests
+          name: reservation-api
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}

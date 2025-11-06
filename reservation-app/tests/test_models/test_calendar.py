@@ -59,7 +59,6 @@ async def test_list_calendars(
             max_people=10,
             more_than_max_people_with_permission=True,
             collision_with_itself=False,
-            collision_with_calendar=[],
             club_member_rules=rules_club_member,
             active_member_rules=rules_club_member,
             manager_rules=rules_club_member,
@@ -73,7 +72,6 @@ async def test_list_calendars(
             max_people=20,
             more_than_max_people_with_permission=True,
             collision_with_itself=False,
-            collision_with_calendar=["test_calendar_type1@google.com"],
             club_member_rules=rules_club_member,
             active_member_rules=rules_club_member,
             manager_rules=rules_club_member,
@@ -90,3 +88,57 @@ async def test_list_calendars(
     reservation_types = [c.reservation_type for c in result]
     assert "type1blan" in reservation_types
     assert "type2" in reservation_types
+
+
+def test_collision_ids_empty(rules_club_member):
+    """Test that collision_ids returns an empty list if no collisions exist."""
+    cal = CalendarModel(
+        id="cal_1",
+        reservation_type="Type1",
+        color="#fff",
+        max_people=10,
+        club_member_rules=rules_club_member,
+        active_member_rules=rules_club_member,
+        manager_rules=rules_club_member,
+        reservation_service_id="res_1",
+    )
+    assert cal.collision_ids == []
+
+
+def test_collision_ids_with_collisions(rules_club_member):
+    """Test that collision_ids returns the IDs of all colliding calendars."""
+    cal1 = CalendarModel(
+        id="cal_1",
+        reservation_type="Type1",
+        color="#fff",
+        max_people=10,
+        club_member_rules=rules_club_member,
+        active_member_rules=rules_club_member,
+        manager_rules=rules_club_member,
+        reservation_service_id="res_1",
+    )
+    cal2 = CalendarModel(
+        id="cal_2",
+        reservation_type="Type2",
+        color="#000",
+        max_people=20,
+        club_member_rules=rules_club_member,
+        active_member_rules=rules_club_member,
+        manager_rules=rules_club_member,
+        reservation_service_id="res_1",
+    )
+    cal3 = CalendarModel(
+        id="cal_3",
+        reservation_type="Type3",
+        color="#123",
+        max_people=5,
+        club_member_rules=rules_club_member,
+        active_member_rules=rules_club_member,
+        manager_rules=rules_club_member,
+        reservation_service_id="res_1",
+    )
+
+    # Assign collisions manually
+    cal1.collisions = [cal2, cal3]
+
+    assert set(cal1.collision_ids) == {"cal_2", "cal_3"}

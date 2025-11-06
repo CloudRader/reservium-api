@@ -8,7 +8,7 @@ from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from core.models.event import Event
 
 

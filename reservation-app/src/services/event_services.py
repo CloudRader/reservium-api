@@ -321,9 +321,7 @@ class EventService(AbstractEventService):
         self,
         event: EventLite,
     ) -> UserLite:
-        user = await self.user_crud.get(event.user_id)
-
-        return user
+        return await self.user_crud.get(event.user_id)
 
     async def get_current_event_for_user(self, user_id: int) -> EventDetail | None:
         return await self.crud.get_current_event_for_user(user_id)

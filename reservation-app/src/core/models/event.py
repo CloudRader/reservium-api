@@ -11,7 +11,7 @@ from sqlalchemy import Enum as SQLAlchemyEnum
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from core.models.calendar import Calendar
     from core.models.user import User
 

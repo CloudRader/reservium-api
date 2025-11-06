@@ -10,8 +10,8 @@ from .crud_user import CRUDUser
 __all__ = [
     "CRUDBase",
     "CRUDCalendar",
-    "CRUDUser",
+    "CRUDEvent",
     "CRUDMiniService",
     "CRUDReservationService",
-    "CRUDEvent",
+    "CRUDUser",
 ]

@@ -189,7 +189,7 @@ def construct_body_context(
     if event.additional_services:
         additional_services = ", ".join(event.additional_services)
 
-    context = {
+    return {
         "reservation_type": calendar.reservation_type,
         "start_time": event.reservation_start.strftime("%d/%m/%Y, %H:%M"),
         "end_time": event.reservation_end.strftime("%d/%m/%Y, %H:%M"),
@@ -213,8 +213,6 @@ def construct_body_context(
         "reason": reason,
         "club_name": settings.ORGANIZATION_NAME,
     }
-
-    return context
 
 
 def create_email_meta(template_name: str, subject: str, reason: str = "") -> EmailMeta:

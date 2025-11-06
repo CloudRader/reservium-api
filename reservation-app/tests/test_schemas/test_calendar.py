@@ -25,16 +25,16 @@ def test_calendar_create_valid(valid_rules):
         active_member_rules=valid_rules,
         manager_rules=valid_rules,
         id="calendar1",
-        collision_with_calendar=["calendar2"],
+        collision_ids=["calendar2"],
         more_than_max_people_with_permission=False,
-        # mini_services=["printer", "scanner"],
+        mini_services=["printer", "scanner"],
         color="#FF0000",
     )
     assert schema.reservation_type == "EventExtra"
     assert schema.max_people == 25
     assert schema.club_member_rules.max_reservation_hours == 4
-    # assert "scanner" in schema.mini_services
-    assert "calendar2" in schema.collision_with_calendar
+    assert "scanner" in schema.mini_services
+    assert "calendar2" in schema.collision_ids
 
 
 def test_calendar_create_invalid_max_people(valid_rules):
@@ -57,12 +57,12 @@ def test_calendar_update_partial():
         reservation_type="Meeting",
         max_people=15,
         collision_with_itself=False,
-        # mini_services=["projector"],
+        mini_services=["projector"],
     )
     assert update.reservation_type == "Meeting"
     assert update.max_people == 15
     assert update.collision_with_itself is False
-    # assert update.mini_services == ["projector"]
+    assert update.mini_services == ["projector"]
 
 
 def test_calendar_in_db_schema(valid_rules):
@@ -78,7 +78,6 @@ def test_calendar_in_db_schema(valid_rules):
         active_member_rules=valid_rules,
         manager_rules=valid_rules,
         reservation_service_id=uuid4().hex,
-        # mini_services=["TV"],
         color="#00FF00",
     )
     assert schema.id == "calendar123"
