@@ -1,5 +1,7 @@
 """Package for API Documentation."""
 
+from typing import ClassVar
+
 from core.config import settings
 
 
@@ -24,35 +26,35 @@ class FastApiDocs:
         "- authorization_code"
     )
     VERSION = "2.0.0"
-    AUTHORISATION_TAG = {
+    AUTHORISATION_TAG: ClassVar[dict] = {
         "name": "auth",
         "description": "Authorisation in IS.",
     }
-    USER_TAG = {
+    USER_TAG: ClassVar[dict] = {
         "name": "users",
         "description": "Operations with users.",
     }
-    RESERVATION_SERVICE_TAG = {
+    RESERVATION_SERVICE_TAG: ClassVar[dict] = {
         "name": "reservation services",
         "description": "Operations with reservation services.",
     }
-    CALENDAR_TAG = {
+    CALENDAR_TAG: ClassVar[dict] = {
         "name": "calendars",
         "description": "Operations with calendars.",
     }
-    MINI_SERVICE_TAG = {
+    MINI_SERVICE_TAG: ClassVar[dict] = {
         "name": "mini services",
         "description": "Operations with mini services.",
     }
-    EVENT_TAG = {
+    EVENT_TAG: ClassVar[dict] = {
         "name": "events",
         "description": "Operations with events.",
     }
-    EMAIL_TAG = {
+    EMAIL_TAG: ClassVar[dict] = {
         "name": "emails",
         "description": "Operations with emails.",
     }
-    ACCESS_CARD_SYSTEM_TAG = {
+    ACCESS_CARD_SYSTEM_TAG: ClassVar[dict] = {
         "name": "access card system",
         "description": "Operations with access card system.",
     }

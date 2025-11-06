@@ -21,7 +21,7 @@ class DatabaseSession:
     session ensures that multiple database operations share the same session
     within a specific scope (e.g., a request cycle).
 
-    It utilizes SQLAlchemy’s `async_sessionmaker` and `async_scoped_session` to
+    It utilizes SQLAlchemy `async_sessionmaker` and `async_scoped_session` to
     handle sessions in an async context.
     """
 

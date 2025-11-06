@@ -23,7 +23,7 @@ def send_request(data: dict[str, Any]) -> dict[str, Any]:
 
     :param data: Dictionary representing the request payload.
 
-    :returns: Dictionary response parsed from the API’s JSON reply.
+    :returns: Dictionary response parsed from the API JSON reply.
     :raises HTTPException: If the API returns a non-200 status code.
     """
     headers = {

@@ -22,10 +22,13 @@ select = [
     "ICN", # flake8-import-conventions — enforce import naming conventions
     "N",   # pep8-naming
     "PD",  # pandas‑vet (pandas-specific patterns)
+    "Q",   # flake8-quotes
     "RET", # flake8-return (unnecessary returns)
+    "RUF", # Ruff-specific rules
     "SIM", # flake8-simplify — simplify redundant code structures
     "UP",  # pyupgrade (modern Python syntax)
     "TC",  # flake8‑type‑checking
+#    "TRY", # tryceratops (try/except anti-patterns)
     "W",   # pycodestyle warnings
 ]
 ignore = ["COM812", "D102", "D107", "D203", "D212"]

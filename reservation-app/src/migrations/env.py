@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 load_dotenv(dotenv_path="../.env")
 
-# ruff: noqa: E402, F403
+# ruff: noqa: E402
 from core import settings
 from core.models.base_class import Base
 from core.models.types.rules_type import RulesType

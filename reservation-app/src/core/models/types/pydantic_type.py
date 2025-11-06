@@ -20,7 +20,7 @@ class PydanticType[T: BaseModel](TypeDecorator):
     def python_type(self) -> type[Any]:
         return self.model_class
 
-    def load_dialect_impl(self, dialect):  # noqa: ARG002
+    def load_dialect_impl(self, dialect):
         return dialect.type_descriptor(TEXT())
 
     def process_bind_param(self, value, dialect):  # noqa: ARG002
