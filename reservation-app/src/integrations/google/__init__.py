@@ -4,6 +4,6 @@ from integrations.google.google_auth import auth_google
 from integrations.google.google_calendar_services import GoogleCalendarService
 
 __all__ = [
-    "auth_google",
     "GoogleCalendarService",
+    "auth_google",
 ]

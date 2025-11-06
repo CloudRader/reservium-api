@@ -21,7 +21,7 @@ class DatabaseSession:
     session ensures that multiple database operations share the same session
     within a specific scope (e.g., a request cycle).
 
-    It utilizes SQLAlchemy’s `async_sessionmaker` and `async_scoped_session` to
+    It utilizes SQLAlchemy `async_sessionmaker` and `async_scoped_session` to
     handle sessions in an async context.
     """
 
@@ -45,11 +45,10 @@ class DatabaseSession:
         current async task, ensuring that all database operations within the
         scope share the same session.
         """
-        session = async_scoped_session(
+        return async_scoped_session(
             session_factory=self.session_factory,
             scopefunc=current_task,
         )
-        return session
 
     async def session_dependency(self) -> AsyncGenerator[AsyncSession, None]:
         """

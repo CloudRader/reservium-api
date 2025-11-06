@@ -1,6 +1,6 @@
 """Tests for MiniServiceDetail Pydantic Schemas."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from core.models import EventState
@@ -159,7 +159,8 @@ def test_event_update_partial():
 def test_event_update_valid_and_invalid_order():
     """Validate that EventUpdate enforces correct datetime order."""
     valid = EventUpdate(
-        reservation_start=datetime(2025, 1, 1, 10), reservation_end=datetime(2025, 1, 1, 12)
+        reservation_start=datetime(2025, 1, 1, 10),
+        reservation_end=datetime(2025, 1, 1, 12),
     )
     assert valid.reservation_end > valid.reservation_start
 
@@ -298,8 +299,8 @@ def test_event_detail_includes_nested_models():
         purpose="Workshop",
         guests=10,
         email="user@example.com",
-        reservation_start=datetime(2025, 5, 12, 10, 0),
-        reservation_end=datetime(2025, 5, 12, 12, 0),
+        reservation_start=datetime(2025, 5, 12, 10, 0, tzinfo=timezone.utc),
+        reservation_end=datetime(2025, 5, 12, 12, 0, tzinfo=timezone.utc),
         event_state=EventState.CONFIRMED,
         user_id=1,
         calendar_id="cal123",

@@ -89,7 +89,7 @@ class EmailService(AbstractEmailService):
         if settings.MAIL.SENT_DORMITORY_HEAD:
             emails.append(settings.MAIL.DORMITORY_HEAD_EMAIL)
 
-        email_create = EmailCreate(
+        return EmailCreate(
             email=emails,
             subject="Event Registration Form for Approval",
             body=(
@@ -105,5 +105,3 @@ class EmailService(AbstractEmailService):
             ),
             attachment=output_path,
         )
-
-        return email_create

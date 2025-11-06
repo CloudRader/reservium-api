@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 load_dotenv(dotenv_path="../.env")
 
-# ruff: noqa: E402, F403
+# ruff: noqa: E402
 from core import settings
 from core.models.base_class import Base
 from core.models.types.rules_type import RulesType
@@ -36,9 +36,6 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
 config.set_main_option("sqlalchemy.url", str(settings.DB.POSTGRES_DATABASE_URI))
 
 
