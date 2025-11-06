@@ -11,12 +11,12 @@ from .email_services import EmailService
 from .access_card_system_services import AccessCardSystemService
 
 __all__ = [
-    "CrudServiceBase",
-    "EventService",
-    "UserService",
+    "AccessCardSystemService",
     "CalendarService",
+    "CrudServiceBase",
+    "EmailService",
+    "EventService",
     "MiniServiceService",
     "ReservationServiceService",
-    "EmailService",
-    "AccessCardSystemService",
+    "UserService",
 ]
