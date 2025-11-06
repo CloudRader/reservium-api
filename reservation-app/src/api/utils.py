@@ -135,8 +135,8 @@ def control_available_reservation_time(start_datetime, end_datetime) -> bool:
     start_time = start_datetime.time()
     end_time = end_datetime.time()
 
-    start_res_time = dt.datetime.strptime("08:00:00", "%H:%M:%S").time()
-    end_res_time = dt.datetime.strptime("22:00:00", "%H:%M:%S").time()
+    start_res_time = dt.datetime.strptime("08:00:00", "%H:%M:%S").time()  # noqa: DTZ007 - need just naive time
+    end_res_time = dt.datetime.strptime("22:00:00", "%H:%M:%S").time()  # noqa: DTZ007 - need just naive time
 
     return not (start_time < start_res_time or end_time < start_res_time or end_time > end_res_time)
 

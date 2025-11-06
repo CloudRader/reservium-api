@@ -1,6 +1,6 @@
 """Tests for UserLite Pydantic Schemas."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from core.schemas.user import UserCreate, UserLite, UserUpdate
@@ -64,7 +64,7 @@ def test_user_in_db_base_schema():
 
 def test_user_schema_extends_base():
     """Test that UserLite schema includes all base fields."""
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     user = UserLite(
         id=1,
         username="TestUser",
