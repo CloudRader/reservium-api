@@ -4,36 +4,38 @@ src = ["reservation-app"]
 
 [lint]
 select = [
-    "A",   # flake8-builtins (e.g. shadowing built-in names)
-    "AIR", # Airflow‑specific rule set
-    "ARG", # flake8-unused-arguments
-    "B",   # flake8-bugbear (bug-prone patterns)
-    "BLE", # flake8-blind-except — disallow overly broad exception catching (e.g. bare `except:`)
-    "C90", # mccabe complexity
-    "COM", # flake8-commas (e.g. trailing commas)
-    "D",   # pydocstyle (docstring conventions)
-#    "DTZ", # flake8-datetimez (warn about naive datetime usage)
-    "E",   # pycodestyle errors
-    "ERA", # eradicate (commented-out code)
-    "EXE", # flake8-executable — check file executability and shebang correctness
-    "F",   # pyflakes (undefined names, etc.)
-    "FLY", # flynt (string formatting suggestions)
-    "G",   # flake8-logging-format
-    "I",   # isort (import sorting)
-    "ICN", # flake8-import-conventions — enforce import naming conventions
-    "N",   # pep8-naming
-    "PD",  # pandas‑vet (pandas-specific patterns)
-    "PIE", # flake8-pie (misc improvements, safe builtins)
-#    "PL",  # pylint-style rules
-    "Q",   # flake8-quotes
-    "RET", # flake8-return (unnecessary returns)
-    "RUF", # Ruff-specific rules
-    "SIM", # flake8-simplify — simplify redundant code structures
-    "UP",  # pyupgrade (modern Python syntax)
-    "TC",  # flake8‑type‑checking
-    "T20", # flake8-print (warn about print statements)
-#    "TRY", # tryceratops (try/except anti-patterns)
-    "W",   # pycodestyle warnings
+    "A",     # flake8-builtins (e.g. shadowing built-in names)
+    "AIR",   # Airflow‑specific rule set
+    "ARG",   # flake8-unused-arguments
+    "ASYNC", # async best practices
+    "B",     # flake8-bugbear (bug-prone patterns)
+    "BLE",   # flake8-blind-except — disallow overly broad exception catching (e.g. bare `except:`)
+    "C90",   # mccabe complexity
+    "COM",   # flake8-commas (e.g. trailing commas)
+    "D",     # pydocstyle (docstring conventions)
+#    "DTZ",  # flake8-datetimez (warn about naive datetime usage)
+    "E",     # pycodestyle errors
+    "ERA",   # eradicate (commented-out code)
+    "EXE",   # flake8-executable — check file executability and shebang correctness
+    "F",     # pyflakes (undefined names, etc.)
+    "FLY",   # flynt (string formatting suggestions)
+    "G",     # flake8-logging-format
+    "I",     # isort (import sorting)
+    "ICN",   # flake8-import-conventions — enforce import naming conventions
+    "N",     # pep8-naming
+    "PD",    # pandas‑vet (pandas-specific patterns)
+    "PIE",   # flake8-pie (misc improvements, safe builtins)
+#    "PL",   # pylint-style rules
+    "Q",     # flake8-quotes
+    "RUF",   # Ruff-specific rules
+    "RET",   # flake8-return (unnecessary returns)
+#    "S",    # flake8-bandit (security)
+    "SIM",   # flake8-simplify — simplify redundant code structures
+    "UP",    # pyupgrade (modern Python syntax)
+    "TC",    # flake8‑type‑checking
+    "T20",   # flake8-print (warn about print statements)
+#    "TRY",  # tryceratops (try/except anti-patterns)
+    "W",     # pycodestyle warnings
 ]
 ignore = ["COM812", "D102", "D107", "D203", "D212"]
 exclude = ["src/migrations/versions/*", "tests/test_api/*", "tests/test_crud/*", "tests/test_models/*", "tests/test_services/*"]
