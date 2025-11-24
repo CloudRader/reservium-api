@@ -23,11 +23,9 @@ jobs:
       - name: Set image tags
         run: |
           echo "IMAGE_NAME=${{ secrets.DOCKER_HUB_USER }}/reservium-api" >> $GITHUB_ENV
-          echo "VERSION=$(echo $GITHUB_SHA | cut -c1-8)" >> $GITHUB_ENV
           echo "VERSION_TAG=latest-dev" >> $GITHUB_ENV
 
       - name: Build and push Docker image
         run: |
-          docker build -t $IMAGE_NAME:$VERSION -t $IMAGE_NAME:$VERSION_TAG .
-          docker push $IMAGE_NAME:$VERSION
+          docker build -t $IMAGE_NAME:$VERSION_TAG .
           docker push $IMAGE_NAME:$VERSION_TAG
