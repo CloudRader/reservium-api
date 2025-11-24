@@ -18,16 +18,20 @@ select = [
     "EXE", # flake8-executable — check file executability and shebang correctness
     "F",   # pyflakes (undefined names, etc.)
     "FLY", # flynt (string formatting suggestions)
+    "G",   # flake8-logging-format
     "I",   # isort (import sorting)
     "ICN", # flake8-import-conventions — enforce import naming conventions
     "N",   # pep8-naming
     "PD",  # pandas‑vet (pandas-specific patterns)
+    "PIE", # flake8-pie (misc improvements, safe builtins)
+#    "PL",  # pylint-style rules
     "Q",   # flake8-quotes
     "RET", # flake8-return (unnecessary returns)
     "RUF", # Ruff-specific rules
     "SIM", # flake8-simplify — simplify redundant code structures
     "UP",  # pyupgrade (modern Python syntax)
     "TC",  # flake8‑type‑checking
+    "T20", # flake8-print (warn about print statements)
 #    "TRY", # tryceratops (try/except anti-patterns)
     "W",   # pycodestyle warnings
 ]

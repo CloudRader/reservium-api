@@ -38,7 +38,7 @@ def send_request(data: dict[str, Any]) -> dict[str, Any]:
         timeout=5,
     )
 
-    if response.status_code != 200:
+    if response.status_code != status.HTTP_200_OK:
         raise HTTPException(status_code=response.status_code, detail=response.text)
 
     return response.json()
