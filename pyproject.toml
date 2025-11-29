@@ -42,7 +42,7 @@ dev = [
     "types-pytz==2025.2.0.20251108",
     "types-python-dateutil==2.9.0.20251115",
     "black==25.1.0",
-    "ruff==0.14.6",
+    "ruff==0.14.7",
 ]
 
 [tool.uv]
