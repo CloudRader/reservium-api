@@ -38,20 +38,6 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventLite, EventUpdate], ABC):
         """
 
     @abstractmethod
-    async def get_by_user_id(
-        self,
-        user_id: int,
-    ) -> list[EventModel] | None:
-        """
-        Retrieve the Events instance by user id.
-
-        :param user_id: user id of the events.
-
-        :return: Events with user id equal
-        to user id or None if no such events exists.
-        """
-
-    @abstractmethod
     async def confirm_event(
         self,
         id_: str | None,
@@ -127,15 +113,6 @@ class CRUDEvent(AbstractCRUDEvent):
         )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
-
-    async def get_by_user_id(self, user_id: int) -> list[EventModel] | None:
-        stmt = (
-            select(self.model)
-            .filter(self.model.user_id == user_id)
-            .order_by(self.model.start_datetime.desc())
-        )
-        result = await self.db.execute(stmt)
-        return list(result.scalars().all())
 
     async def confirm_event(
         self,

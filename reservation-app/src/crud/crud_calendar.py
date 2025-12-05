@@ -33,7 +33,7 @@ class AbstractCRUDCalendar(
         self,
         id_: str | int,
         include_removed: bool = False,
-    ):
+    ) -> CalendarModel | None:
         """
         Retrieve a single record by its id_ with collisions.
 
@@ -114,7 +114,7 @@ class CRUDCalendar(AbstractCRUDCalendar):
         self,
         id_: str | int,
         include_removed: bool = False,
-    ):
+    ) -> CalendarModel | None:
         if id_ is None:
             return None
         stmt = (

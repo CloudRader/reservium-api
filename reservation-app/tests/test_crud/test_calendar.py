@@ -41,11 +41,18 @@ async def test_get_all_calendars(test_calendar, test_calendar2, calendar_crud):
 
 
 @pytest.mark.asyncio
-async def test_update_calendar(test_calendar, test_mini_service, calendar_crud):
+async def test_get_with_collisions(test_calendar, test_calendar2, calendar_crud):
+    """Test getting calendar with collisions."""
+    calendar = await calendar_crud.get_with_collisions(test_calendar2.id)
+    assert calendar.collisions[0] == test_calendar
+
+
+@pytest.mark.asyncio
+async def test_update_calendar(test_calendar, test_calendar2, test_mini_service, calendar_crud):
     """Test updating a calendar."""
     updated = await calendar_crud.update_with_mini_services_and_collisions(
-        db_obj=test_calendar,
-        obj_in=CalendarUpdate(color="#ff0000"),
+        db_obj=test_calendar2,
+        obj_in=CalendarUpdate(color="#ff0000", collision_ids=[test_calendar.id]),
         mini_services=[test_mini_service],
     )
     assert updated.color == "#ff0000"

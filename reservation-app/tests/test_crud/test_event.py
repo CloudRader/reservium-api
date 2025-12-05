@@ -24,6 +24,13 @@ async def test_get_event_by_id(test_event, event_crud):
 
 
 @pytest.mark.asyncio
+async def test_get_event_by_id_none(event_crud):
+    """Test getting event by ID."""
+    event = await event_crud.get(None)
+    assert event is None
+
+
+@pytest.mark.asyncio
 async def test_get_all_events(event_crud, test_event, test_event2):
     """Test retrieving all events."""
     events = await event_crud.get_all()
@@ -39,6 +46,24 @@ async def test_update_event(test_event, event_crud):
         db_obj=test_event, obj_in=EventUpdate(purpose="Updated Workshop")
     )
     assert updated_event.purpose == "Updated Workshop"
+
+
+@pytest.mark.asyncio
+async def test_confirm_event(test_event, event_crud):
+    """Test confirm an event."""
+    event = await event_crud.confirm_event(None)
+    assert event is None
+
+    event = await event_crud.confirm_event("f7waofw8a")  # random id
+    assert event is None
+
+    updated_event = await event_crud.update(
+        db_obj=test_event, obj_in=EventUpdate(event_state=EventState.NOT_APPROVED)
+    )
+    assert updated_event.event_state == EventState.NOT_APPROVED
+
+    confirm_event = await event_crud.confirm_event(updated_event.id)
+    assert confirm_event.event_state == EventState.CONFIRMED
 
 
 @pytest.mark.asyncio
