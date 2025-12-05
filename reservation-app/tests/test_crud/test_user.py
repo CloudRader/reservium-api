@@ -1,7 +1,9 @@
 """Module for testing user crud."""
 
+import datetime as dt
+
 import pytest
-from core.schemas import UserUpdate
+from core.schemas import EventUpdate, UserUpdate
 
 
 @pytest.mark.asyncio
@@ -97,3 +99,37 @@ async def test_update_with_empty_dict(user_crud, test_user):
     updated_user = await user_crud.update(db_obj=test_user, obj_in={})
     assert updated_user.id == test_user.id
     assert updated_user.roles == test_user.roles
+
+
+@pytest.mark.asyncio
+async def test_get_events_by_user_id_past(user_crud, event_crud, test_user, test_event):
+    """Test getting past events by user id."""
+    start_time = dt.datetime.now() - dt.timedelta(days=3, hours=3)
+    end_time = dt.datetime.now() - dt.timedelta(days=3)
+    updated_event = await event_crud.update(
+        db_obj=test_event,
+        obj_in=EventUpdate(reservation_start=start_time, reservation_end=end_time),
+    )
+    events = await user_crud.get_events_by_user_id(test_user.id, past=True)
+    assert events[0].id == updated_event.id
+    assert events[0].event_state == updated_event.event_state
+    assert events[0].purpose == updated_event.purpose
+    assert events[0].reservation_start == updated_event.reservation_start
+    assert events[0].reservation_end == updated_event.reservation_end
+
+
+@pytest.mark.asyncio
+async def test_get_events_by_user_id_future(user_crud, event_crud, test_user, test_event):
+    """Test getting future events by user id."""
+    start_time = dt.datetime.now() + dt.timedelta(days=10)
+    end_time = dt.datetime.now() + dt.timedelta(days=10, hours=3)
+    updated_event = await event_crud.update(
+        db_obj=test_event,
+        obj_in=EventUpdate(reservation_start=start_time, reservation_end=end_time),
+    )
+    events = await user_crud.get_events_by_user_id(test_user.id, past=False)
+    assert events[0].id == test_event.id
+    assert events[0].event_state == test_event.event_state
+    assert events[0].purpose == test_event.purpose
+    assert events[0].reservation_start == updated_event.reservation_start
+    assert events[0].reservation_end == updated_event.reservation_end

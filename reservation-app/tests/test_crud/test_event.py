@@ -1,6 +1,9 @@
 """Module for testing event service crud."""
 
+import datetime as dt
+
 import pytest
+from core.models import EventState
 from core.schemas import EventUpdate
 
 
@@ -60,3 +63,41 @@ async def test_hard_remove_event(test_event, event_crud):
     assert hard_removed.id == test_event.id
     db_event = await event_crud.get(hard_removed.id)
     assert db_event is None
+
+
+@pytest.mark.asyncio
+async def test_get_current_event_for_user(test_event, event_crud):
+    """Test getting current event for user."""
+    start_time = dt.datetime.now() - dt.timedelta(minutes=10)
+    end_time = dt.datetime.now() + dt.timedelta(hours=3)
+    updated_event = await event_crud.update(
+        db_obj=test_event,
+        obj_in=EventUpdate(reservation_start=start_time, reservation_end=end_time),
+    )
+    current_event = await event_crud.get_current_event_for_user(updated_event.user_id)
+    assert current_event == updated_event
+
+
+@pytest.mark.asyncio
+async def test_get_events_by_aliases(test_event, event_crud):
+    """Test getting events by aliases."""
+    events = await event_crud.get_events_by_aliases(["study"], EventState.CONFIRMED)
+    assert events[0] == test_event
+
+    start_time = dt.datetime.now() - dt.timedelta(days=3, hours=3)
+    end_time = dt.datetime.now() - dt.timedelta(days=3)
+    await event_crud.update(
+        db_obj=test_event,
+        obj_in=EventUpdate(reservation_start=start_time, reservation_end=end_time),
+    )
+    events = await event_crud.get_events_by_aliases(["study"], past=True)
+    assert events[0] == test_event
+
+    start_time = dt.datetime.now() + dt.timedelta(days=10)
+    end_time = dt.datetime.now() + dt.timedelta(days=10, hours=3)
+    await event_crud.update(
+        db_obj=test_event,
+        obj_in=EventUpdate(reservation_start=start_time, reservation_end=end_time),
+    )
+    events = await event_crud.get_events_by_aliases(["study"], past=False)
+    assert events[0] == test_event

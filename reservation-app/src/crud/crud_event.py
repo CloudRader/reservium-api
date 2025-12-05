@@ -162,8 +162,8 @@ class CRUDEvent(AbstractCRUDEvent):
             select(self.model)
             .filter(
                 self.model.user_id == user_id,
-                self.model.start_datetime <= now,
-                self.model.end_datetime >= now,
+                self.model.reservation_start <= now,
+                self.model.reservation_end >= now,
             )
             .order_by(self.model.reservation_start.desc())
             .limit(1)
