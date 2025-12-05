@@ -1,18 +1,19 @@
 """Conftest for testing crud."""
 
 import datetime as dt
+
 import pytest
 import pytest_asyncio
 from core.models.event import EventState
 from core.schemas import (
     CalendarCreate,
+    EventLite,
     MiniServiceCreate,
     ReservationServiceCreate,
     Rules,
     UserCreate,
-    EventLite,
 )
-from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService, CRUDUser, CRUDEvent
+from crud import CRUDCalendar, CRUDEvent, CRUDMiniService, CRUDReservationService, CRUDUser
 
 
 @pytest.fixture
@@ -48,7 +49,7 @@ def event_crud(async_session):
 @pytest_asyncio.fixture
 async def test_user(user_crud):
     """Create and return a test user."""
-    user = await user_crud.create(
+    return await user_crud.create(
         UserCreate(
             id=2142,
             username="fixture_user",
@@ -58,13 +59,12 @@ async def test_user(user_crud):
             roles=["club", "grill"],
         ),
     )
-    return user
 
 
 @pytest_asyncio.fixture
 async def test_user2(user_crud):
     """Create and return a test user2."""
-    user = await user_crud.create(
+    return await user_crud.create(
         UserCreate(
             id=6545,
             username="test_user2",
@@ -74,13 +74,12 @@ async def test_user2(user_crud):
             roles=["study", "games"],
         ),
     )
-    return user
 
 
 @pytest_asyncio.fixture
 async def test_reservation_service(reservation_service_crud):
     """Create and return a test reservation service."""
-    reservation_service = await reservation_service_crud.create(
+    return await reservation_service_crud.create(
         ReservationServiceCreate(
             name="Study Room",
             alias="study",
@@ -89,13 +88,12 @@ async def test_reservation_service(reservation_service_crud):
             public=True,
         ),
     )
-    return reservation_service
 
 
 @pytest_asyncio.fixture
 async def test_reservation_service2(reservation_service_crud):
     """Create and return a test reservation service2."""
-    reservation_service = await reservation_service_crud.create(
+    return await reservation_service_crud.create(
         ReservationServiceCreate(
             name="Grill",
             alias="grill",
@@ -104,31 +102,28 @@ async def test_reservation_service2(reservation_service_crud):
             public=False,
         ),
     )
-    return reservation_service
 
 
 @pytest_asyncio.fixture
 async def test_mini_service(mini_service_crud, test_reservation_service):
     """Create and return a test mini service."""
-    mini_service = await mini_service_crud.create(
+    return await mini_service_crud.create(
         MiniServiceCreate(
             name="Projector",
             reservation_service_id=test_reservation_service.id,
         ),
     )
-    return mini_service
 
 
 @pytest_asyncio.fixture
 async def test_mini_service2(mini_service_crud, test_reservation_service):
     """Create and return a test mini service2."""
-    mini_service = await mini_service_crud.create(
+    return await mini_service_crud.create(
         MiniServiceCreate(
             name="Bar",
             reservation_service_id=test_reservation_service.id,
         ),
     )
-    return mini_service
 
 
 @pytest.fixture(scope="module")
@@ -151,7 +146,7 @@ async def test_calendar(
     test_reservation_service,
 ):
     """Create and return a test calendar."""
-    calendar = await calendar_crud.create_with_mini_services_and_collisions(
+    return await calendar_crud.create_with_mini_services_and_collisions(
         CalendarCreate(
             id="fixteure.calen.id@exgogl.eu",
             reservation_type="Grillcentrum",
@@ -166,7 +161,6 @@ async def test_calendar(
         ),
         [],
     )
-    return calendar
 
 
 @pytest_asyncio.fixture
@@ -177,7 +171,7 @@ async def test_calendar2(
     test_calendar,
 ):
     """Create and return a test calendar."""
-    calendar = await calendar_crud.create_with_mini_services_and_collisions(
+    return await calendar_crud.create_with_mini_services_and_collisions(
         CalendarCreate(
             id="klubar.calen.id@exgogl.eu",
             reservation_type="Klubovna",
@@ -193,48 +187,45 @@ async def test_calendar2(
         ),
         [],
     )
-    return calendar
 
 
-# @pytest_asyncio.fixture
-# async def test_event(event_crud, test_user, test_calendar_service):
-#     """Create and return a test event."""
-#     start = dt.datetime.now().replace(microsecond=0)
-#     end = start + dt.timedelta(hours=2)
-#
-#     event = await event_crud.create(
-#         EventLite(
-#             id="some-test-id",
-#             reservation_start=start,
-#             reservation_end=end,
-#             purpose="Workshop",
-#             guests=5,
-#             calendar_id=test_calendar_service.id,
-#             user_id=test_user.id,
-#             email="user@example.com",
-#             event_state=EventState.CONFIRMED,
-#         )
-#     )
-#     return event
-#
-#
-# @pytest_asyncio.fixture
-# async def test_event2(event_crud, test_user2, test_calendar_service):
-#     """Create and return another test event."""
-#     start = dt.datetime.now().replace(microsecond=0) + dt.timedelta(days=1)
-#     end = start + dt.timedelta(hours=3)
-#
-#     event = await event_crud.create(
-#         EventLite(
-#             id="some-test-id2",
-#             reservation_start=start,
-#             reservation_end=end,
-#             purpose="Lecture",
-#             guests=10,
-#             calendar_id=test_calendar_service.id,
-#             user_id=test_user2.id,
-#             email="user2@example.com",
-#             event_state=EventState.CONFIRMED,
-#         )
-#     )
-#     return event
+@pytest_asyncio.fixture
+async def test_event(event_crud, test_user, test_calendar):
+    """Create and return a test event."""
+    start = dt.datetime.now().replace(microsecond=0)
+    end = start + dt.timedelta(hours=2)
+
+    return await event_crud.create(
+        EventLite(
+            id="some-test-id",
+            reservation_start=start,
+            reservation_end=end,
+            purpose="Workshop",
+            guests=5,
+            calendar_id=test_calendar.id,
+            user_id=test_user.id,
+            email="user@example.com",
+            event_state=EventState.CONFIRMED,
+        )
+    )
+
+
+@pytest_asyncio.fixture
+async def test_event2(event_crud, test_user2, test_calendar2):
+    """Create and return another test event."""
+    start = dt.datetime.now().replace(microsecond=0) + dt.timedelta(days=1)
+    end = start + dt.timedelta(hours=3)
+
+    return await event_crud.create(
+        EventLite(
+            id="some-test-id2",
+            reservation_start=start,
+            reservation_end=end,
+            purpose="Lecture",
+            guests=10,
+            calendar_id=test_calendar2.id,
+            user_id=test_user2.id,
+            email="user2@example.com",
+            event_state=EventState.CONFIRMED,
+        )
+    )

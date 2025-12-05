@@ -1,7 +1,7 @@
 """Module for testing reservation service crud."""
 
 import pytest
-from core.models import CalendarModel, MiniServiceModel
+from core.models import CalendarModel, EventState, MiniServiceModel
 from core.schemas import ReservationServiceUpdate
 
 
@@ -205,6 +205,7 @@ async def test_get_public_services_include_removed(
     await reservation_service_crud.soft_remove(test_reservation_service)
     services = await reservation_service_crud.get_public_services(include_removed=True)
     assert any(service.id == test_reservation_service.id for service in services)
+    assert test_reservation_service != test_reservation_service2
 
 
 @pytest.mark.asyncio
@@ -221,7 +222,7 @@ async def test_get_calendars_by_reservation_service_id(
 ):
     """Test retrieving calendars by reservation service ID."""
     calendars = await reservation_service_crud.get_related_entities_by_reservation_service_id(
-        CalendarModel, test_reservation_service.id
+        CalendarModel, test_reservation_service.id, True
     )
     assert any(cal.id == test_calendar.id for cal in calendars)
 
@@ -235,3 +236,46 @@ async def test_get_mini_services_by_reservation_service_id(
         MiniServiceModel, test_reservation_service.id
     )
     assert any(mini_service.id == test_mini_service.id for mini_service in mini_services)
+
+
+@pytest.mark.asyncio
+async def test_get_by_room_id(reservation_service_crud, test_reservation_service):
+    """Test retrieving reservation service by room id."""
+    updated = await reservation_service_crud.update(
+        db_obj=test_reservation_service,
+        obj_in=ReservationServiceUpdate(room_id=1),
+    )
+    service = await reservation_service_crud.get_by_room_id(updated.room_id)
+    assert service.room_id == 1
+    soft_removed = await reservation_service_crud.soft_remove(
+        service,
+    )
+    assert soft_removed.deleted_at is not None
+    service_removed = await reservation_service_crud.get_by_room_id(updated.room_id, True)
+    assert service_removed.room_id == 1
+
+
+@pytest.mark.asyncio
+async def test_get_events_by_reservation_service_id_empty(
+    reservation_service_crud, test_reservation_service
+):
+    """Test getting events by reservation service id empty."""
+    events = await reservation_service_crud.get_events_by_reservation_service_id(
+        test_reservation_service.id
+    )
+    assert events == []
+
+
+@pytest.mark.asyncio
+async def test_get_events_by_reservation_service_id(
+    reservation_service_crud,
+    test_reservation_service,
+    test_event,
+):
+    """Test getting events by reservation service id."""
+    events = await reservation_service_crud.get_events_by_reservation_service_id(
+        test_reservation_service.id, EventState.CONFIRMED
+    )
+    assert events[0].id == test_event.id
+    assert events[0].event_state == test_event.event_state
+    assert events[0].purpose == test_event.purpose

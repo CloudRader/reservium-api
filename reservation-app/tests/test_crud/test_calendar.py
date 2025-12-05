@@ -37,6 +37,7 @@ async def test_get_all_calendars(test_calendar, test_calendar2, calendar_crud):
     """Test retrieving all calendars."""
     calendars = await calendar_crud.get_all()
     assert any(cal.id == test_calendar.id for cal in calendars)
+    assert test_calendar != test_calendar2
 
 
 @pytest.mark.asyncio

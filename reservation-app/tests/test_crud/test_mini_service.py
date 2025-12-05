@@ -56,6 +56,18 @@ async def test_get_names_by_reservation_service_id(
 
 
 @pytest.mark.asyncio
+async def test_get_ids_by_reservation_service_id(
+    mini_service_crud,
+    test_mini_service,
+):
+    """Test retrieving mini service ids by reservation service ID."""
+    ids = await mini_service_crud.get_ids_by_reservation_service_id(
+        test_mini_service.reservation_service_id,
+    )
+    assert ids[0] == test_mini_service.id
+
+
+@pytest.mark.asyncio
 async def test_update_mini_service(test_mini_service, mini_service_crud):
     """Test updating mini service."""
     updated = await mini_service_crud.update(
@@ -113,3 +125,20 @@ async def test_get_by_id_include_removed(mini_service_crud, test_mini_service):
     )
     assert service is not None
     assert service.deleted_at is not None
+
+
+@pytest.mark.asyncio
+async def test_get_by_room_id(mini_service_crud, test_mini_service):
+    """Test retrieving mini service by room id."""
+    updated = await mini_service_crud.update(
+        db_obj=test_mini_service,
+        obj_in=MiniServiceUpdate(room_id=1),
+    )
+    service = await mini_service_crud.get_by_room_id(updated.room_id)
+    assert service.room_id == 1
+    soft_removed = await mini_service_crud.soft_remove(
+        service,
+    )
+    assert soft_removed.deleted_at is not None
+    service_removed = await mini_service_crud.get_by_room_id(updated.room_id, True)
+    assert service_removed.room_id == 1
