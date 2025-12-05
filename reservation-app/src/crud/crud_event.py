@@ -141,7 +141,13 @@ class CRUDEvent(AbstractCRUDEvent):
         self,
         id_: str | None,
     ) -> EventModel | None:
-        obj = await self._check_id_and_return_obj_from_db_by_id(id_)
+        if id_ is None:
+            return None
+
+        stmt = select(self.model).filter(self.model.id == id_)
+        result = await self.db.execute(stmt)
+        obj = result.scalar_one_or_none()
+
         if obj is None:
             return None
         obj.event_state = self.state.CONFIRMED

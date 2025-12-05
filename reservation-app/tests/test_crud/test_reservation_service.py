@@ -123,30 +123,30 @@ async def test_update_reservation_service(
     assert updated.public is False
 
 
-# @pytest.mark.asyncio
-# async def test_soft_remove_reservation_service(
-#     test_reservation_service,
-#     reservation_service_crud,
-# ):
-#     """Test soft deleting reservation service."""
-#     soft_removed = await reservation_service_crud.soft_remove(
-#         test_reservation_service.id,
-#     )
-#     assert soft_removed.deleted_at is not None
+@pytest.mark.asyncio
+async def test_soft_remove_reservation_service(
+    test_reservation_service,
+    reservation_service_crud,
+):
+    """Test soft deleting reservation service."""
+    soft_removed = await reservation_service_crud.soft_remove(
+        test_reservation_service,
+    )
+    assert soft_removed.deleted_at is not None
 
 
-# @pytest.mark.asyncio
-# async def test_retrieve_soft_removed_reservation_service(
-#     test_reservation_service,
-#     reservation_service_crud,
-# ):
-#     """Test restoring soft deleted reservation service."""
-#     await reservation_service_crud.soft_remove(test_reservation_service.id)
-#     restored = await reservation_service_crud.retrieve_removed_object(
-#         test_reservation_service.id,
-#     )
-#     assert restored is not None
-#     assert restored.deleted_at is None
+@pytest.mark.asyncio
+async def test_retrieve_soft_removed_reservation_service(
+    test_reservation_service,
+    reservation_service_crud,
+):
+    """Test restoring soft deleted reservation service."""
+    await reservation_service_crud.soft_remove(test_reservation_service)
+    restored = await reservation_service_crud.restore(
+        test_reservation_service,
+    )
+    assert restored is not None
+    assert restored.deleted_at is None
 
 
 @pytest.mark.asyncio
@@ -163,63 +163,48 @@ async def test_hard_remove_reservation_service(
     assert should_be_none is None
 
 
-# @pytest.mark.asyncio
-# async def test_hard_remove_nonexistent_reservation_service(
-#     test_reservation_service,
-#     reservation_service_crud,
-# ):
-#     """Test hard deleting nonexistent reservation service."""
-#     removed = await reservation_service_crud.remove(test_reservation_service.id)
-#     assert removed is not None
-#
-#     should_be_none = await reservation_service_crud.get(removed.id)
-#     assert should_be_none is None
-#
-#     removed_none = await reservation_service_crud.remove(None)
-#     assert removed_none is None
+@pytest.mark.asyncio
+async def test_get_by_name_include_removed(
+    reservation_service_crud,
+    test_reservation_service,
+):
+    """Test retrieving a soft-deleted reservation service by name with include_removed=True."""
+    await reservation_service_crud.soft_remove(test_reservation_service)
+    service = await reservation_service_crud.get_by_name(
+        name=test_reservation_service.name,
+        include_removed=True,
+    )
+    assert service is not None
+    assert service.name == test_reservation_service.name
+    assert service.deleted_at is not None
 
 
-# @pytest.mark.asyncio
-# async def test_get_by_name_include_removed(
-#     reservation_service_crud,
-#     test_reservation_service,
-# ):
-#     """Test retrieving a soft-deleted reservation service by name with include_removed=True."""
-#     await reservation_service_crud.soft_remove(test_reservation_service.id)
-#     service = await reservation_service_crud.get_by_name(
-#         name=test_reservation_service.name,
-#         include_removed=True,
-#     )
-#     assert service is not None
-#     assert service.name == test_reservation_service.name
-#     assert service.deleted_at is not None
+@pytest.mark.asyncio
+async def test_get_by_alias_include_removed(
+    reservation_service_crud,
+    test_reservation_service,
+):
+    """Test retrieving a soft-deleted reservation service by alias with include_removed=True."""
+    await reservation_service_crud.soft_remove(test_reservation_service)
+    service = await reservation_service_crud.get_by_alias(
+        alias=test_reservation_service.alias,
+        include_removed=True,
+    )
+    assert service is not None
+    assert service.alias == test_reservation_service.alias
+    assert service.deleted_at is not None
 
 
-# @pytest.mark.asyncio
-# async def test_get_by_alias_include_removed(
-#     reservation_service_crud,
-#     test_reservation_service,
-# ):
-#     """Test retrieving a soft-deleted reservation service by alias with include_removed=True."""
-#     await reservation_service_crud.soft_remove(test_reservation_service.id)
-#     service = await reservation_service_crud.get_by_alias(
-#         alias=test_reservation_service.alias,
-#         include_removed=True,
-#     )
-#     assert service is not None
-#     assert service.alias == test_reservation_service.alias
-#     assert service.deleted_at is not None
-
-
-# @pytest.mark.asyncio
-# async def test_get_public_services_include_removed(
-#     reservation_service_crud,
-#     test_reservation_service,
-# ):
-#     """Test retrieving public services including soft-deleted ones."""
-#     await reservation_service_crud.soft_remove(test_reservation_service.id)
-#     services = await reservation_service_crud.get_public_services(include_removed=True)
-#     assert any(service.id == test_reservation_service.id for service in services)
+@pytest.mark.asyncio
+async def test_get_public_services_include_removed(
+    reservation_service_crud,
+    test_reservation_service,
+    test_reservation_service2,
+):
+    """Test retrieving public services including soft-deleted ones."""
+    await reservation_service_crud.soft_remove(test_reservation_service)
+    services = await reservation_service_crud.get_public_services(include_removed=True)
+    assert any(service.id == test_reservation_service.id for service in services)
 
 
 @pytest.mark.asyncio
@@ -230,15 +215,15 @@ async def test_get_all_aliases_empty(reservation_service_crud):
     assert len(aliases) == 0
 
 
-# @pytest.mark.asyncio
-# async def test_get_calendars_by_reservation_service_id(
-#     reservation_service_crud, test_reservation_service, test_calendar_service
-# ):
-#     """Test retrieving calendars by reservation service ID."""
-#     calendars = await reservation_service_crud.get_related_entities_by_reservation_service_id(
-#         CalendarModel, test_reservation_service.id
-#     )
-#     assert any(cal.id == test_calendar_service.id for cal in calendars)
+@pytest.mark.asyncio
+async def test_get_calendars_by_reservation_service_id(
+    reservation_service_crud, test_reservation_service, test_calendar
+):
+    """Test retrieving calendars by reservation service ID."""
+    calendars = await reservation_service_crud.get_related_entities_by_reservation_service_id(
+        CalendarModel, test_reservation_service.id
+    )
+    assert any(cal.id == test_calendar.id for cal in calendars)
 
 
 @pytest.mark.asyncio

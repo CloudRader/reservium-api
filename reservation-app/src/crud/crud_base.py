@@ -171,18 +171,3 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         )
         result = await self.db.execute(stmt)
         return result.scalar_one()
-
-    async def _check_id_and_return_obj_from_db_by_id(
-        self,
-        id_: str | int,
-    ) -> Model | None:
-        """
-        Retrieve a database object by its primary key (string or integer).
-
-        If the identifier is provided.
-        """
-        if id_ is None:
-            return None
-        stmt = select(self.model).filter(self.model.id == id_)
-        result = await self.db.execute(stmt)
-        return result.scalar_one_or_none()

@@ -65,20 +65,20 @@ async def test_update_mini_service(test_mini_service, mini_service_crud):
     assert updated.name == "Console"
 
 
-# @pytest.mark.asyncio
-# async def test_soft_remove_mini_service(test_mini_service, mini_service_crud):
-#     """Test soft deleting mini service."""
-#     soft_removed = await mini_service_crud.soft_remove(test_mini_service.id)
-#     assert soft_removed.deleted_at is not None
+@pytest.mark.asyncio
+async def test_soft_remove_mini_service(test_mini_service, mini_service_crud):
+    """Test soft deleting mini service."""
+    soft_removed = await mini_service_crud.soft_remove(test_mini_service)
+    assert soft_removed.deleted_at is not None
 
 
-# @pytest.mark.asyncio
-# async def test_retrieve_soft_removed_mini_service(test_mini_service, mini_service_crud):
-#     """Test restoring soft deleted mini service."""
-#     await mini_service_crud.soft_remove(test_mini_service.id)
-#     restored = await mini_service_crud.retrieve_removed_object(test_mini_service.id)
-#     assert restored is not None
-#     assert restored.deleted_at is None
+@pytest.mark.asyncio
+async def test_retrieve_soft_removed_mini_service(test_mini_service, mini_service_crud):
+    """Test restoring soft deleted mini service."""
+    await mini_service_crud.soft_remove(test_mini_service)
+    restored = await mini_service_crud.restore(test_mini_service)
+    assert restored is not None
+    assert restored.deleted_at is None
 
 
 @pytest.mark.asyncio
@@ -91,38 +91,25 @@ async def test_hard_remove_mini_service(test_mini_service, mini_service_crud):
     assert should_be_none is None
 
 
-# @pytest.mark.asyncio
-# async def test_hard_remove_nonexistent_mini_service(
-#     test_mini_service,
-#     mini_service_crud,
-# ):
-#     """Test deleting a nonexistent mini service."""
-#     removed = await mini_service_crud.remove(test_mini_service.id)
-#     assert removed is not None
-#
-#     removed_none = await mini_service_crud.remove(test_mini_service.id)
-#     assert removed_none is None
+@pytest.mark.asyncio
+async def test_get_by_name_include_removed(mini_service_crud, test_mini_service):
+    """Test retrieving a soft-deleted mini service by name with include_removed=True."""
+    await mini_service_crud.soft_remove(test_mini_service)
+    service = await mini_service_crud.get_by_name(
+        name=test_mini_service.name,
+        include_removed=True,
+    )
+    assert service is not None
+    assert service.deleted_at is not None
 
 
-# @pytest.mark.asyncio
-# async def test_get_by_name_include_removed(mini_service_crud, test_mini_service):
-#     """Test retrieving a soft-deleted mini service by name with include_removed=True."""
-#     await mini_service_crud.soft_remove(test_mini_service.id)
-#     service = await mini_service_crud.get_by_name(
-#         name=test_mini_service.name,
-#         include_removed=True,
-#     )
-#     assert service is not None
-#     assert service.deleted_at is not None
-
-
-# @pytest.mark.asyncio
-# async def test_get_by_id_include_removed(mini_service_crud, test_mini_service):
-#     """Test retrieving a soft-deleted mini service by ID with include_removed=True."""
-#     await mini_service_crud.soft_remove(test_mini_service.id)
-#     service = await mini_service_crud.get(
-#         id_=test_mini_service.id,
-#         include_removed=True,
-#     )
-#     assert service is not None
-#     assert service.deleted_at is not None
+@pytest.mark.asyncio
+async def test_get_by_id_include_removed(mini_service_crud, test_mini_service):
+    """Test retrieving a soft-deleted mini service by ID with include_removed=True."""
+    await mini_service_crud.soft_remove(test_mini_service)
+    service = await mini_service_crud.get(
+        id_=test_mini_service.id,
+        include_removed=True,
+    )
+    assert service is not None
+    assert service.deleted_at is not None

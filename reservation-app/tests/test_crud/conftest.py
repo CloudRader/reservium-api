@@ -1,15 +1,18 @@
 """Conftest for testing crud."""
 
+import datetime as dt
 import pytest
 import pytest_asyncio
+from core.models.event import EventState
 from core.schemas import (
     CalendarCreate,
     MiniServiceCreate,
     ReservationServiceCreate,
     Rules,
     UserCreate,
+    EventLite,
 )
-from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService, CRUDUser
+from crud import CRUDCalendar, CRUDMiniService, CRUDReservationService, CRUDUser, CRUDEvent
 
 
 @pytest.fixture
@@ -34,6 +37,12 @@ def mini_service_crud(async_session):
 def calendar_crud(async_session):
     """Return calendar crud."""
     return CRUDCalendar(db=async_session)
+
+
+@pytest.fixture
+def event_crud(async_session):
+    """Return event crud."""
+    return CRUDEvent(db=async_session)
 
 
 @pytest_asyncio.fixture
@@ -136,13 +145,13 @@ def calendar_rules() -> Rules:
 
 
 @pytest_asyncio.fixture
-async def test_calendar_service(
+async def test_calendar(
     calendar_crud,
     calendar_rules,
     test_reservation_service,
 ):
     """Create and return a test calendar."""
-    calendar = await calendar_crud.create(
+    calendar = await calendar_crud.create_with_mini_services_and_collisions(
         CalendarCreate(
             id="fixteure.calen.id@exgogl.eu",
             reservation_type="Grillcentrum",
@@ -150,12 +159,82 @@ async def test_calendar_service(
             max_people=15,
             more_than_max_people_with_permission=False,
             collision_with_itself=False,
-            collision_with_calendar=["club_room_example_id"],
             club_member_rules=calendar_rules,
             active_member_rules=calendar_rules,
             manager_rules=calendar_rules,
             reservation_service_id=test_reservation_service.id,
-            # mini_services=[test_mini_service, test_mini_service2],
         ),
+        [],
     )
     return calendar
+
+
+@pytest_asyncio.fixture
+async def test_calendar2(
+    calendar_crud,
+    calendar_rules,
+    test_reservation_service2,
+    test_calendar,
+):
+    """Create and return a test calendar."""
+    calendar = await calendar_crud.create_with_mini_services_and_collisions(
+        CalendarCreate(
+            id="klubar.calen.id@exgogl.eu",
+            reservation_type="Klubovna",
+            color="#fe375",
+            max_people=10,
+            more_than_max_people_with_permission=False,
+            collision_with_itself=False,
+            club_member_rules=calendar_rules,
+            active_member_rules=calendar_rules,
+            manager_rules=calendar_rules,
+            reservation_service_id=test_reservation_service2.id,
+            collision_ids=[test_calendar.id],
+        ),
+        [],
+    )
+    return calendar
+
+
+# @pytest_asyncio.fixture
+# async def test_event(event_crud, test_user, test_calendar_service):
+#     """Create and return a test event."""
+#     start = dt.datetime.now().replace(microsecond=0)
+#     end = start + dt.timedelta(hours=2)
+#
+#     event = await event_crud.create(
+#         EventLite(
+#             id="some-test-id",
+#             reservation_start=start,
+#             reservation_end=end,
+#             purpose="Workshop",
+#             guests=5,
+#             calendar_id=test_calendar_service.id,
+#             user_id=test_user.id,
+#             email="user@example.com",
+#             event_state=EventState.CONFIRMED,
+#         )
+#     )
+#     return event
+#
+#
+# @pytest_asyncio.fixture
+# async def test_event2(event_crud, test_user2, test_calendar_service):
+#     """Create and return another test event."""
+#     start = dt.datetime.now().replace(microsecond=0) + dt.timedelta(days=1)
+#     end = start + dt.timedelta(hours=3)
+#
+#     event = await event_crud.create(
+#         EventLite(
+#             id="some-test-id2",
+#             reservation_start=start,
+#             reservation_end=end,
+#             purpose="Lecture",
+#             guests=10,
+#             calendar_id=test_calendar_service.id,
+#             user_id=test_user2.id,
+#             email="user2@example.com",
+#             event_state=EventState.CONFIRMED,
+#         )
+#     )
+#     return event
