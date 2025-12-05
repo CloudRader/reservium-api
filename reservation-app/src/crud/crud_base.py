@@ -58,7 +58,7 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
         *,
         db_obj: Model,
         obj_in: UpdateSchema,
-    ) -> Model | None:
+    ) -> Model:
         """Update an existing record with the input scheme."""
 
     @abstractmethod

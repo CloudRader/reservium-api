@@ -1,18 +1,23 @@
 """Tests for `PydanticType` custom SQLAlchemy type."""
 
 import json
-from pydantic import BaseModel
+
 from core.models.types.pydantic_type import PydanticType
+from pydantic import BaseModel
 
 
 # Example Pydantic model
 class Rules(BaseModel):
+    """The `Rules` Pydantic model."""
+
     night_time: bool
     max_reservation_hours: int
 
 
 # Subclass for testing
 class RulesType(PydanticType[Rules]):
+    """Custom SQLAlchemy type for serializing and deserializing the `Rules` Pydantic model."""
+
     model_class = Rules
 
 
