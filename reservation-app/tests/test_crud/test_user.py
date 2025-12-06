@@ -102,6 +102,17 @@ async def test_update_with_empty_dict(user_crud, test_user):
 
 
 @pytest.mark.asyncio
+async def test_get_events_by_user_id(user_crud, event_crud, test_user, test_event):
+    """Test getting future events by user id."""
+    events = await user_crud.get_events_by_user_id(test_user.id)
+    assert events[0].id == test_event.id
+    assert events[0].event_state == test_event.event_state
+    assert events[0].purpose == test_event.purpose
+    assert events[0].reservation_start == test_event.reservation_start
+    assert events[0].reservation_end == test_event.reservation_end
+
+
+@pytest.mark.asyncio
 async def test_get_events_by_user_id_past(user_crud, event_crud, test_user, test_event):
     """Test getting past events by user id."""
     start_time = dt.datetime.now() - dt.timedelta(days=3, hours=3)

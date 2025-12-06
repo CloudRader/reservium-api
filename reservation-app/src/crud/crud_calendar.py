@@ -209,6 +209,5 @@ class CRUDCalendar(AbstractCRUDCalendar):
             collisions_bulk.append({"calendar_id": calendar.id, "collides_with_id": cid})
             collisions_bulk.append({"calendar_id": cid, "collides_with_id": calendar.id})
 
-        if collisions_bulk:
-            stmt = insert(CalendarCollisionAssociationTable).values(collisions_bulk)
-            await self.db.execute(stmt)
+        stmt = insert(CalendarCollisionAssociationTable).values(collisions_bulk)
+        await self.db.execute(stmt)
