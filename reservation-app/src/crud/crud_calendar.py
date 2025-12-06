@@ -203,8 +203,6 @@ class CRUDCalendar(AbstractCRUDCalendar):
     ) -> None:
         """Add symmetric collisions for a given calendar."""
         collision_ids = [cid for cid in collision_ids if cid != calendar.id]
-        if not collision_ids:
-            return
 
         collisions_bulk = []
         for cid in collision_ids:

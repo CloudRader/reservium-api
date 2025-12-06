@@ -45,6 +45,8 @@ async def test_get_with_collisions(test_calendar, test_calendar2, calendar_crud)
     """Test getting calendar with collisions."""
     calendar = await calendar_crud.get_with_collisions(test_calendar2.id)
     assert calendar.collisions[0] == test_calendar
+    calendar = await calendar_crud.get_with_collisions(None)
+    assert calendar is None
 
 
 @pytest.mark.asyncio
