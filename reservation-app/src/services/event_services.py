@@ -623,9 +623,8 @@ class EventService(AbstractEventService):
                 hours=user_rules.in_advance_hours,
             ):
                 return False
-        else:
-            if time_difference > dt.timedelta(days=user_rules.in_prior_days):
-                return False
+        elif time_difference > dt.timedelta(days=user_rules.in_prior_days):
+            return False
         return True
 
     @staticmethod

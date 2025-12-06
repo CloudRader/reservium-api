@@ -15,6 +15,7 @@ from core.schemas.google_calendar import (
     GoogleCalendarEvent,
     GoogleCalendarEventCreate,
 )
+from fastapi import status
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from integrations.google.google_auth import auth_google
@@ -210,7 +211,7 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
                 **self.service.events().get(calendarId=calendar_id, eventId=event_id).execute()
             )
         except HttpError as exc:
-            if exc.status_code == 404:
+            if exc.status_code == status.HTTP_404_NOT_FOUND:
                 raise EntityNotFoundError(
                     entity=Entity.EVENT,
                     entity_id=event_id,
@@ -233,7 +234,7 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
                 .execute()
             )
         except HttpError as exc:
-            if exc.status_code == 404:
+            if exc.status_code == status.HTTP_404_NOT_FOUND:
                 raise EntityNotFoundError(
                     entity=Entity.EVENT,
                     entity_id=event_id,
@@ -248,7 +249,7 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
         try:
             return self.service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
         except HttpError as exc:
-            if exc.status_code == 404:
+            if exc.status_code == status.HTTP_404_NOT_FOUND:
                 raise EntityNotFoundError(
                     entity=Entity.EVENT,
                     entity_id=event_id,

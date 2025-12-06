@@ -125,9 +125,13 @@ class CalendarRouter(
             """Create calendars, only users with special roles can create calendar."""
             calendars_result: list[CalendarDetail] = []
             for calendar in objs_create:
-                calendar = await _create_single_object(service, google_calendar_service, calendar)
-                logger.debug("Created calendar: %s", calendar)
-                calendars_result.append(calendar)
+                calendar_obj = await _create_single_object(
+                    service,
+                    google_calendar_service,
+                    calendar,
+                )
+                logger.debug("Created calendar: %s", calendar_obj)
+                calendars_result.append(calendar_obj)
 
             return calendars_result
 

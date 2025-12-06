@@ -1,7 +1,8 @@
 """Module for testing event model."""
 
-import pytest
 from datetime import datetime
+
+import pytest
 from core.models import EventModel, EventState
 
 

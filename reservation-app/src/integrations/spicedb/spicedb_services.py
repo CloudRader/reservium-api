@@ -88,7 +88,7 @@ class SpiceDbService(AbstractSpiceDbService):
                 if resp.status == status.HTTP_400_BAD_REQUEST:
                     raise BaseAppError(message=data["message"])
 
-                if resp.status != 200:
+                if resp.status != status.HTTP_200_OK:
                     raise ExternalAPIError(message="SpiceDB error")
 
                 if data.get("permissionship") != "PERMISSIONSHIP_HAS_PERMISSION":
