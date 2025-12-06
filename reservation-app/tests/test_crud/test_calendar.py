@@ -62,7 +62,9 @@ async def test_update_calendar(test_calendar, test_mini_service, calendar_crud):
 
 
 @pytest.mark.asyncio
-async def test_update_calendar_with_collision(test_calendar, test_calendar2, test_mini_service, calendar_crud):
+async def test_update_calendar_with_collision(
+    test_calendar, test_calendar2, test_mini_service, calendar_crud
+):
     """Test updating a calendar with collision."""
     updated = await calendar_crud.update_with_mini_services_and_collisions(
         db_obj=test_calendar2,

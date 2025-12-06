@@ -102,7 +102,7 @@ async def test_update_with_empty_dict(user_crud, test_user):
 
 
 @pytest.mark.asyncio
-async def test_get_events_by_user_id(user_crud, event_crud, test_user, test_event):
+async def test_get_events_by_user_id(user_crud, test_user, test_event):
     """Test getting future events by user id."""
     events = await user_crud.get_events_by_user_id(test_user.id)
     assert events[0].id == test_event.id
