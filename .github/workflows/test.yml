@@ -21,7 +21,7 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -31,7 +31,7 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v7
         with:
-          version: "0.9.7"
+          version: "0.9.16"
           enable-cache: true
           cache-dependency-glob: |
             pyproject.toml
@@ -57,7 +57,7 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -67,7 +67,7 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v7
         with:
-          version: "0.9.7"
+          version: "0.9.16"
           enable-cache: true
           cache-dependency-glob: |
             pyproject.toml
@@ -93,7 +93,7 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -103,7 +103,7 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v7
         with:
-          version: "0.9.7"
+          version: "0.9.16"
           enable-cache: true
           cache-dependency-glob: |
             pyproject.toml

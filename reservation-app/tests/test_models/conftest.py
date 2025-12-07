@@ -1,17 +1,17 @@
 """Conftest for testing model."""
 
+from datetime import datetime
 from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-from datetime import datetime
 from core.models import (
     CalendarModel,
+    EventModel,
+    EventState,
     MiniServiceModel,
     ReservationServiceModel,
     UserModel,
-    EventModel,
-    EventState,
 )
 from core.schemas import Rules
 
@@ -123,7 +123,6 @@ async def test_calendar(
 @pytest_asyncio.fixture
 async def test_event(async_session, test_user, test_calendar):
     """Creates and returns a sample event for testing."""
-
     event = EventModel(
         id="test_event_1",
         purpose="Test Event",

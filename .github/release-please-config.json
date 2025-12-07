@@ -1,0 +1,17 @@
+{
+  "release-type": "simple",
+  "packages": {
+    ".": {}
+  },
+  "include-component-in-tag": false,
+  "changelog-sections": [
+    { "type": "feat", "section": "✨ New Features", "hidden": false },
+    { "type": "chore", "section": "🧱 Updates & Improvements", "hidden": false },
+    { "type": "fix", "section": "🛠️ Fixes", "hidden": false },
+    { "type": "refactor", "section": "🧹 Refactors", "hidden": false },
+    { "type": "docs", "section": "📝 Documentation", "hidden": false },
+    { "type": "test", "section": "\uD83E\uDDEA Tests & Quality", "hidden": false },
+    { "type": "ci", "section": "⚙\uFE0F DevOps & CI/CD", "hidden": false }
+  ],
+  "always-bump-patch": true
+}

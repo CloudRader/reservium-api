@@ -33,7 +33,7 @@ class AbstractCRUDCalendar(
         self,
         id_: str | int,
         include_removed: bool = False,
-    ):
+    ) -> CalendarModel | None:
         """
         Retrieve a single record by its id_ with collisions.
 
@@ -114,7 +114,7 @@ class CRUDCalendar(AbstractCRUDCalendar):
         self,
         id_: str | int,
         include_removed: bool = False,
-    ):
+    ) -> CalendarModel | None:
         if id_ is None:
             return None
         stmt = (
@@ -203,14 +203,11 @@ class CRUDCalendar(AbstractCRUDCalendar):
     ) -> None:
         """Add symmetric collisions for a given calendar."""
         collision_ids = [cid for cid in collision_ids if cid != calendar.id]
-        if not collision_ids:
-            return
 
         collisions_bulk = []
         for cid in collision_ids:
             collisions_bulk.append({"calendar_id": calendar.id, "collides_with_id": cid})
             collisions_bulk.append({"calendar_id": cid, "collides_with_id": calendar.id})
 
-        if collisions_bulk:
-            stmt = insert(CalendarCollisionAssociationTable).values(collisions_bulk)
-            await self.db.execute(stmt)
+        stmt = insert(CalendarCollisionAssociationTable).values(collisions_bulk)
+        await self.db.execute(stmt)
