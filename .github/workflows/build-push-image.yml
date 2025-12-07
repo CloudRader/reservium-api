@@ -1,14 +1,16 @@
 name: Docker Build and Push
 
 on:
-  workflow_run:
-    workflows: ["Create Release Notes"]
+  pull_request:
+    branches:
+      - main
     types:
-      - completed
+      - closed
 
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'release-please--branches--main'
     steps:
       - uses: actions/checkout@v6
         with:
