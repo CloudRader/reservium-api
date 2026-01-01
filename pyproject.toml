@@ -9,7 +9,7 @@ dependencies = [
     "uvicorn[standard]==0.38.0",
     "pydantic[email]==2.12.5",
     "pydantic-settings==2.12.0",
-    "sqlalchemy[asyncio]==2.0.44",
+    "sqlalchemy[asyncio]==2.0.45",
     "asyncpg==0.31.0",
     "pytz==2025.2",
     "alembic==1.17.1",
