@@ -1,4 +1,4 @@
-FROM python:3.12 as build
+FROM python:3.13 as build
 
 ENV HOME=/usr/src/app
 ENV VENV_PATH=$HOME/.venv
