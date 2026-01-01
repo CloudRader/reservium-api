@@ -32,7 +32,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from integrations.google import GoogleCalendarService
 from integrations.keycloak import KeycloakAuthService
 from pytz import timezone
-from services import CalendarService, EventService
+from services import CalendarService, EventService, UserService
 
 logger = logging.getLogger(__name__)
 
@@ -258,6 +258,7 @@ class EventRouter(
         async def update(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
+            user_service: Annotated[UserService, Depends(UserService)],
             user: Annotated[UserLite, Depends(get_current_user)],
             id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
             event_update: Annotated[EventUpdate, Body()],
@@ -274,6 +275,7 @@ class EventRouter(
 
             event_to_update = await google_calendar_service.get_event(event.calendar_id, event.id)
 
+            user = await user_service.get(event.user_id)
             event_to_update.description = service._description_of_event(user, event)
             prague = timezone("Europe/Prague")
             event_to_update.start.date_time = prague.localize(event.reservation_start).isoformat()
