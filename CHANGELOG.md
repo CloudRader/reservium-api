@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.2.0](https://github.com/CloudRader/reservium-api/compare/v2.1.1...v2.2.0) (2026-01-01)
+
+
+### ✨ New Features
+
+* **deps:** upgrade python from 3.12 to 3.13 ([#132](https://github.com/CloudRader/reservium-api/issues/132)) ([d53ec6e](https://github.com/CloudRader/reservium-api/commit/d53ec6ecee1cf2f702560a2054a2a79dfa30e815))
+
+
+### 🛠️ Fixes
+
+* **event:** show reservation creator in Google Calendar instead of last updater when update ([#134](https://github.com/CloudRader/reservium-api/issues/134)) ([5de6b5b](https://github.com/CloudRader/reservium-api/commit/5de6b5ba50f6397cbd15e5b5929be954e01aa829))
+
 ## [2.1.1](https://github.com/CloudRader/reservium-api/compare/v2.1.0...v2.1.1) (2025-12-07)
 
 
