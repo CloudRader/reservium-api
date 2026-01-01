@@ -16,7 +16,7 @@ ENV UV=$HOME/.local/bin/uv
 RUN $UV pip install --no-cache-dir -r pyproject.toml && $UV sync
 
 
-FROM python:3.12-slim as runtime
+FROM python:3.13-slim as runtime
 
 ENV HOME=/usr/src/app
 ENV VENV_PATH=$HOME/.venv
