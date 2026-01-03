@@ -22,6 +22,7 @@ from core.schemas import (
     CalendarUpdate,
     ReservationServiceDetail,
     UserLite,
+    MiniServiceLite,
 )
 from core.schemas.calendar import CalendarDetailWithCollisions
 from core.schemas.google_calendar import GoogleCalendarCalendar
@@ -30,6 +31,7 @@ from fastapi import Depends
 from services import CrudServiceBase
 from services.mini_service_services import MiniServiceService
 from services.reservation_service_services import ReservationServiceService
+from integrations.google import GoogleCalendarService
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -66,13 +68,11 @@ class AbstractCalendarService(
     async def google_calendars_available_for_import(
         self,
         user: UserLite,
-        google_calendars: list[GoogleCalendarCalendar],
     ) -> list[GoogleCalendarCalendar] | None:
         """
         Retrieve a Calendars from Google calendars that are candidates for additions.
 
         :param user: the UserSchema for control permissions of the calendar.
-        :param google_calendars: calendars from Google Calendars.
 
         :return: candidate list for additions, None otherwise.
         """
@@ -93,9 +93,9 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def get_mini_services_by_calendar(self, calendar_id: str) -> list[str]:
+    async def get_mini_services_by_id(self, calendar_id: str) -> list[MiniServiceLite]:
         """
-        Retrieve a list mini services instance by its calendar id.
+        Retrieve all mini services linked to a given Calendar.
 
         :param calendar_id: The id of the Calendar.
 
@@ -126,6 +126,7 @@ class CalendarService(AbstractCalendarService):
         super().__init__(CRUDCalendar(db), Entity.CALENDAR)
         self.reservation_service_service = ReservationServiceService(db)
         self.mini_service_service = MiniServiceService(db)
+        self.google_calendar_service = GoogleCalendarService()
 
     async def get_with_collisions(
         self,
@@ -141,6 +142,15 @@ class CalendarService(AbstractCalendarService):
         self,
         calendar_create: CalendarCreate,
     ) -> CalendarDetail:
+        if calendar_create.id:
+            await self.google_calendar_service.user_has_calendar_access(calendar_create.id)
+        else:
+            calendar_create.id = (
+                await self.google_calendar_service.create_calendar(
+                    calendar_create.reservation_type,
+                )
+            ).id
+
         mini_services_in_calendar = await self._prepare_calendar_mini_services(
             calendar_create.reservation_service_id, calendar_create.mini_services
         )
@@ -167,8 +177,9 @@ class CalendarService(AbstractCalendarService):
     async def google_calendars_available_for_import(
         self,
         user: UserLite,
-        google_calendars: list[GoogleCalendarCalendar],
     ) -> list[GoogleCalendarCalendar] | None:
+        google_calendars = await self.google_calendar_service.get_all_calendars()
+
         if not user.roles:
             raise PermissionDeniedError()
 
@@ -197,14 +208,8 @@ class CalendarService(AbstractCalendarService):
             include_removed,
         )
 
-    async def get_mini_services_by_calendar(self, calendar_id: str) -> list[str]:
-        calendar = await self.get(calendar_id)
-
-        mini_services_name = []
-        for mini_service in calendar.mini_services:
-            mini_services_name.append(mini_service.name)
-
-        return mini_services_name
+    async def get_mini_services_by_id(self, calendar_id: str) -> list[MiniServiceLite]:
+        return (await self.get(calendar_id)).mini_services
 
     async def get_reservation_service(
         self,
