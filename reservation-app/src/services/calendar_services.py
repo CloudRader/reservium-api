@@ -20,18 +20,18 @@ from core.schemas import (
     CalendarDetail,
     CalendarLite,
     CalendarUpdate,
+    MiniServiceLite,
     ReservationServiceDetail,
     UserLite,
-    MiniServiceLite,
 )
 from core.schemas.calendar import CalendarDetailWithCollisions
 from core.schemas.google_calendar import GoogleCalendarCalendar
 from crud import CRUDCalendar
 from fastapi import Depends
+from integrations.google import GoogleCalendarService
 from services import CrudServiceBase
 from services.mini_service_services import MiniServiceService
 from services.reservation_service_services import ReservationServiceService
-from integrations.google import GoogleCalendarService
 from sqlalchemy.ext.asyncio import AsyncSession
 
 

@@ -6,7 +6,14 @@ from typing import Annotated, Any
 from api import get_current_user
 from api.api_base import BaseCRUDRouter
 from core.application.exceptions import ERROR_RESPONSES, Entity
-from core.schemas import CalendarCreate, CalendarDetail, CalendarLite, CalendarUpdate, UserLite, MiniServiceLite
+from core.schemas import (
+    CalendarCreate,
+    CalendarDetail,
+    CalendarLite,
+    CalendarUpdate,
+    MiniServiceLite,
+    UserLite,
+)
 from core.schemas.calendar import CalendarDetailWithCollisions
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import CalendarService
@@ -76,7 +83,6 @@ class CalendarRouter(
             user: Annotated[UserLite, Depends(get_current_user)],
         ) -> Any:
             """List Google calendars that the auth user owns but are not yet added to the system."""
-
             return await service.google_calendars_available_for_import(user)
 
         @router.get(
