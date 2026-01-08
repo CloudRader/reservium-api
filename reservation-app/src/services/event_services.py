@@ -27,7 +27,8 @@ from core.schemas import (
     UserLite,
 )
 from core.schemas.event import EventLite
-from crud import CRUDCalendar, CRUDEvent, CRUDReservationService, CRUDUser
+from crud import CRUDEvent
+from services import UserService, CalendarService, ReservationServiceService
 from fastapi import Depends
 from pytz import timezone
 from services import CrudServiceBase
@@ -256,9 +257,9 @@ class EventService(AbstractEventService):
         db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
     ):
         super().__init__(CRUDEvent(db), Entity.EVENT)
-        self.reservation_service_crud = CRUDReservationService(db)
-        self.calendar_crud = CRUDCalendar(db)
-        self.user_crud = CRUDUser(db)
+        self.reservation_service_service = ReservationServiceService(db)
+        self.calendar_service = CalendarService(db)
+        self.user_service = UserService(db)
 
     async def post_event(
         self,
@@ -301,9 +302,9 @@ class EventService(AbstractEventService):
         self,
         event: EventLite,
     ) -> ReservationServiceDetail:
-        calendar: CalendarDetail = await self.calendar_crud.get(event.calendar_id)
+        calendar: CalendarDetail = await self.calendar_service.get(event.calendar_id)
 
-        reservation_service: ReservationServiceDetail = await self.reservation_service_crud.get(
+        reservation_service: ReservationServiceDetail = await self.reservation_service_service.get(
             calendar.reservation_service_id
         )
 
@@ -313,7 +314,7 @@ class EventService(AbstractEventService):
         self,
         event: EventLite,
     ) -> CalendarDetail:
-        calendar: CalendarDetail = await self.calendar_crud.get(event.calendar_id)
+        calendar: CalendarDetail = await self.calendar_service.get(event.calendar_id)
 
         return calendar
 
@@ -321,7 +322,7 @@ class EventService(AbstractEventService):
         self,
         event: EventLite,
     ) -> UserLite:
-        return await self.user_crud.get(event.user_id)
+        return await self.user_service.get(event.user_id)
 
     async def get_current_event_for_user(self, user_id: int) -> EventDetail | None:
         return await self.crud.get_current_event_for_user(user_id)
@@ -485,7 +486,7 @@ class EventService(AbstractEventService):
         calendar: CalendarDetail,
     ):
         """Check conditions and permissions for creating an event."""
-        reservation_service = await self.reservation_service_crud.get(
+        reservation_service = await self.reservation_service_service.get(
             calendar.reservation_service_id,
         )
 
@@ -516,7 +517,7 @@ class EventService(AbstractEventService):
 
     async def _choose_user_rules(self, user: UserLite, calendar: CalendarDetail):
         """Choose user rules based on the calendar rules and user roles."""
-        reservation_service = await self.reservation_service_crud.get(
+        reservation_service = await self.reservation_service_service.get(
             calendar.reservation_service_id,
         )
 
