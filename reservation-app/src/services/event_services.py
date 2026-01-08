@@ -28,10 +28,9 @@ from core.schemas import (
 )
 from core.schemas.event import EventLite
 from crud import CRUDEvent
-from services import UserService, CalendarService, ReservationServiceService
 from fastapi import Depends
 from pytz import timezone
-from services import CrudServiceBase
+from services import CalendarService, CrudServiceBase, ReservationServiceService, UserService
 from sqlalchemy.ext.asyncio import AsyncSession
 
 

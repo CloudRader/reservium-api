@@ -29,7 +29,6 @@ async def control_collision(
 
     :return: Boolean indicating if here is already another reservation or not.
     """
-
     check_collision: list = []
     collisions: list = calendar.collision_ids
     collisions.append(calendar.id)
