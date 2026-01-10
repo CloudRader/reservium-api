@@ -8,14 +8,11 @@ from api import (
 )
 from api.api_base import BaseCRUDRouter
 from api.dependencies import http_bearer
-from api.utils import control_collision, process_event_approval
 from api.v2.emails import create_email_meta, preparing_email
 from core.application.exceptions import (
     ERROR_RESPONSES,
-    BaseAppError,
     Entity,
     EntityNotFoundError,
-    SoftValidationError,
 )
 from core.models import EventState
 from core.schemas import (
@@ -26,13 +23,12 @@ from core.schemas import (
     EventUpdateTime,
     UserLite,
 )
-from core.schemas.google_calendar import GoogleCalendarEventCreate
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, Path, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
 from integrations.google import GoogleCalendarService
 from integrations.keycloak import KeycloakAuthService
 from pytz import timezone
-from services import CalendarService, EventService, UserService
+from services import EventService, UserService
 
 logger = logging.getLogger(__name__)
 
@@ -101,13 +97,12 @@ class EventRouter(
 
         @router.post(
             "/",
-            responses=ERROR_RESPONSES["404"],
+            responses=ERROR_RESPONSES["200_401_404"],
             status_code=status.HTTP_201_CREATED,
         )
         async def create(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
-            calendar_service: Annotated[CalendarService, Depends(CalendarService)],
             keycloak_service: Annotated[KeycloakAuthService, Depends(KeycloakAuthService)],
             user: Annotated[UserLite, Depends(get_current_user)],
             token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
@@ -124,38 +119,8 @@ class EventRouter(
 
             user_info = await keycloak_service.get_user_info(token.credentials)
 
-            calendar = await calendar_service.get_with_collisions(event_create.calendar_id)
-
-            reservation_service = await calendar_service.get_reservation_service(
-                calendar.id,
-            )
-
-            google_calendar_service = GoogleCalendarService()
-
-            if not await control_collision(
-                google_calendar_service,
-                event_create.start_datetime,
-                event_create.end_datetime,
-                calendar,
-            ):
-                logger.warning("Collision detected for event by user %s", user.id)
-                raise SoftValidationError("There's already a reservation for that time.")
-
-            event_body = GoogleCalendarEventCreate(
-                **await service.post_event(event_create, user_info.services, user, calendar)
-            )
-            if not event_body:
-                logger.error("Failed to create event for user %s", user.id)
-                raise BaseAppError(message="Could not create event.")
-
-            return await process_event_approval(
-                background_tasks,
-                service,
-                user,
-                calendar,
-                event_body,
-                event_create,
-                reservation_service,
+            return await service.post_event(
+                background_tasks, event_create, user_info.services, user
             )
 
         @router.put(
