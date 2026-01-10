@@ -8,10 +8,23 @@ import os
 import shutil
 from abc import ABC, abstractmethod
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
-from core import settings
-from core.schemas import EmailCreate, RegistrationFormCreate, UserLite
+from core import email_connection, settings
+from core.schemas import (
+    CalendarLite,
+    EmailCreate,
+    EmailMeta,
+    EventDetail,
+    EventLite,
+    RegistrationFormCreate,
+    ReservationServiceLite,
+    UserLite,
+)
+from fastapi import BackgroundTasks
+from fastapi_mail import FastMail, MessageSchema, MessageType
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pypdf import PdfReader, PdfWriter
 
 
@@ -36,6 +49,14 @@ class AbstractEmailService(ABC):
 
 class EmailService(AbstractEmailService):
     """Class EmailService represent service that work with Email."""
+
+    def __init__(
+        self,
+    ):
+        self.template_dir = Path(__file__).parent.parent / "templates" / "email"
+        self.env = Environment(
+            loader=FileSystemLoader(self.template_dir), autoescape=select_autoescape()
+        )
 
     def prepare_registration_form(
         self,
@@ -104,4 +125,172 @@ class EmailService(AbstractEmailService):
                 f"Your {settings.ORGANIZATION_NAME} Team"
             ),
             attachment=output_path,
+        )
+
+    async def send_email(self, email_create: EmailCreate, background_tasks: BackgroundTasks) -> Any:
+        """
+        Send an email asynchronously.
+
+        This endpoint sends an email using the provided email details. The email is
+        sent in the background to avoid blocking the request-response cycle.
+
+        :param email_create: Email Create schema.
+        :param background_tasks: BackgroundTasks used to run the email sending asynchronously.
+
+        :returns Dictionary: Confirming that the email has been sent.
+        """
+        message = MessageSchema(
+            subject=email_create.subject,
+            recipients=email_create.email,  # List of recipients
+            body=email_create.body,
+            subtype=MessageType.plain,
+            attachments=[email_create.attachment] if email_create.attachment else [],
+        )
+
+        fm = FastMail(email_connection)
+        background_tasks.add_task(fm.send_message, message)
+
+        if email_create.attachment and os.path.exists(email_create.attachment):
+            os.remove(email_create.attachment)
+
+        return {"message": "Email has been sent"}
+
+    def render_email_template(self, template_name: str, context: dict) -> str:
+        """
+        Render an email template using Jinja2 with the given context.
+
+        :param template_name: Name of the template file.
+        :param context: Dictionary of variables to render into the template.
+        :return: Rendered email body as a string.
+        """
+        template = self.env.get_template(template_name)
+        return template.render(context)
+
+    async def preparing_email(
+        self,
+        event: EventDetail,
+        email_meta: EmailMeta,
+        background_tasks: BackgroundTasks,
+    ) -> Any:
+        """
+        Prepare and send both member and manager information emails based on an event.
+
+        :param event: The EventExtra object in db.
+        :param email_meta: Email metadata containing template name, subject and reason.
+        :param background_tasks: BackgroundTasks used to run the email sending asynchronously.
+
+        :return: Dictionary confirming the emails have been sent.
+        """
+        calendar = event.calendar
+        reservation_service = event.calendar.reservation_service
+        user = event.user
+
+        context = self.construct_body_context(
+            event,
+            user,
+            reservation_service,
+            calendar,
+            email_meta.reason,
+        )
+
+        # Mail for club members
+        template_for_member = f"{email_meta.template_name}.txt"
+        body = self.render_email_template(template_for_member, context)
+        email_create = self.construct_email(str(event.email), email_meta.subject, body)
+        await self.send_email(email_create, background_tasks)
+
+        # Mail for manager
+        template_for_manager = f"{email_meta.template_name}_manager.txt"
+        body = self.render_email_template(template_for_manager, context)
+        email_subject = f"[Reservation Alert] {email_meta.subject}"
+        email_create = self.construct_email(
+            reservation_service.contact_mail,
+            email_subject,
+            body,
+        )
+        await self.send_email(email_create, background_tasks)
+
+        return {"message": "Emails has been sent successfully"}
+
+    def construct_email(
+        self,
+        send_to_email: str,
+        subject: str,
+        body: str,
+    ) -> EmailCreate:
+        """
+        Construct the schema of the email.
+
+        :param send_to_email: Recipient email address.
+        :param subject: Email subject.
+        :param body: Email body.
+
+        :return: Constructed EmailCreate schema.
+        """
+        return EmailCreate(
+            email=[str(send_to_email)],
+            subject=subject,
+            body=body,
+        )
+
+    def construct_body_context(
+        self,
+        event: EventLite,
+        user: UserLite,
+        reservation_service: ReservationServiceLite,
+        calendar: CalendarLite,
+        reason: str,
+    ) -> dict:
+        """
+        Construct a dictionary of context variables to render an email template.
+
+        :param event: EventExtra object in db.
+        :param user: UserLite object in db.
+        :param reservation_service: ReservationServiceDetail object in db.
+        :param calendar: CalendarDetail object in db.
+        :param reason: Optional reason string to include in the message.
+        :return: Context dictionary for email rendering.
+        """
+        additional_services = "-"
+        if event.additional_services:
+            additional_services = ", ".join(event.additional_services)
+
+        return {
+            "reservation_type": calendar.reservation_type,
+            "start_time": event.reservation_start.strftime("%d/%m/%Y, %H:%M"),
+            "end_time": event.reservation_end.strftime("%d/%m/%Y, %H:%M"),
+            "requested_start_time": (
+                event.requested_reservation_start.strftime("%d/%m/%Y, %H:%M")
+                if event.requested_reservation_start
+                else None
+            ),
+            "requested_end_time": (
+                event.requested_reservation_end.strftime("%d/%m/%Y, %H:%M")
+                if event.requested_reservation_end
+                else None
+            ),
+            "user_name": user.full_name,
+            "event_guests": event.guests,
+            "event_purpose": event.purpose,
+            "additionals": additional_services,
+            "wiki": reservation_service.web,
+            "manager_email": reservation_service.contact_mail,
+            "reservation_service": reservation_service.name,
+            "reason": reason,
+            "club_name": settings.ORGANIZATION_NAME,
+        }
+
+    def create_email_meta(self, template_name: str, subject: str, reason: str = "") -> EmailMeta:
+        """
+        Construct an EmailMeta object from parameters.
+
+        :param template_name: Name of the email template.
+        :param subject: Email subject.
+        :param reason: Optional reason content.
+        :return: EmailMeta instance.
+        """
+        return EmailMeta(
+            template_name=template_name,
+            subject=subject,
+            reason=reason,
         )
