@@ -12,7 +12,7 @@ dependencies = [
     "sqlalchemy[asyncio]==2.0.45",
     "asyncpg==0.31.0",
     "pytz==2025.2",
-    "alembic==1.18.0",
+    "alembic==1.18.4",
     "sqlalchemy-easy-softdelete==0.8.3",
     "fastapi-mail==1.6.1",
     "itsdangerous==2.2.0",
