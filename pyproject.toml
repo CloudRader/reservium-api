@@ -37,7 +37,7 @@ dev = [
     "pytest-cov==7.0.0",
     "pytest-env==1.6.0",
     "mypy==1.19.1",
-    "testcontainers==4.14.1",
+    "testcontainers==4.14.2",
     "types-pytz==2025.2.0.20251108",
     "types-python-dateutil==2.9.0.20260402",
     "ruff==0.14.11",
