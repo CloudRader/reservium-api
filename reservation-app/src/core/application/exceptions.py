@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Any
 
 from fastapi import FastAPI, Request, status
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 
@@ -87,9 +87,9 @@ class BaseAppError(Exception):
         self.status_code = status_code or self.STATUS_CODE
         self.details = kwargs  # Extra context if needed
 
-    def to_response(self) -> ORJSONResponse:
-        """Convert exception to a ORJSONResponse."""
-        return ORJSONResponse(
+    def to_response(self) -> JSONResponse:
+        """Convert exception to a JSONResponse."""
+        return JSONResponse(
             status_code=self.status_code,
             content={"message": self.message, **self.details},
         )
@@ -240,7 +240,7 @@ def register_errors_handlers(app: FastAPI) -> None:
         raise DatabaseIntegrityError(exc)
 
     @app.exception_handler(BaseAppError)
-    def app_exception_handler(request: Request, exc: BaseAppError) -> ORJSONResponse:  # noqa: ARG001
+    def app_exception_handler(request: Request, exc: BaseAppError) -> JSONResponse:  # noqa: ARG001
         """Handle BaseAppError exceptions."""
         return exc.to_response()
 

@@ -1,9 +1,9 @@
 """API controllers for emails."""
 
-import os
 from pathlib import Path
 from typing import Annotated, Any
 
+from anyio import Path as AsyncPath
 from api import get_current_user
 from core import email_connection, settings
 from core.schemas import (
@@ -62,9 +62,6 @@ async def send_registration_form(
 
     await send_email(email_create, background_tasks)
 
-    if email_create.attachment and os.path.exists(email_create.attachment):
-        os.remove(email_create.attachment)
-
     return {"message": "Registration form has been sent"}
 
 
@@ -89,10 +86,13 @@ async def send_email(email_create: EmailCreate, background_tasks: BackgroundTask
     )
 
     fm = FastMail(email_connection)
-    background_tasks.add_task(fm.send_message, message)
 
-    if email_create.attachment and os.path.exists(email_create.attachment):
-        os.remove(email_create.attachment)
+    background_tasks.add_task(
+        send_and_cleanup,
+        fm,
+        message,
+        email_create.attachment,
+    )
 
     return {"message": "Email has been sent"}
 
@@ -145,6 +145,23 @@ async def preparing_email(
     await send_email(email_create, background_tasks)
 
     return {"message": "Emails has been sent successfully"}
+
+
+async def send_and_cleanup(fm: FastMail, message: MessageSchema, attachment: str | None) -> None:
+    """
+    Send an email message and clean up the attachment file after sending.
+
+    :param fm: FastMail instance used to send the email.
+    :param message: MessageSchema object containing email details.
+    :param attachment: Optional file path to the attachment to be deleted after sending.
+    """
+    try:
+        await fm.send_message(message)
+    finally:
+        if attachment:
+            path = AsyncPath(attachment)
+            if await path.exists():
+                await path.unlink()
 
 
 def construct_email(

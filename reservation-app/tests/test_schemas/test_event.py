@@ -1,6 +1,6 @@
 """Tests for MiniServiceDetail Pydantic Schemas."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from core.models import EventState
@@ -299,8 +299,8 @@ def test_event_detail_includes_nested_models():
         purpose="Workshop",
         guests=10,
         email="user@example.com",
-        reservation_start=datetime(2025, 5, 12, 10, 0, tzinfo=timezone.utc),
-        reservation_end=datetime(2025, 5, 12, 12, 0, tzinfo=timezone.utc),
+        reservation_start=datetime(2025, 5, 12, 10, 0, tzinfo=UTC),
+        reservation_end=datetime(2025, 5, 12, 12, 0, tzinfo=UTC),
         event_state=EventState.CONFIRMED,
         user_id=1,
         calendar_id="cal123",
