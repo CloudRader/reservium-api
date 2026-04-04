@@ -1153,7 +1153,7 @@ wheels = [
 
 [[package]]
 name = "python-keycloak"
-version = "7.0.3"
+version = "7.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
@@ -1163,9 +1163,9 @@ dependencies = [
     { name = "requests" },
     { name = "requests-toolbelt" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/25/9e/096568fa9348d52911042924bfcb81193e2b750fc6f5aca07206e43ae74c/python_keycloak-7.0.3.tar.gz", hash = "sha256:13e5ac449acf5334d62550895bfcd2c08d60c8e22f61a6512a6ad9c844cf9f73", size = 78723, upload-time = "2026-01-28T11:29:47.648Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/67/e3/963aae33e9177b496def0ba47d2290391e9391d9f76a3f69cfde8c44c8b8/python_keycloak-7.1.1.tar.gz", hash = "sha256:38973e54694a656fe6f3f8fc2af0b89c78136863f928261f0d243445e9e486bc", size = 78907, upload-time = "2026-02-15T08:45:58.139Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/70/ed/a4e937bb0008a848be97f46cf5bb4d4af7f390a929b6e817eba7de2f4f69/python_keycloak-7.0.3-py3-none-any.whl", hash = "sha256:08de2c53f742360ed228e17f812a49964c5c52dcaf2439c3a6a1ab28e287cdd6", size = 87526, upload-time = "2026-01-28T11:29:46.534Z" },
+    { url = "https://files.pythonhosted.org/packages/bc/9f/569a8bbdb0859498d33d8b86273bc82849bd0b445ac01416ad34996ca3d8/python_keycloak-7.1.1-py3-none-any.whl", hash = "sha256:d8295bec6c4805ab7335b03bc92753c8c6258d5511b080cac061da20ae77f61c", size = 87607, upload-time = "2026-02-15T08:45:57.054Z" },
 ]
 
 [[package]]
@@ -1340,7 +1340,7 @@ requires-dist = [
     { name = "pydantic-settings", specifier = "==2.12.0" },
     { name = "pypdf", specifier = "==6.9.2" },
     { name = "python-dateutil", specifier = "==2.9.0.post0" },
-    { name = "python-keycloak", specifier = "==7.0.3" },
+    { name = "python-keycloak", specifier = "==7.1.1" },
     { name = "pytz", specifier = "==2025.2" },
     { name = "requests-oauthlib", specifier = "==2.0.0" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.0.49" },
