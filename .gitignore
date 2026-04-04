@@ -273,6 +273,9 @@ pyrightconfig.json
 !.vscode/extensions.json
 !.vscode/*.code-snippets
 
+### Zed ###
+.zed/*
+
 # Local History for Visual Studio Code
 .history/
 
