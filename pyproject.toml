@@ -14,7 +14,7 @@ dependencies = [
     "pytz==2025.2",
     "alembic==1.18.4",
     "sqlalchemy-easy-softdelete==0.8.3",
-    "fastapi-mail==1.6.1",
+    "fastapi-mail==1.6.2",
     "itsdangerous==2.2.0",
     "requests-oauthlib==2.0.0",
     "pypdf==6.9.2",
