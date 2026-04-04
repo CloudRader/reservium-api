@@ -20,7 +20,6 @@ class RunConfig(BaseModel):
     SERVER_PORT: int = 8000
     SERVER_USE_RELOAD: bool = False
     SERVER_USE_PROXY_HEADERS: bool = False
-    USE_GUNICORN: bool = False
     WORKERS: int = 1
     TIMEOUT: int = 900
 

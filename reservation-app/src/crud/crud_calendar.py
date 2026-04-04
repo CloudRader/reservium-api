@@ -160,7 +160,7 @@ class CRUDCalendar(AbstractCRUDCalendar):
     ) -> CalendarModel:
         update_data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
 
-        collision_ids = update_data.pop("collision_ids", [])
+        collision_ids = update_data.pop("collision_ids", None)
         update_data.pop("mini_services", None)
 
         for field, value in update_data.items():
@@ -171,14 +171,15 @@ class CRUDCalendar(AbstractCRUDCalendar):
         self.db.add(db_obj)
         await self.db.flush()
 
-        if collision_ids:
+        if collision_ids is not None:
             stmt_delete = delete(CalendarCollisionAssociationTable).where(
                 (CalendarCollisionAssociationTable.calendar_id == db_obj.id)
                 | (CalendarCollisionAssociationTable.collides_with_id == db_obj.id)
             )
 
             await self.db.execute(stmt_delete)
-            await self._add_symmetric_collisions(db_obj, collision_ids)
+            if collision_ids:
+                await self._add_symmetric_collisions(db_obj, collision_ids)
 
         self.db.add(db_obj)
         await self.db.commit()

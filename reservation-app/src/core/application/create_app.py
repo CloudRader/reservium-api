@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 
 from core import settings
 from fastapi import FastAPI
-from fastapi.responses import ORJSONResponse
 from starlette.middleware.cors import CORSMiddleware
 
 logger = logging.getLogger(__name__)
@@ -48,7 +47,6 @@ def create_app():
         version=fastapi_docs.VERSION,
         openapi_tags=fastapi_docs.get_tags_metadata(),
         lifespan=startup_event,
-        default_response_class=ORJSONResponse,
     )
 
     app.include_router(router)
