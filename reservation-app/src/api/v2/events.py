@@ -8,7 +8,6 @@ from api import (
 )
 from api.api_base import BaseCRUDRouter
 from api.dependencies import http_bearer
-from api.v2.emails import create_email_meta, preparing_email
 from core.application.exceptions import (
     ERROR_RESPONSES,
     Entity,
@@ -24,7 +23,6 @@ from core.schemas import (
 )
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, Path, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
-from integrations.google import GoogleCalendarService
 from integrations.keycloak import KeycloakAuthService
 from services import EventService
 
@@ -50,7 +48,7 @@ class EventRouter(
     specific to Events.
     """
 
-    def __init__(self):  # noqa: C901
+    def __init__(self):
         super().__init__(
             router=router,
             service_dep=EventService,
@@ -245,32 +243,7 @@ class EventRouter(
             Only user who make this reservation can cancel this reservation.
             """
             logger.info("User %s cancelling event %s (reason=%s)", user.id, id_, cancel_reason)
-            google_calendar_service = GoogleCalendarService()
-            event = await service.cancel_event(id_, user)
-
-            await google_calendar_service.delete_event(event.calendar_id, event.id)
-
-            if event.user_id == user.id:
-                await preparing_email(
-                    service,
-                    event,
-                    create_email_meta("cancel_reservation", "Cancel Reservation"),
-                    background_tasks,
-                )
-            else:
-                await preparing_email(
-                    service,
-                    event,
-                    create_email_meta(
-                        "cancel_reservation_by_manager",
-                        "Cancel Reservation by Manager",
-                        cancel_reason,
-                    ),
-                    background_tasks,
-                )
-
-            logger.debug("Event cancelled: %s", event)
-            return event
+            return await service.cancel_event(id_, user, background_tasks, cancel_reason)
 
         @router.delete(
             "/{id}/hard",

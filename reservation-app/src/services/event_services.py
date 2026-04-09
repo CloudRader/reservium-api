@@ -213,7 +213,7 @@ class AbstractEventService(
         id_: str,
         user: UserLite,
         background_tasks: BackgroundTasks,
-        manager_notes: str = "-",
+        reason: str = "",
     ) -> EventLite | None:
         """
         Cancel an EventExtra in the database.
@@ -221,7 +221,7 @@ class AbstractEventService(
         :param id_: The id of the EventExtra.
         :param user: the UserSchema for control permissions of the event.
         :param background_tasks: BackgroundTasks for sending emails.
-        :param manager_notes: Notes from the manager.
+        :param reason: The reason for the cancellation.
 
         :return: the canceled EventExtra.
         """
@@ -570,7 +570,7 @@ class EventService(AbstractEventService):
         id_: str,
         user: UserLite,
         background_tasks: BackgroundTasks,
-        manager_notes: str = "-",
+        reason: str = "",
     ) -> EventLite | None:
         event = await self.get(id_)
 
@@ -593,16 +593,24 @@ class EventService(AbstractEventService):
 
         await self.google_calendar_service.delete_event(event.calendar_id, event.id)
 
-        await self.email_service.preparing_email(
-            event,
-            self.email_service.create_email_meta(
-                "decline_reservation",
-                "Reservation Has Been Declined",
-                manager_notes,
-            ),
-            background_tasks,
-        )
-        logger.debug("Reservation declined: %s", event)
+        if event.user_id == user.id:
+            await self.email_service.preparing_email(
+                event,
+                self.email_service.create_email_meta("cancel_reservation", "Cancel Reservation"),
+                background_tasks,
+            )
+        else:
+            await self.email_service.preparing_email(
+                event,
+                self.email_service.create_email_meta(
+                    "cancel_reservation_by_manager",
+                    "Cancel Reservation by Manager",
+                    reason,
+                ),
+                background_tasks,
+            )
+
+        logger.debug("Event cancelled: %s", event)
 
         return event
 
