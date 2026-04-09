@@ -246,6 +246,11 @@ def register_errors_handlers(app: FastAPI) -> None:
 
 
 ERROR_RESPONSES = {
+    "200_401_404": {
+        **SoftValidationError.response(),
+        **UnauthorizedError.response(),
+        **EntityNotFoundError.response(),
+    },
     "400": {
         **BaseAppError.response(),
     },

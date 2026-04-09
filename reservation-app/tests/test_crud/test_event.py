@@ -49,24 +49,6 @@ async def test_update_event(test_event, event_crud):
 
 
 @pytest.mark.asyncio
-async def test_confirm_event(test_event, event_crud):
-    """Test confirm an event."""
-    event = await event_crud.confirm_event(None)
-    assert event is None
-
-    event = await event_crud.confirm_event("f7waofw8a")  # random id
-    assert event is None
-
-    updated_event = await event_crud.update(
-        db_obj=test_event, obj_in=EventUpdate(event_state=EventState.NOT_APPROVED)
-    )
-    assert updated_event.event_state == EventState.NOT_APPROVED
-
-    confirm_event = await event_crud.confirm_event(updated_event.id)
-    assert confirm_event.event_state == EventState.CONFIRMED
-
-
-@pytest.mark.asyncio
 async def test_soft_remove_event(test_event, event_crud):
     """Test soft deleting an event."""
     soft_removed = await event_crud.soft_remove(test_event)

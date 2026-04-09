@@ -38,19 +38,6 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventLite, EventUpdate], ABC):
         """
 
     @abstractmethod
-    async def confirm_event(
-        self,
-        id_: str | None,
-    ) -> EventModel | None:
-        """
-        Confirm event.
-
-        :param id_: The ID of the event to confirm.
-
-        :return: the updated Event.
-        """
-
-    @abstractmethod
     async def get_current_event_for_user(self, user_id: int) -> EventModel | None:
         """
         Retrieve the current event for the given user where the current.
@@ -113,24 +100,6 @@ class CRUDEvent(AbstractCRUDEvent):
         )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
-
-    async def confirm_event(
-        self,
-        id_: str | None,
-    ) -> EventModel | None:
-        if id_ is None:
-            return None
-
-        stmt = select(self.model).filter(self.model.id == id_)
-        result = await self.db.execute(stmt)
-        obj = result.scalar_one_or_none()
-
-        if obj is None:
-            return None
-        obj.event_state = self.state.CONFIRMED
-        self.db.add(obj)
-        await self.db.commit()
-        return obj
 
     async def get_current_event_for_user(self, user_id: int) -> EventModel | None:
         now = datetime.now()
