@@ -219,49 +219,10 @@ class EventRouter(
                 id_,
                 approve,
             )
-            google_calendar_service = GoogleCalendarService()
             if approve:
-                event = await service.confirm_event(id_, user)
+                event = await service.confirm_event(id_, user, background_tasks, manager_notes)
             else:
-                event = await service.cancel_event(id_, user)
-
-            if approve:
-                calendar = await service.get_calendar_of_this_event(event)
-                event_to_update = await google_calendar_service.get_event(
-                    event.calendar_id, event.id
-                )
-
-                event_to_update.summary = calendar.reservation_type
-
-                await google_calendar_service.update_event(
-                    event.calendar_id, event.id, event_to_update
-                )
-
-                await preparing_email(
-                    service,
-                    event,
-                    create_email_meta(
-                        "approve_reservation",
-                        "Reservation Has Been Approved",
-                        manager_notes,
-                    ),
-                    background_tasks,
-                )
-                logger.debug("Reservation approved: %s", event)
-            else:
-                await google_calendar_service.delete_event(event.calendar_id, event.id)
-
-                await preparing_email(
-                    service,
-                    event,
-                    create_email_meta(
-                        "decline_reservation",
-                        "Reservation Has Been Declined",
-                        manager_notes,
-                    ),
-                    background_tasks,
-                )
-                logger.debug("Reservation declined: %s", event)
+                event = await service.cancel_event(id_, user, background_tasks, manager_notes)
 
             return event
 

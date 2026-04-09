@@ -212,13 +212,16 @@ class AbstractEventService(
         self,
         id_: str,
         user: UserLite,
+        background_tasks: BackgroundTasks,
+        manager_notes: str = "-",
     ) -> EventLite | None:
         """
         Cancel an EventExtra in the database.
 
         :param id_: The id of the EventExtra.
-        :param user: The user object used to control permissions
-        for users authorized to perform this action.
+        :param user: the UserSchema for control permissions of the event.
+        :param background_tasks: BackgroundTasks for sending emails.
+        :param manager_notes: Notes from the manager.
 
         :return: the canceled EventExtra.
         """
@@ -239,13 +242,20 @@ class AbstractEventService(
         """
 
     @abstractmethod
-    async def confirm_event(self, id_: str | None, user: UserLite) -> EventLite | None:
+    async def confirm_event(
+        self,
+        id_: str,
+        user: UserLite,
+        background_tasks: BackgroundTasks,
+        manager_notes: str = "-",
+    ) -> EventLite | None:
         """
         Confirm event.
 
         :param id_: The id of the event to confirm.
-        :param user: the UserSchema for control permissions users
-        that can do this action.
+        :param user: the UserSchema for control permissions of the event.
+        :param background_tasks: BackgroundTasks for sending emails.
+        :param manager_notes: Notes from the manager.
 
         :return: the updated EventExtra.
         """
@@ -559,6 +569,8 @@ class EventService(AbstractEventService):
         self,
         id_: str,
         user: UserLite,
+        background_tasks: BackgroundTasks,
+        manager_notes: str = "-",
     ) -> EventLite | None:
         event = await self.get(id_)
 
@@ -577,9 +589,22 @@ class EventService(AbstractEventService):
                 "You do not have permission to cancel a reservation made by another user.",
             )
 
-        updated_event = EventUpdate(event_state=EventState.CANCELED)
+        event = await self.update(id_, EventUpdate(event_state=EventState.CANCELED))
 
-        return await self.update(id_, updated_event)
+        await self.google_calendar_service.delete_event(event.calendar_id, event.id)
+
+        await self.email_service.preparing_email(
+            event,
+            self.email_service.create_email_meta(
+                "decline_reservation",
+                "Reservation Has Been Declined",
+                manager_notes,
+            ),
+            background_tasks,
+        )
+        logger.debug("Reservation declined: %s", event)
+
+        return event
 
     async def delete_with_permission_checks(
         self,
@@ -600,7 +625,13 @@ class EventService(AbstractEventService):
 
         return await self.crud.remove(id_)
 
-    async def confirm_event(self, id_: str | None, user: UserLite) -> EventLite | None:
+    async def confirm_event(
+        self,
+        id_: str,
+        user: UserLite,
+        background_tasks: BackgroundTasks,
+        manager_notes: str = "-",
+    ) -> EventLite | None:
         event = await self.get(id_)
 
         if event.event_state != EventState.NOT_APPROVED:
@@ -615,7 +646,29 @@ class EventService(AbstractEventService):
                 f"You must be the {reservation_service.name} manager to approve this reservation.",
             )
 
-        return await self.crud.confirm_event(id_)
+        event = await self.update(id_, EventUpdate(event_state=EventState.CONFIRMED))
+
+        calendar = await self.get_calendar_of_this_event(event)
+        event_to_update = await self.google_calendar_service.get_event(event.calendar_id, event.id)
+
+        event_to_update.summary = calendar.reservation_type
+
+        await self.google_calendar_service.update_event(
+            event.calendar_id, event.id, event_to_update
+        )
+
+        await self.email_service.preparing_email(
+            event,
+            self.email_service.create_email_meta(
+                "approve_reservation",
+                "Reservation Has Been Approved",
+                manager_notes,
+            ),
+            background_tasks,
+        )
+        logger.debug("Reservation approved: %s", event)
+
+        return event
 
     async def get_events_by_user_roles(
         self,
