@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from anyio import Path as AsyncPath
 from core import email_connection, settings
 from core.schemas import (
     CalendarLite,
@@ -35,13 +36,13 @@ class AbstractEmailService(ABC):
     def prepare_registration_form(
         self,
         registration_form: RegistrationFormCreate,
-        full_name: UserLite,
-    ) -> Any:
+        full_name: str,
+    ) -> EmailCreate:
         """
         Prepare registration form in pdf for sending to head of the dormitory.
 
         :param registration_form: Input data for adding in pdf.
-        :param full_name: UserLite fullname.
+        :param full_name: User fullname.
 
         :returns EventExtra json object: the created event or exception otherwise.
         """
@@ -148,10 +149,13 @@ class EmailService(AbstractEmailService):
         )
 
         fm = FastMail(email_connection)
-        background_tasks.add_task(fm.send_message, message)
 
-        if email_create.attachment and os.path.exists(email_create.attachment):
-            os.remove(email_create.attachment)
+        background_tasks.add_task(
+            self._send_and_cleanup,
+            fm,
+            message,
+            email_create.attachment,
+        )
 
         return {"message": "Email has been sent"}
 
@@ -294,3 +298,21 @@ class EmailService(AbstractEmailService):
             subject=subject,
             reason=reason,
         )
+
+    async def _send_and_cleanup(
+        self, fm: FastMail, message: MessageSchema, attachment: str | None
+    ) -> None:
+        """
+        Send an email message and clean up the attachment file after sending.
+
+        :param fm: FastMail instance used to send the email.
+        :param message: MessageSchema object containing email details.
+        :param attachment: Optional file path to the attachment to be deleted after sending.
+        """
+        try:
+            await fm.send_message(message)
+        finally:
+            if attachment:
+                path = AsyncPath(attachment)
+                if await path.exists():
+                    await path.unlink()
