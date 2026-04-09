@@ -189,25 +189,10 @@ class EventRouter(
             logger.info(
                 "User %s requesting time change for event %s (reason=%s)", user.id, id_, reason
             )
-            event: EventLite = await service.request_update_reservation_time(
-                id_,
-                event_update,
-                user,
-            )
 
-            await preparing_email(
-                service,
-                event,
-                create_email_meta(
-                    "request_update_reservation_time",
-                    "Request Update Reservation Time",
-                    reason,
-                ),
-                background_tasks,
+            return await service.request_update_reservation_time(
+                id_, event_update, user, background_tasks, reason
             )
-
-            logger.debug("Time change request processed for event: %s", event)
-            return event
 
         @router.put(
             "/{id}/approve",

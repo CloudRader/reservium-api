@@ -192,6 +192,8 @@ class AbstractEventService(
         id_: str,
         event_update: EventUpdateTime,
         user: UserLite,
+        background_tasks: BackgroundTasks,
+        reason: str = "",
     ) -> EventLite | None:
         """
         Update a reservation time of the EventExtra in the database.
@@ -199,6 +201,8 @@ class AbstractEventService(
         :param id_: The id of the EventExtra.
         :param event_update: EventUpdateTime SchemaLite for update.
         :param user: the UserSchema for control permissions of the event.
+        :param background_tasks: BackgroundTasks for sending emails.
+        :param reason: The reason for the update.
 
         :return: the updated EventExtra.
         """
@@ -507,6 +511,8 @@ class EventService(AbstractEventService):
         id_: str,
         event_update: EventUpdateTime,
         user: UserLite,
+        background_tasks: BackgroundTasks,
+        reason: str = "",
     ) -> EventLite | None:
         event_to_update = await self.get(id_)
 
@@ -533,7 +539,21 @@ class EventService(AbstractEventService):
             requested_reservation_end=event_update.requested_reservation_end,
             event_state=EventState.UPDATE_REQUESTED,
         )
-        return await self.update(id_, event_update_time)
+
+        event = await self.update(id_, event_update_time)
+
+        await self.email_service.preparing_email(
+            event,
+            self.email_service.create_email_meta(
+                "request_update_reservation_time",
+                "Request Update Reservation Time",
+                reason,
+            ),
+            background_tasks,
+        )
+
+        logger.debug("Time change request processed for event: %s", event)
+        return event
 
     async def cancel_event(
         self,
