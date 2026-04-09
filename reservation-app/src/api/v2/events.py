@@ -26,8 +26,7 @@ from fastapi import APIRouter, BackgroundTasks, Body, Depends, Path, Query, stat
 from fastapi.security import HTTPAuthorizationCredentials
 from integrations.google import GoogleCalendarService
 from integrations.keycloak import KeycloakAuthService
-from pytz import timezone
-from services import EventService, UserService
+from services import EventService
 
 logger = logging.getLogger(__name__)
 
@@ -157,7 +156,6 @@ class EventRouter(
         async def update(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
-            user_service: Annotated[UserService, Depends(UserService)],
             user: Annotated[UserLite, Depends(get_current_user)],
             id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
             event_update: Annotated[EventUpdate, Body()],
@@ -169,32 +167,9 @@ class EventRouter(
             Only users with special roles can update object.
             """
             logger.info("User %s updating event %s with reason: %s", user.id, id_, reason)
-            google_calendar_service = GoogleCalendarService()
-            event = await service.update_with_permission_checks(id_, event_update, user)
-
-            event_to_update = await google_calendar_service.get_event(event.calendar_id, event.id)
-
-            user = await user_service.get(event.user_id)
-            event_to_update.description = service._description_of_event(user, event)
-            prague = timezone("Europe/Prague")
-            event_to_update.start.date_time = prague.localize(event.reservation_start).isoformat()
-            event_to_update.end.date_time = prague.localize(event.reservation_end).isoformat()
-
-            await google_calendar_service.update_event(event.calendar_id, event.id, event_to_update)
-
-            await preparing_email(
-                service,
-                event,
-                create_email_meta(
-                    "update_reservation",
-                    "Update Reservation By Manager",
-                    reason,
-                ),
-                background_tasks,
+            return await service.update_with_permission_checks(
+                id_, user, event_update, background_tasks, reason
             )
-
-            logger.debug("Event updated: %s", event)
-            return event
 
         @router.put(
             "/{id}/request-time-change",

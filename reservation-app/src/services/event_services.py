@@ -169,8 +169,10 @@ class AbstractEventService(
     async def update_with_permission_checks(
         self,
         id_: str,
-        event_update: EventUpdate,
         user: UserLite,
+        event_update: EventUpdate,
+        background_tasks: BackgroundTasks,
+        reason: str = "",
     ) -> EventLite | None:
         """
         Update a reservation of the EventExtra in the database.
@@ -178,6 +180,8 @@ class AbstractEventService(
         :param id_: The id of the EventExtra.
         :param event_update: EventUpdate SchemaLite for update.
         :param user: the UserSchema for control permissions of the event.
+        :param background_tasks: BackgroundTasks for sending emails.
+        :param reason: The reason for the update.
 
         :return: the updated EventExtra.
         """
@@ -448,8 +452,10 @@ class EventService(AbstractEventService):
     async def update_with_permission_checks(
         self,
         id_: str,
-        event_update: EventUpdate,
         user: UserLite,
+        event_update: EventUpdate,
+        background_tasks: BackgroundTasks,
+        reason: str = "",
     ) -> EventLite | None:
         event_to_update = await self.get(id_)
 
@@ -469,6 +475,31 @@ class EventService(AbstractEventService):
         if event_update.reservation_end < event_update.reservation_start:
             raise SoftValidationError("The end of a reservation cannot be before its beginning!")
 
+        event = await self.update(id_, event_update)
+
+        event_to_update = await self.google_calendar_service.get_event(event.calendar_id, event.id)
+
+        user = await self.user_crud.get(event.user_id)
+        event_to_update.description = self._description_of_event(user, event)
+        prague = timezone("Europe/Prague")
+        event_to_update.start.date_time = prague.localize(event.reservation_start).isoformat()
+        event_to_update.end.date_time = prague.localize(event.reservation_end).isoformat()
+
+        await self.google_calendar_service.update_event(
+            event.calendar_id, event.id, event_to_update
+        )
+
+        await self.email_service.preparing_email(
+            event,
+            self.email_service.create_email_meta(
+                "update_reservation",
+                "Update Reservation By Manager",
+                reason,
+            ),
+            background_tasks,
+        )
+
+        logger.debug("Event updated: %s", event)
         return await self.update(id_, event_update)
 
     async def request_update_reservation_time(
