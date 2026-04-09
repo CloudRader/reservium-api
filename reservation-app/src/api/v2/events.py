@@ -12,7 +12,6 @@ from api.v2.emails import create_email_meta, preparing_email
 from core.application.exceptions import (
     ERROR_RESPONSES,
     Entity,
-    EntityNotFoundError,
 )
 from core.models import EventState
 from core.schemas import (
@@ -145,74 +144,9 @@ class EventRouter(
             logger.info(
                 "User %s approving time change for event %s (approve=%s)", user.id, id_, approve
             )
-            google_calendar_service = GoogleCalendarService()
-            event: EventDetail = await service.get(id_)
-
-            event_update: EventUpdate = EventUpdate(
-                event_state=EventState.CONFIRMED,
-                requested_reservation_start=None,
-                requested_reservation_end=None,
+            return service.approve_update_reservation_time(
+                id_, user, background_tasks, approve, manager_notes
             )
-
-            if not approve:
-                logger.debug("Approving requested time change for event %s", id_)
-                event_to_update = await service.approve_update_reservation_time(
-                    id_,
-                    event_update,
-                    user,
-                )
-                if not event_to_update:
-                    raise EntityNotFoundError(Entity.EVENT, id_)
-
-                await preparing_email(
-                    service,
-                    event,
-                    create_email_meta(
-                        "decline_update_reservation_time",
-                        "Request Update Reservation Time Has Been Declined",
-                        manager_notes,
-                    ),
-                    background_tasks,
-                )
-            else:
-                logger.debug("Declining requested time change for event %s", id_)
-                event_from_google_calendar = await google_calendar_service.get_event(
-                    event.calendar_id, id_
-                )
-                event_update.reservation_start = event.requested_reservation_start
-                event_update.reservation_end = event.requested_reservation_end
-
-                event_to_update = await service.approve_update_reservation_time(
-                    id_,
-                    event_update,
-                    user,
-                )
-                if not event_to_update:
-                    raise EntityNotFoundError(Entity.EVENT, id_)
-                prague = timezone("Europe/Prague")
-                event_from_google_calendar.start.date_time = prague.localize(
-                    event.reservation_start,
-                ).isoformat()
-                event_from_google_calendar.end.date_time = prague.localize(
-                    event.reservation_end,
-                ).isoformat()
-                await preparing_email(
-                    service,
-                    event,
-                    create_email_meta(
-                        "approve_update_reservation_time",
-                        "Request Update Reservation Time Has Been Approved",
-                        manager_notes,
-                    ),
-                    background_tasks,
-                )
-
-                await google_calendar_service.update_event(
-                    event.calendar_id, id_, event_from_google_calendar
-                )
-
-            logger.debug("Time change request processed for event %s: %s", id_, event_to_update)
-            return event_to_update
 
         @router.put(
             "/{id}",

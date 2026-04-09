@@ -148,15 +148,19 @@ class AbstractEventService(
     async def approve_update_reservation_time(
         self,
         id_: str,
-        event_update: EventUpdate,
         user: UserLite,
+        background_tasks: BackgroundTasks,
+        approve: bool = False,
+        manager_notes: str = "-",
     ) -> EventLite | None:
         """
         Approve update a reservation time of the EventExtra in the database.
 
         :param id_: The id of the EventExtra.
-        :param event_update: EventUpdate SchemaLite for update.
         :param user: the UserSchema for control permissions of the event.
+        :param background_tasks: BackgroundTasks for sending emails.
+        :param approve: Whether to approve the update.
+        :param manager_notes: Notes from the manager.
 
         :return: the updated EventExtra.
         """
@@ -369,8 +373,10 @@ class EventService(AbstractEventService):
     async def approve_update_reservation_time(
         self,
         id_: str,
-        event_update: EventUpdate,
         user: UserLite,
+        background_tasks: BackgroundTasks,
+        approve: bool = False,
+        manager_notes: str = "-",
     ) -> EventLite | None:
         event_to_update = await self.get(id_)
 
@@ -386,7 +392,58 @@ class EventService(AbstractEventService):
                 f"You must be the {reservation_service.name} manager to update this event.",
             )
 
-        return await self.update(id_, event_update)
+        event_update: EventUpdate = EventUpdate(
+            event_state=EventState.CONFIRMED,
+            requested_reservation_start=None,
+            requested_reservation_end=None,
+        )
+
+        if not approve:
+            logger.debug("Approving requested time change for event %s", id_)
+            updated_event = await self.update(id_, event_update)
+
+            await self.email_service.preparing_email(
+                updated_event,
+                self.email_service.create_email_meta(
+                    "decline_update_reservation_time",
+                    "Request Update Reservation Time Has Been Declined",
+                    manager_notes,
+                ),
+                background_tasks,
+            )
+        else:
+            logger.debug("Declining requested time change for event %s", id_)
+            event_from_google_calendar = await self.google_calendar_service.get_event(
+                event_to_update.calendar_id, id_
+            )
+            event_update.reservation_start = event_to_update.requested_reservation_start
+            event_update.reservation_end = event_to_update.requested_reservation_end
+
+            updated_event = await self.update(id_, event_update)
+
+            prague = timezone("Europe/Prague")
+            event_from_google_calendar.start.date_time = prague.localize(
+                event_to_update.reservation_start,
+            ).isoformat()
+            event_from_google_calendar.end.date_time = prague.localize(
+                event_to_update.reservation_end,
+            ).isoformat()
+            await self.email_service.preparing_email(
+                updated_event,
+                self.email_service.create_email_meta(
+                    "approve_update_reservation_time",
+                    "Request Update Reservation Time Has Been Approved",
+                    manager_notes,
+                ),
+                background_tasks,
+            )
+
+            await self.google_calendar_service.update_event(
+                updated_event.calendar_id, id_, event_from_google_calendar
+            )
+
+        logger.debug("Time change request processed for event %s: %s", id_, event_to_update)
+        return updated_event
 
     async def update_with_permission_checks(
         self,
