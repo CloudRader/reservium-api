@@ -2,8 +2,6 @@
 
 from .access_card_system import (
     ClubAccessSystemRequest,
-    VarSymbolCreateUpdate,
-    VarSymbolDelete,
 )
 from .calendar import CalendarCreate, CalendarDetail, CalendarLite, CalendarUpdate, Rules
 from .email import EmailCreate, EmailMeta, RegistrationFormCreate
@@ -57,6 +55,4 @@ __all__ = [
     "UserKeycloak",
     "UserLite",
     "UserUpdate",
-    "VarSymbolCreateUpdate",
-    "VarSymbolDelete",
 ]
