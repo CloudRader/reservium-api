@@ -8,14 +8,9 @@ from api import (
 )
 from api.api_base import BaseCRUDRouter
 from api.dependencies import http_bearer
-from api.utils import control_collision, process_event_approval
-from api.v2.emails import create_email_meta, preparing_email
 from core.application.exceptions import (
     ERROR_RESPONSES,
-    BaseAppError,
     Entity,
-    EntityNotFoundError,
-    SoftValidationError,
 )
 from core.models import EventState
 from core.schemas import (
@@ -26,13 +21,10 @@ from core.schemas import (
     EventUpdateTime,
     UserLite,
 )
-from core.schemas.google_calendar import GoogleCalendarEventCreate
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, Path, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
-from integrations.google import GoogleCalendarService
 from integrations.keycloak import KeycloakAuthService
-from pytz import timezone
-from services import CalendarService, EventService, UserService
+from services import EventService
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +48,7 @@ class EventRouter(
     specific to Events.
     """
 
-    def __init__(self):  # noqa: C901
+    def __init__(self):
         super().__init__(
             router=router,
             service_dep=EventService,
@@ -101,13 +93,12 @@ class EventRouter(
 
         @router.post(
             "/",
-            responses=ERROR_RESPONSES["404"],
+            responses=ERROR_RESPONSES["200_401_404"],
             status_code=status.HTTP_201_CREATED,
         )
         async def create(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
-            calendar_service: Annotated[CalendarService, Depends(CalendarService)],
             keycloak_service: Annotated[KeycloakAuthService, Depends(KeycloakAuthService)],
             user: Annotated[UserLite, Depends(get_current_user)],
             token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
@@ -124,38 +115,8 @@ class EventRouter(
 
             user_info = await keycloak_service.get_user_info(token.credentials)
 
-            calendar = await calendar_service.get_with_collisions(event_create.calendar_id)
-
-            reservation_service = await calendar_service.get_reservation_service(
-                calendar.id,
-            )
-
-            google_calendar_service = GoogleCalendarService()
-
-            if not await control_collision(
-                google_calendar_service,
-                event_create.start_datetime,
-                event_create.end_datetime,
-                calendar,
-            ):
-                logger.warning("Collision detected for event by user %s", user.id)
-                raise SoftValidationError("There's already a reservation for that time.")
-
-            event_body = GoogleCalendarEventCreate(
-                **await service.post_event(event_create, user_info.services, user, calendar)
-            )
-            if not event_body:
-                logger.error("Failed to create event for user %s", user.id)
-                raise BaseAppError(message="Could not create event.")
-
-            return await process_event_approval(
-                background_tasks,
-                service,
-                user,
-                calendar,
-                event_body,
-                event_create,
-                reservation_service,
+            return await service.post_event(
+                background_tasks, event_create, user_info.services, user
             )
 
         @router.put(
@@ -180,74 +141,9 @@ class EventRouter(
             logger.info(
                 "User %s approving time change for event %s (approve=%s)", user.id, id_, approve
             )
-            google_calendar_service = GoogleCalendarService()
-            event: EventDetail = await service.get(id_)
-
-            event_update: EventUpdate = EventUpdate(
-                event_state=EventState.CONFIRMED,
-                requested_reservation_start=None,
-                requested_reservation_end=None,
+            return await service.approve_update_reservation_time(
+                id_, user, background_tasks, approve, manager_notes
             )
-
-            if not approve:
-                logger.debug("Approving requested time change for event %s", id_)
-                event_to_update = await service.approve_update_reservation_time(
-                    id_,
-                    event_update,
-                    user,
-                )
-                if not event_to_update:
-                    raise EntityNotFoundError(Entity.EVENT, id_)
-
-                await preparing_email(
-                    service,
-                    event,
-                    create_email_meta(
-                        "decline_update_reservation_time",
-                        "Request Update Reservation Time Has Been Declined",
-                        manager_notes,
-                    ),
-                    background_tasks,
-                )
-            else:
-                logger.debug("Declining requested time change for event %s", id_)
-                event_from_google_calendar = await google_calendar_service.get_event(
-                    event.calendar_id, id_
-                )
-                event_update.reservation_start = event.requested_reservation_start
-                event_update.reservation_end = event.requested_reservation_end
-
-                event_to_update = await service.approve_update_reservation_time(
-                    id_,
-                    event_update,
-                    user,
-                )
-                if not event_to_update:
-                    raise EntityNotFoundError(Entity.EVENT, id_)
-                prague = timezone("Europe/Prague")
-                event_from_google_calendar.start.date_time = prague.localize(
-                    event.reservation_start,
-                ).isoformat()
-                event_from_google_calendar.end.date_time = prague.localize(
-                    event.reservation_end,
-                ).isoformat()
-                await preparing_email(
-                    service,
-                    event,
-                    create_email_meta(
-                        "approve_update_reservation_time",
-                        "Request Update Reservation Time Has Been Approved",
-                        manager_notes,
-                    ),
-                    background_tasks,
-                )
-
-                await google_calendar_service.update_event(
-                    event.calendar_id, id_, event_from_google_calendar
-                )
-
-            logger.debug("Time change request processed for event %s: %s", id_, event_to_update)
-            return event_to_update
 
         @router.put(
             "/{id}",
@@ -258,7 +154,6 @@ class EventRouter(
         async def update(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
-            user_service: Annotated[UserService, Depends(UserService)],
             user: Annotated[UserLite, Depends(get_current_user)],
             id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
             event_update: Annotated[EventUpdate, Body()],
@@ -270,32 +165,9 @@ class EventRouter(
             Only users with special roles can update object.
             """
             logger.info("User %s updating event %s with reason: %s", user.id, id_, reason)
-            google_calendar_service = GoogleCalendarService()
-            event = await service.update_with_permission_checks(id_, event_update, user)
-
-            event_to_update = await google_calendar_service.get_event(event.calendar_id, event.id)
-
-            user = await user_service.get(event.user_id)
-            event_to_update.description = service._description_of_event(user, event)
-            prague = timezone("Europe/Prague")
-            event_to_update.start.date_time = prague.localize(event.reservation_start).isoformat()
-            event_to_update.end.date_time = prague.localize(event.reservation_end).isoformat()
-
-            await google_calendar_service.update_event(event.calendar_id, event.id, event_to_update)
-
-            await preparing_email(
-                service,
-                event,
-                create_email_meta(
-                    "update_reservation",
-                    "Update Reservation By Manager",
-                    reason,
-                ),
-                background_tasks,
+            return await service.update_with_permission_checks(
+                id_, user, event_update, background_tasks, reason
             )
-
-            logger.debug("Event updated: %s", event)
-            return event
 
         @router.put(
             "/{id}/request-time-change",
@@ -315,25 +187,10 @@ class EventRouter(
             logger.info(
                 "User %s requesting time change for event %s (reason=%s)", user.id, id_, reason
             )
-            event: EventLite = await service.request_update_reservation_time(
-                id_,
-                event_update,
-                user,
-            )
 
-            await preparing_email(
-                service,
-                event,
-                create_email_meta(
-                    "request_update_reservation_time",
-                    "Request Update Reservation Time",
-                    reason,
-                ),
-                background_tasks,
+            return await service.request_update_reservation_time(
+                id_, event_update, user, background_tasks, reason
             )
-
-            logger.debug("Time change request processed for event: %s", event)
-            return event
 
         @router.put(
             "/{id}/approve",
@@ -360,49 +217,10 @@ class EventRouter(
                 id_,
                 approve,
             )
-            google_calendar_service = GoogleCalendarService()
             if approve:
-                event = await service.confirm_event(id_, user)
+                event = await service.confirm_event(id_, user, background_tasks, manager_notes)
             else:
-                event = await service.cancel_event(id_, user)
-
-            if approve:
-                calendar = await service.get_calendar_of_this_event(event)
-                event_to_update = await google_calendar_service.get_event(
-                    event.calendar_id, event.id
-                )
-
-                event_to_update.summary = calendar.reservation_type
-
-                await google_calendar_service.update_event(
-                    event.calendar_id, event.id, event_to_update
-                )
-
-                await preparing_email(
-                    service,
-                    event,
-                    create_email_meta(
-                        "approve_reservation",
-                        "Reservation Has Been Approved",
-                        manager_notes,
-                    ),
-                    background_tasks,
-                )
-                logger.debug("Reservation approved: %s", event)
-            else:
-                await google_calendar_service.delete_event(event.calendar_id, event.id)
-
-                await preparing_email(
-                    service,
-                    event,
-                    create_email_meta(
-                        "decline_reservation",
-                        "Reservation Has Been Declined",
-                        manager_notes,
-                    ),
-                    background_tasks,
-                )
-                logger.debug("Reservation declined: %s", event)
+                event = await service.cancel_event(id_, user, background_tasks, manager_notes)
 
             return event
 
@@ -425,32 +243,7 @@ class EventRouter(
             Only user who make this reservation can cancel this reservation.
             """
             logger.info("User %s cancelling event %s (reason=%s)", user.id, id_, cancel_reason)
-            google_calendar_service = GoogleCalendarService()
-            event = await service.cancel_event(id_, user)
-
-            await google_calendar_service.delete_event(event.calendar_id, event.id)
-
-            if event.user_id == user.id:
-                await preparing_email(
-                    service,
-                    event,
-                    create_email_meta("cancel_reservation", "Cancel Reservation"),
-                    background_tasks,
-                )
-            else:
-                await preparing_email(
-                    service,
-                    event,
-                    create_email_meta(
-                        "cancel_reservation_by_manager",
-                        "Cancel Reservation by Manager",
-                        cancel_reason,
-                    ),
-                    background_tasks,
-                )
-
-            logger.debug("Event cancelled: %s", event)
-            return event
+            return await service.cancel_event(id_, user, background_tasks, cancel_reason)
 
         @router.delete(
             "/{id}/hard",
