@@ -1,10 +1,11 @@
 """Defines an abstract base class for working with the Google Calendar API."""
 
+import asyncio
 import datetime as dt
 from abc import ABC, abstractmethod
+from typing import Any
 
 from core.application.exceptions import (
-    BaseAppError,
     Entity,
     EntityNotFoundError,
     ExternalAPIError,
@@ -18,6 +19,7 @@ from core.schemas.google_calendar import (
 from fastapi import status
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from googleapiclient.http import HttpRequest
 from integrations.google.google_auth import auth_google
 from pytz import timezone
 
@@ -46,7 +48,7 @@ class AbstractGoogleCalendarService(ABC):
         """
 
     @abstractmethod
-    async def get_all_calendars(self) -> list[dict]:
+    async def get_all_calendars(self) -> list[GoogleCalendarCalendar]:
         """
         Retrieve all calendars from the authenticated Google account.
 
@@ -78,7 +80,7 @@ class AbstractGoogleCalendarService(ABC):
         """
 
     @abstractmethod
-    async def get_event(self, calendar_id: str, event_id: str) -> dict:
+    async def get_event(self, calendar_id: str, event_id: str) -> GoogleCalendarEvent:
         """
         Retrieve a specific event from a Google Calendar.
 
@@ -132,133 +134,147 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
     """Service implementation for interacting with the Google Calendar API."""
 
     def __init__(self):
-        self.service = build("calendar", "v3", credentials=auth_google(None))
+        self.service = build(
+            "calendar",
+            "v3",
+            credentials=auth_google(None),
+            cache_discovery=False,
+        )
 
     async def get_calendar(self, calendar_id: str) -> GoogleCalendarCalendar:
-        try:
-            return GoogleCalendarCalendar(
-                **self.service.calendars().get(calendarId=calendar_id).execute()
-            )
-        except HttpError as exc:
-            raise EntityNotFoundError(
-                entity=Entity.CALENDAR,
-                entity_id=calendar_id,
-                message="The calendar does not exist in Google Calendar.",
-            ) from exc
+        request = self.service.calendars().get(calendarId=calendar_id)
+        response = await self._execute_safe(
+            request,
+            error_message="Failed to fetch calendar from Google Calendar.",
+            not_found=(
+                Entity.CALENDAR,
+                calendar_id,
+                "The calendar does not exist in Google Calendar.",
+            ),
+        )
+
+        return GoogleCalendarCalendar(**response)
 
     async def create_calendar(self, summary: str) -> GoogleCalendarCalendar:
-        try:
-            calendar_body = {
-                "summary": summary,  # Title of the new calendar
-                "timeZone": "Europe/Prague",  # Set your desired timezone
-            }
-            created_calendar = GoogleCalendarCalendar(
-                **self.service.calendars().insert(body=calendar_body).execute()
-            )
+        calendar_body = {
+            "summary": summary,  # Title of the new calendar
+            "timeZone": "Europe/Prague",  # Set your desired timezone
+        }
 
-            rule = {
-                "role": "reader",  # Role is 'reader' for read-only public access
-                "scope": {"type": "default"},  # 'default' means public access
-            }
-            self.service.acl().insert(
-                calendarId=created_calendar.id,
-                body=rule,
-                sendNotifications=False,
-            ).execute()
+        create_request = self.service.calendars().insert(body=calendar_body)
+        created_calendar_data = await self._execute_safe(
+            create_request,
+            error_message="Failed to create calendar in Google Calendar.",
+        )
 
-            return created_calendar
-        except HttpError as exc:
-            raise BaseAppError("Can't create calendar in Google Calendar.") from exc
+        created_calendar = GoogleCalendarCalendar(**created_calendar_data)
+
+        rule = {
+            "role": "reader",  # Role is 'reader' for read-only public access
+            "scope": {"type": "default"},  # 'default' means public access
+        }
+        acl_request = self.service.acl().insert(
+            calendarId=created_calendar.id,
+            body=rule,
+            sendNotifications=False,
+        )
+        await self._execute_safe(
+            acl_request,
+            error_message="Failed to set calendar access in Google Calendar.",
+        )
+
+        return created_calendar
 
     async def get_all_calendars(self) -> list[GoogleCalendarCalendar]:
-        try:
-            calendars_dict = self.service.calendarList().list().execute().get("items", [])
-            return [GoogleCalendarCalendar(**calendar) for calendar in calendars_dict]
-        except HttpError as exc:
-            raise BaseAppError("Failed to list Google calendars.") from exc
+        request = self.service.calendarList().list()
+        response = await self._execute_safe(
+            request,
+            error_message="Failed to list Google calendars.",
+        )
+        calendars = response.get("items", [])
+
+        return [GoogleCalendarCalendar(**calendar) for calendar in calendars]
 
     async def user_has_calendar_access(self, calendar_id: str) -> None:
-        try:
-            calendar_list = self.service.calendarList().list().execute().get("items", [])
-            if not any(cal["id"] == calendar_id for cal in calendar_list):
-                raise PermissionDeniedError(
-                    "You don't have access to this calendar in Google Calendar."
-                )
-        except HttpError as exc:
-            raise ExternalAPIError(
-                message="Failed to get calendars in Google Calendar.",
-                error_detail=str(exc),
-            ) from exc
+        request = self.service.calendarList().list()
+        response = await self._execute_safe(
+            request,
+            error_message="Failed to get calendars in Google Calendar.",
+        )
+
+        calendar_list = response.get("items", [])
+
+        if not any(cal["id"] == calendar_id for cal in calendar_list):
+            raise PermissionDeniedError(
+                "You don't have access to this calendar in Google Calendar."
+            )
 
     async def insert_event(
         self, calendar_id: str, event_body: GoogleCalendarEventCreate
     ) -> GoogleCalendarEvent:
-        try:
-            return GoogleCalendarEvent(
-                **self.service.events()
-                .insert(calendarId=calendar_id, body=event_body.model_dump(by_alias=True))
-                .execute()
-            )
-        except HttpError as exc:
-            raise ExternalAPIError(
-                message="Failed to create event in Google Calendar.",
-                error_detail=str(exc),
-            ) from exc
+        request = self.service.events().insert(
+            calendarId=calendar_id,
+            body=event_body.model_dump(by_alias=True),
+        )
+        response = await self._execute_safe(
+            request,
+            error_message="Failed to create event in Google Calendar.",
+        )
+
+        return GoogleCalendarEvent(**response)
 
     async def get_event(self, calendar_id: str, event_id: str) -> GoogleCalendarEvent:
-        try:
-            return GoogleCalendarEvent(
-                **self.service.events().get(calendarId=calendar_id, eventId=event_id).execute()
-            )
-        except HttpError as exc:
-            if exc.status_code == status.HTTP_404_NOT_FOUND:
-                raise EntityNotFoundError(
-                    entity=Entity.EVENT,
-                    entity_id=event_id,
-                    message="The event does not exist in Google Calendar.",
-                ) from exc
-            raise ExternalAPIError(
-                message="Failed to fetch event from Google Calendar.",
-                error_detail=str(exc),
-            ) from exc
+        request = self.service.events().get(
+            calendarId=calendar_id,
+            eventId=event_id,
+        )
+        response = await self._execute_safe(
+            request,
+            error_message="Failed to fetch event from Google Calendar.",
+            not_found=(
+                Entity.EVENT,
+                event_id,
+                "The event does not exist in Google Calendar.",
+            ),
+        )
+
+        return GoogleCalendarEvent(**response)
 
     async def update_event(
         self, calendar_id: str, event_id: str, body: GoogleCalendarEvent
     ) -> GoogleCalendarEvent:
-        try:
-            return GoogleCalendarEvent(
-                **self.service.events()
-                .update(
-                    calendarId=calendar_id, eventId=event_id, body=body.model_dump(by_alias=True)
-                )
-                .execute()
-            )
-        except HttpError as exc:
-            if exc.status_code == status.HTTP_404_NOT_FOUND:
-                raise EntityNotFoundError(
-                    entity=Entity.EVENT,
-                    entity_id=event_id,
-                    message="The event does not exist in Google Calendar.",
-                ) from exc
-            raise ExternalAPIError(
-                message="Failed to update event in Google Calendar.",
-                error_detail=str(exc),
-            ) from exc
+        request = self.service.events().update(
+            calendarId=calendar_id,
+            eventId=event_id,
+            body=body.model_dump(by_alias=True),
+        )
+
+        response = await self._execute_safe(
+            request,
+            error_message="Failed to update event in Google Calendar.",
+            not_found=(
+                Entity.EVENT,
+                event_id,
+                "The event does not exist in Google Calendar.",
+            ),
+        )
+
+        return GoogleCalendarEvent(**response)
 
     async def delete_event(self, calendar_id: str, event_id: str) -> None:
-        try:
-            return self.service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
-        except HttpError as exc:
-            if exc.status_code == status.HTTP_404_NOT_FOUND:
-                raise EntityNotFoundError(
-                    entity=Entity.EVENT,
-                    entity_id=event_id,
-                    message="The event does not exist in Google Calendar.",
-                ) from exc
-            raise ExternalAPIError(
-                message="Failed to delete event in Google Calendar.",
-                error_detail=str(exc),
-            ) from exc
+        request = self.service.events().delete(
+            calendarId=calendar_id,
+            eventId=event_id,
+        )
+        await self._execute_safe(
+            request,
+            error_message="Failed to delete event in Google Calendar.",
+            not_found=(
+                Entity.EVENT,
+                event_id,
+                "The event does not exist in Google Calendar.",
+            ),
+        )
 
     async def fetch_events_in_time_range(
         self, calendar_id: str, start_time: dt.datetime, end_time: dt.datetime
@@ -267,16 +283,49 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
         start_time_str = prague.localize(start_time).isoformat()
         end_time_str = prague.localize(end_time).isoformat()
 
-        events_result = (
-            self.service.events()
-            .list(
-                calendarId=calendar_id,
-                timeMin=start_time_str,
-                timeMax=end_time_str,
-                singleEvents=True,
-                orderBy="startTime",
-                timeZone="Europe/Prague",
-            )
-            .execute()
+        request = self.service.events().list(
+            calendarId=calendar_id,
+            timeMin=start_time_str,
+            timeMax=end_time_str,
+            singleEvents=True,
+            orderBy="startTime",
+            timeZone="Europe/Prague",
         )
-        return events_result.get("items", [])
+
+        response = await self._execute_safe(
+            request,
+            error_message="Failed to fetch events from Google Calendar.",
+        )
+
+        return response.get("items", [])
+
+    async def _execute_safe(
+        self,
+        request: HttpRequest,
+        *,
+        error_message: str,
+        not_found: tuple[Entity, str, str] | None = None,
+    ) -> Any:
+        """
+        Execute a Google API request safely in a thread pool.
+
+        :param request: Google API request object.
+        :param error_message: Generic error message for failures.
+        :param not_found: Optional tuple (Entity, entity_id, message) for 404 mapping.
+        """
+        try:
+            return await asyncio.to_thread(request.execute)
+
+        except HttpError as exc:
+            if not_found and int(exc.resp.status) == status.HTTP_404_NOT_FOUND:
+                entity, entity_id, message = not_found
+                raise EntityNotFoundError(
+                    entity=entity,
+                    entity_id=entity_id,
+                    message=message,
+                ) from exc
+
+            raise ExternalAPIError(
+                message=error_message,
+                error_detail=str(exc),
+            ) from exc
