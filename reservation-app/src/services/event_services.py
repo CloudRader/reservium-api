@@ -550,7 +550,9 @@ class EventService(AbstractEventService):
             event_state=EventState.UPDATE_REQUESTED,
         )
 
+        # Fix - do proper retrieve EventDetail schema after update with relations
         event = await self.update(id_, event_update_time)
+        event = await self.get(id_)
 
         await self.email_service.preparing_email(
             event,
