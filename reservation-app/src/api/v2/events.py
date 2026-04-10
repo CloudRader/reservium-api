@@ -141,7 +141,7 @@ class EventRouter(
             logger.info(
                 "User %s approving time change for event %s (approve=%s)", user.id, id_, approve
             )
-            return service.approve_update_reservation_time(
+            return await service.approve_update_reservation_time(
                 id_, user, background_tasks, approve, manager_notes
             )
 
