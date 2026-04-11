@@ -29,7 +29,7 @@ from core.schemas import (
 )
 from core.schemas.calendar import CalendarDetailWithCollisions
 from core.schemas.event import EventLite
-from core.schemas.google_calendar import EventEmail, EventTime, GoogleCalendarEventCreate
+from core.schemas.google_calendar import EventTime, GoogleCalendarEventCreate
 from crud import CRUDEvent, CRUDUser
 from fastapi import BackgroundTasks, Depends
 from integrations.google import GoogleCalendarService
@@ -824,7 +824,6 @@ class EventService(AbstractEventService):
             description=self._description_of_event(user, event_input),
             start=EventTime(dateTime=start_time, timeZone="Europe/Prague"),
             end=EventTime(dateTime=end_time, timeZone="Europe/Prague"),
-            attendees=[EventEmail(email=event_input.email)],
         )
 
     async def _process_event_approval(

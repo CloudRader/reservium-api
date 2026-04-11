@@ -53,7 +53,6 @@ class GoogleCalendarEventCreate(BaseModel):
     description: str
     start: EventTime
     end: EventTime
-    attendees: list[EventEmail]
 
     model_config = {"populate_by_name": True}
 

@@ -84,12 +84,9 @@ def test_google_calendar_event_create():
         description="Project meeting",
         start=EventTime(dateTime="2025-01-01T10:00:00Z"),
         end=EventTime(dateTime="2025-01-01T11:00:00Z"),
-        attendees=[EventEmail(email="user@example.com")],
     )
     assert create.summary == "Meeting"
     assert isinstance(create.start, EventTime)
-    assert len(create.attendees) == 1
-    assert create.attendees[0].email == "user@example.com"
 
 
 # ----------------------------------------------------------------------
