@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.4](https://github.com/CloudRader/reservium-api/compare/v2.3.3...v2.3.4) (2026-04-11)
+
+
+### 🛠️ Fixes
+
+* remove attendees from create google calendar body ([#205](https://github.com/CloudRader/reservium-api/issues/205)) ([e31e919](https://github.com/CloudRader/reservium-api/commit/e31e9196aa4ce0c57b420b22ded0472503e27d7f))
+
 ## [2.3.3](https://github.com/CloudRader/reservium-api/compare/v2.3.2...v2.3.3) (2026-04-11)
 
 
