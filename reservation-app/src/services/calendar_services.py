@@ -25,7 +25,7 @@ from core.schemas import (
     UserLite,
 )
 from core.schemas.calendar import CalendarDetailWithCollisions
-from core.schemas.google_calendar import GoogleCalendarCalendar
+from core.schemas.google_calendar import CalendarImportResult, GoogleCalendarCalendar
 from crud import CRUDCalendar
 from fastapi import Depends
 from integrations.google import GoogleCalendarService
@@ -75,6 +75,35 @@ class AbstractCalendarService(
         :param user: the UserSchema for control permissions of the calendar.
 
         :return: candidate list for additions, None otherwise.
+        """
+
+    @abstractmethod
+    async def google_subscribe_calendars(
+        self,
+        calendar_ids: list[str],
+    ) -> list[CalendarImportResult]:
+        """
+        Subscribe the service account to multiple Google Calendars.
+
+        :param calendar_ids: List of Google Calendar IDs to subscribe to.
+
+        :return: List of results describing the outcome for each calendar.
+        """
+
+    @abstractmethod
+    async def google_subscribe_existing_calendars(self) -> list[CalendarImportResult]:
+        """
+        Subscribe the service account to all Google Calendars it is already exist in db.
+
+        :return: List of results describing the outcome for each calendar.
+        """
+
+    @abstractmethod
+    async def google_get_subscribed_calendars(self) -> list[GoogleCalendarCalendar]:
+        """
+        Retrieve all Google Calendars the service account is subscribed to.
+
+        :return: List of Google Calendar objects.
         """
 
     @abstractmethod
@@ -186,7 +215,9 @@ class CalendarService(AbstractCalendarService):
         new_calendar_candidates: list[GoogleCalendarCalendar] = []
 
         for calendar in google_calendars:
-            if calendar.access_role == "owner" and not calendar.primary:
+            if (
+                calendar.access_role == "owner" or calendar.access_role == "writer"
+            ) and not calendar.primary:
                 try:
                     await self.get(calendar.id)
                     exists = True
@@ -197,6 +228,21 @@ class CalendarService(AbstractCalendarService):
                     new_calendar_candidates.append(calendar)
 
         return new_calendar_candidates
+
+    async def google_subscribe_calendars(
+        self,
+        calendar_ids: list[str],
+    ) -> list[CalendarImportResult]:
+        return await self.google_calendar_service.subscribe_calendars(calendar_ids)
+
+    async def google_subscribe_existing_calendars(self) -> list[CalendarImportResult]:
+        calendars = await self.get_all()
+        calendar_ids = [cal.id for cal in calendars]
+
+        return await self.google_calendar_service.subscribe_calendars(calendar_ids)
+
+    async def google_get_subscribed_calendars(self) -> list[GoogleCalendarCalendar]:
+        return await self.google_calendar_service.get_all_calendars()
 
     async def get_by_reservation_type(
         self,

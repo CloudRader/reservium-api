@@ -15,6 +15,11 @@ from core.schemas import (
     UserLite,
 )
 from core.schemas.calendar import CalendarDetailWithCollisions
+from core.schemas.google_calendar import (
+    CalendarImportResult,
+    GoogleCalendarCalendar,
+    GoogleCalendarImportRequest,
+)
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import CalendarService
 
@@ -84,6 +89,29 @@ class CalendarRouter(
         ) -> Any:
             """List Google calendars that the auth user owns but are not yet added to the system."""
             return await service.google_calendars_available_for_import(user)
+
+        @router.post("/google/subscribe-calendars")
+        async def google_subscribe_calendars(
+            service: Annotated[CalendarService, Depends(CalendarService)],
+            google_calendar_ids: GoogleCalendarImportRequest,
+        ) -> list[CalendarImportResult]:
+            return await service.google_subscribe_calendars(google_calendar_ids.calendar_ids)
+
+        @router.post("/google/subscribe-existing-calendars")
+        async def google_subscribe_existing_calendars(
+            service: Annotated[CalendarService, Depends(CalendarService)],
+        ) -> list[CalendarImportResult]:
+            return await service.google_subscribe_existing_calendars()
+
+        @router.get(
+            "/google/calendars",
+            status_code=status.HTTP_200_OK,
+        )
+        async def get_google_calendars(
+            service: Annotated[CalendarService, Depends(CalendarService)],
+        ) -> list[GoogleCalendarCalendar]:
+            """Retrieve all Google Calendars the service account is subscribed to."""
+            return await service.google_get_subscribed_calendars()
 
         @router.get(
             "/{id}/collisions",
