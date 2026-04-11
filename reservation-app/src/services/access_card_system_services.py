@@ -9,7 +9,7 @@ from typing import Annotated
 
 from core import db_session
 from core.application.exceptions import PermissionDeniedError
-from core.schemas import ClubAccessSystemRequest, VarSymbolCreateUpdate, VarSymbolDelete
+from core.schemas import ClubAccessSystemRequest
 from crud import CRUDEvent, CRUDMiniService, CRUDReservationService, CRUDUser
 from fastapi import Depends
 from services import EventService
@@ -17,64 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AbstractAccessCardSystemService(ABC):
-    """Abstract class defines the interface for an email service."""
-
-    @abstractmethod
-    async def add_var_symbol(self, access_body: VarSymbolCreateUpdate) -> dict:
-        """
-        Add or update a variable symbol in the access group.
-
-        :param access_body: Body for create or update var symbol in ACS.
-
-        :returns: The body fot the API.
-        """
-
-    @abstractmethod
-    async def del_var_symbol(
-        self,
-        access_body: VarSymbolDelete,
-    ) -> dict:
-        """
-        Delete a variable symbol from the access group.
-
-        :param access_body: Body for delete var symbol in ACS.
-
-        :returns: The result from the API.
-        """
-
-    @abstractmethod
-    async def get_groups_for_use(self):
-        """
-         Get the list of available groups for the API key.
-
-        :returns: The body fot the API.
-        """
-
-    @abstractmethod
-    async def get_access_var_symbol(
-        self,
-        var_symbol: str,
-    ) -> dict:
-        """
-        Get the list of groups for a given variable symbol.
-
-        :param var_symbol: The var symbol that identifies the user in ISKAM.
-
-        :returns: The body fot the API.
-        """
-
-    @abstractmethod
-    async def get_access_group(
-        self,
-        group: str,
-    ) -> dict:
-        """
-        Get the list of variable symbols for a given group.
-
-        :param group: The group of the reader in the ACS.
-
-        :returns: The body fot the API.
-        """
+    """Abstract class defines the interface for an access card system service."""
 
     @abstractmethod
     async def reservation_access_authorize(
@@ -155,39 +98,3 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
         raise PermissionDeniedError(
             "No matching reservation exists at this time for this rules.",
         )
-
-    async def add_var_symbol(self, access_body: VarSymbolCreateUpdate) -> dict:
-        return {
-            "funkce": "AddVarSymbolSkupina",
-            "varsymbol": access_body.var_symbol,
-            "skupina": access_body.group,
-            "platnostod": access_body.valid_from,
-            "platnostdo": access_body.valid_to,
-        }
-
-    async def del_var_symbol(
-        self,
-        access_body: VarSymbolDelete,
-    ) -> dict:
-        return {
-            "funkce": "DelVarSymbolSkupina",
-            "varsymbol": access_body.var_symbol,
-            "skupina": access_body.group,
-        }
-
-    async def get_groups_for_use(self):
-        return {
-            "funkce": "GetSkupinyForUse",
-        }
-
-    async def get_access_var_symbol(
-        self,
-        var_symbol: str,
-    ) -> dict:
-        return {"funkce": "GetPristupVarSymbol", "varsymbol": var_symbol}
-
-    async def get_access_group(
-        self,
-        group: str,
-    ) -> dict:
-        return {"funkce": "GetPristupSkupina", "skupina": group}

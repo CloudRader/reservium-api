@@ -50,16 +50,18 @@ services:
     depends_on:
       - db
     restart: on-failure
-    # TODO finish action restart and rebuild
-#    develop:
-#      watch:
-#        - action: sync+restart
-#          path: ./reservation-app/src
-#          target: /usr/src/app/src
     volumes:
       - ./reservation-app/src:/usr/src/app/src
     ports:
       - "8000:8000"
+    networks:
+      - internal
+    
+  reservium-ui:
+    container_name: reservium-ui
+    image: darkrader/reservium-ui:latest-dev
+    ports:
+      - "3000:3000"
     networks:
       - internal
 

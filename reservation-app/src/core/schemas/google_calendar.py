@@ -98,3 +98,18 @@ class GoogleCalendarEvent(BaseModel):
         "populate_by_name": True,
         "arbitrary_types_allowed": True,
     }
+
+
+class GoogleCalendarImportRequest(BaseModel):
+    """List of Google Calendar IDs to subscribe to."""
+
+    calendar_ids: list[str]
+
+
+class CalendarImportResult(BaseModel):
+    """Result of a calendar subscribe operation."""
+
+    id: str
+    status: str  # "subscribed" | "already_exists" | "skipped_no_access"
+    role: str | None = None
+    summary: str | None = None

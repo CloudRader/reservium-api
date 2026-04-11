@@ -5,6 +5,7 @@ import datetime as dt
 from abc import ABC, abstractmethod
 from typing import Any
 
+from core import settings
 from core.application.exceptions import (
     Entity,
     EntityNotFoundError,
@@ -12,15 +13,16 @@ from core.application.exceptions import (
     PermissionDeniedError,
 )
 from core.schemas.google_calendar import (
+    CalendarImportResult,
     GoogleCalendarCalendar,
     GoogleCalendarEvent,
     GoogleCalendarEventCreate,
 )
 from fastapi import status
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import HttpRequest
-from integrations.google.google_auth import auth_google
 from pytz import timezone
 
 
@@ -129,17 +131,55 @@ class AbstractGoogleCalendarService(ABC):
         :return: List of calendar events within the specified time range.
         """
 
+    @abstractmethod
+    async def get_acl(self, calendar_id: str) -> dict:
+        """
+        Retrieve the Access Control List (ACL) of a Google Calendar.
+
+        :param calendar_id: The ID of the Google Calendar.
+
+        :return: A dictionary containing ACL rules for the calendar.
+        """
+
+    @abstractmethod
+    async def subscribe(self, calendar_id: str) -> None:
+        """
+        Subscribe the service account to a Google Calendar.
+
+        :param calendar_id: The ID of the Google Calendar to subscribe to.
+        """
+
+    @abstractmethod
+    async def subscribe_calendars(
+        self,
+        calendar_ids: list[str],
+    ) -> list[CalendarImportResult]:
+        """
+        Subscribe the service account to multiple Google Calendars.
+
+        :param calendar_ids: List of Google Calendar IDs to subscribe to.
+
+        :return: List of results describing the outcome for each calendar.
+        """
+
 
 class GoogleCalendarService(AbstractGoogleCalendarService):
     """Service implementation for interacting with the Google Calendar API."""
 
     def __init__(self):
+        credentials = service_account.Credentials.from_service_account_info(
+            settings.GOOGLE.INFO,
+            scopes=settings.GOOGLE.SCOPES,
+        )
+
         self.service = build(
             "calendar",
             "v3",
-            credentials=auth_google(None),
+            credentials=credentials,
             cache_discovery=False,
         )
+
+        self.service_account_email = settings.GOOGLE.CLIENT_EMAIL
 
     async def get_calendar(self, calendar_id: str) -> GoogleCalendarCalendar:
         request = self.service.calendars().get(calendarId=calendar_id)
@@ -169,18 +209,33 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
 
         created_calendar = GoogleCalendarCalendar(**created_calendar_data)
 
-        rule = {
-            "role": "reader",  # Role is 'reader' for read-only public access
-            "scope": {"type": "default"},  # 'default' means public access
-        }
-        acl_request = self.service.acl().insert(
-            calendarId=created_calendar.id,
-            body=rule,
-            sendNotifications=False,
-        )
         await self._execute_safe(
-            acl_request,
-            error_message="Failed to set calendar access in Google Calendar.",
+            self.service.acl().insert(
+                calendarId=created_calendar.id,
+                body={
+                    "role": "owner",
+                    "scope": {
+                        "type": "user",
+                        "value": settings.MAIL.USERNAME,
+                    },
+                },
+                sendNotifications=True,
+            ),
+            error_message="Failed to assign owner.",
+        )
+
+        await self._execute_safe(
+            self.service.acl().insert(
+                calendarId=created_calendar.id,
+                body={
+                    "role": "reader",
+                    "scope": {
+                        "type": "default",
+                    },
+                },
+                sendNotifications=False,
+            ),
+            error_message="Failed to make calendar public.",
         )
 
         return created_calendar
@@ -299,6 +354,73 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
 
         return response.get("items", [])
 
+    async def get_acl(self, calendar_id: str) -> dict:
+        request = self.service.acl().list(calendarId=calendar_id)
+
+        return await self._execute_safe(
+            request,
+            error_message="Failed to fetch calendar ACL.",
+        )
+
+    async def subscribe(self, calendar_id: str) -> None:
+        request = self.service.calendarList().insert(body={"id": calendar_id})
+
+        await self._execute_safe(
+            request,
+            error_message="Failed to subscribe to calendar.",
+        )
+
+    async def subscribe_calendars(
+        self,
+        calendar_ids: list[str],
+    ) -> list[CalendarImportResult]:
+
+        results: list[CalendarImportResult] = []
+
+        existing_ids = {cal.id for cal in await self.get_all_calendars()}
+
+        for calendar_id in calendar_ids:
+            # 1. check already subscribed
+            if calendar_id in existing_ids:
+                results.append(
+                    CalendarImportResult(
+                        id=calendar_id,
+                        status="already_exists",
+                    )
+                )
+                continue
+
+            # 2. check ACL
+            acl = await self.get_acl(calendar_id)
+            role = self._extract_role(acl, self.service_account_email)
+
+            if role not in {"owner", "writer"}:
+                results.append(
+                    CalendarImportResult(
+                        id=calendar_id,
+                        status="skipped_no_access",
+                        role=role,
+                    )
+                )
+                continue
+
+            # 3. subscribe
+            await self.subscribe(calendar_id)
+
+            # 4. fetch metadata (optional but useful)
+            calendar = await self.get_calendar(calendar_id)
+
+            results.append(
+                CalendarImportResult(
+                    id=calendar_id,
+                    status="subscribed",
+                    role=role,
+                    summary=calendar.summary,
+                )
+            )
+
+        return results
+
     async def _execute_safe(
         self,
         request: HttpRequest,
@@ -329,3 +451,17 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
                 message=error_message,
                 error_detail=str(exc),
             ) from exc
+
+    def _extract_role(self, acl: dict, email: str) -> str | None:
+        """
+        Extract role of a given user/service account from ACL response.
+
+        Returns None if no matching rule found.
+        """
+        for rule in acl.get("items", []):
+            scope = rule.get("scope", {})
+
+            if scope.get("value") == email:
+                return rule.get("role")
+
+        return None

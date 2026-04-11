@@ -5,7 +5,7 @@ from typing import Annotated, Any
 
 from api import get_current_user
 from api.api_base import BaseCRUDRouter
-from core.application.exceptions import ERROR_RESPONSES, Entity
+from core.application.exceptions import ERROR_RESPONSES, Entity, PermissionDeniedError
 from core.schemas import (
     CalendarCreate,
     CalendarDetail,
@@ -15,6 +15,11 @@ from core.schemas import (
     UserLite,
 )
 from core.schemas.calendar import CalendarDetailWithCollisions
+from core.schemas.google_calendar import (
+    CalendarImportResult,
+    GoogleCalendarCalendar,
+    GoogleCalendarImportRequest,
+)
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import CalendarService
 
@@ -83,7 +88,40 @@ class CalendarRouter(
             user: Annotated[UserLite, Depends(get_current_user)],
         ) -> Any:
             """List Google calendars that the auth user owns but are not yet added to the system."""
+            if not user.roles:
+                raise PermissionDeniedError()
             return await service.google_calendars_available_for_import(user)
+
+        @router.post("/google/subscribe-calendars")
+        async def google_subscribe_calendars(
+            service: Annotated[CalendarService, Depends(CalendarService)],
+            google_calendar_ids: GoogleCalendarImportRequest,
+            user: Annotated[UserLite, Depends(get_current_user)],
+        ) -> list[CalendarImportResult]:
+            """Subscribe the service account to specified Google Calendars."""
+            if not user.roles:
+                raise PermissionDeniedError()
+            return await service.google_subscribe_calendars(google_calendar_ids.calendar_ids)
+
+        @router.post("/google/subscribe-existing-calendars")
+        async def google_subscribe_existing_calendars(
+            service: Annotated[CalendarService, Depends(CalendarService)],
+            user: Annotated[UserLite, Depends(get_current_user)],
+        ) -> list[CalendarImportResult]:
+            """Ensure the service account is subscribed to all calendars stored in the system."""
+            if not user.roles:
+                raise PermissionDeniedError()
+            return await service.google_subscribe_existing_calendars()
+
+        @router.get(
+            "/google/calendars",
+            status_code=status.HTTP_200_OK,
+        )
+        async def get_google_calendars(
+            service: Annotated[CalendarService, Depends(CalendarService)],
+        ) -> list[GoogleCalendarCalendar]:
+            """Retrieve all Google Calendars the service account is subscribed to."""
+            return await service.google_get_subscribed_calendars()
 
         @router.get(
             "/{id}/collisions",
