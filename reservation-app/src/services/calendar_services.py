@@ -12,7 +12,6 @@ from core.application.exceptions import (
     BaseAppError,
     Entity,
     EntityNotFoundError,
-    PermissionDeniedError,
 )
 from core.models import MiniServiceModel
 from core.schemas import (
@@ -22,7 +21,6 @@ from core.schemas import (
     CalendarUpdate,
     MiniServiceLite,
     ReservationServiceDetail,
-    UserLite,
 )
 from core.schemas.calendar import CalendarDetailWithCollisions
 from core.schemas.google_calendar import CalendarImportResult, GoogleCalendarCalendar
@@ -65,14 +63,9 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def google_calendars_available_for_import(
-        self,
-        user: UserLite,
-    ) -> list[GoogleCalendarCalendar] | None:
+    async def google_calendars_available_for_import(self) -> list[GoogleCalendarCalendar] | None:
         """
         Retrieve a Calendars from Google calendars that are candidates for additions.
-
-        :param user: the UserSchema for control permissions of the calendar.
 
         :return: candidate list for additions, None otherwise.
         """
@@ -203,14 +196,8 @@ class CalendarService(AbstractCalendarService):
             calendar_to_update, calendar_update, mini_services_in_calendar
         )
 
-    async def google_calendars_available_for_import(
-        self,
-        user: UserLite,
-    ) -> list[GoogleCalendarCalendar] | None:
+    async def google_calendars_available_for_import(self) -> list[GoogleCalendarCalendar] | None:
         google_calendars = await self.google_calendar_service.get_all_calendars()
-
-        if not user.roles:
-            raise PermissionDeniedError()
 
         new_calendar_candidates: list[GoogleCalendarCalendar] = []
 
