@@ -90,7 +90,7 @@ class CalendarRouter(
             """List Google calendars that the auth user owns but are not yet added to the system."""
             if not user.roles:
                 raise PermissionDeniedError()
-            return await service.google_calendars_available_for_import(user)
+            return await service.google_calendars_available_for_import()
 
         @router.post("/google/subscribe-calendars")
         async def google_subscribe_calendars(
