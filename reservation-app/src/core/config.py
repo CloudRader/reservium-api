@@ -139,21 +139,33 @@ class SpiceDbConfig(BaseModel):
 class GoogleConfig(BaseModel):
     """Config for google."""
 
-    CLIENT_ID: str
+    TYPE: str = "service_account"
     PROJECT_ID: str
-    CLIENT_SECRET: str
-    REDIRECT_URIS: list[str] = ["http://localhost"]
-    SCOPES: list[str] = ["https://www.googleapis.com/auth/calendar"]
+    PRIVATE_KEY_ID: str
+    PRIVATE_KEY: str
+    CLIENT_EMAIL: str
+    CLIENT_ID: str
     AUTH_URI: str = "https://accounts.google.com/o/oauth2/auth"
     TOKEN_URI: str = "https://oauth2.googleapis.com/token"
     AUTH_PROVIDER_X509_CERT_URL: str = "https://www.googleapis.com/oauth2/v1/certs"
+    CLIENT_X509_CERT_URL: str
+    SCOPES: list[str] = ["https://www.googleapis.com/auth/calendar"]
 
-
-class DormitoryAccessSystemConfig(BaseModel):
-    """Config for dormitory access system."""
-
-    API_KEY: str
-    API_URL: str = "https://agata-new.suz.cvut.cz/pristupAPI/api.php"
+    @property
+    def INFO(self) -> dict:  # noqa: N802
+        """Return service account credentials in Google-compatible format."""
+        return {
+            "type": self.TYPE,
+            "project_id": self.PROJECT_ID,
+            "private_key_id": self.PRIVATE_KEY_ID,
+            "private_key": self.PRIVATE_KEY.replace("\\n", "\n"),
+            "client_email": self.CLIENT_EMAIL,
+            "client_id": self.CLIENT_ID,
+            "auth_uri": self.AUTH_URI,
+            "token_uri": self.TOKEN_URI,
+            "auth_provider_x509_cert_url": self.AUTH_PROVIDER_X509_CERT_URL,
+            "client_x509_cert_url": self.CLIENT_X509_CERT_URL,
+        }
 
 
 class Settings(BaseSettings):
@@ -169,7 +181,6 @@ class Settings(BaseSettings):
     KEYCLOAK: KeycloakConfig
     SPICEDB: SpiceDbConfig
     GOOGLE: GoogleConfig
-    DORMITORY_ACCESS_SYSTEM: DormitoryAccessSystemConfig
 
     model_config = SettingsConfigDict(
         case_sensitive=True,

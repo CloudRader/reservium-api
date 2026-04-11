@@ -5,6 +5,7 @@ import datetime as dt
 from abc import ABC, abstractmethod
 from typing import Any
 
+from core import settings
 from core.application.exceptions import (
     Entity,
     EntityNotFoundError,
@@ -17,10 +18,10 @@ from core.schemas.google_calendar import (
     GoogleCalendarEventCreate,
 )
 from fastapi import status
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import HttpRequest
-from integrations.google.google_auth import auth_google
 from pytz import timezone
 
 
@@ -134,10 +135,15 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
     """Service implementation for interacting with the Google Calendar API."""
 
     def __init__(self):
+        credentials = service_account.Credentials.from_service_account_info(
+            settings.GOOGLE.INFO,
+            scopes=settings.GOOGLE.SCOPES,
+        )
+
         self.service = build(
             "calendar",
             "v3",
-            credentials=auth_google(None),
+            credentials=credentials,
             cache_discovery=False,
         )
 
@@ -169,18 +175,33 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
 
         created_calendar = GoogleCalendarCalendar(**created_calendar_data)
 
-        rule = {
-            "role": "reader",  # Role is 'reader' for read-only public access
-            "scope": {"type": "default"},  # 'default' means public access
-        }
-        acl_request = self.service.acl().insert(
-            calendarId=created_calendar.id,
-            body=rule,
-            sendNotifications=False,
-        )
         await self._execute_safe(
-            acl_request,
-            error_message="Failed to set calendar access in Google Calendar.",
+            self.service.acl().insert(
+                calendarId=created_calendar.id,
+                body={
+                    "role": "owner",
+                    "scope": {
+                        "type": "user",
+                        "value": settings.MAIL.USERNAME,
+                    },
+                },
+                sendNotifications=True,
+            ),
+            error_message="Failed to assign owner.",
+        )
+
+        await self._execute_safe(
+            self.service.acl().insert(
+                calendarId=created_calendar.id,
+                body={
+                    "role": "reader",
+                    "scope": {
+                        "type": "default",
+                    },
+                },
+                sendNotifications=False,
+            ),
+            error_message="Failed to make calendar public.",
         )
 
         return created_calendar
