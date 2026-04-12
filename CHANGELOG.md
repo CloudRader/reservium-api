@@ -1,5 +1,36 @@
 # Changelog
 
+## [2.3.4](https://github.com/CloudRader/reservium-api/compare/v2.3.3...v2.3.4) (2026-04-11)
+
+
+### 🛠️ Fixes
+
+* remove attendees from create google calendar body ([#205](https://github.com/CloudRader/reservium-api/issues/205)) ([e31e919](https://github.com/CloudRader/reservium-api/commit/e31e9196aa4ce0c57b420b22ded0472503e27d7f))
+
+## [2.3.3](https://github.com/CloudRader/reservium-api/compare/v2.3.2...v2.3.3) (2026-04-11)
+
+
+### 🛠️ Fixes
+
+* **calendars:** remove user attribute from google_calendars_available_for_import ([#203](https://github.com/CloudRader/reservium-api/issues/203)) ([d1d12e9](https://github.com/CloudRader/reservium-api/commit/d1d12e96a603b774618035ef4e58a93e726cf78a))
+
+## [2.3.2](https://github.com/CloudRader/reservium-api/compare/v2.3.1...v2.3.2) (2026-04-11)
+
+
+### 🧱 Updates & Improvements
+
+* change oauth2 user account to service account ([db0536c](https://github.com/CloudRader/reservium-api/commit/db0536c83881a128cd01329d23d299c9788b6407))
+* **google:** add permission checks for google endpoints ([00b66d2](https://github.com/CloudRader/reservium-api/commit/00b66d23392b6151f3bc46e45e1ed4057d3f75d3))
+* **google:** add sync operations for google calendar integration ([84cca1b](https://github.com/CloudRader/reservium-api/commit/84cca1bd561a48829af492545959ce14c48659d0))
+* **google:** use service account for google integrations  ([#201](https://github.com/CloudRader/reservium-api/issues/201)) ([58b9f53](https://github.com/CloudRader/reservium-api/commit/58b9f53818f856316e89f25cd8ec84ca243f00ab))
+
+
+### 🛠️ Fixes
+
+* **deps:** update dependency pypdf to v6.10.0 [security] ([7a40637](https://github.com/CloudRader/reservium-api/commit/7a406375ff07001deb3c5ae8dfc97b16a74bad0a))
+* **deps:** update dependency pypdf to v6.10.0 [security] ([#200](https://github.com/CloudRader/reservium-api/issues/200)) ([e6fc363](https://github.com/CloudRader/reservium-api/commit/e6fc3635ca42f4ac81d446a5562e0f3c4e9ed917))
+* **tetsts:** test variables ([f5c5a06](https://github.com/CloudRader/reservium-api/commit/f5c5a062d6dc1c676efa0b6c3f50ca0d0d45d181))
+
 ## [2.3.1](https://github.com/CloudRader/reservium-api/compare/v2.3.0...v2.3.1) (2026-04-10)
 
 
