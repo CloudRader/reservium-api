@@ -19,17 +19,21 @@ def make_naive_datetime_validator(*fields: str):
             try:
                 parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
             except ValueError as exc:
-                raise ValueError("Invalid datetime format") from exc
+                message = "Invalid datetime format"
+                raise ValueError(message) from exc
             if parsed.tzinfo is not None:
-                raise ValueError("Datetime must be naive (no timezone info)")
+                message = "Datetime must be naive (no timezone info)"
+                raise ValueError(message)
             return parsed  # return datetime object
 
         if isinstance(value, datetime):
             if value.tzinfo is not None:
-                raise ValueError("Datetime must be naive (no timezone info)")
+                message = "Datetime must be naive (no timezone info)"
+                raise ValueError(message)
             return value
 
-        raise ValueError("Invalid datetime value")
+        message = "Invalid datetime value"
+        raise ValueError(message)
 
     return _check_naive_datetime
 
@@ -56,7 +60,8 @@ class EventCreate(BaseModel):
     @model_validator(mode="after")
     def check_time_order(self) -> "EventCreate":
         if self.end_datetime <= self.start_datetime:
-            raise ValueError("End time must be after start time")
+            message = "End time must be after start time"
+            raise ValueError(message)
         return self
 
 
@@ -89,7 +94,8 @@ class EventUpdate(EventBase):
             and self.reservation_end
             and self.reservation_end <= self.reservation_start
         ):
-            raise ValueError("End time must be after start time")
+            message = "End time must be after start time"
+            raise ValueError(message)
         return self
 
 
@@ -107,7 +113,8 @@ class EventUpdateTime(BaseModel):
     @model_validator(mode="after")
     def check_time_order(self) -> "EventUpdateTime":
         if self.requested_reservation_end <= self.requested_reservation_start:
-            raise ValueError("End time must be after start time")
+            message = "End time must be after start time"
+            raise ValueError(message)
         return self
 
 

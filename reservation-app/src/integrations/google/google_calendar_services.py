@@ -260,9 +260,8 @@ class GoogleCalendarService(AbstractGoogleCalendarService):
         calendar_list = response.get("items", [])
 
         if not any(cal["id"] == calendar_id for cal in calendar_list):
-            raise PermissionDeniedError(
-                "You don't have access to this calendar in Google Calendar."
-            )
+            message = "You don't have access to this calendar in Google Calendar."
+            raise PermissionDeniedError(message)
 
     async def insert_event(
         self, calendar_id: str, event_body: GoogleCalendarEventCreate

@@ -161,7 +161,8 @@ class CrudServiceBase(
     async def restore(self, id_: str | int) -> SchemaDetail:
         obj = await self.get(id_, True)
         if obj.deleted_at is None:  # type: ignore
-            raise BaseAppError(f"A {self.entity_name.value} was not soft deleted.")
+            message = f"A {self.entity_name.value} was not soft deleted."
+            raise BaseAppError(message)
         if obj is None:
             raise EntityNotFoundError(self.entity_name, id_)
         return await self.crud.restore(obj)
@@ -171,5 +172,6 @@ class CrudServiceBase(
         if hard_remove:
             return await self.crud.remove(id_)
         if obj.deleted_at is not None:  # type: ignore
-            raise BaseAppError(f"A {self.entity_name.value} is already soft deleted.")
+            message = f"A {self.entity_name.value} is already soft deleted."
+            raise BaseAppError(message)
         return await self.crud.soft_remove(obj)

@@ -55,7 +55,8 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
         user = await self.user_crud.get(access_request.uid)
 
         if user is None:
-            raise PermissionDeniedError("This user isn't exist in system.")
+            message = "This user isn't exist in system."
+            raise PermissionDeniedError(message)
 
         reservation_service = await self.reservation_service_crud.get_by_room_id(
             access_request.room_id,
@@ -65,15 +66,17 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
         )
 
         if (reservation_service is None) and (mini_service is None):
-            raise PermissionDeniedError(
+            message = (
                 "This room associated with some service isn't exist "
-                "in system or use another access system",
+                "in system or use another access system"
             )
+            raise PermissionDeniedError(message)
 
         event = await service_event.get_current_event_for_user(user.id)
 
         if event is None:
-            raise PermissionDeniedError("No available reservation exists at this time.")
+            message = "No available reservation exists at this time."
+            raise PermissionDeniedError(message)
 
         if (
             mini_service
@@ -95,6 +98,5 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
                 ):
                     return True
 
-        raise PermissionDeniedError(
-            "No matching reservation exists at this time for this rules.",
-        )
+        message = "No matching reservation exists at this time for this rules."
+        raise PermissionDeniedError(message)
