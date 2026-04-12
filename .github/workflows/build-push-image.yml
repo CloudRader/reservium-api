@@ -1,6 +1,9 @@
-name: Docker Build and Push
+name: Build and Push Images
 
 on:
+  push:
+    branches:
+      - develop
   workflow_run:
     workflows: ["Create Release Notes"]
     types:
@@ -11,7 +14,29 @@ permissions:
   packages: write
 
 jobs:
-  build-and-push-image:
+  build-dev-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Dev Image
+        run: |
+          IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY,,}"
+
+          docker build -t $IMAGE_NAME:$VERSION_TAG .
+          docker push $IMAGE_NAME:latest-dev
+
+  build-release-image:
     runs-on: ubuntu-latest
     if: >
       ${{ github.event.workflow_run.conclusion == 'success' &&
@@ -31,16 +56,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set image tags
+      - name: Build Release Image
         run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0)
+          TAG=$(git describe --tags --abbrev=0)
+          IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY,,}"
 
-          echo "IMAGE_NAME=ghcr.io/${{ github.repository }}" >> $GITHUB_ENV
-          echo "VERSION_LATEST=latest" >> $GITHUB_ENV
-          echo "VERSION_TAG=$LATEST_TAG" >> $GITHUB_ENV
-
-      - name: Build and push Docker image
-        run: |
-          docker build -t $IMAGE_NAME:$VERSION_LATEST -t $IMAGE_NAME:$VERSION_TAG .
+          docker build -t $IMAGE_NAME:latest -t $IMAGE_NAME:$TAG .
           docker push $IMAGE_NAME:$VERSION_LATEST
           docker push $IMAGE_NAME:$VERSION_TAG
