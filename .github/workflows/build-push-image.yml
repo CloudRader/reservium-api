@@ -33,7 +33,7 @@ jobs:
         run: |
           IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY,,}"
 
-          docker build -t $IMAGE_NAME:$VERSION_TAG .
+          docker build -t $IMAGE_NAME:latest-dev .
           docker push $IMAGE_NAME:latest-dev
 
   build-release-image:
