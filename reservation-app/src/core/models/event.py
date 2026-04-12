@@ -1,5 +1,7 @@
 """Event ORM model and its dependencies."""
 
+from __future__ import annotations
+
 from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
@@ -56,6 +58,6 @@ class Event(Base, SoftDeleteMixin):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
     calendar_id: Mapped[str] = mapped_column(ForeignKey("calendar.id"), nullable=False)
 
-    user: Mapped["User"] = relationship(back_populates="events")
-    calendar: Mapped["Calendar"] = relationship(back_populates="events")
+    user: Mapped[User] = relationship(back_populates="events")
+    calendar: Mapped[Calendar] = relationship(back_populates="events")
     additional_services: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=True)

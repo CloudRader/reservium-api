@@ -1,5 +1,7 @@
 """User ORM model and its dependencies."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from core.models.base_class import Base
@@ -34,4 +36,4 @@ class User(Base, SoftDeleteMixin):
         nullable=True,
     )
 
-    events: Mapped[list["Event"]] = relationship(back_populates="user", lazy="selectin")
+    events: Mapped[list[Event]] = relationship(back_populates="user", lazy="selectin")

@@ -70,7 +70,7 @@ class CalendarLite(CalendarBase):
 class CalendarWithReservationServiceInfo(CalendarLite):
     """Additional properties of calendar to return via API."""
 
-    reservation_service: "ReservationServiceLite"
+    reservation_service: "ReservationServiceLite"  # noqa
 
 
 class CalendarDetail(CalendarLite):
@@ -79,7 +79,7 @@ class CalendarDetail(CalendarLite):
     club_member_rules: Rules
     active_member_rules: Rules
     manager_rules: Rules
-    mini_services: list["MiniServiceLite"] = Field(default_factory=list)
+    mini_services: list["MiniServiceLite"] = Field(default_factory=list)  # noqa
 
 
 class CalendarDetailWithCollisions(CalendarDetail):

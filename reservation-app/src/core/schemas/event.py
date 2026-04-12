@@ -58,7 +58,7 @@ class EventCreate(BaseModel):
     _validate_naive = make_naive_datetime_validator("start_datetime", "end_datetime")
 
     @model_validator(mode="after")
-    def check_time_order(self) -> "EventCreate":
+    def check_time_order(self) -> "EventCreate":  # noqa
         if self.end_datetime <= self.start_datetime:
             message = "End time must be after start time"
             raise ValueError(message)
@@ -88,7 +88,7 @@ class EventUpdate(EventBase):
     )
 
     @model_validator(mode="after")
-    def check_time_order(self) -> "EventUpdate":
+    def check_time_order(self) -> "EventUpdate":  # noqa
         if (
             self.reservation_start
             and self.reservation_end
@@ -111,7 +111,7 @@ class EventUpdateTime(BaseModel):
     )
 
     @model_validator(mode="after")
-    def check_time_order(self) -> "EventUpdateTime":
+    def check_time_order(self) -> "EventUpdateTime":  # noqa
         if self.requested_reservation_end <= self.requested_reservation_start:
             message = "End time must be after start time"
             raise ValueError(message)
@@ -140,8 +140,8 @@ class EventLite(EventBase):
 class EventDetail(EventLite):
     """Extend properties of event to return via API."""
 
-    user: "UserLite"
-    calendar: "CalendarWithReservationServiceInfo"
+    user: "UserLite"  # noqa
+    calendar: "CalendarWithReservationServiceInfo"  # noqa
 
 
 from core.schemas.user import UserLite  # noqa

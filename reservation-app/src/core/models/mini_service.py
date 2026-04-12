@@ -1,5 +1,7 @@
 """Mini service ORM model and its dependencies."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from core.models.base_class import Base
@@ -23,10 +25,10 @@ class MiniService(Base, SoftDeleteMixin):
     room_id: Mapped[int] = mapped_column(nullable=True)
     reservation_service_id: Mapped[str] = mapped_column(ForeignKey("reservation_service.id"))
 
-    reservation_service: Mapped["ReservationService"] = relationship(
+    reservation_service: Mapped[ReservationService] = relationship(
         back_populates="mini_services",
     )
-    calendars: Mapped[list["Calendar"]] = relationship(
+    calendars: Mapped[list[Calendar]] = relationship(
         secondary="calendar_mini_service_association",
         back_populates="mini_services",
         lazy="selectin",
