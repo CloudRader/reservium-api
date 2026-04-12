@@ -6,8 +6,11 @@ ENV PATH="$VENV_PATH/bin:$PATH"
 
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 
-RUN apt-get update && apt-get install -y curl \
-  && curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+ && rm -rf /var/lib/apt/lists/* \
+ && curl -LsSf https://astral.sh/uv/install.sh | sh
 
 RUN useradd --uid 8001 --user-group --home-dir $HOME --create-home app
 WORKDIR $HOME

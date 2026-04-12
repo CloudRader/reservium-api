@@ -1,7 +1,7 @@
 services:
   db:
     container_name: db
-    image: postgres:18
+    image: postgres:18.3
     restart: on-failure
     environment:
       POSTGRES_USER: ${DB__POSTGRES_USER}
@@ -39,14 +39,12 @@ services:
       KEYCLOAK__CLIENT_ID: ${KEYCLOAK__CLIENT_ID}
       KEYCLOAK__CLIENT_SECRET: ${KEYCLOAK__CLIENT_SECRET}
 
-      SPICEDB__SERVER_URL: ${SPICEDB__SERVER_URL}
-      SPICEDB__CLIENT_SECRET: ${SPICEDB__CLIENT_SECRET}
-
       GOOGLE__PROJECT_ID: ${GOOGLE__PROJECT_ID}
+      GOOGLE__PRIVATE_KEY_ID: ${GOOGLE__PRIVATE_KEY_ID}
+      GOOGLE__PRIVATE_KEY: ${GOOGLE__PRIVATE_KEY}
+      GOOGLE__CLIENT_EMAIL: ${GOOGLE__CLIENT_EMAIL}
       GOOGLE__CLIENT_ID: ${GOOGLE__CLIENT_ID}
-      GOOGLE__CLIENT_SECRET: ${GOOGLE__CLIENT_SECRET}
-
-      DORMITORY_ACCESS_SYSTEM__API_KEY: ${DORMITORY_ACCESS_SYSTEM__API_KEY}
+      GOOGLE__CLIENT_X509_CERT_URL: ${GOOGLE__CLIENT_X509_CERT_URL}
     depends_on:
       - db
     restart: on-failure
@@ -57,13 +55,13 @@ services:
     networks:
       - internal
     
-  reservium-ui:
-    container_name: reservium-ui
-    image: darkrader/reservium-ui:latest-dev
-    ports:
-      - "3000:3000"
-    networks:
-      - internal
+  # reservium-ui:
+  #   container_name: reservium-ui
+  #   image: darkrader/reservium-ui:latest-dev
+  #   ports:
+  #     - "3000:3000"
+  #   networks:
+  #     - internal
 
 networks:
   internal:
