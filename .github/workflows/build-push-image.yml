@@ -1,13 +1,15 @@
 name: Docker Build and Push
 
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Create Release Notes"]
+    types:
+      - completed
 
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
-
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'release-please--branches--main'
     steps:
       - uses: actions/checkout@v6
         with:
@@ -24,7 +26,7 @@ jobs:
 
       - name: Set image tags
         run: |
-          LATEST_TAG="${{ github.event.release.tag_name }}"
+          LATEST_TAG=$(git describe --tags --abbrev=0)
 
           echo "IMAGE_NAME=${{ secrets.DOCKER_HUB_USER }}/reservium-api" >> $GITHUB_ENV
           echo "VERSION_LATEST=latest" >> $GITHUB_ENV
