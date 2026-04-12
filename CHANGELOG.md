@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.3.1](https://github.com/CloudRader/reservium-api/compare/v2.3.0...v2.3.1) (2026-04-10)
+
+
+### 🧱 Updates & Improvements
+
+* **deps:** update dependency astral-sh/uv to v0.11.6 ([#190](https://github.com/CloudRader/reservium-api/issues/190)) ([a03b28c](https://github.com/CloudRader/reservium-api/commit/a03b28c16049569c7d741649dcee3e24b419bfa2))
+* **deps:** update dependency pytest to v9.0.3 ([#189](https://github.com/CloudRader/reservium-api/issues/189)) ([2a43625](https://github.com/CloudRader/reservium-api/commit/2a43625ea49cc395f09b400724a69f1d9db66a14))
+* **deps:** update dependency ruff to v0.15.10 ([#192](https://github.com/CloudRader/reservium-api/issues/192)) ([b85fe88](https://github.com/CloudRader/reservium-api/commit/b85fe88fbf0870a7ae8a9ec60ca90878b03d5721))
+* **deps:** update dependency types-python-dateutil to v2.9.0.20260408 ([#193](https://github.com/CloudRader/reservium-api/issues/193)) ([b9d465f](https://github.com/CloudRader/reservium-api/commit/b9d465fd3b87e2ab24c2cead3b6430acbcde571f))
+* **deps:** update dependency types-pytz to v2026.1.1.20260408 ([#194](https://github.com/CloudRader/reservium-api/issues/194)) ([47eedb7](https://github.com/CloudRader/reservium-api/commit/47eedb7a91a00f15cb07314fac78db09121af0ef))
+* **google-calendar:** introduce async-safe executor using thread pool ([df24abe](https://github.com/CloudRader/reservium-api/commit/df24abeef39b3c1690f9f8f57f2e9236c5cdb225))
+* **patch:** refactor api and services layer, do calendar integration non-blocking call, update dependencies ([#197](https://github.com/CloudRader/reservium-api/issues/197)) ([8598c22](https://github.com/CloudRader/reservium-api/commit/8598c22aaced645aeda209e99efd62ee7e822e17))
+
+
+### 🛠️ Fixes
+
+* **deps:** update dependency google-api-python-client to v2.194.0 ([#195](https://github.com/CloudRader/reservium-api/issues/195)) ([1777583](https://github.com/CloudRader/reservium-api/commit/177758346614642fe0f0be81f618d3f962c6801e))
+* **deps:** update dependency jwcrypto to v1.5.7 ([#188](https://github.com/CloudRader/reservium-api/issues/188)) ([76d7afa](https://github.com/CloudRader/reservium-api/commit/76d7afa346cebc6b82374320f0566458d947dde4))
+* **deps:** update dependency uvicorn to v0.44.0 ([#187](https://github.com/CloudRader/reservium-api/issues/187)) ([0d5aa9c](https://github.com/CloudRader/reservium-api/commit/0d5aa9c19150f0afde3c97a678035b2a75e21141))
+* **events:** return with await approve_update_reservation_time ([046ab6c](https://github.com/CloudRader/reservium-api/commit/046ab6c0f595fa960a8b567a1e994608b63e2622))
+* **events:** tmp fix for retrieve event with proper relations load ([77049c3](https://github.com/CloudRader/reservium-api/commit/77049c3a5224941bdde0042ccc6e72047e0d6be7))
+
+
+### 🧹 Refactors
+
+* move calendar, events and emails api layer business logic to services layer ([#191](https://github.com/CloudRader/reservium-api/issues/191)) ([dda313f](https://github.com/CloudRader/reservium-api/commit/dda313fb60bfb7ace73fd9cb24b3e6e6f7768285))
+
 ## [2.3.0](https://github.com/CloudRader/reservium-api/compare/v2.2.0...v2.3.0) (2026-04-04)
 
 
