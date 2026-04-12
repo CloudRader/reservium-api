@@ -40,7 +40,8 @@ async def get_all(
 
     if not user.section_head:
         logger.warning("Permission denied for user %s (not section_head).", user.id)
-        raise PermissionDeniedError("Permission Denied.")
+        message = "Permission Denied."
+        raise PermissionDeniedError(message)
 
     users = await service.get_all()
 

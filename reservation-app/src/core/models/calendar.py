@@ -1,5 +1,7 @@
 """Calendar ORM model and its dependencies."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from core.models.base_class import Base
@@ -34,20 +36,20 @@ class Calendar(Base, SoftDeleteMixin):
 
     reservation_service_id: Mapped[str] = mapped_column(ForeignKey("reservation_service.id"))
 
-    reservation_service: Mapped["ReservationService"] = relationship(
+    reservation_service: Mapped[ReservationService] = relationship(
         back_populates="calendars",
     )
-    events: Mapped[list["Event"]] = relationship(
+    events: Mapped[list[Event]] = relationship(
         back_populates="calendar",
         lazy="selectin",
     )
-    mini_services: Mapped[list["MiniService"]] = relationship(
+    mini_services: Mapped[list[MiniService]] = relationship(
         secondary="calendar_mini_service_association",
         back_populates="calendars",
         lazy="selectin",
     )
 
-    collisions: Mapped[list["Calendar"]] = relationship(
+    collisions: Mapped[list[Calendar]] = relationship(
         "Calendar",
         secondary="calendar_collision_association",
         primaryjoin="Calendar.id==CalendarCollisionAssociationTable.calendar_id",

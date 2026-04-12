@@ -125,9 +125,7 @@ class KeycloakAuthService(AbstractKeycloakAuthService):
 
     async def get_user_info(self, token: str) -> UserKeycloak:
         try:
-            user_info = UserKeycloak(**(self.keycloak_openid.userinfo(token)))
-            logger.debug("Retrieved user info from Keycloak for sub=%s", user_info.sub)
-            return user_info
+            user_info_raw = self.keycloak_openid.userinfo(token)
         except KeycloakAuthenticationError as e:
             logger.info("Failed to get user info: %s", e)
             raise UnauthorizedError(
@@ -138,6 +136,10 @@ class KeycloakAuthService(AbstractKeycloakAuthService):
             raise PermissionDeniedError(
                 message="Token lacks required permissions",
             ) from e
+        else:
+            user_info = UserKeycloak(**user_info_raw)
+            logger.debug("Retrieved user info from Keycloak for sub=%s", user_info.sub)
+            return user_info
 
     async def refresh_token(self, refresh_token: str) -> dict[str, Any]:
         try:

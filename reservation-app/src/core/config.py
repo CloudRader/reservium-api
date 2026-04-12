@@ -129,13 +129,6 @@ class KeycloakConfig(BaseModel):
     CLIENT_SECRET: str
 
 
-class SpiceDbConfig(BaseModel):
-    """Config for SpiceDb."""
-
-    SERVER_URL: str
-    CLIENT_SECRET: str
-
-
 class GoogleConfig(BaseModel):
     """Config for google."""
 
@@ -179,7 +172,6 @@ class Settings(BaseSettings):
     DB: DatabaseConfig
     MAIL: MailConfig
     KEYCLOAK: KeycloakConfig
-    SPICEDB: SpiceDbConfig
     GOOGLE: GoogleConfig
 
     model_config = SettingsConfigDict(

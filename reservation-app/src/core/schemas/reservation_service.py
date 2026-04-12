@@ -44,8 +44,8 @@ class ReservationServiceLite(ReservationServiceBase):
 class ReservationServiceDetail(ReservationServiceLite):
     """Additional properties of reservation service to return via API."""
 
-    calendars: list["CalendarDetail"] = Field(default_factory=list)
-    mini_services: list["MiniServiceLite"] = Field(default_factory=list)
+    calendars: list["CalendarDetail"] = Field(default_factory=list)  # noqa
+    mini_services: list["MiniServiceLite"] = Field(default_factory=list)  # noqa
 
 
 from core.schemas.calendar import CalendarDetail  # noqa

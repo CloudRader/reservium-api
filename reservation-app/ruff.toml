@@ -34,10 +34,10 @@ select = [
     "UP",    # pyupgrade (modern Python syntax)
     "TC",    # flake8‑type‑checking
     "T20",   # flake8-print (warn about print statements)
-#    "TRY",  # tryceratops (try/except anti-patterns)
+    "TRY",   # tryceratops (try/except anti-patterns)
     "W",     # pycodestyle warnings
 ]
-ignore = ["COM812", "D102", "D107", "D203", "D212"]
+ignore = ["COM812", "D102", "D107", "D203", "D212", "TC002", "TC003"]
 exclude = ["src/migrations/versions/*", "tests/test_api/*", "tests/test_services/*"]
 
 [format]

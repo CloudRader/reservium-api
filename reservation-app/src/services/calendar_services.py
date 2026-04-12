@@ -270,10 +270,11 @@ class CalendarService(AbstractCalendarService):
 
         for mini_service_id in mini_services_ids:
             if mini_service_id not in existing_mini_services_by_id:
-                raise BaseAppError(
+                message = (
                     f"Mini service {mini_service_id} does not exist or does not belong "
-                    f"to this reservation service.",
+                    f"to this reservation service."
                 )
+                raise BaseAppError(message)
             mini_services_in_calendar.append(existing_mini_services_by_id[mini_service_id])
 
         return mini_services_in_calendar

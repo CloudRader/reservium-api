@@ -81,16 +81,16 @@ class AbstractEventService(
         user: UserLite,
         event_state: EventState,
         id_: str,
-    ) -> EventDetail | None:
+    ) -> EventLite | None:
         """
-        Create an EventExtra in the database.
+        Create an EventLite in the database.
 
         :param event_create: EventCreate SchemaLite for create.
         :param user: the UserSchema for control permissions of the reservation service.
         :param event_state: State of the event.
-        :param id_: EventExtra id in google calendar.
+        :param id_: Event id in google calendar.
 
-        :return: the created EventExtra.
+        :return: the created EventLite.
         """
 
     @abstractmethod
@@ -311,7 +311,8 @@ class EventService(AbstractEventService):
             calendar,
         ):
             logger.warning("Collision detected for event by user %s", user.id)
-            raise SoftValidationError("There's already a reservation for that time.")
+            message = "There's already a reservation for that time."
+            raise SoftValidationError(message)
 
         await self._control_conditions_and_permissions(
             user,
@@ -399,16 +400,16 @@ class EventService(AbstractEventService):
         event_to_update = await self.get(id_)
 
         if event_to_update.event_state == EventState.CANCELED:
-            raise BaseAppError("You can't change canceled reservation.")
+            message = "You can't change canceled reservation."
+            raise BaseAppError(message)
 
         reservation_service = await self.get_reservation_service_of_this_event(
             event_to_update,
         )
 
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to update this event.",
-            )
+            message = f"You must be the {reservation_service.name} manager to update this event."
+            raise PermissionDeniedError(message)
 
         event_update: EventUpdate = EventUpdate(
             event_state=EventState.CONFIRMED,
@@ -476,18 +477,17 @@ class EventService(AbstractEventService):
         reservation_service = await self.get_reservation_service_of_this_event(event_to_update)
 
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to update event.",
-            )
+            message = f"You must be the {reservation_service.name} manager to update event."
+            raise PermissionDeniedError(message)
 
         event_update = self.datetime_for_update(event_to_update, event_update)
         if event_update.reservation_start < dt.datetime.now():
-            raise SoftValidationError(
-                "You can't change a reservation start time before the present time!"
-            )
+            message = "You can't change a reservation start time before the present time!"
+            raise SoftValidationError(message)
 
         if event_update.reservation_end < event_update.reservation_start:
-            raise SoftValidationError("The end of a reservation cannot be before its beginning!")
+            message = "The end of a reservation cannot be before its beginning!"
+            raise SoftValidationError(message)
 
         event = await self.update(id_, event_update)
 
@@ -527,22 +527,22 @@ class EventService(AbstractEventService):
         event_to_update = await self.get(id_)
 
         if event_to_update.user_id != user.id:
-            raise PermissionDeniedError(
-                "You do not have permission to request change a reservation made by another user.",
+            message = (
+                "You do not have permission to request change a reservation made by another user."
             )
+            raise PermissionDeniedError(message)
 
         if event_to_update.reservation_start < dt.datetime.now():
-            raise BaseAppError(
-                "You cannot change the reservation time after it has started.",
-            )
+            message = "You cannot change the reservation time after it has started."
+            raise BaseAppError(message)
 
         if event_to_update.event_state == EventState.CANCELED:
-            raise BaseAppError("You can't change canceled reservation.")
+            message = "You can't change canceled reservation."
+            raise BaseAppError(message)
 
         if event_to_update.event_state == EventState.UPDATE_REQUESTED:
-            raise BaseAppError(
-                "You can't change reservation in state update requested.",
-            )
+            message = "You can't change reservation in state update requested."
+            raise BaseAppError(message)
 
         event_update_time = EventUpdate(
             requested_reservation_start=event_update.requested_reservation_start,
@@ -577,19 +577,18 @@ class EventService(AbstractEventService):
         event = await self.get(id_)
 
         if event.event_state == EventState.CANCELED:
-            raise BaseAppError("You can't cancel canceled reservation.")
+            message = "You can't cancel canceled reservation."
+            raise BaseAppError(message)
 
         if event.reservation_end < dt.datetime.now():
-            raise BaseAppError(
-                "You cannot cancel the reservation after it has ended.",
-            )
+            message = "You cannot cancel the reservation after it has ended."
+            raise BaseAppError(message)
 
         reservation_service = await self.get_reservation_service_of_this_event(event)
 
         if event.user_id != user.id and reservation_service.alias not in user.roles:
-            raise PermissionDeniedError(
-                "You do not have permission to cancel a reservation made by another user.",
-            )
+            message = "You do not have permission to cancel a reservation made by another user."
+            raise PermissionDeniedError(message)
 
         event = await self.update(id_, EventUpdate(event_state=EventState.CANCELED))
 
@@ -626,12 +625,12 @@ class EventService(AbstractEventService):
         reservation_service = await self.get_reservation_service_of_this_event(event)
 
         if event.event_state != EventState.CANCELED:
-            raise BaseAppError("You can't deleted not canceled reservation.")
+            message = "You can't deleted not canceled reservation."
+            raise BaseAppError(message)
 
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to delete event.",
-            )
+            message = f"You must be the {reservation_service.name} manager to delete event."
+            raise PermissionDeniedError(message)
 
         return await self.crud.remove(id_)
 
@@ -645,16 +644,16 @@ class EventService(AbstractEventService):
         event = await self.get(id_)
 
         if event.event_state != EventState.NOT_APPROVED:
-            raise BaseAppError(
-                "You cannot approve a reservation that is not in the 'not approved' state.",
-            )
+            message = "You cannot approve a reservation that is not in the 'not approved' state."
+            raise BaseAppError(message)
 
         reservation_service = await self.get_reservation_service_of_this_event(event)
 
         if reservation_service.alias not in user.roles:
-            raise PermissionDeniedError(
-                f"You must be the {reservation_service.name} manager to approve this reservation.",
+            message = (
+                f"You must be the {reservation_service.name} manager to approve this reservation."
             )
+            raise PermissionDeniedError(message)
 
         event = await self.update(id_, EventUpdate(event_state=EventState.CONFIRMED))
 
@@ -737,10 +736,11 @@ class EventService(AbstractEventService):
             not calendar.more_than_max_people_with_permission
             and event_input.guests > calendar.max_people
         ):
-            raise SoftValidationError(
+            message = (
                 f"You can't reserve this type of "
                 f"reservation for more than {calendar.max_people} people!"
             )
+            raise SoftValidationError(message)
 
         # Choose user rules
         user_rules = await self._choose_user_rules(user, calendar)
@@ -777,28 +777,32 @@ class EventService(AbstractEventService):
         """
         # Check of the membership
         if not self._service_availability_check(services, reservation_service.alias):
-            raise SoftValidationError(f"You don't have {reservation_service.alias} service!")
+            message = f"You don't have {reservation_service.alias} service!"
+            raise SoftValidationError(message)
 
         # Check error reservation
         if start_time < dt.datetime.now():
-            raise SoftValidationError("You can't make a reservation before the present time!")
+            message = "You can't make a reservation before the present time!"
+            raise SoftValidationError(message)
 
     def _reservation_in_advance(self, start_time, user_rules):
         """Check if the reservation is made within the specified advance and prior time."""
         # Reservation in advance
         if not self._control_res_in_advance_or_prior(start_time, user_rules, True):
-            raise SoftValidationError(
+            message = (
                 f"You have to make reservations "
                 f"{user_rules.in_advance_hours} hours and "
                 f"{user_rules.in_advance_minutes} minutes in advance!"
             )
+            raise SoftValidationError(message)
 
         # Reservation prior than
         if not self._control_res_in_advance_or_prior(start_time, user_rules, False):
-            raise SoftValidationError(
+            message = (
                 f"You can't make reservations earlier than {user_rules.in_prior_days} "
                 f"days in advance!"
             )
+            raise SoftValidationError(message)
 
     def _construct_event_body(
         self,
@@ -945,10 +949,11 @@ class EventService(AbstractEventService):
         """Check if the reservation duration is less than user can reserve."""
         duration = end_datetime - start_datetime
         if duration >= dt.timedelta(hours=user_rules.max_reservation_hours):
-            raise SoftValidationError(
-                f"Reservation exceeds the allowed maximum of "
+            message = (
+                "Reservation exceeds the allowed maximum of "
                 f"{user_rules.max_reservation_hours} hours."
             )
+            raise SoftValidationError(message)
 
     @staticmethod
     def _control_res_in_advance_or_prior(

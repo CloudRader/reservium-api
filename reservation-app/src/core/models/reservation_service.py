@@ -1,5 +1,7 @@
 """Reservation service ORM model and its dependencies."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from core.models.base_class import Base
@@ -26,11 +28,11 @@ class ReservationService(Base, SoftDeleteMixin):
     access_group: Mapped[str] = mapped_column(nullable=True)
     room_id: Mapped[int] = mapped_column(nullable=True)
 
-    calendars: Mapped[list["Calendar"]] = relationship(
+    calendars: Mapped[list[Calendar]] = relationship(
         back_populates="reservation_service",
         lazy="selectin",
     )
-    mini_services: Mapped[list["MiniService"]] = relationship(
+    mini_services: Mapped[list[MiniService]] = relationship(
         back_populates="reservation_service",
         lazy="selectin",
     )

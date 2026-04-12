@@ -1,8 +1,11 @@
 """Utils for test package."""
 
-from typing import Any
+from __future__ import annotations
 
-from core.models.base_class import Base
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from core.models.base_class import Base
 
 
 def as_dict(model: Base) -> dict[str, Any]:

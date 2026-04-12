@@ -1,10 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "github>cloudrader/renovate-config:org-inherited-config"
   ],
-  "baseBranchPatterns": [
-    "develop"
-  ],
-  "prConcurrentLimit": 5
+  "packageRules": [
+    {
+      "matchPackageNames": ["python"],
+      "allowedVersions": "3.14.3"
+    }
+  ]
 }
