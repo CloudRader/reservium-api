@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.3.5](https://github.com/CloudRader/reservium-api/compare/v2.3.4...v2.3.5) (2026-04-12)
+
+
+### 🧱 Updates & Improvements
+
+* remove spicedb integration from project ([4fcbcc7](https://github.com/CloudRader/reservium-api/commit/4fcbcc7ed341a7f84299fcb37ccab0f0ac74cd6c))
+* **renovate:** update configuration ([ea85570](https://github.com/CloudRader/reservium-api/commit/ea8557097e461fb94fc20261d2de293530304238))
+* **ruff:** solve tryceratops (try/except anti-patterns) rules ([c68696a](https://github.com/CloudRader/reservium-api/commit/c68696a3868f1bdf0df9100e2fddacebc6aa7d61))
+* update to Python 14 ([cccb740](https://github.com/CloudRader/reservium-api/commit/cccb7403f10bd453e91c7119e75343a43b4ff366))
+
+
+### 🛠️ Fixes
+
+* **build:** Dockerfile and compose ([d672117](https://github.com/CloudRader/reservium-api/commit/d67211758061327f8dda14e58f91c28f53de494a))
+* **ci:** build and push image job for correct tag image ([815e404](https://github.com/CloudRader/reservium-api/commit/815e4044a7441cc0bbe33c95cdfc51f219eb75aa))
+* **ruff:** warning after update to Python 14 ([5db0ea2](https://github.com/CloudRader/reservium-api/commit/5db0ea2dcdc472ffe65332ed49fc4ab9132b5f1e))
+
 ## [2.3.4](https://github.com/CloudRader/reservium-api/compare/v2.3.3...v2.3.4) (2026-04-11)
 
 
