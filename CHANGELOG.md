@@ -1,12 +1,5 @@
 # Changelog
 
-## [2.3.8](https://github.com/CloudRader/reservium-api/compare/v2.3.7...v2.3.8) (2026-04-12)
-
-
-### 🛠️ Fixes
-
-* **ci:** build and push image job check conditions ([95fc26c](https://github.com/CloudRader/reservium-api/commit/95fc26c7a45158de5b8aca31014884f9188a3904))
-
 ## [2.3.7](https://github.com/CloudRader/reservium-api/compare/v2.3.6...v2.3.7) (2026-04-12)
 
 
