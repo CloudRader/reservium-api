@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.9](https://github.com/CloudRader/reservium-api/compare/v2.3.8...v2.3.9) (2026-04-12)
+
+
+### 🛠️ Fixes
+
+* **ci:** condition and ref in build images ([617aa7d](https://github.com/CloudRader/reservium-api/commit/617aa7db0f543bfde71a99c3dc448044a1ce9e0b))
+
 ## [2.3.8](https://github.com/CloudRader/reservium-api/compare/v2.3.7...v2.3.8) (2026-04-12)
 
 
