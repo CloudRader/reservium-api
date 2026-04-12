@@ -1,9 +1,8 @@
 name: Docker Build and Push
 
 on:
-  push:
-    tags:
-      - "v*"
+  release:
+    types: [published]
 
 jobs:
   build-and-push-image:
@@ -25,7 +24,7 @@ jobs:
 
       - name: Set image tags
         run: |
-          LATEST_TAG="${GITHUB_REF_NAME}"
+          LATEST_TAG="${{ github.event.release.tag_name }}"
 
           echo "IMAGE_NAME=${{ secrets.DOCKER_HUB_USER }}/reservium-api" >> $GITHUB_ENV
           echo "VERSION_LATEST=latest" >> $GITHUB_ENV
