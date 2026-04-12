@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.7](https://github.com/CloudRader/reservium-api/compare/v2.3.6...v2.3.7) (2026-04-12)
+
+
+### 🛠️ Fixes
+
+* **ci:** change build and push image job trigger ([d721580](https://github.com/CloudRader/reservium-api/commit/d721580bacc1ee4650cdba30dcd071a382372408))
+
 ## [2.3.6](https://github.com/CloudRader/reservium-api/compare/v2.3.5...v2.3.6) (2026-04-12)
 
 
