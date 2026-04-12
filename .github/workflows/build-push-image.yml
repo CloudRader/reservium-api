@@ -1,16 +1,14 @@
 name: Docker Build and Push
 
 on:
-  pull_request:
-    branches:
-      - main
-    types:
-      - closed
+  push:
+    tags:
+      - "v*"
 
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'release-please--branches--main'
+
     steps:
       - uses: actions/checkout@v6
         with:
@@ -27,7 +25,7 @@ jobs:
 
       - name: Set image tags
         run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          LATEST_TAG="${GITHUB_REF_NAME}"
 
           echo "IMAGE_NAME=${{ secrets.DOCKER_HUB_USER }}/reservium-api" >> $GITHUB_ENV
           echo "VERSION_LATEST=latest" >> $GITHUB_ENV
