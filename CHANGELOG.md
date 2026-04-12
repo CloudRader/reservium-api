@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.3.8](https://github.com/CloudRader/reservium-api/compare/v2.3.7...v2.3.8) (2026-04-12)
+
+
+### 🧱 Updates & Improvements
+
+* **ci:** merge build and push image for dev and release to one ([0a953c9](https://github.com/CloudRader/reservium-api/commit/0a953c90bc3dd49d4c4544bddbca01011357ec7d))
+* **ci:** migrate from Docker Hub AR to GH ([dd1f6f4](https://github.com/CloudRader/reservium-api/commit/dd1f6f4a8c0e2f5bf26cef7883184fb5fdbe4ed7))
+* **deps:** update python ([#196](https://github.com/CloudRader/reservium-api/issues/196)) ([3592884](https://github.com/CloudRader/reservium-api/commit/35928849d022cb392f14ffec00e720667deb9104))
+* **main:** release 2.3.8 ([303287c](https://github.com/CloudRader/reservium-api/commit/303287c1149153845fd3696fb8b7b4f3f5423052))
+* **main:** release 2.3.8 ([#212](https://github.com/CloudRader/reservium-api/issues/212)) ([9f44d41](https://github.com/CloudRader/reservium-api/commit/9f44d4187aeccde5e6181e9abe043aad07b52dff))
+
+
+### 🛠️ Fixes
+
+* **ci:** add permissions for build and push image jobs ([50fb74d](https://github.com/CloudRader/reservium-api/commit/50fb74d197ba759060f58a5f9c3009c717e489ab))
+* **ci:** build and push image job check conditions ([95fc26c](https://github.com/CloudRader/reservium-api/commit/95fc26c7a45158de5b8aca31014884f9188a3904))
+* **ci:** GitHub repo name ([b5b6fe8](https://github.com/CloudRader/reservium-api/commit/b5b6fe8cef6308aaef6406004ce7cdd8ac78c2b6))
+* **ci:** remove old build dev image and fix the new one ref ([10616f2](https://github.com/CloudRader/reservium-api/commit/10616f215a02394878b9ad653cbac776ea3a481a))
+* release please manifest and changelog ([5d7e74e](https://github.com/CloudRader/reservium-api/commit/5d7e74e6a2d00e3b091ae1368bae7ade16f4e91d))
+
 ## [2.3.7](https://github.com/CloudRader/reservium-api/compare/v2.3.6...v2.3.7) (2026-04-12)
 
 
