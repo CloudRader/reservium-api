@@ -18,7 +18,7 @@ WORKDIR $HOME
 RUN python -m venv $VENV_PATH
 
 COPY pyproject.toml uv.lock ./
-RUN $HOME/.local/bin/uv sync
+RUN $HOME/.local/bin/uv sync --frozen --no-dev
 
 # copy source code
 COPY reservation-app ./
