@@ -35,7 +35,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/reservium-api:latest-dev
+            ghcr.io/${GITHUB_REPOSITORY,,}:latest-dev
 
           cache-from: type=gha
           cache-to: type=gha,mode=max,ignore-error=true
@@ -69,8 +69,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/reservium-api:latest
-            ghcr.io/${{ github.repository_owner }}/reservium-api:${{ env.TAG }}
+            ghcr.io/${GITHUB_REPOSITORY,,}:latest
+            ghcr.io/${GITHUB_REPOSITORY,,}:${{ env.TAG }}
 
           cache-from: type=gha
           cache-to: type=gha,mode=max,ignore-error=true
