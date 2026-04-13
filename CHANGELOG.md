@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.3.10](https://github.com/CloudRader/reservium-api/compare/v2.3.9...v2.3.10) (2026-04-13)
+
+
+### 🧱 Updates & Improvements
+
+* **deps:** update dependency mypy to v1.20.1 ([#220](https://github.com/CloudRader/reservium-api/issues/220)) ([bea3778](https://github.com/CloudRader/reservium-api/commit/bea3778e9c632032b6830af3ba08d8e483c30000))
+
+
+### 🛠️ Fixes
+
+* **ci:** tags naming ([b51d874](https://github.com/CloudRader/reservium-api/commit/b51d8741a1c7aca4333e6967b1e2e5896cabf3b4))
+* **ci:** with ENVs ([51fe904](https://github.com/CloudRader/reservium-api/commit/51fe904829ac2d495130ccdb6a3859198ea06f4b))
+* **deps:** update dependency pydantic to v2.13.0 ([95b41e6](https://github.com/CloudRader/reservium-api/commit/95b41e64cd6c39d7e409cc6604cd1e777ceae361))
+* **deps:** update dependency pydantic to v2.13.0 ([#221](https://github.com/CloudRader/reservium-api/issues/221)) ([e5e091d](https://github.com/CloudRader/reservium-api/commit/e5e091d74f8199f13a14e5e0fa979a6f8da25243))
+
+
+### ⚙️ DevOps & CI/CD
+
+* **build:** migrate fromown workflow to docker/build-push-action ([a6d2a21](https://github.com/CloudRader/reservium-api/commit/a6d2a21bd82d4624c1a1184ebba4a7f5ede94c2d))
+
 ## [2.3.9](https://github.com/CloudRader/reservium-api/compare/v2.3.8...v2.3.9) (2026-04-12)
 
 
