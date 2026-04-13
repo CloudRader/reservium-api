@@ -29,13 +29,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Prepare image name
+        run: |
+          echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+
       - name: Build and Push Dev Image
         uses: docker/build-push-action@v7
         with:
           context: .
           push: true
           tags: |
-            ghcr.io/${GITHUB_REPOSITORY,,}:latest-dev
+            ${{ env.IMAGE_NAME }}:latest-dev
 
           cache-from: type=gha
           cache-to: type=gha,mode=max,ignore-error=true
@@ -59,6 +63,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Prepare image name
+        run: |
+          echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+
       - name: Get tag
         id: tag
         run: echo "TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
@@ -69,8 +77,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${GITHUB_REPOSITORY,,}:latest
-            ghcr.io/${GITHUB_REPOSITORY,,}:${{ env.TAG }}
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
           cache-from: type=gha
           cache-to: type=gha,mode=max,ignore-error=true
