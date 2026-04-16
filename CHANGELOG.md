@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.3.11](https://github.com/CloudRader/reservium-api/compare/v2.3.10...v2.3.11) (2026-04-16)
+
+
+### 🧱 Updates & Improvements
+
+* **deps:** replace astral-sh/setup-uv action with astral-sh/setup-uv v8.0.0 ([#230](https://github.com/CloudRader/reservium-api/issues/230)) ([6c377f8](https://github.com/CloudRader/reservium-api/commit/6c377f8d00b296e0df748b0a35ab3013a5dc033c))
+* **deps:** update dependency astral-sh/uv to v0.11.7 ([#224](https://github.com/CloudRader/reservium-api/issues/224)) ([0961aae](https://github.com/CloudRader/reservium-api/commit/0961aae870530036bed39dbfe2e4da366b02bcab))
+
+
+### 🛠️ Fixes
+
+* CHANGLOG duplications ([602fa5b](https://github.com/CloudRader/reservium-api/commit/602fa5bb9a49e9d398fc9a15d54ed3631a248938))
+* **deps:** update dependency fastapi to v0.136.0 ([#227](https://github.com/CloudRader/reservium-api/issues/227)) ([e4eff59](https://github.com/CloudRader/reservium-api/commit/e4eff5961c3068f92eb1bac96299aefe2e14704f))
+* **deps:** update dependency pydantic to v2.13.1 ([#225](https://github.com/CloudRader/reservium-api/issues/225)) ([8f9a414](https://github.com/CloudRader/reservium-api/commit/8f9a414bc5fc588d2031bd77f4c7323756126d87))
+* **deps:** update dependency pypdf to v6.10.1 ([#199](https://github.com/CloudRader/reservium-api/issues/199)) ([3132932](https://github.com/CloudRader/reservium-api/commit/3132932fe9ebf08eff76366b82be72c855f37e13))
+* **deps:** update dependency pypdf to v6.10.2 ([#226](https://github.com/CloudRader/reservium-api/issues/226)) ([3cf9575](https://github.com/CloudRader/reservium-api/commit/3cf957530a91e440dc9495d0803923e141957118))
+
 ## [2.3.10](https://github.com/CloudRader/reservium-api/compare/v2.3.9...v2.3.10) (2026-04-13)
 
 
