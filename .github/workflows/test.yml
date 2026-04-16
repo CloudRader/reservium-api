@@ -19,12 +19,12 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v6.2.0
         with:
-          python-version: "3.14"
+          python-version: "3.14.4"
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v8.0.0
@@ -55,12 +55,12 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v6.2.0
         with:
-          python-version: "3.14"
+          python-version: "3.14.4"
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v8.0.0
@@ -91,12 +91,12 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v6.2.0
         with:
-          python-version: "3.14"
+          python-version: "3.14.4"
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v8.0.0
@@ -116,7 +116,7 @@ jobs:
           uv run ./scripts/pytest.sh -c -r
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v6.0.0
         with:
           files: reservation-app/tests/coverage.xml
           flags: unittests
