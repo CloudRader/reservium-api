@@ -12,7 +12,6 @@
 
 * **ci:** tags naming ([b51d874](https://github.com/CloudRader/reservium-api/commit/b51d8741a1c7aca4333e6967b1e2e5896cabf3b4))
 * **ci:** with ENVs ([51fe904](https://github.com/CloudRader/reservium-api/commit/51fe904829ac2d495130ccdb6a3859198ea06f4b))
-* **deps:** update dependency pydantic to v2.13.0 ([95b41e6](https://github.com/CloudRader/reservium-api/commit/95b41e64cd6c39d7e409cc6604cd1e777ceae361))
 * **deps:** update dependency pydantic to v2.13.0 ([#221](https://github.com/CloudRader/reservium-api/issues/221)) ([e5e091d](https://github.com/CloudRader/reservium-api/commit/e5e091d74f8199f13a14e5e0fa979a6f8da25243))
 
 
@@ -35,8 +34,6 @@
 * **ci:** merge build and push image for dev and release to one ([0a953c9](https://github.com/CloudRader/reservium-api/commit/0a953c90bc3dd49d4c4544bddbca01011357ec7d))
 * **ci:** migrate from Docker Hub AR to GH ([dd1f6f4](https://github.com/CloudRader/reservium-api/commit/dd1f6f4a8c0e2f5bf26cef7883184fb5fdbe4ed7))
 * **deps:** update python ([#196](https://github.com/CloudRader/reservium-api/issues/196)) ([3592884](https://github.com/CloudRader/reservium-api/commit/35928849d022cb392f14ffec00e720667deb9104))
-* **main:** release 2.3.8 ([303287c](https://github.com/CloudRader/reservium-api/commit/303287c1149153845fd3696fb8b7b4f3f5423052))
-* **main:** release 2.3.8 ([#212](https://github.com/CloudRader/reservium-api/issues/212)) ([9f44d41](https://github.com/CloudRader/reservium-api/commit/9f44d4187aeccde5e6181e9abe043aad07b52dff))
 
 
 ### 🛠️ Fixes
@@ -105,7 +102,6 @@
 
 ### 🛠️ Fixes
 
-* **deps:** update dependency pypdf to v6.10.0 [security] ([7a40637](https://github.com/CloudRader/reservium-api/commit/7a406375ff07001deb3c5ae8dfc97b16a74bad0a))
 * **deps:** update dependency pypdf to v6.10.0 [security] ([#200](https://github.com/CloudRader/reservium-api/issues/200)) ([e6fc363](https://github.com/CloudRader/reservium-api/commit/e6fc3635ca42f4ac81d446a5562e0f3c4e9ed917))
 * **tetsts:** test variables ([f5c5a06](https://github.com/CloudRader/reservium-api/commit/f5c5a062d6dc1c676efa0b6c3f50ca0d0d45d181))
 
