@@ -4,12 +4,7 @@ import logging
 from collections.abc import Callable
 from typing import Annotated, TypeVar
 
-from api import (
-    check_create_multiple_permissions,
-    check_create_permissions,
-    check_delete_permissions,
-    check_update_permissions,
-)
+from api import require_permission
 from core.application.exceptions import ERROR_RESPONSES, BaseAppError, Entity
 from fastapi import APIRouter, Depends, Path, Query, status
 from pydantic import BaseModel
@@ -74,6 +69,12 @@ class BaseCRUDRouter[
         enable_restore: bool = True,
         enable_delete: bool = True,
         enable_hard_delete: bool = True,
+        permissions_read: tuple[str, ...] = (),
+        permissions_create: tuple[str, ...] = (),
+        permissions_update: tuple[str, ...] = (),
+        permissions_restore: tuple[str, ...] = (),
+        permissions_delete: tuple[str, ...] = (),
+        permissions_hard_delete: tuple[str, ...] = (),
     ):
         self.router = router
         self.service_dep = service_dep
@@ -92,6 +93,14 @@ class BaseCRUDRouter[
         self.enable_restore = enable_restore
         self.enable_delete = enable_delete
         self.enable_hard_delete = enable_hard_delete
+
+        # Roles list
+        self.permissions_read = permissions_read
+        self.permissions_create = permissions_create
+        self.permissions_update = permissions_update
+        self.permissions_restore = permissions_restore
+        self.permissions_delete = permissions_delete
+        self.permissions_hard_delete = permissions_hard_delete
 
         self._ROUTES = [
             ("enable_read_all", self.register_get_all),
@@ -120,6 +129,15 @@ class BaseCRUDRouter[
         @self.router.get(
             "/",
             response_model=list[schema_lite],
+            dependencies=[
+                Depends(
+                    require_permission(
+                        *self.permissions_read,
+                        abac="manage_reservation_service",
+                        service_dep=service_dep,
+                    )
+                )
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def get_all(
@@ -143,6 +161,15 @@ class BaseCRUDRouter[
             "/{id}",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["404"],
+            dependencies=[
+                Depends(
+                    require_permission(
+                        *self.permissions_read,
+                        abac="manage_reservation_service",
+                        service_dep=service_dep,
+                    )
+                )
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def get_by_id(
@@ -171,7 +198,15 @@ class BaseCRUDRouter[
             "/",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403_409"],
-            dependencies=[Depends(check_create_permissions(service_dep, schema_create))],
+            dependencies=[
+                Depends(
+                    require_permission(
+                        *self.permissions_create,
+                        abac="manage_reservation_service",
+                        service_dep=service_dep,
+                    )
+                )
+            ],
             status_code=status.HTTP_201_CREATED,
         )
         async def create(
@@ -193,7 +228,15 @@ class BaseCRUDRouter[
             "/batch",
             response_model=list[schema_detail],
             responses=ERROR_RESPONSES["400_401_403_409"],
-            dependencies=[Depends(check_create_multiple_permissions(service_dep))],
+            dependencies=[
+                Depends(
+                    require_permission(
+                        *self.permissions_create,
+                        abac="manage_reservation_service",
+                        service_dep=service_dep,
+                    )
+                )
+            ],
             status_code=status.HTTP_201_CREATED,
         )
         async def create_multiple(
@@ -218,7 +261,15 @@ class BaseCRUDRouter[
             "/{id}",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403_404"],
-            dependencies=[Depends(check_update_permissions(service_dep, "update"))],
+            dependencies=[
+                Depends(
+                    require_permission(
+                        *self.permissions_update,
+                        abac="manage_reservation_service",
+                        service_dep=service_dep,
+                    )
+                )
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def update(
@@ -240,7 +291,15 @@ class BaseCRUDRouter[
             "/{id}/restore",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403_404"],
-            dependencies=[Depends(check_update_permissions(service_dep, "restore"))],
+            dependencies=[
+                Depends(
+                    require_permission(
+                        *self.permissions_restore,
+                        abac="manage_reservation_service",
+                        service_dep=service_dep,
+                    )
+                )
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def restore(
@@ -261,7 +320,15 @@ class BaseCRUDRouter[
             "/{id}",
             response_model=schema_lite,
             responses=ERROR_RESPONSES["400_401_403_404"],
-            dependencies=[Depends(check_delete_permissions(service_dep))],
+            dependencies=[
+                Depends(
+                    require_permission(
+                        *self.permissions_delete,
+                        abac="manage_reservation_service",
+                        service_dep=service_dep,
+                    )
+                )
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def delete(
@@ -282,7 +349,15 @@ class BaseCRUDRouter[
             "/{id}/hard",
             response_model=schema_lite,
             responses=ERROR_RESPONSES["400_401_403_404"],
-            dependencies=[Depends(check_delete_permissions(service_dep))],
+            dependencies=[
+                Depends(
+                    require_permission(
+                        *self.permissions_delete,
+                        abac="manage_reservation_service",
+                        service_dep=service_dep,
+                    )
+                )
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def hard_delete(

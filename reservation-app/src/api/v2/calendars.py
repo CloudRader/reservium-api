@@ -54,6 +54,11 @@ class CalendarRouter(
             schema_lite=CalendarLite,
             schema_detail=CalendarDetail,
             entity_name=Entity.CALENDAR,
+            permissions_create=("calendars.create",),
+            permissions_update=("calendars.update",),
+            permissions_restore=("calendars.restore",),
+            permissions_delete=("calendars.soft_remove",),
+            permissions_hard_delete=("calendars.hard_remove",),
         )
 
         self.register_routes()

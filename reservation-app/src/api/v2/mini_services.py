@@ -43,6 +43,11 @@ class MiniServiceRouter(
             schema_lite=MiniServiceLite,
             schema_detail=MiniServiceDetail,
             entity_name=Entity.MINI_SERVICE,
+            permissions_create=("mini_services.create",),
+            permissions_update=("mini_services.update",),
+            permissions_restore=("mini_services.restore",),
+            permissions_delete=("mini_services.soft_remove",),
+            permissions_hard_delete=("mini_services.hard_remove",),
         )
 
         self.register_routes()
