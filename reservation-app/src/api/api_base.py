@@ -279,7 +279,7 @@ class BaseCRUDRouter[
         service_dep: Callable[..., TService] = self.service_dep
 
         @self.router.delete(
-            "/{id}",
+            "/{id}/hard",
             response_model=schema_lite,
             responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[Depends(check_delete_permissions(service_dep))],
