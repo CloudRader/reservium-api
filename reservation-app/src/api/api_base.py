@@ -73,6 +73,7 @@ class BaseCRUDRouter[
         enable_update: bool = True,
         enable_restore: bool = True,
         enable_delete: bool = True,
+        enable_hard_delete: bool = True,
     ):
         self.router = router
         self.service_dep = service_dep
@@ -90,6 +91,7 @@ class BaseCRUDRouter[
         self.enable_update = enable_update
         self.enable_restore = enable_restore
         self.enable_delete = enable_delete
+        self.enable_hard_delete = enable_hard_delete
 
         self._ROUTES = [
             ("enable_read_all", self.register_get_all),
@@ -99,6 +101,7 @@ class BaseCRUDRouter[
             ("enable_update", self.register_update),
             ("enable_restore", self.register_restore),
             ("enable_delete", self.register_delete),
+            ("enable_hard_delete", self.register_hard_delete),
         ]
 
     # ---------- registration ----------
@@ -264,10 +267,30 @@ class BaseCRUDRouter[
         async def delete(
             service: Annotated[service_dep, Depends(service_dep)],
             id_: Annotated[str | int, Path(alias="id", description="The ID of the object.")],
-            hard_remove: bool = Query(False, description="`Hard remove` the object or not."),
         ):
             """Delete object, only users with special roles can delete object."""
-            obj = await service.delete(id_, hard_remove)
+            obj = await service.soft_delete(id_)
+            logger.debug("Deleted object: %s", obj)
+            return obj
+
+    def register_hard_delete(self):
+        """Register the DELETE /{id}/hard endpoint to delete an entity permanently."""
+        schema_lite: type[TReadLite] = self.schema_lite
+        service_dep: Callable[..., TService] = self.service_dep
+
+        @self.router.delete(
+            "/{id}",
+            response_model=schema_lite,
+            responses=ERROR_RESPONSES["400_401_403_404"],
+            dependencies=[Depends(check_delete_permissions(service_dep))],
+            status_code=status.HTTP_200_OK,
+        )
+        async def hard_delete(
+            service: Annotated[service_dep, Depends(service_dep)],
+            id_: Annotated[str | int, Path(alias="id", description="The ID of the object.")],
+        ):
+            """Hard delete object, only users with special roles can delete object."""
+            obj = await service.delete(id_)
             logger.debug("Deleted object: %s", obj)
             return obj
 

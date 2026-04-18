@@ -162,38 +162,38 @@ class CalendarService(AbstractCalendarService):
 
     async def create(
         self,
-        calendar_create: CalendarCreate,
+        obj_in: CalendarCreate,
     ) -> CalendarDetail:
-        if calendar_create.id:
-            await self.google_calendar_service.user_has_calendar_access(calendar_create.id)
+        if obj_in.id:
+            await self.google_calendar_service.user_has_calendar_access(obj_in.id)
         else:
-            calendar_create.id = (
+            obj_in.id = (
                 await self.google_calendar_service.create_calendar(
-                    calendar_create.reservation_type,
+                    obj_in.reservation_type,
                 )
             ).id
 
         mini_services_in_calendar = await self._prepare_calendar_mini_services(
-            calendar_create.reservation_service_id, calendar_create.mini_services
+            obj_in.reservation_service_id, obj_in.mini_services
         )
 
         return await self.crud.create_with_mini_services_and_collisions(
-            calendar_create, mini_services_in_calendar
+            obj_in, mini_services_in_calendar
         )
 
     async def update(
         self,
-        id_: str,
-        calendar_update: CalendarUpdate,
+        id_: str | int,
+        obj_in: CalendarUpdate,
     ) -> CalendarDetail:
         calendar_to_update = await self.get(id_)
 
         mini_services_in_calendar = await self._prepare_calendar_mini_services(
-            calendar_to_update.reservation_service_id, calendar_update.mini_services
+            calendar_to_update.reservation_service_id, obj_in.mini_services
         )
 
         return await self.crud.update_with_mini_services_and_collisions(
-            calendar_to_update, calendar_update, mini_services_in_calendar
+            calendar_to_update, obj_in, mini_services_in_calendar
         )
 
     async def google_calendars_available_for_import(self) -> list[GoogleCalendarCalendar] | None:

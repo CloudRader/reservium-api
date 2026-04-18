@@ -104,12 +104,28 @@ class AbstractCRUDService[
         """
 
     @abstractmethod
-    async def delete(self, id_: str | int, hard_remove: bool = False) -> SchemaDetail:
+    async def soft_delete(self, id_: str | int) -> SchemaDetail:
         """
-        Delete an object from the database.
+        Soft-delete an object.
+
+        This operation marks the object as deleted without removing it from the database.
+
+        :param id_: Unique identifier of the object.
+
+        :return T: The soft-deleted object.
+        """
+
+    @abstractmethod
+    async def delete(self, id_: str | int) -> SchemaDetail:
+        """
+        Permanently delete an object.
+
+        This operation removes the object from the database.
 
         :param id_: The ID of the object to delete.
         :param hard_remove: hard remove the object or not.
+
+        :return T: The deleted object (if returned by the persistence layer).
         """
 
 
@@ -167,11 +183,13 @@ class CrudServiceBase(
             raise EntityNotFoundError(self.entity_name, id_)
         return await self.crud.restore(obj)
 
-    async def delete(self, id_: str | int, hard_remove: bool = False) -> SchemaDetail:
+    async def soft_delete(self, id_: str | int) -> SchemaDetail:
         obj = await self.get(id_, True)
-        if hard_remove:
-            return await self.crud.remove(id_)
         if obj.deleted_at is not None:  # type: ignore
             message = f"A {self.entity_name.value} is already soft deleted."
             raise BaseAppError(message)
         return await self.crud.soft_remove(obj)
+
+    async def delete(self, id_: str | int) -> SchemaDetail:
+        await self.get(id_, True)
+        return await self.crud.remove(id_)
