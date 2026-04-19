@@ -4,10 +4,12 @@ import logging
 from typing import Annotated, Any
 
 from api import (
+    abac_manage_rs_by_id,
     get_current_user,
+    require_permission,
 )
 from api.api_base import BaseCRUDRouter
-from api.dependencies import http_bearer
+from api.dependencies import get_current_user_from_token, http_bearer
 from core.application.exceptions import (
     ERROR_RESPONSES,
     Entity,
@@ -123,12 +125,16 @@ class EventRouter(
             "/{id}/approve-time-change-request",
             response_model=EventLite,
             responses=ERROR_RESPONSES["400_401_403"],
+            dependencies=[
+                Depends(require_permission("calendars.update")),
+                Depends(abac_manage_rs_by_id(EventService)),
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def approve_time_change_request(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
-            user: Annotated[UserLite, Depends(get_current_user)],
+            user: Annotated[UserLite, Depends(get_current_user_from_token)],
             id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
             approve: bool = Query(False, description="Approve this update or not."),
             manager_notes: Annotated[str, Body()] = "-",
@@ -142,7 +148,7 @@ class EventRouter(
                 "User %s approving time change for event %s (approve=%s)", user.id, id_, approve
             )
             return await service.approve_update_reservation_time(
-                id_, user, background_tasks, approve, manager_notes
+                id_, background_tasks, approve, manager_notes
             )
 
         @router.put(

@@ -148,7 +148,6 @@ class AbstractEventService(
     async def approve_update_reservation_time(
         self,
         id_: str,
-        user: UserLite,
         background_tasks: BackgroundTasks,
         approve: bool = False,
         manager_notes: str = "-",
@@ -157,7 +156,6 @@ class AbstractEventService(
         Approve update a reservation time of the EventExtra in the database.
 
         :param id_: The id of the EventExtra.
-        :param user: the UserSchema for control permissions of the event.
         :param background_tasks: BackgroundTasks for sending emails.
         :param approve: Whether to approve the update.
         :param manager_notes: Notes from the manager.
@@ -278,6 +276,19 @@ class AbstractEventService(
         :return: Matching list of EventDetail.
         """
 
+    @abstractmethod
+    async def get_reservation_service(
+        self,
+        id_: str,
+    ) -> ReservationServiceDetail:
+        """
+        Retrieve the reservation service of this event by reservation service id.
+
+        :param id_: The id of the event.
+
+        :return: Reservation Service of this event if found.
+        """
+
 
 class EventService(AbstractEventService):
     """Class EventService represent service that work with EventExtra."""
@@ -392,7 +403,6 @@ class EventService(AbstractEventService):
     async def approve_update_reservation_time(
         self,
         id_: str,
-        user: UserLite,
         background_tasks: BackgroundTasks,
         approve: bool = False,
         manager_notes: str = "-",
@@ -402,14 +412,6 @@ class EventService(AbstractEventService):
         if event_to_update.event_state == EventState.CANCELED:
             message = "You can't change canceled reservation."
             raise BaseAppError(message)
-
-        reservation_service = await self.get_reservation_service_of_this_event(
-            event_to_update,
-        )
-
-        if reservation_service.alias not in user.roles:
-            message = f"You must be the {reservation_service.name} manager to update this event."
-            raise PermissionDeniedError(message)
 
         event_update: EventUpdate = EventUpdate(
             event_state=EventState.CONFIRMED,
@@ -686,6 +688,13 @@ class EventService(AbstractEventService):
         past: bool | None = None,
     ) -> list[EventDetail]:
         return await self.crud.get_events_by_aliases(user.roles, event_state, past)
+
+    async def get_reservation_service(
+        self,
+        id_: str,
+    ) -> ReservationServiceDetail:
+        event = await self.get(id_)
+        return await self.get_reservation_service_of_this_event(event)
 
     async def _control_collision(
         self,

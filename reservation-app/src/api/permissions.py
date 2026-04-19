@@ -36,15 +36,39 @@ def abac_manage_rs_from_body[TService: CrudServiceBase, TBody](
         service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
         obj_create: body_type,
     ):
+        logger.info(
+            "ABAC_BODY_CHECK user_id=%s reservation_service_id=%s",
+            user.id,
+            obj_create.reservation_service_id,
+        )
+
         reservation_service = await service.get(obj_create.reservation_service_id)
 
         if not reservation_service:
+            logger.warning(
+                "ABAC_BODY_DENY reason=missing_service user_id=%s "
+                "reservation_service_id=%s not_found",
+                user.id,
+                obj_create.reservation_service_id,
+            )
             raise BaseAppError(message="Missing reservation service")
 
         if not any(role == f"service_admin:{reservation_service.alias}" for role in user.roles):
+            logger.warning(
+                "ABAC_BODY_DENY reason=missing_role user_id=%s service=%s roles=%s",
+                user.id,
+                reservation_service.alias,
+                user.roles,
+            )
             raise PermissionDeniedError(
                 message=f"You are not manager of {reservation_service.alias}"
             )
+
+        logger.info(
+            "ABAC_BODY_ALLOW user_id=%s service=%s",
+            user.id,
+            reservation_service.alias,
+        )
 
     return dependency
 
@@ -69,15 +93,37 @@ def abac_manage_rs_by_id[TService: CrudServiceBase](
         service: Annotated[TService, Depends(service_dep)],
         id_: Annotated[str | int, Path(alias="id")],
     ):
+        logger.info(
+            "ABAC_ID_CHECK user_id=%s id=%s",
+            user.id,
+            id_,
+        )
+
         reservation_service = await service.get_reservation_service(id_)
 
         if not reservation_service:
+            logger.warning(
+                "ABAC_ID_DENY reason=missing_service user_id=%s",
+                user.id,
+            )
             raise BaseAppError(message="Missing reservation service")
 
         if not any(role == f"service_admin:{reservation_service.alias}" for role in user.roles):
+            logger.warning(
+                "ABAC_ID_DENY reason=missing_role user_id=%s service=%s roles=%s",
+                user.id,
+                reservation_service.alias,
+                user.roles,
+            )
             raise PermissionDeniedError(
                 message=f"You are not manager of {reservation_service.alias}"
             )
+
+        logger.info(
+            "ABAC_ID_ALLOW user_id=%s service=%s",
+            user.id,
+            reservation_service.alias,
+        )
 
     return dependency
 
@@ -99,10 +145,24 @@ def require_permission(*permissions: str):
 
         :param user: Current authenticated user.
         """
+        logger.info(
+            "RBAC_CHECK user_id=%s permissions=%s",
+            user.id,
+            permissions,
+        )
+
         if not permissions:
             return
 
         if not any(user.has_permission(p) for p in permissions):
+            logger.warning(
+                "RBAC_DENY user_id=%s required=%s user_permissions=%s",
+                user.id,
+                permissions,
+                user.roles,
+            )
             raise PermissionDeniedError(message=f"Missing required permission: {permissions}")
+
+        logger.info("RBAC_ALLOW user_id=%s", user.id)
 
     return dependency
