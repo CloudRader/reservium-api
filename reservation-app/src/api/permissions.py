@@ -4,17 +4,57 @@ import logging
 from collections.abc import Callable
 from typing import Annotated, TypeVar
 
-from api.dependencies import get_current_user_from_token
-from core.application.exceptions import BaseAppError, PermissionDeniedError
+from api.dependencies import get_current_user, get_current_user_from_token
+from core.application.exceptions import PermissionDeniedError
 from core.schemas.keycloak import CurrentUser
 from fastapi import Depends, Path
-from services import CrudServiceBase, ReservationServiceService
+from services import CrudServiceBase, EventService, ReservationServiceService
 
 logger = logging.getLogger(__name__)
 
 
 TService = TypeVar("TService", bound=CrudServiceBase)
 TBody = TypeVar("TBody")
+
+
+def abac_event_owner_by_id():
+    """
+    Attribute-Based Access Control (ABAC).
+
+    Ensures that the current user is the owner of the event identified by ID.
+    """
+
+    async def dependency(
+        user: Annotated[CurrentUser, Depends(get_current_user)],
+        service: Annotated[EventService, Depends(EventService)],
+        id_: Annotated[str | int, Path(alias="id")],
+    ):
+
+        logger.info(
+            "ABAC_EVENT_OWNER_CHECK user_id=%s event_id=%s",
+            user.id,
+            id_,
+        )
+
+        event = await service.get(id_)
+
+        if event.user_id != user.id:
+            logger.warning(
+                "ABAC_EVENT_OWNER_DENY reason=not_owner user_id=%s event_owner_id=%s event_id=%s",
+                user.id,
+                event.user_id,
+                id_,
+            )
+
+            raise PermissionDeniedError(message="You do not have permission to modify this event")
+
+        logger.info(
+            "ABAC_EVENT_OWNER_ALLOW user_id=%s event_id=%s",
+            user.id,
+            id_,
+        )
+
+    return dependency
 
 
 def abac_manage_rs_from_body[TService: CrudServiceBase, TBody](
@@ -43,15 +83,6 @@ def abac_manage_rs_from_body[TService: CrudServiceBase, TBody](
         )
 
         reservation_service = await service.get(obj_create.reservation_service_id)
-
-        if not reservation_service:
-            logger.warning(
-                "ABAC_BODY_DENY reason=missing_service user_id=%s "
-                "reservation_service_id=%s not_found",
-                user.id,
-                obj_create.reservation_service_id,
-            )
-            raise BaseAppError(message="Missing reservation service")
 
         if not any(role == f"service_admin:{reservation_service.alias}" for role in user.roles):
             logger.warning(
@@ -100,13 +131,6 @@ def abac_manage_rs_by_id[TService: CrudServiceBase](
         )
 
         reservation_service = await service.get_reservation_service(id_)
-
-        if not reservation_service:
-            logger.warning(
-                "ABAC_ID_DENY reason=missing_service user_id=%s",
-                user.id,
-            )
-            raise BaseAppError(message="Missing reservation service")
 
         if not any(role == f"service_admin:{reservation_service.alias}" for role in user.roles):
             logger.warning(

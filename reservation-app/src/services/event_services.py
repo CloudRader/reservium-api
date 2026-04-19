@@ -167,7 +167,6 @@ class AbstractEventService(
     async def update_with_permission_checks(
         self,
         id_: str,
-        user: UserLite,
         event_update: EventUpdate,
         background_tasks: BackgroundTasks,
         reason: str = "",
@@ -177,7 +176,6 @@ class AbstractEventService(
 
         :param id_: The id of the EventExtra.
         :param event_update: EventUpdate SchemaLite for update.
-        :param user: the UserSchema for control permissions of the event.
         :param background_tasks: BackgroundTasks for sending emails.
         :param reason: The reason for the update.
 
@@ -189,7 +187,6 @@ class AbstractEventService(
         self,
         id_: str,
         event_update: EventUpdateTime,
-        user: UserLite,
         background_tasks: BackgroundTasks,
         reason: str = "",
     ) -> EventLite | None:
@@ -198,7 +195,6 @@ class AbstractEventService(
 
         :param id_: The id of the EventExtra.
         :param event_update: EventUpdateTime SchemaLite for update.
-        :param user: the UserSchema for control permissions of the event.
         :param background_tasks: BackgroundTasks for sending emails.
         :param reason: The reason for the update.
 
@@ -225,16 +221,14 @@ class AbstractEventService(
         """
 
     @abstractmethod
-    async def delete_with_permission_checks(
+    async def delete(
         self,
         id_: str,
-        user: UserLite,
     ) -> EventLite | None:
         """
         Delete an EventExtra in the database.
 
         :param id_: The id of the EventExtra.
-        :param user: the UserSchema for control permissions of the event.
 
         :return: the deleted EventExtra.
         """
@@ -243,7 +237,6 @@ class AbstractEventService(
     async def confirm_event(
         self,
         id_: str,
-        user: UserLite,
         background_tasks: BackgroundTasks,
         manager_notes: str = "-",
     ) -> EventLite | None:
@@ -251,7 +244,6 @@ class AbstractEventService(
         Confirm event.
 
         :param id_: The id of the event to confirm.
-        :param user: the UserSchema for control permissions of the event.
         :param background_tasks: BackgroundTasks for sending emails.
         :param manager_notes: Notes from the manager.
 
@@ -469,18 +461,11 @@ class EventService(AbstractEventService):
     async def update_with_permission_checks(
         self,
         id_: str,
-        user: UserLite,
         event_update: EventUpdate,
         background_tasks: BackgroundTasks,
         reason: str = "",
     ) -> EventLite | None:
         event_to_update = await self.get(id_)
-
-        reservation_service = await self.get_reservation_service_of_this_event(event_to_update)
-
-        if reservation_service.alias not in user.roles:
-            message = f"You must be the {reservation_service.name} manager to update event."
-            raise PermissionDeniedError(message)
 
         event_update = self.datetime_for_update(event_to_update, event_update)
         if event_update.reservation_start < dt.datetime.now():
@@ -522,17 +507,10 @@ class EventService(AbstractEventService):
         self,
         id_: str,
         event_update: EventUpdateTime,
-        user: UserLite,
         background_tasks: BackgroundTasks,
         reason: str = "",
     ) -> EventLite | None:
         event_to_update = await self.get(id_)
-
-        if event_to_update.user_id != user.id:
-            message = (
-                "You do not have permission to request change a reservation made by another user."
-            )
-            raise PermissionDeniedError(message)
 
         if event_to_update.reservation_start < dt.datetime.now():
             message = "You cannot change the reservation time after it has started."
@@ -617,29 +595,21 @@ class EventService(AbstractEventService):
 
         return event
 
-    async def delete_with_permission_checks(
+    async def delete(
         self,
         id_: str,
-        user: UserLite,
     ) -> EventLite | None:
         event = await self.crud.get(id_, True)
 
-        reservation_service = await self.get_reservation_service_of_this_event(event)
-
-        if event.event_state != EventState.CANCELED:
-            message = "You can't deleted not canceled reservation."
+        if event.event_state != EventState.CANCELED or event.event_state != EventState.NOT_APPROVED:
+            message = "You can't deleted not canceled or not approved reservation."
             raise BaseAppError(message)
-
-        if reservation_service.alias not in user.roles:
-            message = f"You must be the {reservation_service.name} manager to delete event."
-            raise PermissionDeniedError(message)
 
         return await self.crud.remove(id_)
 
     async def confirm_event(
         self,
         id_: str,
-        user: UserLite,
         background_tasks: BackgroundTasks,
         manager_notes: str = "-",
     ) -> EventLite | None:
@@ -648,14 +618,6 @@ class EventService(AbstractEventService):
         if event.event_state != EventState.NOT_APPROVED:
             message = "You cannot approve a reservation that is not in the 'not approved' state."
             raise BaseAppError(message)
-
-        reservation_service = await self.get_reservation_service_of_this_event(event)
-
-        if reservation_service.alias not in user.roles:
-            message = (
-                f"You must be the {reservation_service.name} manager to approve this reservation."
-            )
-            raise PermissionDeniedError(message)
 
         event = await self.update(id_, EventUpdate(event_state=EventState.CONFIRMED))
 
