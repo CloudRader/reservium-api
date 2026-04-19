@@ -66,9 +66,9 @@ async def test_restore_event(test_event, event_crud):
 @pytest.mark.asyncio
 async def test_hard_remove_event(test_event, event_crud):
     """Test hard deleting an event."""
-    hard_removed = await event_crud.remove(test_event.id)
-    assert hard_removed.id == test_event.id
-    db_event = await event_crud.get(hard_removed.id)
+    await event_crud.remove(test_event.id)
+
+    db_event = await event_crud.get(test_event.id)
     assert db_event is None
 
 

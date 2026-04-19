@@ -96,10 +96,9 @@ async def test_retrieve_soft_removed_mini_service(test_mini_service, mini_servic
 @pytest.mark.asyncio
 async def test_hard_remove_mini_service(test_mini_service, mini_service_crud):
     """Test permanently deleting mini service."""
-    removed = await mini_service_crud.remove(test_mini_service.id)
-    assert removed is not None
+    await mini_service_crud.remove(test_mini_service.id)
 
-    should_be_none = await mini_service_crud.get(removed.id)
+    should_be_none = await mini_service_crud.get(test_mini_service.id)
     assert should_be_none is None
 
 

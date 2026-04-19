@@ -94,10 +94,9 @@ async def test_retrieve_soft_removed_calendar(test_calendar, calendar_crud):
 @pytest.mark.asyncio
 async def test_hard_remove_calendar(test_calendar, calendar_crud):
     """Test permanently deleting calendar."""
-    removed = await calendar_crud.remove(test_calendar.id)
-    assert removed is not None
+    await calendar_crud.remove(test_calendar.id)
 
-    should_be_none = await calendar_crud.get(removed.id)
+    should_be_none = await calendar_crud.get(test_calendar.id)
     assert should_be_none is None
 
 

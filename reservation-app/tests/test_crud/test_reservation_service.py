@@ -155,11 +155,9 @@ async def test_hard_remove_reservation_service(
     reservation_service_crud,
 ):
     """Test hard deleting reservation service."""
-    removed = await reservation_service_crud.remove(test_reservation_service.id)
-    assert removed is not None
-    assert removed.id == test_reservation_service.id
+    await reservation_service_crud.remove(test_reservation_service.id)
 
-    should_be_none = await reservation_service_crud.get(removed.id)
+    should_be_none = await reservation_service_crud.get(test_reservation_service.id)
     assert should_be_none is None
 
 

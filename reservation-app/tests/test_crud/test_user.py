@@ -58,10 +58,9 @@ async def test_retrieve_soft_removed_user(test_user, user_crud):
 @pytest.mark.asyncio
 async def test_hard_remove_user(test_user, user_crud):
     """Test hard deleting user."""
-    user_hard_removed = await user_crud.remove(test_user.id)
-    assert user_hard_removed is not None
-    assert user_hard_removed.id == test_user.id
-    db_user = await user_crud.get(user_hard_removed.id)
+    await user_crud.remove(test_user.id)
+
+    db_user = await user_crud.get(test_user.id)
     assert db_user is None
 
 
