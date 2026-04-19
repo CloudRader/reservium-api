@@ -6,6 +6,7 @@ from typing import Annotated, TypeVar
 
 from api.dependencies import get_current_user, get_current_user_from_token
 from core.application.exceptions import PermissionDeniedError
+from core.enums import EventActor
 from core.schemas.keycloak import CurrentUser
 from fastapi import Depends, Path
 from services import CrudServiceBase, EventService, ReservationServiceService
@@ -15,6 +16,62 @@ logger = logging.getLogger(__name__)
 
 TService = TypeVar("TService", bound=CrudServiceBase)
 TBody = TypeVar("TBody")
+
+
+def abac_event_owner_or_manager():
+    """
+    ABAC rule for cancelling an event.
+
+    Allows:
+    - event owner
+    - reservation service manager
+    """
+
+    async def dependency(
+        user: Annotated[CurrentUser, Depends(get_current_user)],
+        service: Annotated[EventService, Depends(EventService)],
+        id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
+    ):
+        logger.info(
+            "ABAC_EVENT_CANCEL_CHECK user_id=%s event_id=%s",
+            user.id,
+            id_,
+        )
+
+        event = await service.get(id_)
+
+        reservation_service = await service.get_reservation_service_of_this_event(event)
+
+        is_owner = event.user_id == user.id
+
+        is_manager = any(
+            role == f"service_admin:{reservation_service.alias}" for role in user.roles
+        )
+
+        if not (is_owner or is_manager):
+            logger.warning(
+                "ABAC_EVENT_CANCEL_DENY user_id=%s event_id=%s owner=%s service=%s roles=%s",
+                user.id,
+                id_,
+                event.user_id,
+                reservation_service.alias,
+                user.roles,
+            )
+
+            raise PermissionDeniedError(
+                message="You do not have permission to cancel this reservation."
+            )
+
+        logger.info(
+            "ABAC_EVENT_CANCEL_ALLOW user_id=%s event_id=%s actor=%s",
+            user.id,
+            id_,
+            "owner" if is_owner else "manager",
+        )
+        actor = EventActor.OWNER if is_owner else EventActor.MANAGER
+        return event, actor
+
+    return dependency
 
 
 def abac_event_owner_by_id():
@@ -53,6 +110,7 @@ def abac_event_owner_by_id():
             user.id,
             id_,
         )
+        return event
 
     return dependency
 

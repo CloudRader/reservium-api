@@ -333,16 +333,15 @@ class BaseCRUDRouter[
                 Depends(require_permission(*self.permissions_hard_delete)),
                 *[Depends(dep) for dep in self.abac_hard_delete],
             ],
-            status_code=status.HTTP_200_OK,
+            status_code=status.HTTP_204_NO_CONTENT,
         )
         async def hard_delete(
             service: Annotated[service_dep, Depends(service_dep)],
             id_: Annotated[str | int, Path(alias="id", description="The ID of the object.")],
         ):
             """Hard delete object, only users with special roles can delete object."""
-            obj = await service.delete(id_)
-            logger.debug("Deleted object: %s", obj)
-            return obj
+            await service.delete(id_)
+            logger.debug("Hard deleted object id=%s", id_)
 
     @staticmethod
     async def _create_single_object(

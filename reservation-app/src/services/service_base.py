@@ -116,7 +116,7 @@ class AbstractCRUDService[
         """
 
     @abstractmethod
-    async def delete(self, id_: str | int) -> SchemaDetail:
+    async def delete(self, id_: str | int) -> None:
         """
         Permanently delete an object.
 
@@ -124,8 +124,6 @@ class AbstractCRUDService[
 
         :param id_: The ID of the object to delete.
         :param hard_remove: hard remove the object or not.
-
-        :return T: The deleted object (if returned by the persistence layer).
         """
 
 
@@ -190,6 +188,6 @@ class CrudServiceBase(
             raise BaseAppError(message)
         return await self.crud.soft_remove(obj)
 
-    async def delete(self, id_: str | int) -> SchemaDetail:
+    async def delete(self, id_: str | int) -> None:
         await self.get(id_, True)
-        return await self.crud.remove(id_)
+        await self.crud.remove(id_)

@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class UserBase(BaseModel):
     """Shared properties of UserLite."""
 
-    roles: list[str] | None = None
+    roles: list[str] = Field(default_factory=list)
 
 
 class UserCreate(UserBase):

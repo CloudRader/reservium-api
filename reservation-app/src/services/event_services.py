@@ -13,9 +13,9 @@ from core import db_session
 from core.application.exceptions import (
     BaseAppError,
     Entity,
-    PermissionDeniedError,
     SoftValidationError,
 )
+from core.enums import EventActor
 from core.models import EventState
 from core.schemas import (
     CalendarDetail,
@@ -151,16 +151,16 @@ class AbstractEventService(
         background_tasks: BackgroundTasks,
         approve: bool = False,
         manager_notes: str = "-",
-    ) -> EventLite | None:
+    ) -> EventLite:
         """
-        Approve update a reservation time of the EventExtra in the database.
+        Approve update a reservation time of the Event in the database.
 
-        :param id_: The id of the EventExtra.
+        :param id_: The id of the Event.
         :param background_tasks: BackgroundTasks for sending emails.
         :param approve: Whether to approve the update.
         :param manager_notes: Notes from the manager.
 
-        :return: the updated EventExtra.
+        :return: the updated EventLite.
         """
 
     @abstractmethod
@@ -170,16 +170,16 @@ class AbstractEventService(
         event_update: EventUpdate,
         background_tasks: BackgroundTasks,
         reason: str = "",
-    ) -> EventLite | None:
+    ) -> EventLite:
         """
-        Update a reservation of the EventExtra in the database.
+        Update a reservation of the Event in the database.
 
-        :param id_: The id of the EventExtra.
+        :param id_: The id of the Event.
         :param event_update: EventUpdate SchemaLite for update.
         :param background_tasks: BackgroundTasks for sending emails.
         :param reason: The reason for the update.
 
-        :return: the updated EventExtra.
+        :return: the updated EventLite.
         """
 
     @abstractmethod
@@ -189,7 +189,7 @@ class AbstractEventService(
         event_update: EventUpdateTime,
         background_tasks: BackgroundTasks,
         reason: str = "",
-    ) -> EventLite | None:
+    ) -> EventLite:
         """
         Update a reservation time of the EventExtra in the database.
 
@@ -204,33 +204,31 @@ class AbstractEventService(
     @abstractmethod
     async def cancel_event(
         self,
-        id_: str,
-        user: UserLite,
+        event: EventLite,
+        actor: EventActor,
         background_tasks: BackgroundTasks,
         reason: str = "",
-    ) -> EventLite | None:
+    ) -> EventLite:
         """
-        Cancel an EventExtra in the database.
+        Cancel an Event in the database.
 
-        :param id_: The id of the EventExtra.
-        :param user: the UserSchema for control permissions of the event.
+        :param event: The Event to cancel.
+        :param actor: The actor cancelling the event.
         :param background_tasks: BackgroundTasks for sending emails.
         :param reason: The reason for the cancellation.
 
-        :return: the canceled EventExtra.
+        :return: the canceled EventLite.
         """
 
     @abstractmethod
     async def delete(
         self,
-        id_: str,
-    ) -> EventLite | None:
+        id_: str | int,
+    ) -> None:
         """
-        Delete an EventExtra in the database.
+        Delete an Event in the database.
 
         :param id_: The id of the EventExtra.
-
-        :return: the deleted EventExtra.
         """
 
     @abstractmethod
@@ -239,7 +237,7 @@ class AbstractEventService(
         id_: str,
         background_tasks: BackgroundTasks,
         manager_notes: str = "-",
-    ) -> EventLite | None:
+    ) -> EventLite:
         """
         Confirm event.
 
@@ -247,7 +245,7 @@ class AbstractEventService(
         :param background_tasks: BackgroundTasks for sending emails.
         :param manager_notes: Notes from the manager.
 
-        :return: the updated EventExtra.
+        :return: the updated EventLite.
         """
 
     @abstractmethod
@@ -398,7 +396,7 @@ class EventService(AbstractEventService):
         background_tasks: BackgroundTasks,
         approve: bool = False,
         manager_notes: str = "-",
-    ) -> EventLite | None:
+    ) -> EventLite:
         event_to_update = await self.get(id_)
 
         if event_to_update.event_state == EventState.CANCELED:
@@ -464,15 +462,22 @@ class EventService(AbstractEventService):
         event_update: EventUpdate,
         background_tasks: BackgroundTasks,
         reason: str = "",
-    ) -> EventLite | None:
+    ) -> EventLite:
         event_to_update = await self.get(id_)
 
         event_update = self.datetime_for_update(event_to_update, event_update)
-        if event_update.reservation_start < dt.datetime.now():
+        if (
+            event_update.reservation_start is not None
+            and event_update.reservation_start < dt.datetime.now()
+        ):
             message = "You can't change a reservation start time before the present time!"
             raise SoftValidationError(message)
 
-        if event_update.reservation_end < event_update.reservation_start:
+        if (
+            event_update.reservation_end is not None
+            and event_update.reservation_start is not None
+            and event_update.reservation_end < event_update.reservation_start
+        ):
             message = "The end of a reservation cannot be before its beginning!"
             raise SoftValidationError(message)
 
@@ -509,7 +514,7 @@ class EventService(AbstractEventService):
         event_update: EventUpdateTime,
         background_tasks: BackgroundTasks,
         reason: str = "",
-    ) -> EventLite | None:
+    ) -> EventLite:
         event_to_update = await self.get(id_)
 
         if event_to_update.reservation_start < dt.datetime.now():
@@ -549,13 +554,11 @@ class EventService(AbstractEventService):
 
     async def cancel_event(
         self,
-        id_: str,
-        user: UserLite,
+        event: EventLite,
+        actor: EventActor,
         background_tasks: BackgroundTasks,
         reason: str = "",
-    ) -> EventLite | None:
-        event = await self.get(id_)
-
+    ) -> EventLite:
         if event.event_state == EventState.CANCELED:
             message = "You can't cancel canceled reservation."
             raise BaseAppError(message)
@@ -564,17 +567,11 @@ class EventService(AbstractEventService):
             message = "You cannot cancel the reservation after it has ended."
             raise BaseAppError(message)
 
-        reservation_service = await self.get_reservation_service_of_this_event(event)
-
-        if event.user_id != user.id and reservation_service.alias not in user.roles:
-            message = "You do not have permission to cancel a reservation made by another user."
-            raise PermissionDeniedError(message)
-
-        event = await self.update(id_, EventUpdate(event_state=EventState.CANCELED))
+        event = await self.update(event.id, EventUpdate(event_state=EventState.CANCELED))
 
         await self.google_calendar_service.delete_event(event.calendar_id, event.id)
 
-        if event.user_id == user.id:
+        if actor == EventActor.OWNER:
             await self.email_service.preparing_email(
                 event,
                 self.email_service.create_email_meta("cancel_reservation", "Cancel Reservation"),
@@ -597,22 +594,22 @@ class EventService(AbstractEventService):
 
     async def delete(
         self,
-        id_: str,
-    ) -> EventLite | None:
-        event = await self.crud.get(id_, True)
+        id_: str | int,
+    ) -> None:
+        event = await self.get(id_, True)
 
         if event.event_state != EventState.CANCELED or event.event_state != EventState.NOT_APPROVED:
             message = "You can't deleted not canceled or not approved reservation."
             raise BaseAppError(message)
 
-        return await self.crud.remove(id_)
+        await self.crud.remove(id_)
 
     async def confirm_event(
         self,
         id_: str,
         background_tasks: BackgroundTasks,
         manager_notes: str = "-",
-    ) -> EventLite | None:
+    ) -> EventLite:
         event = await self.get(id_)
 
         if event.event_state != EventState.NOT_APPROVED:
@@ -649,7 +646,8 @@ class EventService(AbstractEventService):
         event_state: EventState | None = None,
         past: bool | None = None,
     ) -> list[EventDetail]:
-        return await self.crud.get_events_by_aliases(user.roles, event_state, past)
+        events = await self.crud.get_events_by_aliases(user.roles, event_state, past)
+        return [EventDetail.model_validate(e) for e in events]
 
     async def get_reservation_service(
         self,
@@ -1007,9 +1005,9 @@ class EventService(AbstractEventService):
         these values are copied from the existing event to guarantee valid
         collision checks and prevent partial/invalid time updates.
         """
-        if not event_update.reservation_start:
+        if event_update.reservation_start is None:
             event_update.reservation_start = event.reservation_start
-        if not event_update.reservation_end:
+        if event_update.reservation_end is None:
             event_update.reservation_end = event.reservation_end
 
         return event_update
