@@ -1,5 +1,34 @@
 # Changelog
 
+## [2.3.12](https://github.com/CloudRader/reservium-api/compare/v2.3.11...v2.3.12) (2026-04-19)
+
+
+### 🧱 Updates & Improvements
+
+* **delete:** separete soft and hard deletion to separete routes and ([b343558](https://github.com/CloudRader/reservium-api/commit/b34355859cb1682bb5949557fe261a041c9c6db8))
+* **deps:** update dependency ruff to v0.15.11 ([#233](https://github.com/CloudRader/reservium-api/issues/233)) ([5414a58](https://github.com/CloudRader/reservium-api/commit/5414a58b2383d61dafd4214712df9b960af52493))
+
+
+### 🛠️ Fixes
+
+* **api-base:** dependencies in update ([1649600](https://github.com/CloudRader/reservium-api/commit/164960079e8413601dd9168fc770c72f363e7a12))
+* **api-base:** permissions for hard delete ([756eb7f](https://github.com/CloudRader/reservium-api/commit/756eb7f87a0ae0777faeb001857d2f47ef63be03))
+* **api-base:** response model in hard delete ([c7e6880](https://github.com/CloudRader/reservium-api/commit/c7e68802e1836418c7c782c410b38d5fd58b70c9))
+* **delete:** path for hard deletion ([db50368](https://github.com/CloudRader/reservium-api/commit/db5036886b9637d63fea06533430622ea5969887))
+* **deps:** update dependency pydantic to v2.13.2 ([#235](https://github.com/CloudRader/reservium-api/issues/235)) ([b711169](https://github.com/CloudRader/reservium-api/commit/b7111693599ab7f19cd1e45b421eafcbae490251))
+* **pytest:** tests after refactoring ([dbb88dd](https://github.com/CloudRader/reservium-api/commit/dbb88dd984c719311b872f49c15cdd34291e5a7d))
+* **ruff:** warning in api-base ([6110d0b](https://github.com/CloudRader/reservium-api/commit/6110d0ba0a33050d76caebf7c9f4d191e4456686))
+
+
+### 🧹 Refactors
+
+* **event-permissions:** move permissions check in ([96cb2c5](https://github.com/CloudRader/reservium-api/commit/96cb2c51644df4a8c29de5b34aa4f62d64f111e3))
+* **event-permissions:** update event routes and service with new ([efb30f2](https://github.com/CloudRader/reservium-api/commit/efb30f224056e95d7e429c4f407c5b8e2bae41f7))
+* **event-permission:** update permissions in cancel event, fix ([5f9d87f](https://github.com/CloudRader/reservium-api/commit/5f9d87f73584ef762621887b40d065a960acf53e))
+* **permissions:** improvements check permissions from token and in ([762d6ab](https://github.com/CloudRader/reservium-api/commit/762d6abe38f63bd94ed1f17aeb63b9b5c36a6663))
+* **permissions:** rename permissions for delete operations ([57202dd](https://github.com/CloudRader/reservium-api/commit/57202dd2ae7802e156366baa6736df0b2453af43))
+* **permission:** update way to check abac permissions through ([ab27ce2](https://github.com/CloudRader/reservium-api/commit/ab27ce267876c0ccae7514dc50b5acb3ee5e0ef5))
+
 ## [2.3.11](https://github.com/CloudRader/reservium-api/compare/v2.3.10...v2.3.11) (2026-04-16)
 
 
