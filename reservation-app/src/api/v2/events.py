@@ -4,14 +4,19 @@ import logging
 from typing import Annotated, Any
 
 from api import (
+    abac_event_owner_by_id,
+    abac_event_owner_or_manager,
+    abac_manage_rs_by_id,
     get_current_user,
+    require_permission,
 )
 from api.api_base import BaseCRUDRouter
-from api.dependencies import http_bearer
+from api.dependencies import get_current_user_from_token, http_bearer
 from core.application.exceptions import (
     ERROR_RESPONSES,
     Entity,
 )
+from core.enums import EventActor
 from core.models import EventState
 from core.schemas import (
     EventCreate,
@@ -62,11 +67,11 @@ class EventRouter(
             enable_update=False,
             enable_restore=False,
             enable_delete=False,
+            abac_hard_delete=[abac_manage_rs_by_id(EventService)],
         )
 
         @router.get(
             "/get-by-user-roles",
-            response_model=list[EventDetail],
             status_code=status.HTTP_200_OK,
         )
         async def get_by_user_roles(
@@ -80,7 +85,7 @@ class EventRouter(
                 description="Filter events by time. `True` for past events, `False` for "
                 "future events, `None` for all events.",
             ),
-        ) -> Any:
+        ) -> list[EventDetail]:
             """Get events for the current user based on their roles and filters."""
             logger.info(
                 "User %s fetching events by roles (state=%s, past=%s)", user.id, event_state, past
@@ -121,18 +126,21 @@ class EventRouter(
 
         @router.put(
             "/{id}/approve-time-change-request",
-            response_model=EventLite,
             responses=ERROR_RESPONSES["400_401_403"],
+            dependencies=[
+                Depends(require_permission("events.update")),
+                Depends(abac_manage_rs_by_id(EventService)),
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def approve_time_change_request(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
-            user: Annotated[UserLite, Depends(get_current_user)],
+            user: Annotated[UserLite, Depends(get_current_user_from_token)],
             id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
             approve: bool = Query(False, description="Approve this update or not."),
             manager_notes: Annotated[str, Body()] = "-",
-        ) -> Any:
+        ) -> EventLite:
             """
             Approve updating reservation time.
 
@@ -142,23 +150,26 @@ class EventRouter(
                 "User %s approving time change for event %s (approve=%s)", user.id, id_, approve
             )
             return await service.approve_update_reservation_time(
-                id_, user, background_tasks, approve, manager_notes
+                id_, background_tasks, approve, manager_notes
             )
 
         @router.put(
             "/{id}",
-            response_model=EventLite,
             responses=ERROR_RESPONSES["400_401_403"],
+            dependencies=[
+                Depends(require_permission("events.update")),
+                Depends(abac_manage_rs_by_id(EventService)),
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def update(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
-            user: Annotated[UserLite, Depends(get_current_user)],
+            user: Annotated[UserLite, Depends(get_current_user_from_token)],
             id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
             event_update: Annotated[EventUpdate, Body()],
             reason: Annotated[str, Body()] = "",
-        ) -> Any:
+        ) -> EventLite:
             """
             Update object.
 
@@ -166,13 +177,15 @@ class EventRouter(
             """
             logger.info("User %s updating event %s with reason: %s", user.id, id_, reason)
             return await service.update_with_permission_checks(
-                id_, user, event_update, background_tasks, reason
+                id_, event_update, background_tasks, reason
             )
 
         @router.put(
             "/{id}/request-time-change",
-            response_model=EventLite,
             responses=ERROR_RESPONSES["400_401_403"],
+            dependencies=[
+                Depends(abac_event_owner_by_id()),
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def request_time_change(
@@ -182,30 +195,33 @@ class EventRouter(
             id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
             event_update: Annotated[EventUpdateTime, Body()],
             reason: Annotated[str, Body()] = "",
-        ) -> Any:
+        ) -> EventLite:
             """Request Update reservation time."""
             logger.info(
                 "User %s requesting time change for event %s (reason=%s)", user.id, id_, reason
             )
 
             return await service.request_update_reservation_time(
-                id_, event_update, user, background_tasks, reason
+                id_, event_update, background_tasks, reason
             )
 
         @router.put(
             "/{id}/approve",
-            response_model=EventLite,
             responses=ERROR_RESPONSES["400_401_403_404"],
+            dependencies=[
+                Depends(require_permission("events.update")),
+                Depends(abac_manage_rs_by_id(EventService)),
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def approve_reservation(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
-            user: Annotated[UserLite, Depends(get_current_user)],
+            user: Annotated[UserLite, Depends(get_current_user_from_token)],
             id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
             approve: bool = Query(False, description="Approve this reservation or not."),
             manager_notes: Annotated[str, Body()] = "-",
-        ) -> Any:
+        ) -> EventLite:
             """
             Approve reservation.
 
@@ -217,54 +233,42 @@ class EventRouter(
                 id_,
                 approve,
             )
+            event = await service.get(id_)
             if approve:
-                event = await service.confirm_event(id_, user, background_tasks, manager_notes)
+                event = await service.confirm_event(id_, background_tasks, manager_notes)
             else:
-                event = await service.cancel_event(id_, user, background_tasks, manager_notes)
+                event = await service.cancel_event(
+                    event, EventActor.MANAGER, background_tasks, manager_notes
+                )
 
             return event
 
         @router.delete(
             "/{id}",
-            response_model=EventLite,
             responses=ERROR_RESPONSES["400_401_403_404"],
+            dependencies=[
+                Depends(require_permission("events.update")),
+                Depends(abac_event_owner_or_manager()),
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def cancel(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
+            event_ctx: Annotated[
+                tuple[EventLite, EventActor], Depends(abac_event_owner_or_manager())
+            ],
             cancel_reason: Annotated[str, Body()] = "",
-        ) -> Any:
+        ) -> EventLite:
             """
             Cancel event.
 
             Only user who make this reservation can cancel this reservation.
             """
-            logger.info("User %s cancelling event %s (reason=%s)", user.id, id_, cancel_reason)
-            return await service.cancel_event(id_, user, background_tasks, cancel_reason)
-
-        @router.delete(
-            "/{id}/hard",
-            response_model=EventLite,
-            responses=ERROR_RESPONSES["400_401_403_404"],
-            status_code=status.HTTP_200_OK,
-        )
-        async def delete(
-            service: Annotated[EventService, Depends(EventService)],
-            user: Annotated[UserLite, Depends(get_current_user)],
-            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
-        ) -> Any:
-            """
-            Delete event.
-
-            Only managers and if event have state canceled.
-            """
-            logger.info("User %s hard deleting event %s", user.id, id_)
-            event = await service.delete_with_permission_checks(id_, user)
-            logger.debug("Event hard deleted: %s", event)
-            return event
+            event, actor = event_ctx
+            logger.info("User %s cancelling event %s (reason=%s)", user.id, event.id, cancel_reason)
+            return await service.cancel_event(event, actor, background_tasks, cancel_reason)
 
 
 EventRouter()

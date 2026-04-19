@@ -2,18 +2,18 @@
 
 from .dependencies import get_current_user
 from .permissions import (
-    PERMISSION_MAP,
-    check_create_multiple_permissions,
-    check_create_permissions,
-    check_delete_permissions,
-    check_update_permissions,
+    abac_event_owner_by_id,
+    abac_event_owner_or_manager,
+    abac_manage_rs_by_id,
+    abac_manage_rs_from_body,
+    require_permission,
 )
 
 __all__ = [
-    "PERMISSION_MAP",
-    "check_create_multiple_permissions",
-    "check_create_permissions",
-    "check_delete_permissions",
-    "check_update_permissions",
+    "abac_event_owner_by_id",
+    "abac_event_owner_or_manager",
+    "abac_manage_rs_by_id",
+    "abac_manage_rs_from_body",
     "get_current_user",
+    "require_permission",
 ]

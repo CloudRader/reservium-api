@@ -1,15 +1,10 @@
 """Base module for generating CRUD routes in FastAPI."""
 
 import logging
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import Annotated, TypeVar
 
-from api import (
-    check_create_multiple_permissions,
-    check_create_permissions,
-    check_delete_permissions,
-    check_update_permissions,
-)
+from api import require_permission
 from core.application.exceptions import ERROR_RESPONSES, BaseAppError, Entity
 from fastapi import APIRouter, Depends, Path, Query, status
 from pydantic import BaseModel
@@ -22,6 +17,7 @@ TUpdate = TypeVar("TUpdate", bound=BaseModel)
 TReadLite = TypeVar("TReadLite", bound=BaseModel)
 TReadDetail = TypeVar("TReadDetail", bound=BaseModel)
 TService = TypeVar("TService", bound=CrudServiceBase)
+ABACDep = Callable[..., Awaitable[None]]
 
 
 class BaseCRUDRouter[
@@ -73,6 +69,19 @@ class BaseCRUDRouter[
         enable_update: bool = True,
         enable_restore: bool = True,
         enable_delete: bool = True,
+        enable_hard_delete: bool = True,
+        permissions_read: tuple[str, ...] = (),
+        permissions_create: tuple[str, ...] = (),
+        permissions_update: tuple[str, ...] = (),
+        permissions_restore: tuple[str, ...] = (),
+        permissions_delete: tuple[str, ...] = (),
+        permissions_hard_delete: tuple[str, ...] = (),
+        abac_read: list[ABACDep] | None = None,
+        abac_create: list[ABACDep] | None = None,
+        abac_update: list[ABACDep] | None = None,
+        abac_restore: list[ABACDep] | None = None,
+        abac_delete: list[ABACDep] | None = None,
+        abac_hard_delete: list[ABACDep] | None = None,
     ):
         self.router = router
         self.service_dep = service_dep
@@ -90,6 +99,23 @@ class BaseCRUDRouter[
         self.enable_update = enable_update
         self.enable_restore = enable_restore
         self.enable_delete = enable_delete
+        self.enable_hard_delete = enable_hard_delete
+
+        # permisssions list
+        self.permissions_read = permissions_read
+        self.permissions_create = permissions_create
+        self.permissions_update = permissions_update
+        self.permissions_restore = permissions_restore
+        self.permissions_delete = permissions_delete
+        self.permissions_hard_delete = permissions_hard_delete
+
+        # ABAC dependencies check
+        self.abac_read = abac_read or []
+        self.abac_create = abac_create or []
+        self.abac_update = abac_update or []
+        self.abac_restore = abac_restore or []
+        self.abac_delete = abac_delete or []
+        self.abac_hard_delete = abac_hard_delete or []
 
         self._ROUTES = [
             ("enable_read_all", self.register_get_all),
@@ -99,6 +125,7 @@ class BaseCRUDRouter[
             ("enable_update", self.register_update),
             ("enable_restore", self.register_restore),
             ("enable_delete", self.register_delete),
+            ("enable_hard_delete", self.register_hard_delete),
         ]
 
     # ---------- registration ----------
@@ -117,6 +144,10 @@ class BaseCRUDRouter[
         @self.router.get(
             "/",
             response_model=list[schema_lite],
+            dependencies=[
+                Depends(require_permission(*self.permissions_read)),
+                *[Depends(dep) for dep in self.abac_read],
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def get_all(
@@ -140,6 +171,10 @@ class BaseCRUDRouter[
             "/{id}",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["404"],
+            dependencies=[
+                Depends(require_permission(*self.permissions_read)),
+                *[Depends(dep) for dep in self.abac_read],
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def get_by_id(
@@ -168,7 +203,10 @@ class BaseCRUDRouter[
             "/",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403_409"],
-            dependencies=[Depends(check_create_permissions(service_dep, schema_create))],
+            dependencies=[
+                Depends(require_permission(*self.permissions_create)),
+                *[Depends(dep) for dep in self.abac_create],
+            ],
             status_code=status.HTTP_201_CREATED,
         )
         async def create(
@@ -190,7 +228,10 @@ class BaseCRUDRouter[
             "/batch",
             response_model=list[schema_detail],
             responses=ERROR_RESPONSES["400_401_403_409"],
-            dependencies=[Depends(check_create_multiple_permissions(service_dep))],
+            dependencies=[
+                Depends(require_permission(*self.permissions_create)),
+                *[Depends(dep) for dep in self.abac_update],
+            ],
             status_code=status.HTTP_201_CREATED,
         )
         async def create_multiple(
@@ -215,7 +256,10 @@ class BaseCRUDRouter[
             "/{id}",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403_404"],
-            dependencies=[Depends(check_update_permissions(service_dep, "update"))],
+            dependencies=[
+                Depends(require_permission(*self.permissions_update)),
+                *[Depends(dep) for dep in self.abac_update],
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def update(
@@ -237,7 +281,10 @@ class BaseCRUDRouter[
             "/{id}/restore",
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403_404"],
-            dependencies=[Depends(check_update_permissions(service_dep, "restore"))],
+            dependencies=[
+                Depends(require_permission(*self.permissions_restore)),
+                *[Depends(dep) for dep in self.abac_restore],
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def restore(
@@ -258,18 +305,41 @@ class BaseCRUDRouter[
             "/{id}",
             response_model=schema_lite,
             responses=ERROR_RESPONSES["400_401_403_404"],
-            dependencies=[Depends(check_delete_permissions(service_dep))],
+            dependencies=[
+                Depends(require_permission(*self.permissions_delete)),
+                *[Depends(dep) for dep in self.abac_delete],
+            ],
             status_code=status.HTTP_200_OK,
         )
         async def delete(
             service: Annotated[service_dep, Depends(service_dep)],
             id_: Annotated[str | int, Path(alias="id", description="The ID of the object.")],
-            hard_remove: bool = Query(False, description="`Hard remove` the object or not."),
         ):
             """Delete object, only users with special roles can delete object."""
-            obj = await service.delete(id_, hard_remove)
+            obj = await service.soft_delete(id_)
             logger.debug("Deleted object: %s", obj)
             return obj
+
+    def register_hard_delete(self):
+        """Register the DELETE /{id}/hard endpoint to delete an entity permanently."""
+        service_dep: Callable[..., TService] = self.service_dep
+
+        @self.router.delete(
+            "/{id}/hard",
+            responses=ERROR_RESPONSES["400_401_403_404"],
+            dependencies=[
+                Depends(require_permission(*self.permissions_hard_delete)),
+                *[Depends(dep) for dep in self.abac_hard_delete],
+            ],
+            status_code=status.HTTP_204_NO_CONTENT,
+        )
+        async def hard_delete(
+            service: Annotated[service_dep, Depends(service_dep)],
+            id_: Annotated[str | int, Path(alias="id", description="The ID of the object.")],
+        ):
+            """Hard delete object, only users with special roles can delete object."""
+            await service.delete(id_)
+            logger.debug("Hard deleted object id=%s", id_)
 
     @staticmethod
     async def _create_single_object(

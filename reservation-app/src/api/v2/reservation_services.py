@@ -54,6 +54,11 @@ class ReservationServiceRouter(
             schema_detail=ReservationServiceDetail,
             entity_name=Entity.RESERVATION_SERVICE,
             enable_read_all=False,
+            permissions_create=("reservation_services.create",),
+            permissions_update=("reservation_services.update",),
+            permissions_restore=("reservation_services.restore",),
+            permissions_delete=("reservation_services.soft_delete",),
+            permissions_hard_delete=("reservation_services.hard_delete",),
         )
 
         @router.get(

@@ -43,7 +43,7 @@ def test_user_update_partial_schema():
     assert update.username == "UpdatedName"
     assert update.active_member is None
     assert update.section_head is None
-    assert update.roles is None
+    assert update.roles == []
 
 
 def test_user_in_db_base_schema():
