@@ -330,7 +330,7 @@ class BaseCRUDRouter[
             response_model=schema_lite,
             responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[
-                Depends(require_permission(*self.permissions_delete)),
+                Depends(require_permission(*self.permissions_hard_delete)),
                 *[Depends(dep) for dep in self.abac_hard_delete],
             ],
             status_code=status.HTTP_200_OK,
