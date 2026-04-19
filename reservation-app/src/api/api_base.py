@@ -258,7 +258,7 @@ class BaseCRUDRouter[
             responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[
                 Depends(require_permission(*self.permissions_update)),
-                *[Depends(dep) for dep in self.abac_create],
+                *[Depends(dep) for dep in self.abac_update],
             ],
             status_code=status.HTTP_200_OK,
         )
