@@ -322,7 +322,6 @@ class BaseCRUDRouter[
 
     def register_hard_delete(self):
         """Register the DELETE /{id}/hard endpoint to delete an entity permanently."""
-        schema_lite: type[TReadLite] = self.schema_lite
         service_dep: Callable[..., TService] = self.service_dep
 
         @self.router.delete(
