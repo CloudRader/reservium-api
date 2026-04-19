@@ -327,7 +327,6 @@ class BaseCRUDRouter[
 
         @self.router.delete(
             "/{id}/hard",
-            response_model=schema_lite,
             responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[
                 Depends(require_permission(*self.permissions_hard_delete)),
