@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated, Any
 
-from api import get_current_user
+from api import abac_manage_rs_by_id, abac_manage_rs_from_body, get_current_user
 from api.api_base import BaseCRUDRouter
 from core.application.exceptions import ERROR_RESPONSES, Entity, PermissionDeniedError
 from core.schemas import (
@@ -59,6 +59,10 @@ class CalendarRouter(
             permissions_restore=("calendars.restore",),
             permissions_delete=("calendars.soft_remove",),
             permissions_hard_delete=("calendars.hard_remove",),
+            abac_create=[abac_manage_rs_from_body(CalendarCreate)],
+            abac_update=[abac_manage_rs_by_id(CalendarService)],
+            abac_restore=[abac_manage_rs_by_id(CalendarService)],
+            abac_delete=[abac_manage_rs_by_id(CalendarService)],
         )
 
         self.register_routes()

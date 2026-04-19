@@ -3,6 +3,7 @@
 import logging
 from typing import Annotated, Any
 
+from api import abac_manage_rs_by_id, abac_manage_rs_from_body
 from api.api_base import BaseCRUDRouter
 from core.application.exceptions import (
     ERROR_RESPONSES,
@@ -48,6 +49,10 @@ class MiniServiceRouter(
             permissions_restore=("mini_services.restore",),
             permissions_delete=("mini_services.soft_remove",),
             permissions_hard_delete=("mini_services.hard_remove",),
+            abac_create=[abac_manage_rs_from_body(MiniServiceCreate)],
+            abac_update=[abac_manage_rs_by_id(MiniServiceService)],
+            abac_restore=[abac_manage_rs_by_id(MiniServiceService)],
+            abac_delete=[abac_manage_rs_by_id(MiniServiceService)],
         )
 
         self.register_routes()

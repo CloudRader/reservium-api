@@ -1,7 +1,7 @@
 """Base module for generating CRUD routes in FastAPI."""
 
 import logging
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import Annotated, TypeVar
 
 from api import require_permission
@@ -17,6 +17,7 @@ TUpdate = TypeVar("TUpdate", bound=BaseModel)
 TReadLite = TypeVar("TReadLite", bound=BaseModel)
 TReadDetail = TypeVar("TReadDetail", bound=BaseModel)
 TService = TypeVar("TService", bound=CrudServiceBase)
+ABACDep = Callable[..., Awaitable[None]]
 
 
 class BaseCRUDRouter[
@@ -75,6 +76,12 @@ class BaseCRUDRouter[
         permissions_restore: tuple[str, ...] = (),
         permissions_delete: tuple[str, ...] = (),
         permissions_hard_delete: tuple[str, ...] = (),
+        abac_read: list[ABACDep] | None = None,
+        abac_create: list[ABACDep] | None = None,
+        abac_update: list[ABACDep] | None = None,
+        abac_restore: list[ABACDep] | None = None,
+        abac_delete: list[ABACDep] | None = None,
+        abac_hard_delete: list[ABACDep] | None = None,
     ):
         self.router = router
         self.service_dep = service_dep
@@ -94,13 +101,21 @@ class BaseCRUDRouter[
         self.enable_delete = enable_delete
         self.enable_hard_delete = enable_hard_delete
 
-        # Roles list
+        # permisssions list
         self.permissions_read = permissions_read
         self.permissions_create = permissions_create
         self.permissions_update = permissions_update
         self.permissions_restore = permissions_restore
         self.permissions_delete = permissions_delete
         self.permissions_hard_delete = permissions_hard_delete
+
+        # ABAC dependencies check
+        self.abac_read = abac_read or []
+        self.abac_create = abac_create or []
+        self.abac_update = abac_update or []
+        self.abac_restore = abac_restore or []
+        self.abac_delete = abac_delete or []
+        self.abac_hard_delete = abac_hard_delete or []
 
         self._ROUTES = [
             ("enable_read_all", self.register_get_all),
@@ -130,13 +145,8 @@ class BaseCRUDRouter[
             "/",
             response_model=list[schema_lite],
             dependencies=[
-                Depends(
-                    require_permission(
-                        *self.permissions_read,
-                        abac="manage_reservation_service",
-                        service_dep=service_dep,
-                    )
-                )
+                Depends(require_permission(*self.permissions_read)),
+                *[Depends(dep) for dep in self.abac_read],
             ],
             status_code=status.HTTP_200_OK,
         )
@@ -162,13 +172,8 @@ class BaseCRUDRouter[
             response_model=schema_detail,
             responses=ERROR_RESPONSES["404"],
             dependencies=[
-                Depends(
-                    require_permission(
-                        *self.permissions_read,
-                        abac="manage_reservation_service",
-                        service_dep=service_dep,
-                    )
-                )
+                Depends(require_permission(*self.permissions_read)),
+                *[Depends(dep) for dep in self.abac_read],
             ],
             status_code=status.HTTP_200_OK,
         )
@@ -199,13 +204,8 @@ class BaseCRUDRouter[
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403_409"],
             dependencies=[
-                Depends(
-                    require_permission(
-                        *self.permissions_create,
-                        abac="manage_reservation_service",
-                        service_dep=service_dep,
-                    )
-                )
+                Depends(require_permission(*self.permissions_create)),
+                *[Depends(dep) for dep in self.abac_create],
             ],
             status_code=status.HTTP_201_CREATED,
         )
@@ -229,13 +229,8 @@ class BaseCRUDRouter[
             response_model=list[schema_detail],
             responses=ERROR_RESPONSES["400_401_403_409"],
             dependencies=[
-                Depends(
-                    require_permission(
-                        *self.permissions_create,
-                        abac="manage_reservation_service",
-                        service_dep=service_dep,
-                    )
-                )
+                Depends(require_permission(*self.permissions_create)),
+                *[Depends(dep) for dep in self.abac_update],
             ],
             status_code=status.HTTP_201_CREATED,
         )
@@ -262,13 +257,8 @@ class BaseCRUDRouter[
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[
-                Depends(
-                    require_permission(
-                        *self.permissions_update,
-                        abac="manage_reservation_service",
-                        service_dep=service_dep,
-                    )
-                )
+                Depends(require_permission(*self.permissions_update)),
+                *[Depends(dep) for dep in self.abac_create],
             ],
             status_code=status.HTTP_200_OK,
         )
@@ -292,13 +282,8 @@ class BaseCRUDRouter[
             response_model=schema_detail,
             responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[
-                Depends(
-                    require_permission(
-                        *self.permissions_restore,
-                        abac="manage_reservation_service",
-                        service_dep=service_dep,
-                    )
-                )
+                Depends(require_permission(*self.permissions_restore)),
+                *[Depends(dep) for dep in self.abac_restore],
             ],
             status_code=status.HTTP_200_OK,
         )
@@ -321,13 +306,8 @@ class BaseCRUDRouter[
             response_model=schema_lite,
             responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[
-                Depends(
-                    require_permission(
-                        *self.permissions_delete,
-                        abac="manage_reservation_service",
-                        service_dep=service_dep,
-                    )
-                )
+                Depends(require_permission(*self.permissions_delete)),
+                *[Depends(dep) for dep in self.abac_delete],
             ],
             status_code=status.HTTP_200_OK,
         )
@@ -350,13 +330,8 @@ class BaseCRUDRouter[
             response_model=schema_lite,
             responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[
-                Depends(
-                    require_permission(
-                        *self.permissions_delete,
-                        abac="manage_reservation_service",
-                        service_dep=service_dep,
-                    )
-                )
+                Depends(require_permission(*self.permissions_delete)),
+                *[Depends(dep) for dep in self.abac_hard_delete],
             ],
             status_code=status.HTTP_200_OK,
         )
