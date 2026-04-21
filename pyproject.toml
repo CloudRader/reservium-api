@@ -6,7 +6,7 @@ authors = [{ name = "Artem Kuznetsov", email = "artyom.20century@gmail.com" }]
 requires-python = "==3.14.3"
 dependencies = [
     "fastapi==0.136.0",
-    "uvicorn[standard]==0.44.0",
+    "uvicorn[standard]==0.45.0",
     "pydantic[email]==2.13.3",
     "pydantic-settings==2.13.1",
     "sqlalchemy[asyncio]==2.0.49",
