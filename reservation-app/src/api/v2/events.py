@@ -247,7 +247,6 @@ class EventRouter(
             "/{id}",
             responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[
-                Depends(require_permission("events.update")),
                 Depends(abac_event_owner_or_manager()),
             ],
             status_code=status.HTTP_200_OK,
