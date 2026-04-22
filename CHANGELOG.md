@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.13](https://github.com/CloudRader/reservium-api/compare/v2.3.12...v2.3.13) (2026-04-22)
+
+
+### 🛠️ Fixes
+
+* **event:** cancelation permission checks ([#242](https://github.com/CloudRader/reservium-api/issues/242)) ([4e5d415](https://github.com/CloudRader/reservium-api/commit/4e5d415d77d6cfd8b124287e965328e9073e68ee))
+
 ## [2.3.12](https://github.com/CloudRader/reservium-api/compare/v2.3.11...v2.3.12) (2026-04-19)
 
 
