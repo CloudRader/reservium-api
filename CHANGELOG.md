@@ -1,5 +1,70 @@
 # Changelog
 
+## [2.3.12](https://github.com/CloudRader/reservium-api/compare/v2.3.11...v2.3.12) (2026-04-19)
+
+
+### 🧱 Updates & Improvements
+
+* **delete:** separete soft and hard deletion to separete routes and ([b343558](https://github.com/CloudRader/reservium-api/commit/b34355859cb1682bb5949557fe261a041c9c6db8))
+* **deps:** update dependency ruff to v0.15.11 ([#233](https://github.com/CloudRader/reservium-api/issues/233)) ([5414a58](https://github.com/CloudRader/reservium-api/commit/5414a58b2383d61dafd4214712df9b960af52493))
+
+
+### 🛠️ Fixes
+
+* **api-base:** dependencies in update ([1649600](https://github.com/CloudRader/reservium-api/commit/164960079e8413601dd9168fc770c72f363e7a12))
+* **api-base:** permissions for hard delete ([756eb7f](https://github.com/CloudRader/reservium-api/commit/756eb7f87a0ae0777faeb001857d2f47ef63be03))
+* **api-base:** response model in hard delete ([c7e6880](https://github.com/CloudRader/reservium-api/commit/c7e68802e1836418c7c782c410b38d5fd58b70c9))
+* **delete:** path for hard deletion ([db50368](https://github.com/CloudRader/reservium-api/commit/db5036886b9637d63fea06533430622ea5969887))
+* **deps:** update dependency pydantic to v2.13.2 ([#235](https://github.com/CloudRader/reservium-api/issues/235)) ([b711169](https://github.com/CloudRader/reservium-api/commit/b7111693599ab7f19cd1e45b421eafcbae490251))
+* **pytest:** tests after refactoring ([dbb88dd](https://github.com/CloudRader/reservium-api/commit/dbb88dd984c719311b872f49c15cdd34291e5a7d))
+* **ruff:** warning in api-base ([6110d0b](https://github.com/CloudRader/reservium-api/commit/6110d0ba0a33050d76caebf7c9f4d191e4456686))
+
+
+### 🧹 Refactors
+
+* **event-permissions:** move permissions check in ([96cb2c5](https://github.com/CloudRader/reservium-api/commit/96cb2c51644df4a8c29de5b34aa4f62d64f111e3))
+* **event-permissions:** update event routes and service with new ([efb30f2](https://github.com/CloudRader/reservium-api/commit/efb30f224056e95d7e429c4f407c5b8e2bae41f7))
+* **event-permission:** update permissions in cancel event, fix ([5f9d87f](https://github.com/CloudRader/reservium-api/commit/5f9d87f73584ef762621887b40d065a960acf53e))
+* **permissions:** improvements check permissions from token and in ([762d6ab](https://github.com/CloudRader/reservium-api/commit/762d6abe38f63bd94ed1f17aeb63b9b5c36a6663))
+* **permissions:** rename permissions for delete operations ([57202dd](https://github.com/CloudRader/reservium-api/commit/57202dd2ae7802e156366baa6736df0b2453af43))
+* **permission:** update way to check abac permissions through ([ab27ce2](https://github.com/CloudRader/reservium-api/commit/ab27ce267876c0ccae7514dc50b5acb3ee5e0ef5))
+
+## [2.3.11](https://github.com/CloudRader/reservium-api/compare/v2.3.10...v2.3.11) (2026-04-16)
+
+
+### 🧱 Updates & Improvements
+
+* **deps:** replace astral-sh/setup-uv action with astral-sh/setup-uv v8.0.0 ([#230](https://github.com/CloudRader/reservium-api/issues/230)) ([6c377f8](https://github.com/CloudRader/reservium-api/commit/6c377f8d00b296e0df748b0a35ab3013a5dc033c))
+* **deps:** update dependency astral-sh/uv to v0.11.7 ([#224](https://github.com/CloudRader/reservium-api/issues/224)) ([0961aae](https://github.com/CloudRader/reservium-api/commit/0961aae870530036bed39dbfe2e4da366b02bcab))
+
+
+### 🛠️ Fixes
+
+* CHANGLOG duplications ([602fa5b](https://github.com/CloudRader/reservium-api/commit/602fa5bb9a49e9d398fc9a15d54ed3631a248938))
+* **deps:** update dependency fastapi to v0.136.0 ([#227](https://github.com/CloudRader/reservium-api/issues/227)) ([e4eff59](https://github.com/CloudRader/reservium-api/commit/e4eff5961c3068f92eb1bac96299aefe2e14704f))
+* **deps:** update dependency pydantic to v2.13.1 ([#225](https://github.com/CloudRader/reservium-api/issues/225)) ([8f9a414](https://github.com/CloudRader/reservium-api/commit/8f9a414bc5fc588d2031bd77f4c7323756126d87))
+* **deps:** update dependency pypdf to v6.10.1 ([#199](https://github.com/CloudRader/reservium-api/issues/199)) ([3132932](https://github.com/CloudRader/reservium-api/commit/3132932fe9ebf08eff76366b82be72c855f37e13))
+* **deps:** update dependency pypdf to v6.10.2 ([#226](https://github.com/CloudRader/reservium-api/issues/226)) ([3cf9575](https://github.com/CloudRader/reservium-api/commit/3cf957530a91e440dc9495d0803923e141957118))
+
+## [2.3.10](https://github.com/CloudRader/reservium-api/compare/v2.3.9...v2.3.10) (2026-04-13)
+
+
+### 🧱 Updates & Improvements
+
+* **deps:** update dependency mypy to v1.20.1 ([#220](https://github.com/CloudRader/reservium-api/issues/220)) ([bea3778](https://github.com/CloudRader/reservium-api/commit/bea3778e9c632032b6830af3ba08d8e483c30000))
+
+
+### 🛠️ Fixes
+
+* **ci:** tags naming ([b51d874](https://github.com/CloudRader/reservium-api/commit/b51d8741a1c7aca4333e6967b1e2e5896cabf3b4))
+* **ci:** with ENVs ([51fe904](https://github.com/CloudRader/reservium-api/commit/51fe904829ac2d495130ccdb6a3859198ea06f4b))
+* **deps:** update dependency pydantic to v2.13.0 ([#221](https://github.com/CloudRader/reservium-api/issues/221)) ([e5e091d](https://github.com/CloudRader/reservium-api/commit/e5e091d74f8199f13a14e5e0fa979a6f8da25243))
+
+
+### ⚙️ DevOps & CI/CD
+
+* **build:** migrate fromown workflow to docker/build-push-action ([a6d2a21](https://github.com/CloudRader/reservium-api/commit/a6d2a21bd82d4624c1a1184ebba4a7f5ede94c2d))
+
 ## [2.3.9](https://github.com/CloudRader/reservium-api/compare/v2.3.8...v2.3.9) (2026-04-12)
 
 
@@ -15,8 +80,6 @@
 * **ci:** merge build and push image for dev and release to one ([0a953c9](https://github.com/CloudRader/reservium-api/commit/0a953c90bc3dd49d4c4544bddbca01011357ec7d))
 * **ci:** migrate from Docker Hub AR to GH ([dd1f6f4](https://github.com/CloudRader/reservium-api/commit/dd1f6f4a8c0e2f5bf26cef7883184fb5fdbe4ed7))
 * **deps:** update python ([#196](https://github.com/CloudRader/reservium-api/issues/196)) ([3592884](https://github.com/CloudRader/reservium-api/commit/35928849d022cb392f14ffec00e720667deb9104))
-* **main:** release 2.3.8 ([303287c](https://github.com/CloudRader/reservium-api/commit/303287c1149153845fd3696fb8b7b4f3f5423052))
-* **main:** release 2.3.8 ([#212](https://github.com/CloudRader/reservium-api/issues/212)) ([9f44d41](https://github.com/CloudRader/reservium-api/commit/9f44d4187aeccde5e6181e9abe043aad07b52dff))
 
 
 ### 🛠️ Fixes
@@ -85,7 +148,6 @@
 
 ### 🛠️ Fixes
 
-* **deps:** update dependency pypdf to v6.10.0 [security] ([7a40637](https://github.com/CloudRader/reservium-api/commit/7a406375ff07001deb3c5ae8dfc97b16a74bad0a))
 * **deps:** update dependency pypdf to v6.10.0 [security] ([#200](https://github.com/CloudRader/reservium-api/issues/200)) ([e6fc363](https://github.com/CloudRader/reservium-api/commit/e6fc3635ca42f4ac81d446a5562e0f3c4e9ed917))
 * **tetsts:** test variables ([f5c5a06](https://github.com/CloudRader/reservium-api/commit/f5c5a062d6dc1c676efa0b6c3f50ca0d0d45d181))
 
