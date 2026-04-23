@@ -5,7 +5,7 @@ description = "Reservium: a ready to go reservation system"
 authors = [{ name = "Artem Kuznetsov", email = "artyom.20century@gmail.com" }]
 requires-python = "==3.14.3"
 dependencies = [
-    "fastapi==0.136.0",
+    "fastapi==0.136.1",
     "uvicorn[standard]==0.45.0",
     "pydantic[email]==2.13.3",
     "pydantic-settings==2.14.0",
