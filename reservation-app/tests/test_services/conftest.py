@@ -223,7 +223,6 @@
 #             username="gaga_bakalara",
 #             full_name="=Gagir Bakalar",
 #             room_number="54875",
-#             active_member=True,
 #             roles=["game", "stud", "club"],
 #         ),
 #     )
@@ -249,7 +248,6 @@
 #             username="not_head_user",
 #             full_name="=wuiyaf Yhwvf",
 #             room_number="43643",
-#             active_member=False,
 #             roles=[],
 #         ),
 #     )

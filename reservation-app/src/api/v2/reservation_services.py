@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated, Any
 
-from api import get_current_user
+from api import get_current_user_from_token
 from api.api_base import BaseCRUDRouter
 from core.application.exceptions import (
     ERROR_RESPONSES,
@@ -18,7 +18,7 @@ from core.schemas import (
     ReservationServiceUpdate,
 )
 from core.schemas.event import EventDetail
-from core.schemas.user import UserLite
+from core.schemas.keycloak import CurrentUser
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import ReservationServiceService
 
@@ -83,7 +83,7 @@ class ReservationServiceRouter(
         )
         async def get_reservation_services(
             service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-            user: Annotated[UserLite, Depends(get_current_user)],
+            user: Annotated[CurrentUser, Depends(get_current_user_from_token)],
             include_removed: bool = Query(False, description="Include `removed objects` or not."),
         ) -> Any:
             """
@@ -93,7 +93,7 @@ class ReservationServiceRouter(
             - If the user is **not an active member**, public reservation services are returned.
             """
             logger.info("Fetching reservation services (include_removed=%s)", include_removed)
-            if user.active_member:
+            if "Active Members" in user.groups:
                 if include_removed:
                     reservation_services = await service.get_all_services_include_all_removed()
                 else:

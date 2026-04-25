@@ -11,15 +11,6 @@
 #
 #     assert new_user.id == 1111
 #     assert new_user.username == "kanya_garin"
-#     assert new_user.active_member is False
-#
-#
-# @pytest.mark.asyncio
-# async def test_user_service_update_existing_user(server_create_user):
-#     """Test updating an existing user via UserService."""
-#     updated_user = await server_create_user
-#
-#     assert updated_user.active_member is False
 #
 #
 #
@@ -31,7 +22,6 @@
 #         username="test_user",
 #         full_name="=Gagir Bakalar",
 #         room_number="54875",
-#         active_member=True,
 #         roles=[],
 #     )
 #     await service_user.create(user_data)

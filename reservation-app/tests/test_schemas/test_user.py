@@ -18,7 +18,6 @@ def test_user_create_schema_valid():
     )
     assert schema.id == 2142
     assert schema.username == "TestUser"
-    assert schema.active_member is True
     assert {"Bar", "Consoles"} <= set(schema.roles)
 
 
@@ -38,7 +37,6 @@ def test_user_update_partial_schema():
     """Test updating user with partial data."""
     update = UserUpdate(username="UpdatedName")
     assert update.username == "UpdatedName"
-    assert update.active_member is None
     assert update.roles == []
 
 

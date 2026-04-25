@@ -10,7 +10,6 @@ from core.schemas import EventUpdate, UserUpdate
 async def test_create_user(test_user):
     """Test creating user."""
     assert test_user.username == "fixture_user"
-    assert test_user.active_member is True
     assert "club" in test_user.roles
 
 
