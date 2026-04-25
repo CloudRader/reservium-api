@@ -121,15 +121,9 @@ class UserService(AbstractUserService):
             if service == "active":
                 active_member = True
 
-        section_head = False
-        if "superuser" in user_data.roles:
-            active_member = True
-            section_head = True
-
         if user:
             user_update = UserUpdate(
                 active_member=active_member,
-                section_head=section_head,
                 roles=user_roles,
             )
             return await self.update(user.id, user_update)
@@ -139,7 +133,6 @@ class UserService(AbstractUserService):
             username=user_data.preferred_username,
             full_name=user_data.name,
             active_member=active_member,
-            section_head=section_head,
             roles=user_roles,
         )
         return await self.crud.create(user_create)

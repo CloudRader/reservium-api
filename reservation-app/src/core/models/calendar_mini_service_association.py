@@ -8,8 +8,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 class CalendarMiniServiceAssociationTable(Base):
     """Association table for many-to-many relationship between Calendar and MiniService."""
 
-    __tablename__ = "calendar_mini_service_association"
+    __tablename__ = "calendar_mini_service_associations"
     __table_args__ = (UniqueConstraint("calendar_id", "mini_service_id"),)
 
-    calendar_id: Mapped[str] = mapped_column(ForeignKey("calendar.id"))
-    mini_service_id: Mapped[str] = mapped_column(ForeignKey("mini_service.id"))
+    calendar_id: Mapped[str] = mapped_column(ForeignKey("calendars.id"))
+    mini_service_id: Mapped[str] = mapped_column(ForeignKey("mini_services.id"))

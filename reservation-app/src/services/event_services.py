@@ -465,6 +465,9 @@ class EventService(AbstractEventService):
     ) -> EventLite:
         event_to_update = await self.get(id_)
 
+        if event_to_update.event_state == EventState.NOT_APPROVED:
+            raise SoftValidationError(message="You can't update a not approved event!")
+
         event_update = self.datetime_for_update(event_to_update, event_update)
         if (
             event_update.reservation_start is not None

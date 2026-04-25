@@ -18,7 +18,7 @@ if TYPE_CHECKING:  # pragma: no cover
 class ReservationService(Base, SoftDeleteMixin):
     """Model for creating and managing reservation service entities in the database."""
 
-    __tablename__ = "reservation_service"
+    __tablename__ = "reservation_services"
 
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
     alias: Mapped[str] = mapped_column(unique=True, nullable=False)

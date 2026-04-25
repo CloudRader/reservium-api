@@ -10,7 +10,6 @@ from core.schemas import EventUpdate, UserUpdate
 async def test_create_user(test_user):
     """Test creating user."""
     assert test_user.username == "fixture_user"
-    assert test_user.active_member is True
     assert "club" in test_user.roles
 
 
@@ -35,9 +34,9 @@ async def test_update_user(test_user, user_crud):
     """Test updating user."""
     user_updated = await user_crud.update(
         db_obj=test_user,
-        obj_in=UserUpdate(section_head=True),
+        obj_in=UserUpdate(username="fixture_user_updated"),
     )
-    assert user_updated.section_head is True
+    assert user_updated.username == "fixture_user_updated"
 
 
 @pytest.mark.asyncio

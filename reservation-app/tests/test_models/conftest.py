@@ -36,7 +36,6 @@ async def test_user(async_session):
         username="TestUser",
         full_name="test testovi",
         active_member=False,
-        section_head=False,
         roles=["Bar", "Consoles"],
     )
     async_session.add(user)

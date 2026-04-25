@@ -12,8 +12,8 @@ class CalendarCollisionAssociationTable(Base):
     Relationship between Calendar instances that collide with each other.
     """
 
-    __tablename__ = "calendar_collision_association"
+    __tablename__ = "calendar_collision_associations"
     __table_args__ = (UniqueConstraint("calendar_id", "collides_with_id"),)
 
-    calendar_id: Mapped[str] = mapped_column(ForeignKey("calendar.id", ondelete="CASCADE"))
-    collides_with_id: Mapped[str] = mapped_column(ForeignKey("calendar.id", ondelete="CASCADE"))
+    calendar_id: Mapped[str] = mapped_column(ForeignKey("calendars.id", ondelete="CASCADE"))
+    collides_with_id: Mapped[str] = mapped_column(ForeignKey("calendars.id", ondelete="CASCADE"))

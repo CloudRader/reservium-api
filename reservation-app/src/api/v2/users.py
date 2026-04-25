@@ -3,11 +3,8 @@
 import logging
 from typing import Annotated
 
-from api import get_current_user
-from core.application.exceptions import (
-    ERROR_RESPONSES,
-    PermissionDeniedError,
-)
+from api import get_current_user, require_permission
+from core.application.exceptions import ERROR_RESPONSES
 from core.schemas import UserLite
 from core.schemas.event import EventDetail
 from fastapi import APIRouter, Depends, FastAPI, Query, status
@@ -24,6 +21,7 @@ router = APIRouter()
     "/",
     response_model=list[UserLite],
     responses=ERROR_RESPONSES["401_403"],
+    dependencies=[Depends(require_permission("users.read"))],
     status_code=status.HTTP_200_OK,
 )
 async def get_all(
@@ -33,15 +31,10 @@ async def get_all(
     """
     Retrieve all users from the database.
 
-    This endpoint is accessible only to users with the 'section_head' role.
+    This endpoint is accessible only to users with the users.read permission.
     It returns a list of all registered users.
     """
     logger.info("User %s requested list of all users.", user.id)
-
-    if not user.section_head:
-        logger.warning("Permission denied for user %s (not section_head).", user.id)
-        message = "Permission Denied."
-        raise PermissionDeniedError(message)
 
     users = await service.get_all()
 

@@ -1,6 +1,6 @@
 """Package for API modules."""
 
-from .dependencies import get_current_user
+from .dependencies import get_current_user, get_current_user_from_token
 from .permissions import (
     abac_event_owner_by_id,
     abac_event_owner_or_manager,
@@ -15,5 +15,6 @@ __all__ = [
     "abac_manage_rs_by_id",
     "abac_manage_rs_from_body",
     "get_current_user",
+    "get_current_user_from_token",
     "require_permission",
 ]

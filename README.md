@@ -29,7 +29,7 @@ It integrates seamlessly with **Keycloak** for authentication, **Google Calendar
 ## ⚙️ Quick Start with Docker Compose
 
 Reservium can be deployed quickly with Docker.  
-You only need a `.env` file and a `token.json` file.
+You only need a `.env` file.
 
 ### 📁 Example Directory Layout
 
@@ -37,13 +37,11 @@ You only need a `.env` file and a `token.json` file.
 
 ├── .env
 
-├── docker-compose.yml
-
-└── token.json
+└── compose.yaml
 
 ---
 
-### 🧩 docker-compose.yml
+### 🧩 compose.yaml
 
 ```yaml
 ---
@@ -63,7 +61,7 @@ services:
 
   reservium-api:
     container_name: reservium-api
-    image: darkrader/reservium-api:latest
+    image: ghcr.io/cloudrader/reservium-api:latest
     environment:
       ORGANIZATION_NAME: "Your organization name"
 
@@ -76,21 +74,20 @@ services:
       MAIL__PASSWORD: ${MAIL__PASSWORD}
       MAIL__FROM_NAME: ${MAIL__FROM_NAME}
       MAIL__SENT_DORMITORY_HEAD: true  # defalt false
-      MAIL__DORMITORY_HEAD_EMAIL: develop@buk.cvut.cz
+      MAIL__DORMITORY_HEAD_EMAIL: example@gmail.com
 
       KEYCLOAK__SERVER_URL: ${KEYCLOAK__SERVER_URL}
       KEYCLOAK__REALM: ${KEYCLOAK__REALM}
       KEYCLOAK__CLIENT_ID: ${KEYCLOAK__CLIENT_ID}
       KEYCLOAK__CLIENT_SECRET: ${KEYCLOAK__CLIENT_SECRET}
 
-      SPICEDB__CLIENT_SECRET: ${SPICEDB__CLIENT_SECRET}
-
+      GOOGLE__PROJECT_ID: ${GOOGLE__PROJECT_ID}
+      GOOGLE__PRIVATE_KEY_ID: ${GOOGLE__PRIVATE_KEY_ID}
+      GOOGLE__PRIVATE_KEY: ${GOOGLE__PRIVATE_KEY}
+      GOOGLE__CLIENT_EMAIL: ${GOOGLE__CLIENT_EMAIL}
       GOOGLE__CLIENT_ID: ${GOOGLE__CLIENT_ID}
-      GOOGLE__CLIENT_SECRET: ${GOOGLE__CLIENT_SECRET}
+      GOOGLE__CLIENT_X509_CERT_URL: ${GOOGLE__CLIENT_X509_CERT_URL}
 
-      DORMITORY_ACCESS_SYSTEM__API_KEY: ${DORMITORY_ACCESS_SYSTEM__API_KEY}
-    volumes:
-      - ./token.json:/usr/src/app/src/token.json
     depends_on:
       - db
     restart: on-failure
@@ -101,7 +98,7 @@ services:
 
   reservium-ui:
     container_name: reservium-ui
-    image: darkrader/reservium-ui:latest
+    image: ghcr.io/cloudrader/reservium-ui:latest
     ports:
       - "3000:3000"
     networks:
@@ -133,32 +130,17 @@ KEYCLOAK__REALM=reservium
 KEYCLOAK__CLIENT_ID=reservium-api
 KEYCLOAK__CLIENT_SECRET=supersecret
 
-# SpiceDB
-SPICEDB__CLIENT_SECRET=myspicedbsecret
-
 # Google
 GOOGLE__CLIENT_ID=example.apps.googleusercontent.com
 GOOGLE__CLIENT_SECRET=example-secret
 
-# Dormitory Access System
-DORMITORY_ACCESS_SYSTEM__API_KEY=ABCDEFG1234567890
+GOOGLE__PROJECT_ID=example-project-id
+GOOGLE__PRIVATE_KEY_ID=example-private-key
+GOOGLE__PRIVATE_KEY='-----BEGIN PRIVATE KEY-----\nexample-private-key\n-----END PRIVATE KEY-----\n'
+GOOGLE__CLIENT_EMAIL=example-client-email
+GOOGLE__CLIENT_ID=example-client-id
+GOOGLE__CLIENT_X509_CERT_URL=https://www.googleapis.com/robot/v1/metadata/x509/example-client-email.iam.gserviceaccount.com
 ```
-
-### 🔐 token.json Example
-
-```token
-{
-  "token": "...",
-  "refresh_token": "...",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "client_id": "...",
-  "client_secret": "...",
-  "scopes": ["https://www.googleapis.com/auth/calendar"],
-  "expiry": "2025-12-31T23:59:59Z"
-}
-```
-
-> This token enables Google Calendar integration and is refreshed automatically.
 
 ### ▶️ Running Reservium
 
