@@ -44,9 +44,7 @@ def abac_event_owner_or_manager():
 
         is_owner = event.user_id == user.id
 
-        is_manager = any(
-            role == reservation_service.alias for role in user.roles
-        )
+        is_manager = any(role == reservation_service.alias for role in user.roles)
 
         if not (is_owner or is_manager):
             logger.warning(

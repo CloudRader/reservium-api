@@ -37,8 +37,6 @@ class EventState(Enum):
 class Event(Base, SoftDeleteMixin):
     """Event model to create and manipulate event entity in the database."""
 
-    id: Mapped[str] = mapped_column(primary_key=True)
-
     reservation_start: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     reservation_end: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
@@ -55,8 +53,8 @@ class Event(Base, SoftDeleteMixin):
         server_default=text("'NOT_APPROVED'"),
     )
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
-    calendar_id: Mapped[str] = mapped_column(ForeignKey("calendar.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    calendar_id: Mapped[str] = mapped_column(ForeignKey("calendars.id"), nullable=False)
 
     user: Mapped[User] = relationship(back_populates="events")
     calendar: Mapped[Calendar] = relationship(back_populates="events")

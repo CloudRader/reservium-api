@@ -18,18 +18,18 @@ if TYPE_CHECKING:  # pragma: no cover
 class MiniService(Base, SoftDeleteMixin):
     """Mini service model to create and manipulate mini service entity in the database."""
 
-    __tablename__ = "mini_service"
+    __tablename__ = "mini_services"
 
     name: Mapped[str] = mapped_column(nullable=False)
     access_group: Mapped[str] = mapped_column(nullable=True)
     room_id: Mapped[int] = mapped_column(nullable=True)
-    reservation_service_id: Mapped[str] = mapped_column(ForeignKey("reservation_service.id"))
+    reservation_service_id: Mapped[str] = mapped_column(ForeignKey("reservation_services.id"))
 
     reservation_service: Mapped[ReservationService] = relationship(
         back_populates="mini_services",
     )
     calendars: Mapped[list[Calendar]] = relationship(
-        secondary="calendar_mini_service_association",
+        secondary="calendar_mini_service_associations",
         back_populates="mini_services",
         lazy="selectin",
     )

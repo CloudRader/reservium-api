@@ -20,7 +20,6 @@ if TYPE_CHECKING:  # pragma: no cover
 class Calendar(Base, SoftDeleteMixin):
     """Calendar model to create and manipulate user entity in the database."""
 
-    id: Mapped[str] = mapped_column(primary_key=True)
     reservation_type: Mapped[str] = mapped_column(unique=True, nullable=False)
     color: Mapped[str] = mapped_column(default="#05baf5", nullable=False)
     max_people: Mapped[int] = mapped_column(default=0, nullable=False)
@@ -34,7 +33,7 @@ class Calendar(Base, SoftDeleteMixin):
     active_member_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
     manager_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
 
-    reservation_service_id: Mapped[str] = mapped_column(ForeignKey("reservation_service.id"))
+    reservation_service_id: Mapped[str] = mapped_column(ForeignKey("reservation_services.id"))
 
     reservation_service: Mapped[ReservationService] = relationship(
         back_populates="calendars",
@@ -44,14 +43,14 @@ class Calendar(Base, SoftDeleteMixin):
         lazy="selectin",
     )
     mini_services: Mapped[list[MiniService]] = relationship(
-        secondary="calendar_mini_service_association",
+        secondary="calendar_mini_service_associations",
         back_populates="calendars",
         lazy="selectin",
     )
 
     collisions: Mapped[list[Calendar]] = relationship(
         "Calendar",
-        secondary="calendar_collision_association",
+        secondary="calendar_collision_associations",
         primaryjoin="Calendar.id==CalendarCollisionAssociationTable.calendar_id",
         secondaryjoin="Calendar.id==CalendarCollisionAssociationTable.collides_with_id",
         lazy="selectin",

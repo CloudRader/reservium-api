@@ -22,4 +22,4 @@ class Base(DeclarativeBase):
     @declared_attr  # type: ignore
     def __tablename__(cls) -> str:  # noqa: N805 # declared_attr uses class method style
         """Generate a table name based on the lowercase class name."""
-        return cls.__name__.lower()
+        return f"{cls.__name__.lower()}s"
