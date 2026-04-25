@@ -25,11 +25,6 @@ class User(Base, SoftDeleteMixin):
         nullable=False,
         default=False,
     )
-    section_head: Mapped[bool] = mapped_column(
-        unique=False,
-        nullable=False,
-        default=False,
-    )
     roles: Mapped[list[str] | None] = mapped_column(
         ARRAY(String),
         unique=False,

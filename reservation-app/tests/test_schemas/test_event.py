@@ -291,7 +291,6 @@ def test_event_detail_includes_nested_models():
         username="fakeuser",
         full_name="Fake User",
         active_member=True,
-        section_head=False,
     )
 
     schema = EventDetail(

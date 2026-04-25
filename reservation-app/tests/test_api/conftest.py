@@ -123,7 +123,6 @@
 #         id=2142,
 #         username="test_user",
 #         active_member=True,
-#         section_head=True,
 #         roles=["testa", "sgrill"],
 #     )
 #

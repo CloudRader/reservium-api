@@ -19,7 +19,6 @@ class UserCreate(UserBase):
     username: str
     full_name: str
     active_member: bool
-    section_head: bool
 
 
 class UserUpdate(UserBase):
@@ -28,7 +27,6 @@ class UserUpdate(UserBase):
     username: str | None = None
     full_name: str | None = None
     active_member: bool | None = None
-    section_head: bool | None = None
 
 
 class UserLite(UserBase):
@@ -39,7 +37,6 @@ class UserLite(UserBase):
     username: str
     full_name: str
     active_member: bool
-    section_head: bool
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -224,7 +224,6 @@
 #             full_name="=Gagir Bakalar",
 #             room_number="54875",
 #             active_member=True,
-#             section_head=True,
 #             roles=["game", "stud", "club"],
 #         ),
 #     )
@@ -251,7 +250,6 @@
 #             full_name="=wuiyaf Yhwvf",
 #             room_number="43643",
 #             active_member=False,
-#             section_head=False,
 #             roles=[],
 #         ),
 #     )

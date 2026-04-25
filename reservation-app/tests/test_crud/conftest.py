@@ -55,7 +55,6 @@ async def test_user(user_crud):
             username="fixture_user",
             full_name="Fixture Gabel",
             active_member=True,
-            section_head=False,
             roles=["club", "grill"],
         ),
     )
@@ -70,7 +69,6 @@ async def test_user2(user_crud):
             username="test_user2",
             full_name="Barin Gabel",
             active_member=False,
-            section_head=True,
             roles=["study", "games"],
         ),
     )
