@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.3.14](https://github.com/CloudRader/reservium-api/compare/v2.3.13...v2.3.14) (2026-04-25)
+
+
+### 🧱 Updates & Improvements
+
+* **deps:** update astral-sh/setup-uv action to v8.1.0 ([#234](https://github.com/CloudRader/reservium-api/issues/234)) ([f34add4](https://github.com/CloudRader/reservium-api/commit/f34add480246ce64f05903cecff0d6ea5d8c4f48))
+* **deps:** update dependency ruff to v0.15.12 ([#247](https://github.com/CloudRader/reservium-api/issues/247)) ([389078a](https://github.com/CloudRader/reservium-api/commit/389078a12312aa2f4408cd73da47cbdddd6ac4e8))
+* **models:** rename db tables ([fa9bca9](https://github.com/CloudRader/reservium-api/commit/fa9bca9a7e8eb3fe92504dd8af7479aad859aae2))
+* **user:** apply migration for remove section_head attr ([eb58fba](https://github.com/CloudRader/reservium-api/commit/eb58fbaac023d3b4eb78c862a3fc65d3786eecef))
+* **user:** remove deprecated section_head attribute ([efa315f](https://github.com/CloudRader/reservium-api/commit/efa315ff1e232746cf44a041ef38562d989da675))
+* **user:** start remove depr. active_member attr ([9da2d5e](https://github.com/CloudRader/reservium-api/commit/9da2d5ed247f53238253a94ef502094c026ba2ea))
+
+
+### 🛠️ Fixes
+
+* **deps:** update dependency fastapi to v0.136.1 ([#246](https://github.com/CloudRader/reservium-api/issues/246)) ([64c955c](https://github.com/CloudRader/reservium-api/commit/64c955cb0eff9364aff59bd4dafb9c15e12e1a49))
+* **deps:** update dependency uvicorn to v0.46.0 ([#245](https://github.com/CloudRader/reservium-api/issues/245)) ([f86ec23](https://github.com/CloudRader/reservium-api/commit/f86ec23a778f9124ee5a5f308529f0f2feffeeec))
+
+
+### 📝 Documentation
+
+* **readme:** update readme info ([65caa0f](https://github.com/CloudRader/reservium-api/commit/65caa0f3b127f8a5e3c05023679f8728c106aae3))
+
 ## [2.3.13](https://github.com/CloudRader/reservium-api/compare/v2.3.12...v2.3.13) (2026-04-22)
 
 
