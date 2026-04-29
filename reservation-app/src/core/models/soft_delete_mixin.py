@@ -12,4 +12,4 @@ class SoftDeleteMixin(generate_soft_delete_mixin_class()):
     Automatically filter out soft-deleted objects from your queries and relationships.
     """
 
-    deleted_at: datetime
+    deleted_at: datetime | None

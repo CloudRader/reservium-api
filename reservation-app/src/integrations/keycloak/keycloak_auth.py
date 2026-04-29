@@ -107,12 +107,16 @@ class KeycloakAuthService(AbstractKeycloakAuthService):
     async def validate_token(self, token: str) -> dict[str, Any]:
         try:
             # Validate token and get user info
-            return self.keycloak_openid.userinfo(token)
+            result = self.keycloak_openid.userinfo(token)
+            if not isinstance(result, dict):
+                raise UnauthorizedError(message="Invalid token response format")
         except KeycloakAuthenticationError as e:
             logger.info("Token validation failed: %s", e)
             raise UnauthorizedError(
                 message="Invalid or expired token",
             ) from e
+        else:
+            return result
 
     async def decode_token(self, token: str) -> dict[str, Any]:
         try:
@@ -126,6 +130,8 @@ class KeycloakAuthService(AbstractKeycloakAuthService):
     async def get_user_info(self, token: str) -> UserKeycloak:
         try:
             user_info_raw = self.keycloak_openid.userinfo(token)
+            if not isinstance(user_info_raw, dict):
+                raise UnauthorizedError(message="Invalid user info response")
         except KeycloakAuthenticationError as e:
             logger.info("Failed to get user info: %s", e)
             raise UnauthorizedError(

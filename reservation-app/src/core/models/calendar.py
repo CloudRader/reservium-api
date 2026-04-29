@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from core.models.base import Base
-from core.models.soft_delete_mixin import SoftDeleteMixin
 from core.models.types.rules_type import RulesType
 from core.schemas.calendar import Rules
 from sqlalchemy import ForeignKey
@@ -17,7 +16,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from core.models.reservation_service import ReservationService
 
 
-class Calendar(Base, SoftDeleteMixin):
+class Calendar(Base):
     """Calendar model to create and manipulate user entity in the database."""
 
     reservation_type: Mapped[str] = mapped_column(unique=True, nullable=False)

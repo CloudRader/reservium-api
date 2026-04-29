@@ -1,6 +1,7 @@
 """Utils for common functions used across the application."""
 
 import re
+from datetime import UTC, datetime
 
 
 def snake_case(name: str) -> str:
@@ -11,3 +12,8 @@ def snake_case(name: str) -> str:
     :return: The converted string in snake_case.
     """
     return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
+
+
+def get_utc_now() -> datetime:
+    """Get the current UTC time."""
+    return datetime.now(UTC)

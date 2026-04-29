@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from core.models.base import Base
-from core.models.soft_delete_mixin import SoftDeleteMixin
 from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -15,7 +14,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from core.models.reservation_service import ReservationService
 
 
-class MiniService(Base, SoftDeleteMixin):
+class MiniService(Base):
     """Mini service model to create and manipulate mini service entity in the database."""
 
     name: Mapped[str] = mapped_column(nullable=False)
