@@ -44,7 +44,7 @@ class CalendarUpdate(CalendarBase):
     """Properties to receive via API on update."""
 
     reservation_type: str | None = None
-    max_people: int | None = Field(None, ge=1)
+    max_people: int | None = Field(default=None, ge=1)
     collision_with_itself: bool | None = None
     club_member_rules: Rules | None = None
     active_member_rules: Rules | None = None
@@ -57,7 +57,6 @@ class CalendarUpdate(CalendarBase):
 class CalendarLite(CalendarBase):
     """Base model for calendar in database."""
 
-    id: str
     deleted_at: datetime | None = None
     reservation_type: str
     max_people: int

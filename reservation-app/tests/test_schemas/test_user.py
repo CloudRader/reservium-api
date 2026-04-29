@@ -29,7 +29,7 @@ def test_user_create_schema_invalid_roles_type():
             username="TestUser",
             full_name="Gars Lars",
             active_member=True,
-            roles="Admin",  # Should be a list, not string
+            roles="Admin",  # Should be a list, not string  # type: ignore
         )
 
 

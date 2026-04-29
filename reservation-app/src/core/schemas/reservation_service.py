@@ -27,7 +27,7 @@ class ReservationServiceUpdate(ReservationServiceBase):
     """Properties to receive via API on update."""
 
     name: str | None = None
-    alias: str | None = Field(None, max_length=6)
+    alias: str | None = Field(default=None, max_length=6)
 
 
 class ReservationServiceLite(ReservationServiceBase):

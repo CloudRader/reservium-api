@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from core.models.base_class import Base
 
 
-def as_dict(model: Base) -> dict[str, Any]:
+def as_dict(model: Base) -> Mapping[str, Any]:
     """
     Get dictionary from model.
 

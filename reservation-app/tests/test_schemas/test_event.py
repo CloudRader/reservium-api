@@ -162,6 +162,8 @@ def test_event_update_valid_and_invalid_order():
         reservation_start=datetime(2025, 1, 1, 10),
         reservation_end=datetime(2025, 1, 1, 12),
     )
+    assert valid.reservation_start is not None
+    assert valid.reservation_end is not None
     assert valid.reservation_end > valid.reservation_start
 
     # invalid (end before start)
@@ -274,7 +276,7 @@ def test_event_create_required_fields(field):
 def test_event_detail_includes_nested_models():
     """Ensure EventDetail correctly includes nested user and calendar objects."""
     service = ReservationServiceLite(
-        id="r212414", name="Dorm Booking", email="service@uni.cz", alias="club"
+        id="r212414", name="Dorm Booking", contact_mail="service@uni.cz", alias="club"
     )
 
     calendar = CalendarWithReservationServiceInfo(
