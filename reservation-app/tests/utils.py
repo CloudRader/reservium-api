@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from core.models.base_class import Base
+    from core.models.base import Base
 
 
 def as_dict(model: Base) -> Mapping[str, Any]:

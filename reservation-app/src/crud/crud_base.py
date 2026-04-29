@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from datetime import UTC, datetime
 from typing import Any, TypeVar
 
-from core.models.base_class import Base
+from core.models.base import Base
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

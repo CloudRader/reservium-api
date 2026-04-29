@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from core.models.base_class import Base
+from core.models.base import Base
 from core.models.soft_delete_mixin import SoftDeleteMixin
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import ARRAY

@@ -2,6 +2,7 @@
 
 from uuid import uuid4
 
+from common import snake_case
 from core import settings
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
@@ -22,4 +23,4 @@ class Base(DeclarativeBase):
     @declared_attr  # type: ignore
     def __tablename__(cls) -> str:  # noqa: N805 # declared_attr uses class method style
         """Generate a table name based on the lowercase class name."""
-        return f"{cls.__name__.lower()}s"
+        return f"{snake_case(cls.__name__)}s"
