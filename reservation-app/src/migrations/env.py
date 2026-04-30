@@ -18,7 +18,7 @@ load_dotenv(dotenv_path="../.env")
 
 # ruff: noqa: E402
 from core import settings
-from core.models.base_class import Base
+from core.models.base import Base
 from core.models.types.rules_type import RulesType
 
 # this is the Alembic Config object, which provides

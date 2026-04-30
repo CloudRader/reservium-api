@@ -9,7 +9,6 @@ class ReservationServiceBase(BaseModel):
     """Shared properties of ReservationService."""
 
     web: str | None = None
-    contact_mail: str | None = None
     public: bool | None = None
     lockers_id: list[int] = Field(default_factory=list)
     access_group: str | None = None
@@ -21,13 +20,15 @@ class ReservationServiceCreate(ReservationServiceBase):
 
     name: str
     alias: str = Field(max_length=6)
+    contact_mail: str
 
 
 class ReservationServiceUpdate(ReservationServiceBase):
     """Properties to receive via API on update."""
 
     name: str | None = None
-    alias: str | None = Field(None, max_length=6)
+    alias: str | None = Field(default=None, max_length=6)
+    contact_mail: str | None = None
 
 
 class ReservationServiceLite(ReservationServiceBase):
@@ -37,6 +38,7 @@ class ReservationServiceLite(ReservationServiceBase):
     deleted_at: datetime | None = None
     name: str
     alias: str
+    contact_mail: str
 
     model_config = ConfigDict(from_attributes=True)
 

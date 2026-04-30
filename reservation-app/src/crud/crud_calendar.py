@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from core.models import CalendarModel, MiniServiceModel
-from core.models.calendar_collisions_association import CalendarCollisionAssociationTable
+from core.models.calendar_collisions_association import CalendarCollisionAssociation
 from core.schemas import CalendarCreate, CalendarUpdate
 from crud import CRUDBase
 from sqlalchemy import delete, insert, select
@@ -172,9 +172,9 @@ class CRUDCalendar(AbstractCRUDCalendar):
         await self.db.flush()
 
         if collision_ids is not None:
-            stmt_delete = delete(CalendarCollisionAssociationTable).where(
-                (CalendarCollisionAssociationTable.calendar_id == db_obj.id)
-                | (CalendarCollisionAssociationTable.collides_with_id == db_obj.id)
+            stmt_delete = delete(CalendarCollisionAssociation).where(
+                (CalendarCollisionAssociation.calendar_id == db_obj.id)
+                | (CalendarCollisionAssociation.collides_with_id == db_obj.id)
             )
 
             await self.db.execute(stmt_delete)
@@ -210,5 +210,5 @@ class CRUDCalendar(AbstractCRUDCalendar):
             collisions_bulk.append({"calendar_id": calendar.id, "collides_with_id": cid})
             collisions_bulk.append({"calendar_id": cid, "collides_with_id": calendar.id})
 
-        stmt = insert(CalendarCollisionAssociationTable).values(collisions_bulk)
+        stmt = insert(CalendarCollisionAssociation).values(collisions_bulk)
         await self.db.execute(stmt)

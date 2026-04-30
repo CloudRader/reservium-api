@@ -86,16 +86,14 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
             return True
 
         if reservation_service == await service_event.get_reservation_service_of_this_event(event):
-            if access_request.device_id in reservation_service.lockers_id:
+            if reservation_service and access_request.device_id in reservation_service.lockers_id:
                 return True
 
             for mini_service_name in event.additional_services:
                 mini_service = await self.mini_service_crud.get_by_name(
                     mini_service_name,
                 )
-                if (mini_service.room_id is None) and (
-                    access_request.device_id in mini_service.lockers_id
-                ):
+                if mini_service and access_request.device_id in mini_service.lockers_id:
                     return True
 
         message = "No matching reservation exists at this time for this rules."

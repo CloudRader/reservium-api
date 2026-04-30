@@ -216,14 +216,16 @@ class ReservationServiceService(AbstractReservationServiceService):
         self,
         include_removed: bool = False,
     ) -> list[ReservationServiceDetail]:
-        return await self.crud.get_public_services(include_removed)
+        services = await self.crud.get_public_services(include_removed)
+
+        return [ReservationServiceDetail.model_validate(service) for service in services]
 
     async def get_all_services_include_all_removed(
         self,
     ) -> list[ReservationServiceDetail]:
-        reservation_services: list[ReservationServiceDetail] = await self.crud.get_all(
-            True,
-        )
+        reservation_services = await self.crud.get_all(True)
+
+        reservation_services_result: list[ReservationServiceDetail] = []
 
         for reservation_service in reservation_services:
             calendars = await self.crud.get_related_entities_by_reservation_service_id(
@@ -241,7 +243,11 @@ class ReservationServiceService(AbstractReservationServiceService):
             reservation_service.calendars = calendars
             reservation_service.mini_services = mini_services
 
-        return reservation_services
+            reservation_services_result.append(
+                ReservationServiceDetail.model_validate(reservation_service)
+            )
+
+        return reservation_services_result
 
     async def get_calendars_by_id(
         self,
@@ -272,10 +278,12 @@ class ReservationServiceService(AbstractReservationServiceService):
     ) -> list[EventDetail]:
         reservation_service = await self.get(id_, include_removed=True)
 
-        return await self.crud.get_events_by_reservation_service_id(
+        events = await self.crud.get_events_by_reservation_service_id(
             reservation_service.id,
             event_state,
         )
+
+        return [EventDetail.model_validate(event) for event in events]
 
     async def get_reservation_service(
         self,

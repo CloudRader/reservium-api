@@ -7,7 +7,7 @@ Provides async sessions for tests, with schema management.
 from urllib.parse import urlparse, urlunparse
 
 import pytest_asyncio
-from core.models.base_class import Base
+from core.models.base import Base
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from testcontainers.postgres import PostgresContainer
 

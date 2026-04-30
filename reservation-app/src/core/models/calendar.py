@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from core.models.base_class import Base
-from core.models.soft_delete_mixin import SoftDeleteMixin
+from core.models.base import Base
 from core.models.types.rules_type import RulesType
 from core.schemas.calendar import Rules
 from sqlalchemy import ForeignKey
@@ -17,7 +16,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from core.models.reservation_service import ReservationService
 
 
-class Calendar(Base, SoftDeleteMixin):
+class Calendar(Base):
     """Calendar model to create and manipulate user entity in the database."""
 
     reservation_type: Mapped[str] = mapped_column(unique=True, nullable=False)
@@ -51,8 +50,8 @@ class Calendar(Base, SoftDeleteMixin):
     collisions: Mapped[list[Calendar]] = relationship(
         "Calendar",
         secondary="calendar_collision_associations",
-        primaryjoin="Calendar.id==CalendarCollisionAssociationTable.calendar_id",
-        secondaryjoin="Calendar.id==CalendarCollisionAssociationTable.collides_with_id",
+        primaryjoin="Calendar.id==CalendarCollisionAssociation.calendar_id",
+        secondaryjoin="Calendar.id==CalendarCollisionAssociation.collides_with_id",
         lazy="selectin",
         back_populates="collisions",
         remote_side="Calendar.id",

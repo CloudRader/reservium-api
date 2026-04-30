@@ -6,8 +6,7 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from core.models.base_class import Base
-from core.models.soft_delete_mixin import SoftDeleteMixin
+from core.models.base import Base
 from sqlalchemy import DateTime, ForeignKey, String, text
 from sqlalchemy import Enum as SQLAlchemyEnum
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -34,7 +33,7 @@ class EventState(Enum):
     CANCELED = "canceled"
 
 
-class Event(Base, SoftDeleteMixin):
+class Event(Base):
     """Event model to create and manipulate event entity in the database."""
 
     reservation_start: Mapped[datetime] = mapped_column(DateTime, nullable=False)

@@ -3,7 +3,7 @@
 import logging
 from typing import Literal
 
-from pydantic import BaseModel, PostgresDsn
+from pydantic import BaseModel, PostgresDsn, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from .utils import get_env_file_path
@@ -75,7 +75,7 @@ class DatabaseConfig(BaseModel):
     """Config for db."""
 
     POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
+    POSTGRES_PASSWORD: SecretStr
     POSTGRES_DB: str
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: int = 5432
@@ -96,7 +96,7 @@ class DatabaseConfig(BaseModel):
             PostgresDsn.build(
                 scheme=self.SQLALCHEMY_SCHEME,
                 username=self.POSTGRES_USER,
-                password=self.POSTGRES_PASSWORD,
+                password=self.POSTGRES_PASSWORD.get_secret_value(),
                 host=self.POSTGRES_SERVER,
                 port=self.POSTGRES_PORT,
                 path=self.POSTGRES_DB,
@@ -108,7 +108,7 @@ class MailConfig(BaseModel):
     """Config for mail."""
 
     USERNAME: str
-    PASSWORD: str
+    PASSWORD: SecretStr
     FROM_NAME: str
     PORT: int = 587
     SERVER: str = "smtp.gmail.com"
@@ -126,7 +126,7 @@ class KeycloakConfig(BaseModel):
     SERVER_URL: str
     REALM: str
     CLIENT_ID: str
-    CLIENT_SECRET: str
+    CLIENT_SECRET: SecretStr
 
 
 class GoogleConfig(BaseModel):
@@ -134,8 +134,8 @@ class GoogleConfig(BaseModel):
 
     TYPE: str = "service_account"
     PROJECT_ID: str
-    PRIVATE_KEY_ID: str
-    PRIVATE_KEY: str
+    PRIVATE_KEY_ID: SecretStr
+    PRIVATE_KEY: SecretStr
     CLIENT_EMAIL: str
     CLIENT_ID: str
     AUTH_URI: str = "https://accounts.google.com/o/oauth2/auth"
@@ -150,8 +150,8 @@ class GoogleConfig(BaseModel):
         return {
             "type": self.TYPE,
             "project_id": self.PROJECT_ID,
-            "private_key_id": self.PRIVATE_KEY_ID,
-            "private_key": self.PRIVATE_KEY.replace("\\n", "\n"),
+            "private_key_id": self.PRIVATE_KEY_ID.get_secret_value(),
+            "private_key": self.PRIVATE_KEY.get_secret_value().replace("\\n", "\n"),
             "client_email": self.CLIENT_EMAIL,
             "client_id": self.CLIENT_ID,
             "auth_uri": self.AUTH_URI,

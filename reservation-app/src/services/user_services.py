@@ -147,4 +147,6 @@ class UserService(AbstractUserService):
         limit: int = 20,
         past: bool | None = None,
     ) -> list[EventDetail]:
-        return await self.crud.get_events_by_user_id(user.id, page, limit, past)
+        events = await self.crud.get_events_by_user_id(user.id, page, limit, past)
+
+        return [EventDetail.model_validate(event) for event in events]

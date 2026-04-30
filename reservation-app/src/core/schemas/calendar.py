@@ -20,7 +20,6 @@ class Rules(BaseModel):
 class CalendarBase(BaseModel):
     """Shared properties of Calendar."""
 
-    id: str | None = None
     more_than_max_people_with_permission: bool | None = None
     color: str | None = None
 
@@ -28,6 +27,7 @@ class CalendarBase(BaseModel):
 class CalendarCreate(CalendarBase):
     """Properties to receive via API on creation."""
 
+    id: str
     reservation_service_id: str
     reservation_type: str
     max_people: int = Field(ge=1)
@@ -44,7 +44,7 @@ class CalendarUpdate(CalendarBase):
     """Properties to receive via API on update."""
 
     reservation_type: str | None = None
-    max_people: int | None = Field(None, ge=1)
+    max_people: int | None = Field(default=None, ge=1)
     collision_with_itself: bool | None = None
     club_member_rules: Rules | None = None
     active_member_rules: Rules | None = None

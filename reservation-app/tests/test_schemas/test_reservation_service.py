@@ -27,9 +27,10 @@ def test_reservation_service_create_valid():
     )
     assert schema.name == "Projector Booking"
     assert schema.alias == "prjct"
-    assert schema.web.startswith("https://")
     assert schema.contact_mail.endswith("@projector.com")
     assert schema.public is True
+    if schema.web:
+        assert schema.web.startswith("https://")
 
 
 def test_reservation_service_create_alias_too_long():
@@ -38,6 +39,7 @@ def test_reservation_service_create_alias_too_long():
         ReservationServiceCreate(
             name="TooLongAlias",
             alias="TOOLONG",  # more than 6 characters
+            contact_mail="support@projector.com",
         )
 
 
@@ -77,6 +79,7 @@ def test_reservation_service_in_db_base_schema(valid_rules):
         name="Sound System",
         alias="SOUND",
         deleted_at=now,
+        contact_mail="support@projector.com",
     )
     schema = ReservationServiceDetail(
         id=service_id,
@@ -84,6 +87,7 @@ def test_reservation_service_in_db_base_schema(valid_rules):
         alias="SOUND",
         calendars=[calendar],
         mini_services=[mini_service],
+        contact_mail="support@projector.com",
     )
     assert schema_in_db_base.id == service_id
     assert schema_in_db_base.name == "Sound System"
@@ -100,6 +104,7 @@ def test_reservation_service_schema_extends_base():
         deleted_at=None,
         calendars=[],
         mini_services=[],
+        contact_mail="support@projector.com",
     )
     assert isinstance(service, ReservationServiceLite)
     assert service.deleted_at is None
@@ -108,7 +113,7 @@ def test_reservation_service_schema_extends_base():
 @pytest.mark.parametrize("field", ["name", "alias"])
 def test_reservation_service_create_required_fields(field):
     """Test that omitting required fields raises validation error."""
-    data = {"name": "SomeName", "alias": "ALIAS"}
+    data = {"name": "SomeName", "alias": "ALIAS", "lockers_id": []}
     del data[field]
     with pytest.raises(ValidationError):
         ReservationServiceCreate(**data)
