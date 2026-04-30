@@ -24,7 +24,7 @@ from core.schemas import (
     UserLite,
 )
 from fastapi import BackgroundTasks
-from fastapi_mail import FastMail, MessageSchema, MessageType
+from fastapi_mail import FastMail, MessageSchema, MessageType, NameEmail
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pypdf import PdfReader, PdfWriter
 
@@ -142,7 +142,7 @@ class EmailService(AbstractEmailService):
         """
         message = MessageSchema(
             subject=email_create.subject,
-            recipients=email_create.email,  # List of recipients
+            recipients=[NameEmail(name=e, email=e) for e in email_create.email],
             body=email_create.body,
             subtype=MessageType.plain,
             attachments=[email_create.attachment] if email_create.attachment else [],

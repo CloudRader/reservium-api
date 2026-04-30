@@ -186,7 +186,9 @@ class CalendarService(AbstractCalendarService):
         id_: str | int,
         obj_in: CalendarUpdate,
     ) -> CalendarDetail:
-        calendar_to_update = await self.get(id_)
+        calendar_to_update = await self.crud.get(id_)
+        if calendar_to_update is None:
+            raise EntityNotFoundError(self.entity_name, id_)
 
         mini_services_in_calendar = await self._prepare_calendar_mini_services(
             calendar_to_update.reservation_service_id, obj_in.mini_services
@@ -224,7 +226,7 @@ class CalendarService(AbstractCalendarService):
 
     async def google_subscribe_existing_calendars(self) -> list[CalendarImportResult]:
         calendars = await self.get_all()
-        calendar_ids = [cal.id for cal in calendars]
+        calendar_ids = [cal.id for cal in calendars if cal.id is not None]
 
         return await self.google_calendar_service.subscribe_calendars(calendar_ids)
 
