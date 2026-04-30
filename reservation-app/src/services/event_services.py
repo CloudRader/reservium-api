@@ -601,8 +601,8 @@ class EventService(AbstractEventService):
     ) -> None:
         event = await self.get(id_, True)
 
-        if event.event_state != EventState.CANCELED or event.event_state != EventState.NOT_APPROVED:
-            message = "You can't deleted not canceled or not approved reservation."
+        if event.event_state not in (EventState.CANCELED, EventState.NOT_APPROVED):
+            message = "You can't delete a reservation unless it is canceled or not approved."
             raise BaseAppError(message)
 
         await self.crud.remove(id_)
