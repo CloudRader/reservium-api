@@ -92,7 +92,7 @@ class KeycloakAuthService(AbstractKeycloakAuthService):
             server_url=settings.KEYCLOAK.SERVER_URL,
             client_id=settings.KEYCLOAK.CLIENT_ID,
             realm_name=settings.KEYCLOAK.REALM,
-            client_secret_key=settings.KEYCLOAK.CLIENT_SECRET,
+            client_secret_key=settings.KEYCLOAK.CLIENT_SECRET.get_secret_value(),
         )
 
     async def authenticate_user(self, username: str, password: str) -> dict[str, Any]:
