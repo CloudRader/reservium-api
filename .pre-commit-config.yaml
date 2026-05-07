@@ -1,0 +1,42 @@
+default_language_version:
+  python: python3.14
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+
+  - repo: local
+    hooks:
+      - id: ruff-lint
+        name: ruff-lint
+        entry: bash -c "cd reservation-app && uv run ./scripts/lint_ruff.sh --fix"
+        language: system
+        pass_filenames: false
+        types: [python]
+
+      - id: ruff-format
+        name: ruff-format
+        entry: bash -c "cd reservation-app && uv run ./scripts/format_ruff.sh"
+        language: system
+        pass_filenames: false
+        types: [python]
+
+      - id: mypy
+        name: mypy
+        entry: bash -c "cd reservation-app && uv run ./scripts/mypy.sh"
+        language: system
+        pass_filenames: false
+        types: [python]
+
+      - id: pytest
+        name: pytest
+        entry: bash -c "cd reservation-app && uv run ./scripts/pytest.sh"
+        language: system
+        pass_filenames: false
+        always_run: true

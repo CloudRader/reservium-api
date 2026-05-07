@@ -10,7 +10,7 @@ Backend service powering the **Reservium platform**, providing event, calendar, 
 
 ## 🌐 Overview
 
-Reservium is a **FastAPI-based backend** designed to automate and simplify reservation management.  
+Reservium is a **FastAPI-based backend** designed to automate and simplify reservation management.
 It integrates seamlessly with **Keycloak** for authentication, **Google Calendar** for scheduling, and **Dormitory Access APIs** for internal facility management.
 
 **Part of the Reservium Suite:**
@@ -21,14 +21,14 @@ It integrates seamlessly with **Keycloak** for authentication, **Google Calendar
 
 ## 📘 API Reference
 
-- **Production API:** [api.reservation.buk.cvut.cz/docs](https://api.reservation.buk.cvut.cz/docs)  
+- **Production API:** [api.reservation.buk.cvut.cz/docs](https://api.reservation.buk.cvut.cz/docs)
 - **Development API:** [api.develop.reservation.buk.cvut.cz/docs](https://api.develop.reservation.buk.cvut.cz/docs)
 
 ---
 
 ## ⚙️ Quick Start with Docker Compose
 
-Reservium can be deployed quickly with Docker.  
+Reservium can be deployed quickly with Docker.
 You only need a `.env` file.
 
 ### 📁 Example Directory Layout
