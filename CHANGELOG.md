@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.3.15](https://github.com/CloudRader/reservium-api/compare/v2.3.14...v2.3.15) (2026-04-30)
+
+
+### 🧱 Updates & Improvements
+
+* **base-model:** add created, updated, deleted at in base model ([5d71ef7](https://github.com/CloudRader/reservium-api/commit/5d71ef74a4e9e4af5d0b9257b1e23a7aa6623a94))
+* **deps:** update dependency astral-sh/uv to v0.11.8 ([#250](https://github.com/CloudRader/reservium-api/issues/250)) ([a918fca](https://github.com/CloudRader/reservium-api/commit/a918fca3b91515a91907656a264ddaa9ffec0580))
+* **deps:** update googleapis/release-please-action action to v5 ([#244](https://github.com/CloudRader/reservium-api/issues/244)) ([8b11a69](https://github.com/CloudRader/reservium-api/commit/8b11a69367389813b2677a16d53dc81ae6c989c0))
+
+
+### 🛠️ Fixes
+
+* **basedpyright:** warnings ([8ae5bd1](https://github.com/CloudRader/reservium-api/commit/8ae5bd1bcd6df4a9c2023c6074110802c797a5ca))
+* **config:** SecretStr configuration for secrets ([ecdf442](https://github.com/CloudRader/reservium-api/commit/ecdf442529c152b3f300cb91920de7cf9ca9fb96))
+* **hard-delete-event:** correct check condition ([a505100](https://github.com/CloudRader/reservium-api/commit/a505100185f71b7320441df7297b76a80291dd3b))
+
+
+### 🧹 Refactors
+
+* **models:** unify tablename in Base, rename base model ([096e40c](https://github.com/CloudRader/reservium-api/commit/096e40cfcbea31e06fe6d7578802112a978d5dc9))
+
+
+### 🧪 Tests & Quality
+
+* **basedpyright:** fix warnings (setup in code editor) ([5aa5619](https://github.com/CloudRader/reservium-api/commit/5aa5619c1c1e94715ecf5ea5db6d44516c8bfb86))
+* **pytest:** fix schemas tests ([17778ec](https://github.com/CloudRader/reservium-api/commit/17778ecffd312264f25b3c2a33a3d2060bac828e))
+
 ## [2.3.14](https://github.com/CloudRader/reservium-api/compare/v2.3.13...v2.3.14) (2026-04-25)
 
 
