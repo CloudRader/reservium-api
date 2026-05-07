@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.3.16](https://github.com/CloudRader/reservium-api/compare/v2.3.15...v2.3.16) (2026-05-07)
+
+
+### 🧱 Updates & Improvements
+
+* **deps:** update dependency astral-sh/uv to v0.11.11 ([#258](https://github.com/CloudRader/reservium-api/issues/258)) ([715686d](https://github.com/CloudRader/reservium-api/commit/715686df28e610c63309d36b693a97ee7725d5ec))
+* **deps:** update dependency astral-sh/uv to v0.11.9 ([#257](https://github.com/CloudRader/reservium-api/issues/257)) ([7a4a8b1](https://github.com/CloudRader/reservium-api/commit/7a4a8b175fe2b550dea70094cdee9c240e2993fc))
+* **deps:** update dependency types-pytz to v2026.2.0.20260506 ([#259](https://github.com/CloudRader/reservium-api/issues/259)) ([8e490ef](https://github.com/CloudRader/reservium-api/commit/8e490ef10c9d5f6d623a91e79d7d105f2c0e66e9))
+* **pre-commit:** add configuration ([a05e97e](https://github.com/CloudRader/reservium-api/commit/a05e97e839bc5e8865cc6fc01fb089af05d75c97))
+
+
+### 🛠️ Fixes
+
+* **deps:** update dependency fastapi-mail to v1.6.3 ([#255](https://github.com/CloudRader/reservium-api/issues/255)) ([4c88cb5](https://github.com/CloudRader/reservium-api/commit/4c88cb5a3349bafb62b3783c56b1db3a43154600))
+* **deps:** update dependency fastapi-mail to v1.6.4 ([#262](https://github.com/CloudRader/reservium-api/issues/262)) ([1eac0cf](https://github.com/CloudRader/reservium-api/commit/1eac0cf42e8ec46efb08c193fd31d42e500f7048))
+* **deps:** update dependency google-api-python-client to v2.196.0 ([#254](https://github.com/CloudRader/reservium-api/issues/254)) ([fc01bc3](https://github.com/CloudRader/reservium-api/commit/fc01bc33f197f72a4d65874e44db88b38ab39bb0))
+* **deps:** update dependency google-auth-oauthlib to v1.4.0 ([#263](https://github.com/CloudRader/reservium-api/issues/263)) ([80f4294](https://github.com/CloudRader/reservium-api/commit/80f4294416e1721a58d03291eeb8b80aa3947f08))
+* **deps:** update dependency pydantic to v2.13.4 ([#260](https://github.com/CloudRader/reservium-api/issues/260)) ([1177dfb](https://github.com/CloudRader/reservium-api/commit/1177dfbda526b40584bf247bb9a30bbb3889f253))
+* **deps:** update dependency pytz to v2026.2 ([#256](https://github.com/CloudRader/reservium-api/issues/256)) ([52571b8](https://github.com/CloudRader/reservium-api/commit/52571b80ac6f997caea0f964ac8b6cc9abf19089))
+
+
+### 🧪 Tests & Quality
+
+* **mypy:** upgrade to v2 version. Update script and config ([fe58c6e](https://github.com/CloudRader/reservium-api/commit/fe58c6e50e56673c576d11c78790197e95dc88e8))
+* **pre-commit:** add pytest and refactor with use local scripts ([c31c3e6](https://github.com/CloudRader/reservium-api/commit/c31c3e60afc7ef0d0a5dc498942b5121a502c90a))
+* **pre-commit:** add ruff and mypy to config ([3af8ac6](https://github.com/CloudRader/reservium-api/commit/3af8ac6e91fc954551c27bb67d1d2f54dd635052))
+* **pre-commit:** run pre-commit in repository ([f69a0c3](https://github.com/CloudRader/reservium-api/commit/f69a0c31f8a0b30b973b52ac9301f212f6d3f50d))
+
 ## [2.3.15](https://github.com/CloudRader/reservium-api/compare/v2.3.14...v2.3.15) (2026-04-30)
 
 
