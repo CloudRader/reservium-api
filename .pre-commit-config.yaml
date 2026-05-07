@@ -2,7 +2,6 @@ default_language_version:
   python: python3.14
 
 repos:
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -12,19 +11,32 @@ repos:
       - id: check-toml
       - id: check-added-large-files
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.12
+  - repo: local
     hooks:
-      - id: ruff-check
-        args: [--fix]
-        files: ^reservation-app/
+      - id: ruff-lint
+        name: ruff-lint
+        entry: bash -c "cd reservation-app && uv run ./scripts/lint_ruff.sh --fix"
+        language: system
+        pass_filenames: false
+        types: [python]
 
       - id: ruff-format
-        files: ^reservation-app/
+        name: ruff-format
+        entry: bash -c "cd reservation-app && uv run ./scripts/format_ruff.sh"
+        language: system
+        pass_filenames: false
+        types: [python]
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.20.2
-    hooks:
       - id: mypy
-        args: [--config-file=reservation-app/mypy.toml]
-        files: ^fastapi-app/src
+        name: mypy
+        entry: bash -c "cd reservation-app && uv run ./scripts/mypy.sh"
+        language: system
+        pass_filenames: false
+        types: [python]
+
+      - id: pytest
+        name: pytest
+        entry: bash -c "cd reservation-app && uv run ./scripts/pytest.sh"
+        language: system
+        pass_filenames: false
+        always_run: true
