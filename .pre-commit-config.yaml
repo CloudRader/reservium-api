@@ -11,3 +11,20 @@ repos:
       - id: check-yaml
       - id: check-toml
       - id: check-added-large-files
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.12
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+        files: ^reservation-app/
+
+      - id: ruff-format
+        files: ^reservation-app/
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.20.2
+    hooks:
+      - id: mypy
+        args: [--config-file=reservation-app/mypy.toml]
+        files: ^fastapi-app/src
