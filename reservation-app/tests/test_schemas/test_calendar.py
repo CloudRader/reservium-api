@@ -16,38 +16,43 @@ from pydantic import ValidationError
 
 def test_calendar_create_valid(valid_rules):
     """Test creating a calendar with valid data."""
+    cal_id = uuid4()
+    collision_id = uuid4()
+    service_id = uuid4()
     schema = CalendarCreate(
-        reservation_service_id=uuid4().hex,
+        reservation_service_id=service_id,
         reservation_type="EventExtra",
         max_people=25,
         collision_with_itself=True,
         club_member_rules=valid_rules,
         active_member_rules=valid_rules,
         manager_rules=valid_rules,
-        id="calendar1",
-        collision_ids=["calendar2"],
+        id=cal_id,
+        collision_ids=[collision_id],
         more_than_max_people_with_permission=False,
-        mini_services=["printer", "scanner"],
+        mini_services=[uuid4(), uuid4()],
         color="#FF0000",
     )
     assert schema.reservation_type == "EventExtra"
     assert schema.max_people == 25
     assert schema.club_member_rules.max_reservation_hours == 4
-    assert "scanner" in schema.mini_services
-    assert "calendar2" in schema.collision_ids
+    assert len(schema.mini_services) == 2
+    assert collision_id in schema.collision_ids
+    assert schema.id == cal_id
 
 
 def test_calendar_create_invalid_max_people(valid_rules):
     """Test that calendar creation fails when max_people is below 1."""
     with pytest.raises(ValidationError):
         CalendarCreate(
-            reservation_service_id=uuid4().hex,
+            reservation_service_id=uuid4(),
             reservation_type="Workshop",
             max_people=0,
             collision_with_itself=True,
             club_member_rules=valid_rules,
             active_member_rules=valid_rules,
             manager_rules=valid_rules,
+            id=uuid4(),
         )
 
 
@@ -57,19 +62,20 @@ def test_calendar_update_partial():
         reservation_type="Meeting",
         max_people=15,
         collision_with_itself=False,
-        mini_services=["projector"],
+        mini_services=[uuid4()],
     )
     assert update.reservation_type == "Meeting"
     assert update.max_people == 15
     assert update.collision_with_itself is False
-    assert update.mini_services == ["projector"]
+    assert len(update.mini_services) == 1
 
 
 def test_calendar_in_db_schema(valid_rules):
     """Test full calendar DB schema with all fields."""
     now = datetime.now(UTC)
+    cal_id = uuid4()
     schema = CalendarDetail(
-        id="calendar123",
+        id=cal_id,
         deleted_at=now,
         reservation_type="Presentation",
         max_people=50,
@@ -77,10 +83,10 @@ def test_calendar_in_db_schema(valid_rules):
         club_member_rules=valid_rules,
         active_member_rules=valid_rules,
         manager_rules=valid_rules,
-        reservation_service_id=uuid4().hex,
+        reservation_service_id=uuid4(),
         color="#00FF00",
     )
-    assert schema.id == "calendar123"
+    assert schema.id == cal_id
     assert schema.deleted_at == now
     assert schema.color == "#00FF00"
     assert schema.club_member_rules.in_prior_days == 7
@@ -88,8 +94,9 @@ def test_calendar_in_db_schema(valid_rules):
 
 def test_calendar_schema_extends_base(valid_rules):
     """Test that CalendarDetail schema extends base schema correctly."""
+    cal_id = uuid4()
     calendar = CalendarDetail(
-        id="calendarABC",
+        id=cal_id,
         deleted_at=None,
         reservation_type="Training",
         max_people=10,
@@ -97,7 +104,7 @@ def test_calendar_schema_extends_base(valid_rules):
         club_member_rules=valid_rules,
         active_member_rules=valid_rules,
         manager_rules=valid_rules,
-        reservation_service_id=uuid4().hex,
+        reservation_service_id=uuid4(),
     )
     assert isinstance(calendar, CalendarLite)
     assert calendar.reservation_type == "Training"
@@ -110,6 +117,7 @@ def test_calendar_schema_extends_base(valid_rules):
 def test_calendar_create_required_fields(field, valid_rules):
     """Test that missing required fields raises a validation error."""
     data = {
+        "id": uuid4(),
         "reservation_service_id": uuid4(),
         "reservation_type": "Talk",
         "max_people": 20,

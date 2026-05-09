@@ -58,7 +58,7 @@ async def test_list_reservation_services(async_session):
     """Test listing multiple reservation services."""
     services = [
         ReservationServiceModel(
-            id=uuid4().hex,
+            id=uuid4(),
             name="Room A",
             alias="room_a",
             public=True,
@@ -66,7 +66,7 @@ async def test_list_reservation_services(async_session):
             contact_mail="rooma@buk.cvut.cz",
         ),
         ReservationServiceModel(
-            id=uuid4().hex,
+            id=uuid4(),
             name="Room B",
             alias="room_b",
             public=False,

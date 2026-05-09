@@ -6,6 +6,7 @@ This class works with Mini Service.
 
 from abc import ABC, abstractmethod
 from typing import Annotated
+from uuid import UUID
 
 from core import db_session
 from core.application.exceptions import (
@@ -75,7 +76,7 @@ class AbstractMiniServiceService(
     @abstractmethod
     async def get_reservation_service(
         self,
-        id_: str,
+        id_: UUID | str,
     ) -> ReservationServiceDetail:
         """
         Retrieve the reservation service of this mini service by reservation service id.
@@ -119,7 +120,7 @@ class MiniServiceService(AbstractMiniServiceService):
 
     async def get_reservation_service(
         self,
-        id_: str,
+        id_: UUID | str,
     ) -> ReservationServiceDetail:
         mini_service = await self.get(id_, True)
         return await self.reservation_service_service.get(mini_service.reservation_service_id, True)

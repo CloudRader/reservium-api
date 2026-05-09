@@ -1,6 +1,7 @@
 """DTO schemes for CalendarDetail entity."""
 
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -27,8 +28,8 @@ class CalendarBase(BaseModel):
 class CalendarCreate(CalendarBase):
     """Properties to receive via API on creation."""
 
-    id: str
-    reservation_service_id: str
+    id: UUID | None = None
+    reservation_service_id: UUID
     reservation_type: str
     max_people: int = Field(ge=1)
     collision_with_itself: bool
@@ -36,8 +37,10 @@ class CalendarCreate(CalendarBase):
     active_member_rules: Rules
     manager_rules: Rules
 
-    collision_ids: list[str] = Field(default_factory=list)
-    mini_services: list[str] = Field(default_factory=list)
+    collision_ids: list[UUID] = Field(default_factory=list)
+    mini_services: list[UUID] = Field(default_factory=list)
+
+    provider_id: str | None = None
 
 
 class CalendarUpdate(CalendarBase):
@@ -50,19 +53,21 @@ class CalendarUpdate(CalendarBase):
     active_member_rules: Rules | None = None
     manager_rules: Rules | None = None
 
-    collision_ids: list[str] = Field(default_factory=list)
-    mini_services: list[str] = Field(default_factory=list)
+    collision_ids: list[UUID] = Field(default_factory=list)
+    mini_services: list[UUID] = Field(default_factory=list)
 
 
 class CalendarLite(CalendarBase):
     """Base model for calendar in database."""
 
-    id: str
+    id: UUID | None = None
     deleted_at: datetime | None = None
     reservation_type: str
     max_people: int
     collision_with_itself: bool
-    reservation_service_id: str
+    reservation_service_id: UUID
+
+    provider_id: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -85,7 +90,7 @@ class CalendarDetail(CalendarLite):
 class CalendarDetailWithCollisions(CalendarDetail):
     """Additional properties of calendar to return via API."""
 
-    collision_ids: list[str] = Field(default_factory=list)
+    collision_ids: list[UUID] = Field(default_factory=list)
 
 
 from core.schemas.reservation_service import ReservationServiceLite  # noqa

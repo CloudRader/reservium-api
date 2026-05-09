@@ -2,6 +2,7 @@
 
 import logging
 from typing import Annotated, Any
+from uuid import UUID
 
 from api import abac_manage_rs_by_id, abac_manage_rs_from_body, get_current_user
 from api.api_base import BaseCRUDRouter
@@ -74,7 +75,7 @@ class CalendarRouter(
         )
         async def get_mini_services_by_calendar(
             service: Annotated[CalendarService, Depends(CalendarService)],
-            id_: Annotated[str, Path(alias="id")],
+            id_: Annotated[UUID | str, Path(alias="id")],
         ) -> Any:
             """
             Get all mini services linked to a calendar.
@@ -140,7 +141,7 @@ class CalendarRouter(
         )
         async def get_with_collisions(
             service: Annotated[CalendarService, Depends(CalendarService)],
-            id_: Annotated[str, Path(alias="id")],
+            id_: Annotated[UUID | str, Path(alias="id")],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
             """Get calendar with collisions."""

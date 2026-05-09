@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 from core.models.base import Base
 from sqlalchemy import ForeignKey, Integer
@@ -20,7 +21,7 @@ class MiniService(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     access_group: Mapped[str] = mapped_column(nullable=True)
     room_id: Mapped[int] = mapped_column(nullable=True)
-    reservation_service_id: Mapped[str] = mapped_column(ForeignKey("reservation_services.id"))
+    reservation_service_id: Mapped[UUID] = mapped_column(ForeignKey("reservation_services.id"))
 
     reservation_service: Mapped[ReservationService] = relationship(
         back_populates="mini_services",

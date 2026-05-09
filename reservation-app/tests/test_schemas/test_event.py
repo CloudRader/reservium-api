@@ -1,6 +1,7 @@
-"""Tests for MiniServiceDetail Pydantic Schemas."""
+"""Tests for EventExtra Pydantic Schemas."""
 
-from datetime import UTC, datetime
+from datetime import datetime
+from uuid import uuid4
 
 import pytest
 from core.models import EventState
@@ -81,8 +82,10 @@ def test_check_naive_datetime_rejects_tzaware_string():
 
 def test_event_create_valid():
     """Test creating an event with valid data."""
+    ev_id = uuid4()
+    cal_id = uuid4()
     schema = EventLite(
-        id="some_id_string",
+        id=ev_id,
         purpose="Birthday party",
         guests=5,
         email="coolEmail@buk.cvut.cz",
@@ -90,10 +93,10 @@ def test_event_create_valid():
         reservation_end=datetime.fromisoformat("2025-05-12T16:00"),
         event_state=EventState.CONFIRMED,
         user_id=21412,
-        calendar_id="wfwafwjag2@goog.com",
+        calendar_id=cal_id,
     )
     assert schema.purpose == "Birthday party"
-    assert schema.calendar_id == "wfwafwjag2@goog.com"
+    assert schema.calendar_id == cal_id
     assert schema.guests == 5
     assert schema.event_state == EventState.CONFIRMED
     assert schema.user_id == 21412
@@ -103,12 +106,13 @@ def test_event_create_validates_order():
     """Ensure EventCreate accepts valid datetime order."""
     start = datetime(2025, 5, 12, 10)
     end = datetime(2025, 5, 12, 11)
+    cal_id = uuid4()
     schema = EventCreate(
         start_datetime=start,
         end_datetime=end,
         purpose="Meeting",
         guests=10,
-        calendar_id="abc@calendar.com",
+        calendar_id=cal_id,
         email="user@example.com",
     )
     assert schema.purpose == "Meeting"
@@ -119,13 +123,14 @@ def test_event_create_rejects_end_before_start():
     """Ensure EventCreate rejects end times before start times."""
     start = datetime(2025, 5, 12, 11)
     end = datetime(2025, 5, 12, 10)
+    cal_id = uuid4()
     with pytest.raises(ValidationError, match="End time must be after start time"):
         EventCreate(
             start_datetime=start,
             end_datetime=end,
             purpose="Bad event",
             guests=5,
-            calendar_id="id@calendar.com",
+            calendar_id=cal_id,
             email="user@example.com",
         )
 
@@ -134,13 +139,14 @@ def test_event_create_rejects_tzaware_start():
     """Ensure EventCreate rejects timezone-aware datetimes."""
     start = datetime(2025, 5, 12, 11).astimezone()
     end = datetime(2025, 5, 12, 12)
+    cal_id = uuid4()
     with pytest.raises(ValidationError):
         EventCreate(
             start_datetime=start,
             end_datetime=end,
             purpose="Test",
             guests=3,
-            calendar_id="c@id.com",
+            calendar_id=cal_id,
             email="x@y.com",
         )
 
@@ -203,8 +209,10 @@ def test_event_update_time_invalid():
 
 def test_event_in_db_base_schema():
     """Test full event DB representation."""
+    ev_id = uuid4()
+    cal_id = uuid4()
     schema = EventLite(
-        id="some_id_string",
+        id=ev_id,
         purpose="Birthday party",
         guests=5,
         email="coolEmail@buk.cvut.cz",
@@ -212,12 +220,12 @@ def test_event_in_db_base_schema():
         reservation_end=datetime.fromisoformat("2025-05-12T16:00"),
         event_state=EventState.CONFIRMED,
         user_id=21412,
-        calendar_id="wfwafwjag2@goog.com",
+        calendar_id=cal_id,
         additional_services=["Bar", "Console"],
     )
 
     assert schema.purpose == "Birthday party"
-    assert schema.calendar_id == "wfwafwjag2@goog.com"
+    assert schema.calendar_id == cal_id
     assert schema.guests == 5
     assert schema.event_state == EventState.CONFIRMED
     assert schema.additional_services == ["Bar", "Console"]
@@ -225,8 +233,10 @@ def test_event_in_db_base_schema():
 
 def test_event_schema_extends_base():
     """Test that EventExtra schema includes all base fields."""
+    ev_id = uuid4()
+    cal_id = uuid4()
     schema = EventLite(
-        id="some_id_string",
+        id=ev_id,
         purpose="Birthday party",
         guests=5,
         email="coolEmail@buk.cvut.cz",
@@ -234,7 +244,7 @@ def test_event_schema_extends_base():
         reservation_end=datetime.fromisoformat("2025-05-12T16:00"),
         event_state=EventState.CONFIRMED,
         user_id=21412,
-        calendar_id="wfwafwjag2@goog.com",
+        calendar_id=cal_id,
         additional_services=["Bar", "Console"],
     )
     assert isinstance(schema, EventBase)
@@ -244,43 +254,44 @@ def test_event_schema_extends_base():
 @pytest.mark.parametrize(
     "field",
     [
-        "id",
         "purpose",
         "guests",
         "email",
-        "start_datetime",
-        "end_datetime",
+        "reservation_start",
+        "reservation_end",
         "event_state",
         "user_id",
         "calendar_id",
     ],
 )
-def test_event_create_required_fields(field):
-    """Test that omitting required fields raises validation error."""
+def test_event_lite_required_fields(field):
+    """Test that omitting required fields raises validation error for EventLite."""
     data = {
-        "id": "some_id_string",
+        "id": uuid4(),
         "purpose": "Birthday party",
         "guests": 5,
         "email": "coolEmail@buk.cvut.cz",
-        "start_datetime": "2025-05-12T11:00",
-        "end_datetime": "2025-05-12T16:00",
+        "reservation_start": "2025-05-12T11:00",
+        "reservation_end": "2025-05-12T16:00",
         "event_state": EventState.CONFIRMED,
         "user_id": 21412,
-        "calendar_id": "wfwafwjag2@goog.com",
+        "calendar_id": uuid4(),
     }
     del data[field]
     with pytest.raises(ValidationError):
-        EventDetail(**data)
+        EventLite(**data)
 
 
 def test_event_detail_includes_nested_models():
     """Ensure EventDetail correctly includes nested user and calendar objects."""
+    service_id = uuid4()
     service = ReservationServiceLite(
-        id="r212414", name="Dorm Booking", contact_mail="service@uni.cz", alias="club"
+        id=service_id, name="Dorm Booking", contact_mail="service@uni.cz", alias="club"
     )
 
+    cal_id = uuid4()
     calendar = CalendarWithReservationServiceInfo(
-        id="cal-999",
+        id=cal_id,
         reservation_type="Main Hall",
         max_people=200,
         collision_with_itself=False,
@@ -295,21 +306,22 @@ def test_event_detail_includes_nested_models():
         active_member=True,
     )
 
+    ev_id = uuid4()
     schema = EventDetail(
-        id="event123",
+        id=ev_id,
         purpose="Workshop",
         guests=10,
         email="user@example.com",
-        reservation_start=datetime(2025, 5, 12, 10, 0, tzinfo=UTC),
-        reservation_end=datetime(2025, 5, 12, 12, 0, tzinfo=UTC),
+        reservation_start=datetime(2025, 5, 12, 10, 0),
+        reservation_end=datetime(2025, 5, 12, 12, 0),
         event_state=EventState.CONFIRMED,
         user_id=1,
-        calendar_id="cal123",
+        calendar_id=cal_id,
         user=user,
         calendar=calendar,
     )
 
     assert schema.user.full_name == "Fake User"
-    assert schema.calendar.id == "cal-999"
+    assert schema.calendar.id == cal_id
     assert isinstance(schema.user, UserLite)
     assert isinstance(schema.calendar, CalendarWithReservationServiceInfo)

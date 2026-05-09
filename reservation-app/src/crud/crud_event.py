@@ -7,6 +7,7 @@ implementation (CRUDEvent) using SQLAlchemy.
 
 from abc import ABC, abstractmethod
 from datetime import datetime
+from uuid import UUID
 
 from core.models import CalendarModel, EventModel, EventState, ReservationServiceModel
 from core.schemas import EventLite, EventUpdate
@@ -27,7 +28,7 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventLite, EventUpdate], ABC):
     @abstractmethod
     async def get(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
         include_removed: bool = False,
     ) -> EventModel | None:
         """
@@ -84,7 +85,7 @@ class CRUDEvent(AbstractCRUDEvent):
 
     async def get(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
         include_removed: bool = False,
     ) -> EventModel | None:
         if id_ is None:

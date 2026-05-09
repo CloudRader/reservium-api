@@ -8,6 +8,7 @@ import datetime as dt
 import logging
 from abc import ABC, abstractmethod
 from typing import Annotated, Any
+from uuid import UUID
 
 from core import db_session
 from core.application.exceptions import (
@@ -80,7 +81,7 @@ class AbstractEventService(
         event_create: EventCreate,
         user: UserLite,
         event_state: EventState,
-        id_: str,
+        provider_id: str,
     ) -> EventLite | None:
         """
         Create an EventLite in the database.
@@ -88,7 +89,7 @@ class AbstractEventService(
         :param event_create: EventCreate SchemaLite for create.
         :param user: the UserSchema for control permissions of the reservation service.
         :param event_state: State of the event.
-        :param id_: Event id in google calendar.
+        :param provider_id: Event id in external provider (e.g. google calendar).
 
         :return: the created EventLite.
         """
@@ -147,7 +148,7 @@ class AbstractEventService(
     @abstractmethod
     async def approve_update_reservation_time(
         self,
-        id_: str,
+        id_: UUID | str,
         background_tasks: BackgroundTasks,
         approve: bool = False,
         manager_notes: str = "-",
@@ -166,7 +167,7 @@ class AbstractEventService(
     @abstractmethod
     async def update_with_permission_checks(
         self,
-        id_: str,
+        id_: UUID | str,
         event_update: EventUpdate,
         background_tasks: BackgroundTasks,
         reason: str = "",
@@ -185,7 +186,7 @@ class AbstractEventService(
     @abstractmethod
     async def request_update_reservation_time(
         self,
-        id_: str,
+        id_: UUID | str,
         event_update: EventUpdateTime,
         background_tasks: BackgroundTasks,
         reason: str = "",
@@ -223,7 +224,7 @@ class AbstractEventService(
     @abstractmethod
     async def delete(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
     ) -> None:
         """
         Delete an Event in the database.
@@ -234,7 +235,7 @@ class AbstractEventService(
     @abstractmethod
     async def confirm_event(
         self,
-        id_: str,
+        id_: UUID | str,
         background_tasks: BackgroundTasks,
         manager_notes: str = "-",
     ) -> EventLite:
@@ -269,7 +270,7 @@ class AbstractEventService(
     @abstractmethod
     async def get_reservation_service(
         self,
-        id_: str,
+        id_: UUID | str,
     ) -> ReservationServiceDetail:
         """
         Retrieve the reservation service of this event by reservation service id.
@@ -345,10 +346,9 @@ class EventService(AbstractEventService):
         event_create: EventCreate,
         user: UserLite,
         event_state: EventState,
-        id_: str,
+        provider_id: str,
     ) -> EventLite | None:
         event_create_to_db = EventLite(
-            id=id_,
             reservation_start=event_create.start_datetime,
             reservation_end=event_create.end_datetime,
             purpose=event_create.purpose,
@@ -358,6 +358,7 @@ class EventService(AbstractEventService):
             user_id=user.id,
             calendar_id=event_create.calendar_id,
             additional_services=event_create.additional_services,
+            provider_id=provider_id,
         )
         return await self.crud.create(event_create_to_db)
 
@@ -392,7 +393,7 @@ class EventService(AbstractEventService):
 
     async def approve_update_reservation_time(
         self,
-        id_: str,
+        id_: UUID | str,
         background_tasks: BackgroundTasks,
         approve: bool = False,
         manager_notes: str = "-",
@@ -458,7 +459,7 @@ class EventService(AbstractEventService):
 
     async def update_with_permission_checks(
         self,
-        id_: str,
+        id_: UUID | str,
         event_update: EventUpdate,
         background_tasks: BackgroundTasks,
         reason: str = "",
@@ -513,7 +514,7 @@ class EventService(AbstractEventService):
 
     async def request_update_reservation_time(
         self,
-        id_: str,
+        id_: UUID | str,
         event_update: EventUpdateTime,
         background_tasks: BackgroundTasks,
         reason: str = "",
@@ -597,7 +598,7 @@ class EventService(AbstractEventService):
 
     async def delete(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
     ) -> None:
         event = await self.get(id_, True)
 
@@ -609,7 +610,7 @@ class EventService(AbstractEventService):
 
     async def confirm_event(
         self,
-        id_: str,
+        id_: UUID | str,
         background_tasks: BackgroundTasks,
         manager_notes: str = "-",
     ) -> EventLite:
@@ -654,7 +655,7 @@ class EventService(AbstractEventService):
 
     async def get_reservation_service(
         self,
-        id_: str,
+        id_: UUID | str,
     ) -> ReservationServiceDetail:
         event = await self.get(id_)
         return await self.get_reservation_service_of_this_event(event)

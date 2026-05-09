@@ -7,6 +7,7 @@ implementation (CRUDCalendar) using SQLAlchemy.
 
 from abc import ABC, abstractmethod
 from typing import Any
+from uuid import UUID
 
 from core.models import CalendarModel, MiniServiceModel
 from core.models.calendar_collisions_association import CalendarCollisionAssociation
@@ -31,7 +32,7 @@ class AbstractCRUDCalendar(
     @abstractmethod
     async def get_with_collisions(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
         include_removed: bool = False,
     ) -> CalendarModel | None:
         """
@@ -112,7 +113,7 @@ class CRUDCalendar(AbstractCRUDCalendar):
 
     async def get_with_collisions(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
         include_removed: bool = False,
     ) -> CalendarModel | None:
         if id_ is None:
