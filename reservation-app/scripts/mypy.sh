@@ -45,5 +45,5 @@ if [ ! -f "mypy.toml" ]; then
   echo "⚠️  mypy.toml not found, using default config."
   mypy "${mypy_args[@]}"
 else
-  mypy --config-file mypy.toml "${mypy_args[@]}"
+  mypy --config-file mypy.toml -n 4 "${mypy_args[@]}"
 fi
