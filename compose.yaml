@@ -1,7 +1,7 @@
 services:
   db:
     container_name: db
-    image: postgres:18.3
+    image: postgres:18.4
     restart: on-failure
     environment:
       POSTGRES_USER: ${DB__POSTGRES_USER}
