@@ -346,7 +346,7 @@ class EventService(AbstractEventService):
         event_create: EventCreate,
         user: UserLite,
         event_state: EventState,
-        provider_id: str,
+        provider_id: str | None,
     ) -> EventLite | None:
         event_create_to_db = EventLite(
             reservation_start=event_create.start_datetime,
@@ -664,31 +664,30 @@ class EventService(AbstractEventService):
         self,
         event_input: EventCreate,
         calendar: CalendarDetailWithCollisions,
+        exclude_event_id: UUID | None = None,
     ) -> bool:
         """
         Check if there is already another reservation at that time.
 
         :param event_input: Input data for creating the event.
         :param calendar: CalendarDetail object in db.
+        :param exclude_event_id: Event ID to exclude from collision check (for updates).
 
-        :return: Boolean indicating if here is already another reservation or not.
+        :return: Boolean indicating if the slot is available (no collision).
         """
-        check_collision: list = []
-        collisions: list = calendar.collision_ids
-        collisions.append(calendar.id)
-        for calendar_id in collisions:
-            check_collision.extend(
-                await self.google_calendar_service.fetch_events_in_time_range(
-                    calendar_id,
-                    event_input.start_datetime,
-                    event_input.end_datetime,
-                ),
-            )
+        calendar_ids = [calendar.id, *calendar.collision_ids]
 
-        return await self._check_collision_time(
-            check_collision,
-            event_input,
+        overlapping_events = await self.crud.get_overlapping_events(
+            calendar_ids,
+            event_input.start_datetime,
+            event_input.end_datetime,
         )
+
+        # Exclude the event itself if we are updating it
+        if exclude_event_id:
+            overlapping_events = [e for e in overlapping_events if e.id != exclude_event_id]
+
+        return len(overlapping_events) == 0
 
     async def _control_conditions_and_permissions(
         self,
@@ -838,14 +837,19 @@ class EventService(AbstractEventService):
         ):
             event_body.summary = "Not approved - night time"
         else:
-            event_google_calendar = await self.google_calendar_service.insert_event(
-                calendar.id, event_body
-            )
+            if calendar.provider_id:
+                event_google_calendar = await self.google_calendar_service.insert_event(
+                    calendar.provider_id, event_body
+                )
+                event_google_calendar_id = event_google_calendar.id
+            else:
+                event_google_calendar_id = None
+
             event = await self.create_event(
                 event_create,
                 user,
                 EventState.CONFIRMED,
-                event_google_calendar.id,
+                event_google_calendar_id,
             )
             event = await self.get(event.id)  # type: ignore[union-attr]
             await self.email_service.preparing_email(
@@ -859,14 +863,20 @@ class EventService(AbstractEventService):
             return event_google_calendar
 
         event_summary = event_body.summary
-        event_google_calendar = await self.google_calendar_service.insert_event(
-            event_create.calendar_id, event_body
-        )
+
+        if calendar.provider_id:
+            event_google_calendar = await self.google_calendar_service.insert_event(
+                calendar.provider_id, event_body
+            )
+            event_google_calendar_id = event_google_calendar.id
+        else:
+            event_google_calendar_id = None
+
         event = await self.create_event(
             event_create,
             user,
             EventState.NOT_APPROVED,
-            event_google_calendar.id,
+            event_google_calendar_id,
         )
         event = await self.get(event.id)  # type: ignore[union-attr]
         if "night time" in event_summary.lower():
@@ -878,39 +888,6 @@ class EventService(AbstractEventService):
                 background_tasks,
             )
         return {"message": event_summary}
-
-    @staticmethod
-    async def _check_collision_time(
-        check_collision,
-        event_input: EventCreate,
-    ) -> bool:
-        """
-        Check if there is already another reservation at that time.
-
-        :param check_collision: Start time of the reservation.
-        :param event_input: Input data for creating the event.
-
-        :return: Boolean indicating if here is already another reservation or not.
-        """
-        if len(check_collision) == 0:
-            return True
-
-        if len(check_collision) > 1:
-            return False
-
-        start_date = dt.datetime.fromisoformat(str(event_input.start_datetime))
-        end_date = dt.datetime.fromisoformat(str(event_input.end_datetime))
-        start_date_event = dt.datetime.fromisoformat(
-            str(check_collision[0]["start"]["dateTime"]),
-        )
-        end_date_event = dt.datetime.fromisoformat(
-            str(check_collision[0]["end"]["dateTime"]),
-        )
-
-        return bool(
-            end_date_event == start_date.astimezone(timezone("Europe/Prague"))
-            or start_date_event == end_date.astimezone(timezone("Europe/Prague")),
-        )
 
     @staticmethod
     def _service_availability_check(services: list[str], service_alias) -> bool:

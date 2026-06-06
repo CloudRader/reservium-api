@@ -116,6 +116,21 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
+    async def get_by_provider_id(
+        self,
+        provider_id: str,
+        include_removed: bool = False,
+    ) -> CalendarDetail | None:
+        """
+        Retrieve a Calendar instance by its provider_id.
+
+        :param provider_id: The provider_id of the Calendar.
+        :param include_removed: Include removed object or not.
+
+        :return: The Calendar instance if found, None otherwise.
+        """
+
+    @abstractmethod
     async def get_mini_services_by_id(self, calendar_id: UUID | str) -> list[MiniServiceLite]:
         """
         Retrieve all mini services linked to a given Calendar.
@@ -208,13 +223,9 @@ class CalendarService(AbstractCalendarService):
             if (
                 calendar.access_role == "owner" or calendar.access_role == "writer"
             ) and not calendar.primary:
-                try:
-                    await self.get(calendar.id)
-                    exists = True
-                except EntityNotFoundError:
-                    exists = False
+                calendar_exist = await self.get_by_provider_id(calendar.id)
 
-                if not exists:
+                if not calendar_exist:
                     new_calendar_candidates.append(calendar)
 
         return new_calendar_candidates
@@ -241,6 +252,16 @@ class CalendarService(AbstractCalendarService):
     ) -> CalendarDetail | None:
         return await self.crud.get_by_reservation_type(
             reservation_type,
+            include_removed,
+        )
+
+    async def get_by_provider_id(
+        self,
+        provider_id: str,
+        include_removed: bool = False,
+    ) -> CalendarDetail | None:
+        return await self.crud.get_by_provider_id(
+            provider_id,
             include_removed,
         )
 

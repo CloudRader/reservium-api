@@ -99,6 +99,21 @@ class AbstractCRUDCalendar(
         :return: The Calendar instance if found, None otherwise.
         """
 
+    @abstractmethod
+    async def get_by_provider_id(
+        self,
+        provider_id: str,
+        include_removed: bool = False,
+    ) -> CalendarModel | None:
+        """
+        Retrieve a Calendar instance by its provider ID.
+
+        :param provider_id: The provider ID of the Calendar.
+        :param include_removed: Include removed object or not.
+
+        :return: The Calendar instance if found, None otherwise.
+        """
+
 
 class CRUDCalendar(AbstractCRUDCalendar):
     """
@@ -193,6 +208,17 @@ class CRUDCalendar(AbstractCRUDCalendar):
         include_removed: bool = False,
     ) -> CalendarModel | None:
         stmt = select(self.model).where(self.model.reservation_type == reservation_type)
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=True)
+        result = await self.db.execute(stmt)
+        return result.scalars().first()
+
+    async def get_by_provider_id(
+        self,
+        provider_id: str,
+        include_removed: bool = False,
+    ) -> CalendarModel | None:
+        stmt = select(self.model).where(self.model.provider_id == provider_id)
         if include_removed:
             stmt = stmt.execution_options(include_deleted=True)
         result = await self.db.execute(stmt)
