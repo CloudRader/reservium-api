@@ -22,33 +22,33 @@ def upgrade() -> None:
     # 1. DROP ALL FOREIGN KEY CONSTRAINTS (Preparation)
     # Using the exact names found in previous migration files (they were singular).
     op.drop_constraint(
-        op.f("fk_calendar_reservation_service_id_reservation_service"),
+        "fk_calendar_reservation_service_id_reservation_service",
         "calendars",
         type_="foreignkey",
     )
     op.drop_constraint(
-        op.f("fk_mini_service_reservation_service_id_reservation_service"),
+        "fk_mini_service_reservation_service_id_reservation_service",
         "mini_services",
         type_="foreignkey",
     )
-    op.drop_constraint(op.f("fk_event_calendar_id_calendar"), "events", type_="foreignkey")
+    op.drop_constraint("fk_event_calendar_id_calendar", "events", type_="foreignkey")
     op.drop_constraint(
-        op.f("fk_calendar_collision_association_calendar_id_calendar"),
+        "fk_calendar_collision_association_calendar_id_calendar",
         "calendar_collision_associations",
         type_="foreignkey",
     )
     op.drop_constraint(
-        op.f("fk_calendar_collision_association_collides_with_id_calendar"),
+        "fk_calendar_collision_association_collides_with_id_calendar",
         "calendar_collision_associations",
         type_="foreignkey",
     )
     op.drop_constraint(
-        op.f("fk_calendar_mini_service_association_calendar_id_calendar"),
+        "fk_calendar_mini_service_association_calendar_id_calendar",
         "calendar_mini_service_associations",
         type_="foreignkey",
     )
     op.drop_constraint(
-        op.f("fk_calendar_mini_service_association_mini_service_id_mini_service"),
+        "fk_calendar_mini_service_association_mini_service_id_mini_99c3",
         "calendar_mini_service_associations",
         type_="foreignkey",
     )
@@ -186,11 +186,13 @@ def upgrade() -> None:
         sa.Column("new_mini_service_id", sa.UUID(), nullable=True),
     )
 
+    # Map Calendar IDs using the provider_id safety net
     op.execute(
         "UPDATE calendar_mini_service_associations a SET new_calendar_id = c.id FROM calendars c WHERE a.calendar_id = c.provider_id"
     )
+
     op.execute(
-        "UPDATE calendar_mini_service_associations a SET new_mini_service_id = m.id FROM mini_services m WHERE a.mini_service_id = m.id::text"
+        "UPDATE calendar_mini_service_associations a SET new_mini_service_id = m.id FROM mini_services m WHERE a.mini_service_id::uuid = m.id"
     )
 
     op.drop_column("calendar_mini_service_associations", "calendar_id")
