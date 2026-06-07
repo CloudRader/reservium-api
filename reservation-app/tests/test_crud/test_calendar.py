@@ -1,5 +1,7 @@
 """Module for testing calendar service crud."""
 
+from uuid import UUID
+
 import pytest
 from core.schemas import CalendarUpdate
 
@@ -8,7 +10,8 @@ from core.schemas import CalendarUpdate
 async def test_create_calendar(test_calendar):
     """Test creating a calendar."""
     assert test_calendar.reservation_type == "Grillcentrum"
-    assert test_calendar.id == "fixteure.calen.id@exgogl.eu"
+    assert isinstance(test_calendar.id, UUID)
+    assert test_calendar.provider_id == "fixteure.calen.id@exgogl.eu"
     assert test_calendar.max_people == 15
     assert test_calendar.club_member_rules.night_time is True
 

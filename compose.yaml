@@ -1,7 +1,7 @@
 services:
   db:
     container_name: db
-    image: postgres:18.3
+    image: postgres:18.4
     restart: on-failure
     environment:
       POSTGRES_USER: ${DB__POSTGRES_USER}
@@ -62,6 +62,21 @@ services:
   #     - "3000:3000"
   #   networks:
   #     - internal
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:9.15
+    restart: on-failure
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    networks:
+      - internal
+    depends_on:
+      - db
 
 networks:
   internal:

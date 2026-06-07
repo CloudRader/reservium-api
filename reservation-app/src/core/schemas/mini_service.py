@@ -1,6 +1,7 @@
 """DTO schemes for MiniServiceDetail entity."""
 
 from datetime import datetime
+from uuid import UUID
 
 from core.schemas.calendar import CalendarLite
 from pydantic import BaseModel, ConfigDict, Field
@@ -17,7 +18,7 @@ class MiniServiceBase(BaseModel):
 class MiniServiceCreate(MiniServiceBase):
     """Properties to receive via API on creation."""
 
-    reservation_service_id: str
+    reservation_service_id: UUID
     name: str
 
 
@@ -30,10 +31,10 @@ class MiniServiceUpdate(MiniServiceBase):
 class MiniServiceLite(MiniServiceBase):
     """Base model for mini service in database."""
 
-    id: str
+    id: UUID | None = None
     deleted_at: datetime | None = None
     name: str
-    reservation_service_id: str
+    reservation_service_id: UUID
 
     model_config = ConfigDict(from_attributes=True)
 

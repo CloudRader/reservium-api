@@ -7,6 +7,7 @@ implementation (CRUDReservationService) using SQLAlchemy.
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Protocol, TypeVar, runtime_checkable
+from uuid import UUID
 
 from core.models import CalendarModel, EventModel, EventState, ReservationServiceModel
 from core.schemas import ReservationServiceCreate, ReservationServiceUpdate
@@ -23,7 +24,7 @@ if TYPE_CHECKING:  # pragma: no cover
 class HasReservationServiceId(Protocol):
     """Protocol for models that have a reservation_service_id field."""
 
-    reservation_service_id: str
+    reservation_service_id: UUID | str
 
 
 T = TypeVar("T", bound=HasReservationServiceId)
@@ -114,7 +115,7 @@ class AbstractCRUDReservationService(
     async def get_related_entities_by_reservation_service_id(
         self,
         model: type[T],
-        reservation_service_id: str,
+        reservation_service_id: UUID | str,
         include_removed: bool = False,
     ) -> list[T]:
         """
@@ -130,7 +131,7 @@ class AbstractCRUDReservationService(
     @abstractmethod
     async def get_events_by_reservation_service_id(
         self,
-        reservation_service_id: str,
+        reservation_service_id: UUID | str,
         event_state: EventState | None = None,
     ) -> list[EventModel]:
         """
@@ -207,7 +208,7 @@ class CRUDReservationService(AbstractCRUDReservationService):
     async def get_related_entities_by_reservation_service_id(
         self,
         model: type[T],
-        reservation_service_id: str,
+        reservation_service_id: UUID | str,
         include_removed: bool = False,
     ) -> list[T]:
         stmt: Select = select(model).where(
@@ -220,7 +221,7 @@ class CRUDReservationService(AbstractCRUDReservationService):
 
     async def get_events_by_reservation_service_id(
         self,
-        reservation_service_id: str,
+        reservation_service_id: UUID | str,
         event_state: EventState | None = None,
     ) -> list[EventModel]:
         stmt = (

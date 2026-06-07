@@ -2,6 +2,7 @@
 
 import logging
 from typing import Annotated, Any
+from uuid import UUID
 
 from api import get_current_user_from_token
 from api.api_base import BaseCRUDRouter
@@ -155,7 +156,7 @@ class ReservationServiceRouter(
         )
         async def get_calendars_by_reservation_service(
             service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
+            id_: Annotated[UUID | str, Path(alias="id", description="The ID of the object.")],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
             """Get all calendars linked to a reservation service."""
@@ -176,7 +177,7 @@ class ReservationServiceRouter(
         )
         async def get_mini_services_by_reservation_service(
             service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
+            id_: Annotated[UUID | str, Path(alias="id", description="The ID of the object.")],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
             """Get all mini services linked to a reservation service."""
@@ -197,7 +198,7 @@ class ReservationServiceRouter(
         )
         async def get_events_by_reservation_service(
             service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
-            id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
+            id_: Annotated[UUID | str, Path(alias="id", description="The ID of the object.")],
             event_state: Annotated[EventState | None, Query()] = None,
         ) -> Any:
             """Get all events linked to a reservation service."""

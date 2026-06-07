@@ -1,6 +1,7 @@
 """Conftest for testing crud."""
 
 import datetime as dt
+from uuid import uuid4
 
 import pytest
 import pytest_asyncio
@@ -146,7 +147,7 @@ async def test_calendar(
     """Create and return a test calendar."""
     return await calendar_crud.create_with_mini_services_and_collisions(
         CalendarCreate(
-            id="fixteure.calen.id@exgogl.eu",
+            provider_id="fixteure.calen.id@exgogl.eu",
             reservation_type="Grillcentrum",
             color="#fe679",
             max_people=15,
@@ -171,7 +172,7 @@ async def test_calendar2(
     """Create and return a test calendar."""
     return await calendar_crud.create_with_mini_services_and_collisions(
         CalendarCreate(
-            id="klubar.calen.id@exgogl.eu",
+            provider_id="klubar.calen.id@exgogl.eu",
             reservation_type="Klubovna",
             color="#fe375",
             max_people=10,
@@ -195,7 +196,7 @@ async def test_event(event_crud, test_user, test_calendar):
 
     return await event_crud.create(
         EventLite(
-            id="some-test-id",
+            id=uuid4(),
             reservation_start=start,
             reservation_end=end,
             purpose="Workshop",
@@ -216,7 +217,7 @@ async def test_event2(event_crud, test_user2, test_calendar2):
 
     return await event_crud.create(
         EventLite(
-            id="some-test-id2",
+            id=uuid4(),
             reservation_start=start,
             reservation_end=end,
             purpose="Lecture",

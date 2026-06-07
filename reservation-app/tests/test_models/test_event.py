@@ -1,6 +1,7 @@
 """Module for testing event model."""
 
 from datetime import datetime
+from uuid import UUID
 
 import pytest
 from core.models import EventModel, EventState
@@ -9,7 +10,8 @@ from core.models import EventModel, EventState
 @pytest.mark.asyncio
 async def test_create_event(test_event, test_user, test_calendar):
     """Test creating an Event ORM object."""
-    assert test_event.id is not None
+    assert isinstance(test_event.id, UUID)
+    assert test_event.provider_id == "test_event_1"
     assert test_event.purpose == "Test Event"
     assert test_event.guests == 10
     assert test_event.email == "user@example.com"

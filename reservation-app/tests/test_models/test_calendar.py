@@ -1,5 +1,7 @@
 """Module for testing calendar model."""
 
+from uuid import UUID, uuid4
+
 import pytest
 import sqlalchemy
 from core.models import CalendarModel
@@ -8,7 +10,8 @@ from core.models import CalendarModel
 @pytest.mark.asyncio
 async def test_create_calendar(test_calendar, test_reservation_service):
     """Test creating a calendar."""
-    assert test_calendar.id == "test_calendar@google.com"
+    assert isinstance(test_calendar.id, UUID)
+    assert test_calendar.provider_id == "test_calendar@google.com"
     assert test_calendar.reservation_type == "Entire Space"
     assert test_calendar.max_people == 10
     assert test_calendar.color == "#00ffcc"
@@ -53,7 +56,8 @@ async def test_list_calendars(
     """Test listing multiple calendars."""
     calendars = [
         CalendarModel(
-            id="test_calwagwagwgwandar_type1@exam.com",
+            id=uuid4(),
+            provider_id="test_calwagwagwgwandar_type1@exam.com",
             reservation_type="type1blan",
             color="#ba0201",
             max_people=10,
@@ -66,7 +70,8 @@ async def test_list_calendars(
             mini_services=[test_mini_service],
         ),
         CalendarModel(
-            id="test_calendar_type2@google.com",
+            id=uuid4(),
+            provider_id="test_calendar_type2@google.com",
             reservation_type="type2",
             color="#bbccdd",
             max_people=20,
@@ -93,52 +98,53 @@ async def test_list_calendars(
 def test_collision_ids_empty(rules_club_member):
     """Test that collision_ids returns an empty list if no collisions exist."""
     cal = CalendarModel(
-        id="cal_1",
+        id=uuid4(),
         reservation_type="Type1",
         color="#fff",
         max_people=10,
         club_member_rules=rules_club_member,
         active_member_rules=rules_club_member,
         manager_rules=rules_club_member,
-        reservation_service_id="res_1",
+        reservation_service_id=uuid4(),
     )
     assert cal.collision_ids == []
 
 
 def test_collision_ids_with_collisions(rules_club_member):
     """Test that collision_ids returns the IDs of all colliding calendars."""
+    id1, id2, id3 = uuid4(), uuid4(), uuid4()
     cal1 = CalendarModel(
-        id="cal_1",
+        id=id1,
         reservation_type="Type1",
         color="#fff",
         max_people=10,
         club_member_rules=rules_club_member,
         active_member_rules=rules_club_member,
         manager_rules=rules_club_member,
-        reservation_service_id="res_1",
+        reservation_service_id=uuid4(),
     )
     cal2 = CalendarModel(
-        id="cal_2",
+        id=id2,
         reservation_type="Type2",
         color="#000",
         max_people=20,
         club_member_rules=rules_club_member,
         active_member_rules=rules_club_member,
         manager_rules=rules_club_member,
-        reservation_service_id="res_1",
+        reservation_service_id=uuid4(),
     )
     cal3 = CalendarModel(
-        id="cal_3",
+        id=id3,
         reservation_type="Type3",
         color="#123",
         max_people=5,
         club_member_rules=rules_club_member,
         active_member_rules=rules_club_member,
         manager_rules=rules_club_member,
-        reservation_service_id="res_1",
+        reservation_service_id=uuid4(),
     )
 
     # Assign collisions manually
     cal1.collisions = [cal2, cal3]
 
-    assert set(cal1.collision_ids) == {"cal_2", "cal_3"}
+    assert set(cal1.collision_ids) == {id2, id3}

@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 from core.models.base import Base
 from core.models.types.rules_type import RulesType
 from core.schemas.calendar import Rules
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -32,7 +33,9 @@ class Calendar(Base):
     active_member_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
     manager_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
 
-    reservation_service_id: Mapped[str] = mapped_column(ForeignKey("reservation_services.id"))
+    provider_id: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+
+    reservation_service_id: Mapped[UUID] = mapped_column(ForeignKey("reservation_services.id"))
 
     reservation_service: Mapped[ReservationService] = relationship(
         back_populates="calendars",
