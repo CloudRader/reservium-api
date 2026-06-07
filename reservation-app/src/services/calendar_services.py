@@ -238,7 +238,7 @@ class CalendarService(AbstractCalendarService):
 
     async def google_subscribe_existing_calendars(self) -> list[CalendarImportResult]:
         calendars = await self.get_all()
-        calendar_ids = [cal.id for cal in calendars if cal.id is not None]
+        calendar_ids = [cal.provider_id for cal in calendars if cal.provider_id is not None]
 
         return await self.google_calendar_service.subscribe_calendars(calendar_ids)
 

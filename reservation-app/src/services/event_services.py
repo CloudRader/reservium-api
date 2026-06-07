@@ -411,7 +411,7 @@ class EventService(AbstractEventService):
         )
 
         if not approve:
-            logger.debug("Approving requested time change for event %s", id_)
+            logger.debug("Declining requested time change for event %s", id_)
             updated_event = await self.update(id_, event_update)
 
             await self.email_service.preparing_email(
@@ -424,22 +424,32 @@ class EventService(AbstractEventService):
                 background_tasks,
             )
         else:
-            logger.debug("Declining requested time change for event %s", id_)
-            event_from_google_calendar = await self.google_calendar_service.get_event(
-                event_to_update.calendar_id, id_
-            )
+            logger.debug("Approving requested time change for event %s", id_)
+
             event_update.reservation_start = event_to_update.requested_reservation_start
             event_update.reservation_end = event_to_update.requested_reservation_end
 
             updated_event = await self.update(id_, event_update)
 
-            prague = timezone("Europe/Prague")
-            event_from_google_calendar.start.date_time = prague.localize(
-                event_to_update.reservation_start,
-            ).isoformat()
-            event_from_google_calendar.end.date_time = prague.localize(
-                event_to_update.reservation_end,
-            ).isoformat()
+            if updated_event.calendar.provider_id and updated_event.provider_id:
+                event_from_google_calendar = await self.google_calendar_service.get_event(
+                    updated_event.calendar.provider_id, updated_event.provider_id
+                )
+
+                prague = timezone("Europe/Prague")
+                event_from_google_calendar.start.date_time = prague.localize(
+                    updated_event.reservation_start,
+                ).isoformat()
+                event_from_google_calendar.end.date_time = prague.localize(
+                    updated_event.reservation_end,
+                ).isoformat()
+
+                await self.google_calendar_service.update_event(
+                    updated_event.calendar.provider_id,
+                    updated_event.provider_id,
+                    event_from_google_calendar,
+                )
+
             await self.email_service.preparing_email(
                 updated_event,
                 self.email_service.create_email_meta(
@@ -448,10 +458,6 @@ class EventService(AbstractEventService):
                     manager_notes,
                 ),
                 background_tasks,
-            )
-
-            await self.google_calendar_service.update_event(
-                updated_event.calendar_id, id_, event_from_google_calendar
             )
 
         logger.debug("Time change request processed for event %s: %s", id_, event_to_update)
@@ -487,17 +493,20 @@ class EventService(AbstractEventService):
 
         event = await self.update(id_, event_update)
 
-        event_to_update = await self.google_calendar_service.get_event(event.calendar_id, event.id)
+        if event.calendar.provider_id and event.provider_id:
+            event_to_update = await self.google_calendar_service.get_event(
+                event.calendar.provider_id, event.provider_id
+            )
 
-        user = await self.user_crud.get(event.user_id)
-        event_to_update.description = self._description_of_event(user, event)
-        prague = timezone("Europe/Prague")
-        event_to_update.start.date_time = prague.localize(event.reservation_start).isoformat()
-        event_to_update.end.date_time = prague.localize(event.reservation_end).isoformat()
+            user = await self.user_crud.get(event.user_id)
+            event_to_update.description = self._description_of_event(user, event)
+            prague = timezone("Europe/Prague")
+            event_to_update.start.date_time = prague.localize(event.reservation_start).isoformat()
+            event_to_update.end.date_time = prague.localize(event.reservation_end).isoformat()
 
-        await self.google_calendar_service.update_event(
-            event.calendar_id, event.id, event_to_update
-        )
+            await self.google_calendar_service.update_event(
+                event.calendar.provider_id, event.provider_id, event_to_update
+            )
 
         await self.email_service.preparing_email(
             event,
@@ -573,7 +582,10 @@ class EventService(AbstractEventService):
 
         event = await self.update(event.id, EventUpdate(event_state=EventState.CANCELED))
 
-        await self.google_calendar_service.delete_event(event.calendar_id, event.id)
+        if event.calendar.provider_id and event.provider_id:
+            await self.google_calendar_service.delete_event(
+                event.calendar.provider_id, event.provider_id
+            )
 
         if actor == EventActor.OWNER:
             await self.email_service.preparing_email(
@@ -622,14 +634,16 @@ class EventService(AbstractEventService):
 
         event = await self.update(id_, EventUpdate(event_state=EventState.CONFIRMED))
 
-        calendar = await self.get_calendar_of_this_event(event)
-        event_to_update = await self.google_calendar_service.get_event(event.calendar_id, event.id)
+        if event.calendar.provider_id and event.provider_id:
+            event_to_update = await self.google_calendar_service.get_event(
+                event.calendar.provider_id, event.provider_id
+            )
 
-        event_to_update.summary = calendar.reservation_type
+            event_to_update.summary = event.calendar.reservation_type
 
-        await self.google_calendar_service.update_event(
-            event.calendar_id, event.id, event_to_update
-        )
+            await self.google_calendar_service.update_event(
+                event.calendar.provider_id, event.provider_id, event_to_update
+            )
 
         await self.email_service.preparing_email(
             event,
