@@ -8,6 +8,7 @@ import datetime as dt
 import logging
 from abc import ABC, abstractmethod
 from typing import Annotated, Any
+from uuid import UUID
 
 from core import db_session
 from core.application.exceptions import (
@@ -80,7 +81,7 @@ class AbstractEventService(
         event_create: EventCreate,
         user: UserLite,
         event_state: EventState,
-        id_: str,
+        provider_id: str,
     ) -> EventLite | None:
         """
         Create an EventLite in the database.
@@ -88,7 +89,7 @@ class AbstractEventService(
         :param event_create: EventCreate SchemaLite for create.
         :param user: the UserSchema for control permissions of the reservation service.
         :param event_state: State of the event.
-        :param id_: Event id in google calendar.
+        :param provider_id: Event id in external provider (e.g. google calendar).
 
         :return: the created EventLite.
         """
@@ -147,7 +148,7 @@ class AbstractEventService(
     @abstractmethod
     async def approve_update_reservation_time(
         self,
-        id_: str,
+        id_: UUID | str,
         background_tasks: BackgroundTasks,
         approve: bool = False,
         manager_notes: str = "-",
@@ -166,7 +167,7 @@ class AbstractEventService(
     @abstractmethod
     async def update_with_permission_checks(
         self,
-        id_: str,
+        id_: UUID | str,
         event_update: EventUpdate,
         background_tasks: BackgroundTasks,
         reason: str = "",
@@ -185,7 +186,7 @@ class AbstractEventService(
     @abstractmethod
     async def request_update_reservation_time(
         self,
-        id_: str,
+        id_: UUID | str,
         event_update: EventUpdateTime,
         background_tasks: BackgroundTasks,
         reason: str = "",
@@ -223,7 +224,7 @@ class AbstractEventService(
     @abstractmethod
     async def delete(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
     ) -> None:
         """
         Delete an Event in the database.
@@ -234,7 +235,7 @@ class AbstractEventService(
     @abstractmethod
     async def confirm_event(
         self,
-        id_: str,
+        id_: UUID | str,
         background_tasks: BackgroundTasks,
         manager_notes: str = "-",
     ) -> EventLite:
@@ -269,7 +270,7 @@ class AbstractEventService(
     @abstractmethod
     async def get_reservation_service(
         self,
-        id_: str,
+        id_: UUID | str,
     ) -> ReservationServiceDetail:
         """
         Retrieve the reservation service of this event by reservation service id.
@@ -345,10 +346,9 @@ class EventService(AbstractEventService):
         event_create: EventCreate,
         user: UserLite,
         event_state: EventState,
-        id_: str,
+        provider_id: str | None,
     ) -> EventLite | None:
         event_create_to_db = EventLite(
-            id=id_,
             reservation_start=event_create.start_datetime,
             reservation_end=event_create.end_datetime,
             purpose=event_create.purpose,
@@ -358,6 +358,7 @@ class EventService(AbstractEventService):
             user_id=user.id,
             calendar_id=event_create.calendar_id,
             additional_services=event_create.additional_services,
+            provider_id=provider_id,
         )
         return await self.crud.create(event_create_to_db)
 
@@ -392,7 +393,7 @@ class EventService(AbstractEventService):
 
     async def approve_update_reservation_time(
         self,
-        id_: str,
+        id_: UUID | str,
         background_tasks: BackgroundTasks,
         approve: bool = False,
         manager_notes: str = "-",
@@ -410,7 +411,7 @@ class EventService(AbstractEventService):
         )
 
         if not approve:
-            logger.debug("Approving requested time change for event %s", id_)
+            logger.debug("Declining requested time change for event %s", id_)
             updated_event = await self.update(id_, event_update)
 
             await self.email_service.preparing_email(
@@ -423,22 +424,32 @@ class EventService(AbstractEventService):
                 background_tasks,
             )
         else:
-            logger.debug("Declining requested time change for event %s", id_)
-            event_from_google_calendar = await self.google_calendar_service.get_event(
-                event_to_update.calendar_id, id_
-            )
+            logger.debug("Approving requested time change for event %s", id_)
+
             event_update.reservation_start = event_to_update.requested_reservation_start
             event_update.reservation_end = event_to_update.requested_reservation_end
 
             updated_event = await self.update(id_, event_update)
 
-            prague = timezone("Europe/Prague")
-            event_from_google_calendar.start.date_time = prague.localize(
-                event_to_update.reservation_start,
-            ).isoformat()
-            event_from_google_calendar.end.date_time = prague.localize(
-                event_to_update.reservation_end,
-            ).isoformat()
+            if updated_event.calendar.provider_id and updated_event.provider_id:
+                event_from_google_calendar = await self.google_calendar_service.get_event(
+                    updated_event.calendar.provider_id, updated_event.provider_id
+                )
+
+                prague = timezone("Europe/Prague")
+                event_from_google_calendar.start.date_time = prague.localize(
+                    updated_event.reservation_start,
+                ).isoformat()
+                event_from_google_calendar.end.date_time = prague.localize(
+                    updated_event.reservation_end,
+                ).isoformat()
+
+                await self.google_calendar_service.update_event(
+                    updated_event.calendar.provider_id,
+                    updated_event.provider_id,
+                    event_from_google_calendar,
+                )
+
             await self.email_service.preparing_email(
                 updated_event,
                 self.email_service.create_email_meta(
@@ -449,16 +460,12 @@ class EventService(AbstractEventService):
                 background_tasks,
             )
 
-            await self.google_calendar_service.update_event(
-                updated_event.calendar_id, id_, event_from_google_calendar
-            )
-
         logger.debug("Time change request processed for event %s: %s", id_, event_to_update)
         return updated_event
 
     async def update_with_permission_checks(
         self,
-        id_: str,
+        id_: UUID | str,
         event_update: EventUpdate,
         background_tasks: BackgroundTasks,
         reason: str = "",
@@ -486,17 +493,20 @@ class EventService(AbstractEventService):
 
         event = await self.update(id_, event_update)
 
-        event_to_update = await self.google_calendar_service.get_event(event.calendar_id, event.id)
+        if event.calendar.provider_id and event.provider_id:
+            event_to_update = await self.google_calendar_service.get_event(
+                event.calendar.provider_id, event.provider_id
+            )
 
-        user = await self.user_crud.get(event.user_id)
-        event_to_update.description = self._description_of_event(user, event)
-        prague = timezone("Europe/Prague")
-        event_to_update.start.date_time = prague.localize(event.reservation_start).isoformat()
-        event_to_update.end.date_time = prague.localize(event.reservation_end).isoformat()
+            user = await self.user_crud.get(event.user_id)
+            event_to_update.description = self._description_of_event(user, event)
+            prague = timezone("Europe/Prague")
+            event_to_update.start.date_time = prague.localize(event.reservation_start).isoformat()
+            event_to_update.end.date_time = prague.localize(event.reservation_end).isoformat()
 
-        await self.google_calendar_service.update_event(
-            event.calendar_id, event.id, event_to_update
-        )
+            await self.google_calendar_service.update_event(
+                event.calendar.provider_id, event.provider_id, event_to_update
+            )
 
         await self.email_service.preparing_email(
             event,
@@ -513,7 +523,7 @@ class EventService(AbstractEventService):
 
     async def request_update_reservation_time(
         self,
-        id_: str,
+        id_: UUID | str,
         event_update: EventUpdateTime,
         background_tasks: BackgroundTasks,
         reason: str = "",
@@ -572,7 +582,10 @@ class EventService(AbstractEventService):
 
         event = await self.update(event.id, EventUpdate(event_state=EventState.CANCELED))
 
-        await self.google_calendar_service.delete_event(event.calendar_id, event.id)
+        if event.calendar.provider_id and event.provider_id:
+            await self.google_calendar_service.delete_event(
+                event.calendar.provider_id, event.provider_id
+            )
 
         if actor == EventActor.OWNER:
             await self.email_service.preparing_email(
@@ -597,7 +610,7 @@ class EventService(AbstractEventService):
 
     async def delete(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
     ) -> None:
         event = await self.get(id_, True)
 
@@ -609,7 +622,7 @@ class EventService(AbstractEventService):
 
     async def confirm_event(
         self,
-        id_: str,
+        id_: UUID | str,
         background_tasks: BackgroundTasks,
         manager_notes: str = "-",
     ) -> EventLite:
@@ -621,14 +634,16 @@ class EventService(AbstractEventService):
 
         event = await self.update(id_, EventUpdate(event_state=EventState.CONFIRMED))
 
-        calendar = await self.get_calendar_of_this_event(event)
-        event_to_update = await self.google_calendar_service.get_event(event.calendar_id, event.id)
+        if event.calendar.provider_id and event.provider_id:
+            event_to_update = await self.google_calendar_service.get_event(
+                event.calendar.provider_id, event.provider_id
+            )
 
-        event_to_update.summary = calendar.reservation_type
+            event_to_update.summary = event.calendar.reservation_type
 
-        await self.google_calendar_service.update_event(
-            event.calendar_id, event.id, event_to_update
-        )
+            await self.google_calendar_service.update_event(
+                event.calendar.provider_id, event.provider_id, event_to_update
+            )
 
         await self.email_service.preparing_email(
             event,
@@ -654,7 +669,7 @@ class EventService(AbstractEventService):
 
     async def get_reservation_service(
         self,
-        id_: str,
+        id_: UUID | str,
     ) -> ReservationServiceDetail:
         event = await self.get(id_)
         return await self.get_reservation_service_of_this_event(event)
@@ -663,31 +678,30 @@ class EventService(AbstractEventService):
         self,
         event_input: EventCreate,
         calendar: CalendarDetailWithCollisions,
+        exclude_event_id: UUID | None = None,
     ) -> bool:
         """
         Check if there is already another reservation at that time.
 
         :param event_input: Input data for creating the event.
         :param calendar: CalendarDetail object in db.
+        :param exclude_event_id: Event ID to exclude from collision check (for updates).
 
-        :return: Boolean indicating if here is already another reservation or not.
+        :return: Boolean indicating if the slot is available (no collision).
         """
-        check_collision: list = []
-        collisions: list = calendar.collision_ids
-        collisions.append(calendar.id)
-        for calendar_id in collisions:
-            check_collision.extend(
-                await self.google_calendar_service.fetch_events_in_time_range(
-                    calendar_id,
-                    event_input.start_datetime,
-                    event_input.end_datetime,
-                ),
-            )
+        calendar_ids = [calendar.id, *calendar.collision_ids]
 
-        return await self._check_collision_time(
-            check_collision,
-            event_input,
+        overlapping_events = await self.crud.get_overlapping_events(
+            calendar_ids,
+            event_input.start_datetime,
+            event_input.end_datetime,
         )
+
+        # Exclude the event itself if we are updating it
+        if exclude_event_id:
+            overlapping_events = [e for e in overlapping_events if e.id != exclude_event_id]
+
+        return len(overlapping_events) == 0
 
     async def _control_conditions_and_permissions(
         self,
@@ -837,14 +851,19 @@ class EventService(AbstractEventService):
         ):
             event_body.summary = "Not approved - night time"
         else:
-            event_google_calendar = await self.google_calendar_service.insert_event(
-                calendar.id, event_body
-            )
+            if calendar.provider_id:
+                event_google_calendar = await self.google_calendar_service.insert_event(
+                    calendar.provider_id, event_body
+                )
+                event_google_calendar_id = event_google_calendar.id
+            else:
+                event_google_calendar_id = None
+
             event = await self.create_event(
                 event_create,
                 user,
                 EventState.CONFIRMED,
-                event_google_calendar.id,
+                event_google_calendar_id,
             )
             event = await self.get(event.id)  # type: ignore[union-attr]
             await self.email_service.preparing_email(
@@ -858,14 +877,20 @@ class EventService(AbstractEventService):
             return event_google_calendar
 
         event_summary = event_body.summary
-        event_google_calendar = await self.google_calendar_service.insert_event(
-            event_create.calendar_id, event_body
-        )
+
+        if calendar.provider_id:
+            event_google_calendar = await self.google_calendar_service.insert_event(
+                calendar.provider_id, event_body
+            )
+            event_google_calendar_id = event_google_calendar.id
+        else:
+            event_google_calendar_id = None
+
         event = await self.create_event(
             event_create,
             user,
             EventState.NOT_APPROVED,
-            event_google_calendar.id,
+            event_google_calendar_id,
         )
         event = await self.get(event.id)  # type: ignore[union-attr]
         if "night time" in event_summary.lower():
@@ -877,39 +902,6 @@ class EventService(AbstractEventService):
                 background_tasks,
             )
         return {"message": event_summary}
-
-    @staticmethod
-    async def _check_collision_time(
-        check_collision,
-        event_input: EventCreate,
-    ) -> bool:
-        """
-        Check if there is already another reservation at that time.
-
-        :param check_collision: Start time of the reservation.
-        :param event_input: Input data for creating the event.
-
-        :return: Boolean indicating if here is already another reservation or not.
-        """
-        if len(check_collision) == 0:
-            return True
-
-        if len(check_collision) > 1:
-            return False
-
-        start_date = dt.datetime.fromisoformat(str(event_input.start_datetime))
-        end_date = dt.datetime.fromisoformat(str(event_input.end_datetime))
-        start_date_event = dt.datetime.fromisoformat(
-            str(check_collision[0]["start"]["dateTime"]),
-        )
-        end_date_event = dt.datetime.fromisoformat(
-            str(check_collision[0]["end"]["dateTime"]),
-        )
-
-        return bool(
-            end_date_event == start_date.astimezone(timezone("Europe/Prague"))
-            or start_date_event == end_date.astimezone(timezone("Europe/Prague")),
-        )
 
     @staticmethod
     def _service_availability_check(services: list[str], service_alias) -> bool:

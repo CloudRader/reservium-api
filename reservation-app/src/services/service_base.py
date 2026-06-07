@@ -6,6 +6,7 @@ This class provides a common interface for services that implement CRUD operatio
 
 from abc import ABC, abstractmethod
 from typing import TypeVar
+from uuid import UUID
 
 from core.application.exceptions import BaseAppError, Entity, EntityNotFoundError
 from crud import CRUDBase
@@ -40,7 +41,7 @@ class AbstractCRUDService[
     @abstractmethod
     async def get(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
         include_removed: bool = False,
     ) -> SchemaDetail:
         """
@@ -81,7 +82,7 @@ class AbstractCRUDService[
     @abstractmethod
     async def update(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
         obj_in: UpdateSchema,
     ) -> SchemaDetail:
         """
@@ -94,7 +95,7 @@ class AbstractCRUDService[
         """
 
     @abstractmethod
-    async def restore(self, id_: str | int) -> SchemaDetail:
+    async def restore(self, id_: UUID | str | int) -> SchemaDetail:
         """
         Restore a previously soft-removed object by its ID.
 
@@ -104,7 +105,7 @@ class AbstractCRUDService[
         """
 
     @abstractmethod
-    async def soft_delete(self, id_: str | int) -> SchemaDetail:
+    async def soft_delete(self, id_: UUID | str | int) -> SchemaDetail:
         """
         Soft-delete an object.
 
@@ -116,7 +117,7 @@ class AbstractCRUDService[
         """
 
     @abstractmethod
-    async def delete(self, id_: str | int) -> None:
+    async def delete(self, id_: UUID | str | int) -> None:
         """
         Permanently delete an object.
 
@@ -148,7 +149,7 @@ class CrudServiceBase(
 
     async def get(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
         include_removed: bool = False,
     ) -> SchemaDetail:
         obj = await self.crud.get(id_, include_removed)
@@ -164,7 +165,7 @@ class CrudServiceBase(
 
     async def update(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
         obj_in: UpdateSchema,
     ) -> SchemaDetail:
         obj_to_update = await self.get(id_)
@@ -172,7 +173,7 @@ class CrudServiceBase(
             raise EntityNotFoundError(self.entity_name, id_)
         return await self.crud.update(db_obj=obj_to_update, obj_in=obj_in)
 
-    async def restore(self, id_: str | int) -> SchemaDetail:
+    async def restore(self, id_: UUID | str | int) -> SchemaDetail:
         obj = await self.get(id_, True)
         if obj.deleted_at is None:  # type: ignore
             message = f"A {self.entity_name.value} was not soft deleted."
@@ -181,13 +182,13 @@ class CrudServiceBase(
             raise EntityNotFoundError(self.entity_name, id_)
         return await self.crud.restore(obj)
 
-    async def soft_delete(self, id_: str | int) -> SchemaDetail:
+    async def soft_delete(self, id_: UUID | str | int) -> SchemaDetail:
         obj = await self.get(id_, True)
         if obj.deleted_at is not None:  # type: ignore
             message = f"A {self.entity_name.value} is already soft deleted."
             raise BaseAppError(message)
         return await self.crud.soft_remove(obj)
 
-    async def delete(self, id_: str | int) -> None:
+    async def delete(self, id_: UUID | str | int) -> None:
         await self.get(id_, True)
         await self.crud.remove(id_)

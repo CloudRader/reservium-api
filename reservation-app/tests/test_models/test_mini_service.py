@@ -50,12 +50,12 @@ async def test_list_mini_services(async_session, test_reservation_service):
     """Test listing multiple mini services."""
     services = [
         MiniServiceModel(
-            id=uuid4().hex,
+            id=uuid4(),
             name="Mini A",
             reservation_service_id=test_reservation_service.id,
         ),
         MiniServiceModel(
-            id=uuid4().hex,
+            id=uuid4(),
             name="Mini B",
             reservation_service_id=test_reservation_service.id,
         ),

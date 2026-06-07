@@ -7,6 +7,7 @@ implementation (CRUDEvent) using SQLAlchemy.
 
 from abc import ABC, abstractmethod
 from datetime import datetime
+from uuid import UUID
 
 from core.models import CalendarModel, EventModel, EventState, ReservationServiceModel
 from core.schemas import EventLite, EventUpdate
@@ -27,7 +28,7 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventLite, EventUpdate], ABC):
     @abstractmethod
     async def get(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
         include_removed: bool = False,
     ) -> EventModel | None:
         """
@@ -67,6 +68,23 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventLite, EventUpdate], ABC):
         :return: Matching list of EventModel.
         """
 
+    @abstractmethod
+    async def get_overlapping_events(
+        self,
+        calendar_ids: list[UUID],
+        start_time: datetime,
+        end_time: datetime,
+    ) -> list[EventModel]:
+        """
+        Retrieve events that overlap with the given time range for specific calendars.
+
+        :param calendar_ids: List of calendar IDs to check.
+        :param start_time: Start of the time range.
+        :param end_time: End of the time range.
+
+        :return: List of overlapping events.
+        """
+
 
 class CRUDEvent(AbstractCRUDEvent):
     """
@@ -84,7 +102,7 @@ class CRUDEvent(AbstractCRUDEvent):
 
     async def get(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
         include_removed: bool = False,
     ) -> EventModel | None:
         if id_ is None:
@@ -148,5 +166,20 @@ class CRUDEvent(AbstractCRUDEvent):
         elif past is False:
             stmt = stmt.filter(self.model.reservation_start > now)
 
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_overlapping_events(
+        self,
+        calendar_ids: list[UUID],
+        start_time: datetime,
+        end_time: datetime,
+    ) -> list[EventModel]:
+        stmt = select(self.model).filter(
+            self.model.calendar_id.in_(calendar_ids),
+            self.model.reservation_start < end_time,
+            self.model.reservation_end > start_time,
+            self.model.event_state != EventState.CANCELED,
+        )
         result = await self.db.execute(stmt)
         return list(result.scalars().all())

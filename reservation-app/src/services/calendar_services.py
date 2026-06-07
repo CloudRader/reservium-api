@@ -6,6 +6,7 @@ This class works with Calendar.
 
 from abc import ABC, abstractmethod
 from typing import Annotated
+from uuid import UUID
 
 from core import db_session
 from core.application.exceptions import (
@@ -52,7 +53,7 @@ class AbstractCalendarService(
     @abstractmethod
     async def get_with_collisions(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
         include_removed: bool = False,
     ) -> CalendarDetailWithCollisions:
         """
@@ -115,7 +116,22 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def get_mini_services_by_id(self, calendar_id: str) -> list[MiniServiceLite]:
+    async def get_by_provider_id(
+        self,
+        provider_id: str,
+        include_removed: bool = False,
+    ) -> CalendarDetail | None:
+        """
+        Retrieve a Calendar instance by its provider_id.
+
+        :param provider_id: The provider_id of the Calendar.
+        :param include_removed: Include removed object or not.
+
+        :return: The Calendar instance if found, None otherwise.
+        """
+
+    @abstractmethod
+    async def get_mini_services_by_id(self, calendar_id: UUID | str) -> list[MiniServiceLite]:
         """
         Retrieve all mini services linked to a given Calendar.
 
@@ -127,7 +143,7 @@ class AbstractCalendarService(
     @abstractmethod
     async def get_reservation_service(
         self,
-        id_: str,
+        id_: UUID | str,
     ) -> ReservationServiceDetail:
         """
         Retrieve the reservation service of this calendar by reservation service id.
@@ -152,7 +168,7 @@ class CalendarService(AbstractCalendarService):
 
     async def get_with_collisions(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
         include_removed: bool = False,
     ) -> CalendarDetailWithCollisions:
         calendar = await self.crud.get_with_collisions(id_, include_removed)
@@ -164,10 +180,10 @@ class CalendarService(AbstractCalendarService):
         self,
         obj_in: CalendarCreate,
     ) -> CalendarDetail:
-        if obj_in.id:
-            await self.google_calendar_service.user_has_calendar_access(obj_in.id)
+        if obj_in.provider_id:
+            await self.google_calendar_service.user_has_calendar_access(obj_in.provider_id)
         else:
-            obj_in.id = (
+            obj_in.provider_id = (
                 await self.google_calendar_service.create_calendar(
                     obj_in.reservation_type,
                 )
@@ -183,7 +199,7 @@ class CalendarService(AbstractCalendarService):
 
     async def update(
         self,
-        id_: str | int,
+        id_: UUID | str | int,
         obj_in: CalendarUpdate,
     ) -> CalendarDetail:
         calendar_to_update = await self.crud.get(id_)
@@ -207,13 +223,9 @@ class CalendarService(AbstractCalendarService):
             if (
                 calendar.access_role == "owner" or calendar.access_role == "writer"
             ) and not calendar.primary:
-                try:
-                    await self.get(calendar.id)
-                    exists = True
-                except EntityNotFoundError:
-                    exists = False
+                calendar_exist = await self.get_by_provider_id(calendar.id)
 
-                if not exists:
+                if not calendar_exist:
                     new_calendar_candidates.append(calendar)
 
         return new_calendar_candidates
@@ -226,7 +238,7 @@ class CalendarService(AbstractCalendarService):
 
     async def google_subscribe_existing_calendars(self) -> list[CalendarImportResult]:
         calendars = await self.get_all()
-        calendar_ids = [cal.id for cal in calendars if cal.id is not None]
+        calendar_ids = [cal.provider_id for cal in calendars if cal.provider_id is not None]
 
         return await self.google_calendar_service.subscribe_calendars(calendar_ids)
 
@@ -243,20 +255,30 @@ class CalendarService(AbstractCalendarService):
             include_removed,
         )
 
-    async def get_mini_services_by_id(self, calendar_id: str) -> list[MiniServiceLite]:
+    async def get_by_provider_id(
+        self,
+        provider_id: str,
+        include_removed: bool = False,
+    ) -> CalendarDetail | None:
+        return await self.crud.get_by_provider_id(
+            provider_id,
+            include_removed,
+        )
+
+    async def get_mini_services_by_id(self, calendar_id: UUID | str) -> list[MiniServiceLite]:
         return (await self.get(calendar_id)).mini_services
 
     async def get_reservation_service(
         self,
-        id_: str,
+        id_: UUID | str,
     ) -> ReservationServiceDetail:
         calendar = await self.get(id_, True)
         return await self.reservation_service_service.get(calendar.reservation_service_id, True)
 
     async def _prepare_calendar_mini_services(
         self,
-        reservation_service_id: str,
-        mini_services_ids: list[str],
+        reservation_service_id: UUID | str,
+        mini_services_ids: list[UUID | str],
     ) -> list[MiniServiceModel]:
         """
         Validate mini service IDs.

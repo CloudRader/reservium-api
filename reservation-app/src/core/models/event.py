@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 from core.models.base import Base
 from sqlalchemy import DateTime, ForeignKey, String, text
@@ -52,8 +53,10 @@ class Event(Base):
         server_default=text("'NOT_APPROVED'"),
     )
 
+    provider_id: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    calendar_id: Mapped[str] = mapped_column(ForeignKey("calendars.id"), nullable=False)
+    calendar_id: Mapped[UUID] = mapped_column(ForeignKey("calendars.id"), nullable=False)
 
     user: Mapped[User] = relationship(back_populates="events")
     calendar: Mapped[Calendar] = relationship(back_populates="events")

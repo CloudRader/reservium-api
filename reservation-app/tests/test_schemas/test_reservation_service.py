@@ -54,10 +54,10 @@ def test_reservation_service_update_partial():
 
 def test_reservation_service_in_db_base_schema(valid_rules):
     """Test full DB representation of reservation service."""
-    service_id = uuid4().hex
+    service_id = uuid4()
     now = datetime.now(UTC)
     calendar = CalendarDetail(
-        id="test_calendar@google.com",
+        id=uuid4(),
         reservation_type="Entire Space",
         color="#00ffcc",
         max_people=10,
@@ -69,7 +69,7 @@ def test_reservation_service_in_db_base_schema(valid_rules):
         reservation_service_id=service_id,
     )
     mini_service = MiniServiceDetail(
-        id=uuid4().hex,
+        id=uuid4(),
         name="Booking Help",
         reservation_service_id=service_id,
     )
@@ -97,8 +97,9 @@ def test_reservation_service_in_db_base_schema(valid_rules):
 
 def test_reservation_service_schema_extends_base():
     """Test that ReservationServiceDetail schema includes all base fields."""
+    service_id = uuid4()
     service = ReservationServiceDetail(
-        id=uuid4().hex,
+        id=service_id,
         name="Lighting",
         alias="LIGHT",
         deleted_at=None,

@@ -19,13 +19,13 @@ from core.schemas import Rules
 @pytest.fixture(scope="module")
 def create_reservation_service_uuid():
     """Fixture that create uuid."""
-    return uuid4().hex
+    return uuid4()
 
 
 @pytest.fixture(scope="module")
 def create_mini_service_uuid():
     """Fixture that create uuid."""
-    return uuid4().hex
+    return uuid4()
 
 
 @pytest_asyncio.fixture
@@ -101,7 +101,8 @@ async def test_calendar(
 ):
     """Creates and returns a sample calendar for testing."""
     calendar = CalendarModel(
-        id="test_calendar@google.com",
+        id=uuid4(),
+        provider_id="test_calendar@google.com",
         reservation_type="Entire Space",
         color="#00ffcc",
         max_people=10,
@@ -123,7 +124,8 @@ async def test_calendar(
 async def test_event(async_session, test_user, test_calendar):
     """Creates and returns a sample event for testing."""
     event = EventModel(
-        id="test_event_1",
+        id=uuid4(),
+        provider_id="test_event_1",
         purpose="Test Event",
         guests=10,
         email="user@example.com",

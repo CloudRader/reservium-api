@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from typing import Any
+from uuid import UUID
 
 from core.models.event import EventState
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
@@ -51,7 +52,7 @@ class EventCreate(BaseModel):
     end_datetime: datetime
     purpose: str = Field(max_length=40)
     guests: int = Field(ge=1)
-    calendar_id: str
+    calendar_id: UUID
     email: EmailStr
     additional_services: list[str] = Field(default_factory=list)
 
@@ -78,7 +79,7 @@ class EventUpdate(EventBase):
     event_state: EventState | None = None
 
     user_id: int | None = None
-    calendar_id: str | None = None
+    calendar_id: UUID | None = None
 
     _validate_naive = make_naive_datetime_validator(
         "reservation_start",
@@ -121,7 +122,7 @@ class EventUpdateTime(BaseModel):
 class EventLite(EventBase):
     """Base model for event in database."""
 
-    id: str
+    id: UUID | None = None
     reservation_start: datetime
     reservation_end: datetime
     requested_reservation_start: datetime | None = None
@@ -132,7 +133,9 @@ class EventLite(EventBase):
     event_state: EventState
 
     user_id: int
-    calendar_id: str
+    calendar_id: UUID
+
+    provider_id: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
