@@ -1,6 +1,7 @@
 """DTO schemes for UserLite entity."""
 
 from datetime import datetime
+from uuid import UUID
 
 from core.schemas.event import EventDetail
 from pydantic import BaseModel, ConfigDict, Field
@@ -15,9 +16,9 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     """Properties to receive via API on creation."""
 
-    id: int
     username: str
     full_name: str
+    provider_id: str
     active_member: bool
 
 
@@ -26,13 +27,15 @@ class UserUpdate(UserBase):
 
     username: str | None = None
     full_name: str | None = None
+    provider_id: str | None = None
     active_member: bool | None = None
 
 
 class UserLite(UserBase):
     """Base model for user in database."""
 
-    id: int
+    id: UUID
+    provider_id: str
     deleted_at: datetime | None = None
     username: str
     full_name: str

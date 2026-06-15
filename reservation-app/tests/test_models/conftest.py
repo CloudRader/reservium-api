@@ -32,7 +32,8 @@ def create_mini_service_uuid():
 async def test_user(async_session):
     """Creates and returns a sample user for testing."""
     user = UserModel(
-        id=2142,
+        id=uuid4(),
+        provider_id="2142",
         username="TestUser",
         full_name="test testovi",
         active_member=False,

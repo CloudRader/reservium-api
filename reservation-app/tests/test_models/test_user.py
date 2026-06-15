@@ -1,5 +1,7 @@
 """Module for testing user model."""
 
+from uuid import uuid4
+
 import pytest
 import sqlalchemy
 from core.models import UserModel
@@ -8,7 +10,7 @@ from core.models import UserModel
 @pytest.mark.asyncio
 async def test_create_user(test_user):
     """Test creating user model."""
-    assert test_user.id == 2142
+    assert test_user.provider_id == "2142"
     assert test_user.username == "TestUser"
     assert test_user.roles == ["Bar", "Consoles"]
 
@@ -44,14 +46,16 @@ async def test_list_users(async_session):
     """Test listing multiple users."""
     users = [
         UserModel(
-            id=1,
+            id=uuid4(),
+            provider_id="1",
             username="User1",
             full_name="dfwa dfwanfw",
             active_member=True,
             roles=["TeamA"],
         ),
         UserModel(
-            id=2,
+            id=uuid4(),
+            provider_id="2",
             username="User2",
             full_name="Kagar Lavi",
             active_member=False,

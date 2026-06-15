@@ -39,7 +39,7 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventLite, EventUpdate], ABC):
         """
 
     @abstractmethod
-    async def get_current_event_for_user(self, user_id: int) -> EventModel | None:
+    async def get_current_event_for_user(self, user_id: UUID) -> EventModel | None:
         """
         Retrieve the current event for the given user where the current.
 
@@ -119,7 +119,7 @@ class CRUDEvent(AbstractCRUDEvent):
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_current_event_for_user(self, user_id: int) -> EventModel | None:
+    async def get_current_event_for_user(self, user_id: UUID) -> EventModel | None:
         now = datetime.now()
 
         stmt = (

@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from typing import Annotated
 
 from core import db_session
-from core.application.exceptions import Entity, EntityNotFoundError
+from core.application.exceptions import Entity
 from core.schemas import (
     UserCreate,
     UserDetail,
@@ -101,11 +101,11 @@ class UserService(AbstractUserService):
         self,
         user_data: UserKeycloak,
     ) -> UserLite:
-        try:
-            user = await self.get(user_data.ldap_id)
-        except EntityNotFoundError:
-            user = None
-            logger.info("User with LDAP ID %s not found, creating in db.", user_data.ldap_id)
+        user = await self.get_by_username(user_data.preferred_username)
+        if not user:
+            logger.info(
+                "User with username %s not found, creating in db.", user_data.preferred_username
+            )
 
         user_roles = []
 
@@ -123,15 +123,16 @@ class UserService(AbstractUserService):
 
         if user:
             user_update = UserUpdate(
+                provider_id=user_data.sub,
                 active_member=active_member,
                 roles=user_roles,
             )
             return await self.update(user.id, user_update)
 
         user_create = UserCreate(
-            id=user_data.ldap_id,
             username=user_data.preferred_username,
             full_name=user_data.name,
+            provider_id=user_data.sub,
             active_member=active_member,
             roles=user_roles,
         )

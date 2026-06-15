@@ -52,7 +52,7 @@ async def test_user(user_crud):
     """Create and return a test user."""
     return await user_crud.create(
         UserCreate(
-            id=2142,
+            provider_id="2142",
             username="fixture_user",
             full_name="Fixture Gabel",
             active_member=True,
@@ -66,7 +66,7 @@ async def test_user2(user_crud):
     """Create and return a test user2."""
     return await user_crud.create(
         UserCreate(
-            id=6545,
+            provider_id="6545",
             username="test_user2",
             full_name="Barin Gabel",
             active_member=False,

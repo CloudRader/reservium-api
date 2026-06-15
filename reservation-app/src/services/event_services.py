@@ -134,7 +134,7 @@ class AbstractEventService(
         """
 
     @abstractmethod
-    async def get_current_event_for_user(self, user_id: int) -> EventDetail | None:
+    async def get_current_event_for_user(self, user_id: UUID) -> EventDetail | None:
         """
         Retrieve the current event for the given user.
 
@@ -388,7 +388,7 @@ class EventService(AbstractEventService):
     ) -> UserLite:
         return await self.user_crud.get(event.user_id)
 
-    async def get_current_event_for_user(self, user_id: int) -> EventDetail | None:
+    async def get_current_event_for_user(self, user_id: UUID) -> EventDetail | None:
         return await self.crud.get_current_event_for_user(user_id)
 
     async def approve_update_reservation_time(

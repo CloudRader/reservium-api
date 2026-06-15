@@ -15,11 +15,10 @@ services:
       - internal
 
   reservium-api:
-    container_name: reservation-backend
+    container_name: reservation-api
     build:
       context: .
       dockerfile: Dockerfile
-#    image: reservationbuk/reservation-backend:latest
     environment:
       ORGANIZATION_NAME: "Buben Club"
 
@@ -55,13 +54,20 @@ services:
     networks:
       - internal
 
-  # reservium-ui:
-  #   container_name: reservium-ui
-  #   image: darkrader/reservium-ui:latest-dev
-  #   ports:
-  #     - "3000:3000"
-  #   networks:
-  #     - internal
+  reservium-ui:
+    container_name: reservium-ui
+    image: ghcr.io/cloudrader/reservium-ui:latest
+    platform: linux/amd64
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+      VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
+      VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
+      VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
+      VITE_GOOGLE_CALENDAR_API_KEY: ${VITE_GOOGLE_CALENDAR_API_KEY}
+    ports:
+      - "3000:3000"
+    networks:
+      - internal
 
   pgadmin:
     container_name: pgadmin

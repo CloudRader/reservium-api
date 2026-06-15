@@ -175,6 +175,7 @@ class Settings(BaseSettings):
     GOOGLE: GoogleConfig
 
     model_config = SettingsConfigDict(
+        extra="ignore",
         case_sensitive=True,
         env_nested_delimiter="__",
         env_file=get_env_file_path([".env"]),

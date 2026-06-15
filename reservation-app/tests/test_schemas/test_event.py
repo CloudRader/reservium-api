@@ -92,14 +92,14 @@ def test_event_create_valid():
         reservation_start=datetime.fromisoformat("2025-05-12T11:00"),
         reservation_end=datetime.fromisoformat("2025-05-12T16:00"),
         event_state=EventState.CONFIRMED,
-        user_id=21412,
+        user_id="550e8400-e29b-41d4-a716-446655440000",
         calendar_id=cal_id,
     )
     assert schema.purpose == "Birthday party"
     assert schema.calendar_id == cal_id
     assert schema.guests == 5
     assert schema.event_state == EventState.CONFIRMED
-    assert schema.user_id == 21412
+    assert str(schema.user_id) == "550e8400-e29b-41d4-a716-446655440000"
 
 
 def test_event_create_validates_order():
@@ -219,7 +219,7 @@ def test_event_in_db_base_schema():
         reservation_start=datetime.fromisoformat("2025-05-12T11:00"),
         reservation_end=datetime.fromisoformat("2025-05-12T16:00"),
         event_state=EventState.CONFIRMED,
-        user_id=21412,
+        user_id="550e8400-e29b-41d4-a716-446655440000",
         calendar_id=cal_id,
         additional_services=["Bar", "Console"],
     )
@@ -243,7 +243,7 @@ def test_event_schema_extends_base():
         reservation_start=datetime.fromisoformat("2025-05-12T11:00"),
         reservation_end=datetime.fromisoformat("2025-05-12T16:00"),
         event_state=EventState.CONFIRMED,
-        user_id=21412,
+        user_id="550e8400-e29b-41d4-a716-446655440000",
         calendar_id=cal_id,
         additional_services=["Bar", "Console"],
     )
@@ -274,7 +274,7 @@ def test_event_lite_required_fields(field):
         "reservation_start": "2025-05-12T11:00",
         "reservation_end": "2025-05-12T16:00",
         "event_state": EventState.CONFIRMED,
-        "user_id": 21412,
+        "user_id": "550e8400-e29b-41d4-a716-446655440000",
         "calendar_id": uuid4(),
     }
     del data[field]
@@ -299,8 +299,10 @@ def test_event_detail_includes_nested_models():
         reservation_service=service,
     )
 
+    user_id = uuid4()
     user = UserLite(
-        id=999,
+        id=user_id,
+        provider_id="999",
         username="fakeuser",
         full_name="Fake User",
         active_member=True,
@@ -315,7 +317,7 @@ def test_event_detail_includes_nested_models():
         reservation_start=datetime(2025, 5, 12, 10, 0),
         reservation_end=datetime(2025, 5, 12, 12, 0),
         event_state=EventState.CONFIRMED,
-        user_id=1,
+        user_id=user_id,
         calendar_id=cal_id,
         user=user,
         calendar=calendar,
