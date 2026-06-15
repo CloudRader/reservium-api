@@ -7,6 +7,7 @@ implementation (CRUDUser) using SQLAlchemy.
 
 from abc import ABC, abstractmethod
 from datetime import datetime
+from uuid import UUID
 
 from core.models import CalendarModel, EventModel, UserModel
 from core.schemas import UserCreate, UserUpdate
@@ -35,9 +36,19 @@ class AbstractCRUDUser(CRUDBase[UserModel, UserCreate, UserUpdate], ABC):
         """
 
     @abstractmethod
+    async def get_by_provider_id(self, provider_id: str) -> UserModel | None:
+        """
+        Retrieve a User instance by its provider_id.
+
+        :param provider_id: The provider ID of the User.
+
+        :return: The User instance if found, None otherwise.
+        """
+
+    @abstractmethod
     async def get_events_by_user_id(
         self,
-        id_: int,
+        id_: UUID,
         page: int = 1,
         limit: int = 20,
         past: bool | None = None,
@@ -72,9 +83,14 @@ class CRUDUser(AbstractCRUDUser):
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_by_provider_id(self, provider_id: str) -> UserModel | None:
+        stmt = select(self.model).filter(self.model.provider_id == provider_id)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def get_events_by_user_id(
         self,
-        id_: int,
+        id_: UUID,
         page: int = 1,
         limit: int = 20,
         past: bool | None = None,

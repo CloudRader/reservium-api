@@ -31,7 +31,7 @@ async def get_current_user(
     logger.debug("Retrieving current user from token.")
     user_keycloak = await keycloak_service.get_user_info(token.credentials)
 
-    return await user_service.get(user_keycloak.ldap_id)
+    return await user_service.get_by_username(user_keycloak.preferred_username)
 
 
 async def get_current_user_from_token(

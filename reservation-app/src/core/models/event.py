@@ -55,7 +55,7 @@ class Event(Base):
 
     provider_id: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     calendar_id: Mapped[UUID] = mapped_column(ForeignKey("calendars.id"), nullable=False)
 
     user: Mapped[User] = relationship(back_populates="events")

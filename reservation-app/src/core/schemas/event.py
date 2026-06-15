@@ -78,7 +78,7 @@ class EventUpdate(EventBase):
     email: EmailStr | None = None
     event_state: EventState | None = None
 
-    user_id: int | None = None
+    user_id: UUID | None = None
     calendar_id: UUID | None = None
 
     _validate_naive = make_naive_datetime_validator(
@@ -132,7 +132,7 @@ class EventLite(EventBase):
     email: EmailStr
     event_state: EventState
 
-    user_id: int
+    user_id: UUID
     calendar_id: UUID
 
     provider_id: str | None = None
