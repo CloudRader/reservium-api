@@ -75,7 +75,7 @@ class CalendarRouter(
         )
         async def get_mini_services_by_calendar(
             service: Annotated[CalendarService, Depends(CalendarService)],
-            id_: Annotated[UUID | str, Path(alias="id")],
+            id_: Annotated[UUID, Path(alias="id")],
         ) -> Any:
             """
             Get all mini services linked to a calendar.
@@ -141,7 +141,7 @@ class CalendarRouter(
         )
         async def get_with_collisions(
             service: Annotated[CalendarService, Depends(CalendarService)],
-            id_: Annotated[UUID | str, Path(alias="id")],
+            id_: Annotated[UUID, Path(alias="id")],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
             """Get calendar with collisions."""

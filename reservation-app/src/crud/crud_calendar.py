@@ -32,7 +32,7 @@ class AbstractCRUDCalendar(
     @abstractmethod
     async def get_with_collisions(
         self,
-        id_: UUID | str | int,
+        id_: UUID,
         include_removed: bool = False,
     ) -> CalendarModel | None:
         """
@@ -128,7 +128,7 @@ class CRUDCalendar(AbstractCRUDCalendar):
 
     async def get_with_collisions(
         self,
-        id_: UUID | str | int,
+        id_: UUID,
         include_removed: bool = False,
     ) -> CalendarModel | None:
         if id_ is None:

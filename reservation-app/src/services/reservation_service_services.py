@@ -116,7 +116,7 @@ class AbstractReservationServiceService(
     @abstractmethod
     async def get_calendars_by_id(
         self,
-        id_: UUID | str,
+        id_: UUID,
         include_removed: bool = False,
     ) -> list[CalendarDetail]:
         """
@@ -131,7 +131,7 @@ class AbstractReservationServiceService(
     @abstractmethod
     async def get_mini_services_by_id(
         self,
-        id_: UUID | str,
+        id_: UUID,
         include_removed: bool = False,
     ) -> list[MiniServiceDetail]:
         """
@@ -146,7 +146,7 @@ class AbstractReservationServiceService(
     @abstractmethod
     async def get_events_by_id(
         self,
-        id_: UUID | str,
+        id_: UUID,
         event_state: EventState | None = None,
     ) -> list[EventDetail]:
         """
@@ -161,7 +161,7 @@ class AbstractReservationServiceService(
     @abstractmethod
     async def get_reservation_service(
         self,
-        id_: UUID | str,
+        id_: UUID,
     ) -> ReservationServiceDetail:
         """
         Retrieve the reservation service.
@@ -252,7 +252,7 @@ class ReservationServiceService(AbstractReservationServiceService):
 
     async def get_calendars_by_id(
         self,
-        id_: UUID | str,
+        id_: UUID,
         include_removed: bool = False,
     ) -> list[CalendarDetail]:
         reservation_service = await self.get(id_, include_removed=True)
@@ -263,7 +263,7 @@ class ReservationServiceService(AbstractReservationServiceService):
 
     async def get_mini_services_by_id(
         self,
-        id_: UUID | str,
+        id_: UUID,
         include_removed: bool = False,
     ) -> list[MiniServiceDetail]:
         reservation_service = await self.get(id_, include_removed=True)
@@ -274,7 +274,7 @@ class ReservationServiceService(AbstractReservationServiceService):
 
     async def get_events_by_id(
         self,
-        id_: UUID | str,
+        id_: UUID,
         event_state: EventState | None = None,
     ) -> list[EventDetail]:
         reservation_service = await self.get(id_, include_removed=True)
@@ -288,6 +288,6 @@ class ReservationServiceService(AbstractReservationServiceService):
 
     async def get_reservation_service(
         self,
-        id_: UUID | str,
+        id_: UUID,
     ) -> ReservationServiceDetail:
         return await self.get(id_, True)

@@ -180,7 +180,7 @@ class BaseCRUDRouter[
         )
         async def get_by_id(
             service: Annotated[service_dep, Depends(service_dep)],
-            id_: Annotated[UUID | str | int, Path(alias="id", description="The ID of the object.")],
+            id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ):
             """Get object."""
@@ -265,7 +265,7 @@ class BaseCRUDRouter[
         )
         async def update(
             service: Annotated[service_dep, Depends(service_dep)],
-            id_: Annotated[UUID | str | int, Path(alias="id", description="The ID of the object.")],
+            id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             obj_update: schema_update,
         ):
             """Update object, only users with special roles can update object."""
@@ -290,7 +290,7 @@ class BaseCRUDRouter[
         )
         async def restore(
             service: Annotated[service_dep, Depends(service_dep)],
-            id_: Annotated[UUID | str | int, Path(alias="id", description="The ID of the object.")],
+            id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
         ):
             """Restore a soft-deleted object, only users with special roles can restore object."""
             obj = await service.restore(id_)
@@ -314,7 +314,7 @@ class BaseCRUDRouter[
         )
         async def delete(
             service: Annotated[service_dep, Depends(service_dep)],
-            id_: Annotated[UUID | str | int, Path(alias="id", description="The ID of the object.")],
+            id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
         ):
             """Delete object, only users with special roles can delete object."""
             obj = await service.soft_delete(id_)
@@ -336,7 +336,7 @@ class BaseCRUDRouter[
         )
         async def hard_delete(
             service: Annotated[service_dep, Depends(service_dep)],
-            id_: Annotated[UUID | str | int, Path(alias="id", description="The ID of the object.")],
+            id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
         ):
             """Hard delete object, only users with special roles can delete object."""
             await service.delete(id_)

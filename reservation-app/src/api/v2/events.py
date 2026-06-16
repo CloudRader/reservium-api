@@ -138,7 +138,7 @@ class EventRouter(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user_from_token)],
-            id_: Annotated[UUID | str, Path(alias="id", description="The ID of the object.")],
+            id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             approve: bool = Query(False, description="Approve this update or not."),
             manager_notes: Annotated[str, Body()] = "-",
         ) -> EventLite:
@@ -167,7 +167,7 @@ class EventRouter(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user_from_token)],
-            id_: Annotated[UUID | str, Path(alias="id", description="The ID of the object.")],
+            id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             event_update: Annotated[EventUpdate, Body()],
             reason: Annotated[str, Body()] = "",
         ) -> EventLite:
@@ -193,7 +193,7 @@ class EventRouter(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user)],
-            id_: Annotated[UUID | str, Path(alias="id", description="The ID of the object.")],
+            id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             event_update: Annotated[EventUpdateTime, Body()],
             reason: Annotated[str, Body()] = "",
         ) -> EventLite:
@@ -219,7 +219,7 @@ class EventRouter(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
             user: Annotated[UserLite, Depends(get_current_user_from_token)],
-            id_: Annotated[UUID | str, Path(alias="id", description="The ID of the object.")],
+            id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             approve: bool = Query(False, description="Approve this reservation or not."),
             manager_notes: Annotated[str, Body()] = "-",
         ) -> EventLite:
