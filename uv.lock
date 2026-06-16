@@ -1317,7 +1317,7 @@ requires-dist = [
     { name = "pytz", specifier = "==2026.2" },
     { name = "requests-oauthlib", specifier = "==2.0.0" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.0.51" },
-    { name = "sqlalchemy-easy-softdelete", specifier = "==0.9.0" },
+    { name = "sqlalchemy-easy-softdelete", specifier = "==0.9.1" },
     { name = "uvicorn", extras = ["standard"], specifier = "==0.49.0" },
 ]
 
@@ -1423,14 +1423,14 @@ asyncio = [
 
 [[package]]
 name = "sqlalchemy-easy-softdelete"
-version = "0.9.0"
+version = "0.9.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "sqlalchemy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4c/59/2d8b1effe2eec1cb55b3007f14a85d57c8fc2caa48edaf5d03ec41d135d0/sqlalchemy_easy_softdelete-0.9.0.tar.gz", hash = "sha256:c458464aaa1ac1ffa7e61e7ec98a0c9961d8fe0b365e07391a7bc17d6511a768", size = 23726, upload-time = "2026-01-26T01:51:55.672Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9b/34/6dcceca68e6cbac616ea2fa4990103a224cfb2bb329a8694465eb7de48d9/sqlalchemy_easy_softdelete-0.9.1.tar.gz", hash = "sha256:02ce5b8eedf9c6207a041391ffa3906ea61b930559498c6e475781ce7dace599", size = 24946, upload-time = "2026-06-16T18:57:57.447Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a9/25/38936fcddfaf190c1d49a69bd82d9daa1a4f0ad9dc12f9d3c55f915b0fb0/sqlalchemy_easy_softdelete-0.9.0-py3-none-any.whl", hash = "sha256:934efdfc8b558d9aa7e665940ea5789baf8bf963b4c9a70620e0319fde31faf2", size = 10047, upload-time = "2026-01-26T01:51:54.162Z" },
+    { url = "https://files.pythonhosted.org/packages/6e/ad/c812c15adc5119c7c44e987e6997ded9530fd09bd1157d9862f70c40567d/sqlalchemy_easy_softdelete-0.9.1-py3-none-any.whl", hash = "sha256:7672778c2ce9969296219f3e973c1f0d17736ea04f53e05fa8e112c88adae2ed", size = 10165, upload-time = "2026-06-16T18:57:56.335Z" },
 ]
 
 [[package]]
