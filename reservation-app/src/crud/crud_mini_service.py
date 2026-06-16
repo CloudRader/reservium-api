@@ -59,7 +59,7 @@ class AbstractCRUDMiniService(
     @abstractmethod
     async def get_names_by_reservation_service_id(
         self,
-        reservation_service_id: UUID | str,
+        reservation_service_id: UUID,
     ) -> list[str]:
         """
         Retrieve all names from all Mini Services by reservation service uuid.
@@ -72,8 +72,8 @@ class AbstractCRUDMiniService(
     @abstractmethod
     async def get_ids_by_reservation_service_id(
         self,
-        reservation_service_id: UUID | str,
-    ) -> list[str]:
+        reservation_service_id: UUID,
+    ) -> list[UUID]:
         """
         Retrieve all ids from all Mini Services by reservation service uuid.
 
@@ -118,7 +118,7 @@ class CRUDMiniService(AbstractCRUDMiniService):
 
     async def get_names_by_reservation_service_id(
         self,
-        reservation_service_id: UUID | str,
+        reservation_service_id: UUID,
     ) -> list[str]:
         stmt = select(self.model.name).where(
             self.model.reservation_service_id == reservation_service_id,
@@ -128,8 +128,8 @@ class CRUDMiniService(AbstractCRUDMiniService):
 
     async def get_ids_by_reservation_service_id(
         self,
-        reservation_service_id: UUID | str,
-    ) -> list[str]:
+        reservation_service_id: UUID,
+    ) -> list[UUID]:
         stmt = select(self.model.id).where(
             self.model.reservation_service_id == reservation_service_id,
         )

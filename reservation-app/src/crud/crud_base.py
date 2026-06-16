@@ -26,7 +26,7 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
     @abstractmethod
     async def get(
         self,
-        id_: UUID | str | int,
+        id_: UUID,
         include_removed: bool = False,
     ) -> Model | None:
         """
@@ -70,7 +70,7 @@ class AbstractCRUDBase[Model, CreateSchema, UpdateSchema](ABC):
         """Retrieve removed object from soft removed."""
 
     @abstractmethod
-    async def remove(self, id_: UUID | str | int) -> None:
+    async def remove(self, id_: UUID) -> None:
         """Remove a record by its id_."""
 
     @abstractmethod
@@ -95,7 +95,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
 
     async def get(
         self,
-        id_: UUID | str | int,
+        id_: UUID,
         include_removed: bool = False,
     ) -> Model | None:
         if id_ is None:
@@ -151,7 +151,7 @@ class CRUDBase(AbstractCRUDBase[Model, CreateSchema, UpdateSchema]):
         await self.db.commit()
         return obj
 
-    async def remove(self, id_: UUID | str | int) -> None:
+    async def remove(self, id_: UUID) -> None:
         stmt = (
             select(self.model).execution_options(include_deleted=True).filter(self.model.id == id_)
         )

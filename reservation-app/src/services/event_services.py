@@ -148,7 +148,7 @@ class AbstractEventService(
     @abstractmethod
     async def approve_update_reservation_time(
         self,
-        id_: UUID | str,
+        id_: UUID,
         background_tasks: BackgroundTasks,
         approve: bool = False,
         manager_notes: str = "-",
@@ -167,7 +167,7 @@ class AbstractEventService(
     @abstractmethod
     async def update_with_permission_checks(
         self,
-        id_: UUID | str,
+        id_: UUID,
         event_update: EventUpdate,
         background_tasks: BackgroundTasks,
         reason: str = "",
@@ -186,7 +186,7 @@ class AbstractEventService(
     @abstractmethod
     async def request_update_reservation_time(
         self,
-        id_: UUID | str,
+        id_: UUID,
         event_update: EventUpdateTime,
         background_tasks: BackgroundTasks,
         reason: str = "",
@@ -224,7 +224,7 @@ class AbstractEventService(
     @abstractmethod
     async def delete(
         self,
-        id_: UUID | str | int,
+        id_: UUID,
     ) -> None:
         """
         Delete an Event in the database.
@@ -235,7 +235,7 @@ class AbstractEventService(
     @abstractmethod
     async def confirm_event(
         self,
-        id_: UUID | str,
+        id_: UUID,
         background_tasks: BackgroundTasks,
         manager_notes: str = "-",
     ) -> EventLite:
@@ -270,7 +270,7 @@ class AbstractEventService(
     @abstractmethod
     async def get_reservation_service(
         self,
-        id_: UUID | str,
+        id_: UUID,
     ) -> ReservationServiceDetail:
         """
         Retrieve the reservation service of this event by reservation service id.
@@ -393,7 +393,7 @@ class EventService(AbstractEventService):
 
     async def approve_update_reservation_time(
         self,
-        id_: UUID | str,
+        id_: UUID,
         background_tasks: BackgroundTasks,
         approve: bool = False,
         manager_notes: str = "-",
@@ -465,7 +465,7 @@ class EventService(AbstractEventService):
 
     async def update_with_permission_checks(
         self,
-        id_: UUID | str,
+        id_: UUID,
         event_update: EventUpdate,
         background_tasks: BackgroundTasks,
         reason: str = "",
@@ -523,7 +523,7 @@ class EventService(AbstractEventService):
 
     async def request_update_reservation_time(
         self,
-        id_: UUID | str,
+        id_: UUID,
         event_update: EventUpdateTime,
         background_tasks: BackgroundTasks,
         reason: str = "",
@@ -610,7 +610,7 @@ class EventService(AbstractEventService):
 
     async def delete(
         self,
-        id_: UUID | str | int,
+        id_: UUID,
     ) -> None:
         event = await self.get(id_, True)
 
@@ -622,7 +622,7 @@ class EventService(AbstractEventService):
 
     async def confirm_event(
         self,
-        id_: UUID | str,
+        id_: UUID,
         background_tasks: BackgroundTasks,
         manager_notes: str = "-",
     ) -> EventLite:
@@ -669,7 +669,7 @@ class EventService(AbstractEventService):
 
     async def get_reservation_service(
         self,
-        id_: UUID | str,
+        id_: UUID,
     ) -> ReservationServiceDetail:
         event = await self.get(id_)
         return await self.get_reservation_service_of_this_event(event)

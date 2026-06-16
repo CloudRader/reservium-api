@@ -24,7 +24,7 @@ if TYPE_CHECKING:  # pragma: no cover
 class HasReservationServiceId(Protocol):
     """Protocol for models that have a reservation_service_id field."""
 
-    reservation_service_id: UUID | str
+    reservation_service_id: UUID
 
 
 T = TypeVar("T", bound=HasReservationServiceId)
@@ -115,7 +115,7 @@ class AbstractCRUDReservationService(
     async def get_related_entities_by_reservation_service_id(
         self,
         model: type[T],
-        reservation_service_id: UUID | str,
+        reservation_service_id: UUID,
         include_removed: bool = False,
     ) -> list[T]:
         """
@@ -131,7 +131,7 @@ class AbstractCRUDReservationService(
     @abstractmethod
     async def get_events_by_reservation_service_id(
         self,
-        reservation_service_id: UUID | str,
+        reservation_service_id: UUID,
         event_state: EventState | None = None,
     ) -> list[EventModel]:
         """
@@ -208,7 +208,7 @@ class CRUDReservationService(AbstractCRUDReservationService):
     async def get_related_entities_by_reservation_service_id(
         self,
         model: type[T],
-        reservation_service_id: UUID | str,
+        reservation_service_id: UUID,
         include_removed: bool = False,
     ) -> list[T]:
         stmt: Select = select(model).where(
@@ -221,7 +221,7 @@ class CRUDReservationService(AbstractCRUDReservationService):
 
     async def get_events_by_reservation_service_id(
         self,
-        reservation_service_id: UUID | str,
+        reservation_service_id: UUID,
         event_state: EventState | None = None,
     ) -> list[EventModel]:
         stmt = (

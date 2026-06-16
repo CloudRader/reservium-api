@@ -28,7 +28,7 @@ class AbstractCRUDEvent(CRUDBase[EventModel, EventLite, EventUpdate], ABC):
     @abstractmethod
     async def get(
         self,
-        id_: UUID | str | int,
+        id_: UUID,
         include_removed: bool = False,
     ) -> EventModel | None:
         """
@@ -102,7 +102,7 @@ class CRUDEvent(AbstractCRUDEvent):
 
     async def get(
         self,
-        id_: UUID | str | int,
+        id_: UUID,
         include_removed: bool = False,
     ) -> EventModel | None:
         if id_ is None:

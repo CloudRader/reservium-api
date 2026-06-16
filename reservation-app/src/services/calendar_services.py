@@ -53,7 +53,7 @@ class AbstractCalendarService(
     @abstractmethod
     async def get_with_collisions(
         self,
-        id_: UUID | str | int,
+        id_: UUID,
         include_removed: bool = False,
     ) -> CalendarDetailWithCollisions:
         """
@@ -131,7 +131,7 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def get_mini_services_by_id(self, calendar_id: UUID | str) -> list[MiniServiceLite]:
+    async def get_mini_services_by_id(self, calendar_id: UUID) -> list[MiniServiceLite]:
         """
         Retrieve all mini services linked to a given Calendar.
 
@@ -143,7 +143,7 @@ class AbstractCalendarService(
     @abstractmethod
     async def get_reservation_service(
         self,
-        id_: UUID | str,
+        id_: UUID,
     ) -> ReservationServiceDetail:
         """
         Retrieve the reservation service of this calendar by reservation service id.
@@ -168,7 +168,7 @@ class CalendarService(AbstractCalendarService):
 
     async def get_with_collisions(
         self,
-        id_: UUID | str | int,
+        id_: UUID,
         include_removed: bool = False,
     ) -> CalendarDetailWithCollisions:
         calendar = await self.crud.get_with_collisions(id_, include_removed)
@@ -199,7 +199,7 @@ class CalendarService(AbstractCalendarService):
 
     async def update(
         self,
-        id_: UUID | str | int,
+        id_: UUID,
         obj_in: CalendarUpdate,
     ) -> CalendarDetail:
         calendar_to_update = await self.crud.get(id_)
@@ -265,20 +265,20 @@ class CalendarService(AbstractCalendarService):
             include_removed,
         )
 
-    async def get_mini_services_by_id(self, calendar_id: UUID | str) -> list[MiniServiceLite]:
+    async def get_mini_services_by_id(self, calendar_id: UUID) -> list[MiniServiceLite]:
         return (await self.get(calendar_id)).mini_services
 
     async def get_reservation_service(
         self,
-        id_: UUID | str,
+        id_: UUID,
     ) -> ReservationServiceDetail:
         calendar = await self.get(id_, True)
         return await self.reservation_service_service.get(calendar.reservation_service_id, True)
 
     async def _prepare_calendar_mini_services(
         self,
-        reservation_service_id: UUID | str,
-        mini_services_ids: list[UUID | str],
+        reservation_service_id: UUID,
+        mini_services_ids: list[UUID],
     ) -> list[MiniServiceModel]:
         """
         Validate mini service IDs.
