@@ -3,6 +3,7 @@
 import logging
 from collections.abc import Callable
 from typing import Annotated, TypeVar
+from uuid import UUID
 
 from api.dependencies import get_current_user, get_current_user_from_token
 from core.application.exceptions import PermissionDeniedError
@@ -30,7 +31,7 @@ def abac_event_owner_or_manager():
     async def dependency(
         user: Annotated[CurrentUser, Depends(get_current_user)],
         service: Annotated[EventService, Depends(EventService)],
-        id_: Annotated[str, Path(alias="id", description="The ID of the object.")],
+        id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
     ):
         logger.info(
             "ABAC_EVENT_CANCEL_CHECK user_id=%s event_id=%s",
@@ -82,7 +83,7 @@ def abac_event_owner_by_id():
     async def dependency(
         user: Annotated[CurrentUser, Depends(get_current_user)],
         service: Annotated[EventService, Depends(EventService)],
-        id_: Annotated[str | int, Path(alias="id")],
+        id_: Annotated[UUID, Path(alias="id")],
     ):
 
         logger.info(

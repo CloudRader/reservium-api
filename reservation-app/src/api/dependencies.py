@@ -29,9 +29,13 @@ async def get_current_user(
     :return: User object.
     """
     logger.debug("Retrieving current user from token.")
-    user_keycloak = await keycloak_service.get_user_info(token.credentials)
+    decoded_token = await keycloak_service.decode_token(token.credentials)
+    user_from_token = CurrentUser.from_token(
+        decoded_token,
+        decoded_token["azp"],
+    )
 
-    return await user_service.get_by_username(user_keycloak.preferred_username)
+    return await user_service.get_by_username(user_from_token.username)
 
 
 async def get_current_user_from_token(
