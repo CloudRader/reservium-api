@@ -1,31 +1,49 @@
-FROM python:3.14-slim
+# ==========================================
+# Build Stage
+# ==========================================
+FROM python:3.14.3-slim-trixie AS build
 
-ENV HOME=/usr/src/app
-ENV VENV_PATH=$HOME/.venv
-ENV PATH="$VENV_PATH/bin:$PATH"
+# Copy uv binary directly from official image
+COPY --from=ghcr.io/astral-sh/uv:0.11 /uv /uvx /bin/
+ENV UV_LINK_MODE=copy \
+    UV_COMPILE_BYTECODE=1 \
+    UV_PYTHON_DOWNLOADS=never \
+    HOME=/app
 
-ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
-
-RUN apt-get update && apt-get install -y \
-    curl \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
- && rm -rf /var/lib/apt/lists/* \
- && curl -LsSf https://astral.sh/uv/install.sh | sh
+ && rm -rf /var/lib/apt/lists/*
 
-RUN useradd --uid 8001 --user-group --home-dir $HOME --create-home app
 WORKDIR $HOME
 
-RUN python -m venv $VENV_PATH
-
+# Cache dependencies
 COPY pyproject.toml uv.lock ./
-RUN $HOME/.local/bin/uv sync --frozen --no-dev
+RUN uv sync --no-dev --locked --no-editable --no-install-project
 
-# copy source code
-COPY reservation-app ./
+# ==========================================
+# Runtime Stage
+# ==========================================
+FROM python:3.14.3-slim-trixie AS runtime
+
+ENV HOME=/app \
+    PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Create unprivileged system user without unnecessary defaults
+RUN useradd --uid 8001 --user-group --system --home-dir $HOME app
+
+WORKDIR $HOME
+
+# Copy artifacts with correct ownership immediately
+COPY --from=build --chown=app:app /app/.venv /app/.venv
+COPY --chown=app:app reservation-app ./
 
 WORKDIR $HOME/src
 
 RUN chmod +x ../scripts/run_migrations.sh
+
+USER app
 
 ENTRYPOINT ["../scripts/run_migrations.sh"]
 CMD ["python", "main.py"]
