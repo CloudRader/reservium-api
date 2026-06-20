@@ -23,9 +23,9 @@ dependencies = [
     "google-api-python-client==2.197.0",
     "python-dateutil==2.9.0.post0",
     "aiohttp==3.14.1",
-    "python-keycloak==7.1.1",
     "jwcrypto==1.5.7",
     "authzed==1.24.4",
+    "authlib==1.7.2",
 ]
 
 [dependency-groups]

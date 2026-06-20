@@ -8,7 +8,7 @@ from uuid import UUID
 from api.dependencies import get_current_user, get_current_user_from_token
 from core.application.exceptions import PermissionDeniedError
 from core.enums import EventActor
-from core.schemas.keycloak import CurrentUser
+from core.schemas.openid import CurrentUser
 from fastapi import Depends, Path
 from services import CrudServiceBase, EventService, ReservationServiceService
 

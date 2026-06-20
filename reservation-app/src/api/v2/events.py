@@ -29,7 +29,7 @@ from core.schemas import (
 )
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, Path, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
-from integrations.keycloak import KeycloakAuthService
+from integrations.openid import OpenIdProvider
 from services import EventService
 
 logger = logging.getLogger(__name__)
@@ -105,7 +105,7 @@ class EventRouter(
         async def create(
             background_tasks: BackgroundTasks,
             service: Annotated[EventService, Depends(EventService)],
-            keycloak_service: Annotated[KeycloakAuthService, Depends(KeycloakAuthService)],
+            openid_service: Annotated[OpenIdProvider, Depends(OpenIdProvider)],
             user: Annotated[UserLite, Depends(get_current_user)],
             token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
             event_create: EventCreate,
@@ -119,7 +119,7 @@ class EventRouter(
                 "User %s creating new event in calendar %s", user.id, event_create.calendar_id
             )
 
-            user_info = await keycloak_service.get_user_info(token.credentials)
+            user_info = await openid_service.get_user_info(token)
 
             return await service.post_event(
                 background_tasks, event_create, user_info.services, user

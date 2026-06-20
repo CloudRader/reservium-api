@@ -12,13 +12,13 @@ from .event import (
     EventUpdate,
     EventUpdateTime,
 )
-from .keycloak import UserKeycloak
 from .mini_service import (
     MiniServiceCreate,
     MiniServiceDetail,
     MiniServiceLite,
     MiniServiceUpdate,
 )
+from .openid import UserInfo, UserKeycloak
 from .reservation_service import (
     ReservationServiceCreate,
     ReservationServiceDetail,
@@ -52,6 +52,7 @@ __all__ = [
     "Rules",
     "UserCreate",
     "UserDetail",
+    "UserInfo",
     "UserKeycloak",
     "UserLite",
     "UserUpdate",

@@ -13,7 +13,7 @@ from core.application.exceptions import Entity
 from core.schemas import (
     UserCreate,
     UserDetail,
-    UserKeycloak,
+    UserInfo,
     UserLite,
     UserUpdate,
 )
@@ -45,7 +45,7 @@ class AbstractUserService(
     @abstractmethod
     async def create_user(
         self,
-        user_data: UserKeycloak,
+        user_data: UserInfo,
     ) -> UserLite:
         """
         Create a User in the database.
@@ -99,7 +99,7 @@ class UserService(AbstractUserService):
 
     async def create_user(
         self,
-        user_data: UserKeycloak,
+        user_data: UserInfo,
     ) -> UserLite:
         user = await self.get_by_username(user_data.preferred_username)
         if not user:

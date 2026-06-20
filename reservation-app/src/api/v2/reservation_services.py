@@ -19,7 +19,7 @@ from core.schemas import (
     ReservationServiceUpdate,
 )
 from core.schemas.event import EventDetail
-from core.schemas.keycloak import CurrentUser
+from core.schemas.openid import CurrentUser
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import ReservationServiceService
 

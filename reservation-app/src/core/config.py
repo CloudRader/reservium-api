@@ -129,6 +129,18 @@ class KeycloakConfig(BaseModel):
     CLIENT_SECRET: SecretStr
 
 
+class OpenIdConfig(BaseModel):
+    """Config for OpenID."""
+
+    CLIENT_NAME: str
+    CLIENT_ID: str
+    CLIENT_SECRET: str
+    AUTH_URL: str
+    TOKEN_URL: str
+    METADATA_URL: str
+    SCOPES: list[str] = ["openid", "email", "profile"]
+
+
 class GoogleConfig(BaseModel):
     """Config for google."""
 
@@ -171,7 +183,7 @@ class Settings(BaseSettings):
     LOGGING: LoggingConfig = LoggingConfig()
     DB: DatabaseConfig
     MAIL: MailConfig
-    KEYCLOAK: KeycloakConfig
+    OPENID: OpenIdConfig
     GOOGLE: GoogleConfig
 
     model_config = SettingsConfigDict(
