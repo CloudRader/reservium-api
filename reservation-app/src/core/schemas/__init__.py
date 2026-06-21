@@ -26,6 +26,7 @@ from .reservation_service import (
     ReservationServiceUpdate,
 )
 from .user import UserCreate, UserDetail, UserLite, UserUpdate
+from .well_known import WellKnownResponse
 
 __all__ = [
     "CalendarCreate",
@@ -56,4 +57,5 @@ __all__ = [
     "UserKeycloak",
     "UserLite",
     "UserUpdate",
+    "WellKnownResponse",
 ]
