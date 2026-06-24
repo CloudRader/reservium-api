@@ -1,6 +1,6 @@
 """Tests for Google Calendar Pydantic Schemas."""
 
-from core.schemas.google_calendar import (
+from domain.schemas.google_calendar import (
     ConferenceProperties,
     EventCreator,
     EventEmail,

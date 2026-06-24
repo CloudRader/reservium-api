@@ -12,13 +12,13 @@ from .event import (
     EventUpdate,
     EventUpdateTime,
 )
-from .keycloak import UserKeycloak
 from .mini_service import (
     MiniServiceCreate,
     MiniServiceDetail,
     MiniServiceLite,
     MiniServiceUpdate,
 )
+from .openid import UserInfo, UserKeycloak
 from .reservation_service import (
     ReservationServiceCreate,
     ReservationServiceDetail,
@@ -26,6 +26,7 @@ from .reservation_service import (
     ReservationServiceUpdate,
 )
 from .user import UserCreate, UserDetail, UserLite, UserUpdate
+from .well_known import WellKnownResponse
 
 __all__ = [
     "CalendarCreate",
@@ -52,7 +53,9 @@ __all__ = [
     "Rules",
     "UserCreate",
     "UserDetail",
+    "UserInfo",
     "UserKeycloak",
     "UserLite",
     "UserUpdate",
+    "WellKnownResponse",
 ]

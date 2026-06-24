@@ -3,10 +3,10 @@
 import logging
 from typing import Annotated, Any
 
-from core.schemas.keycloak import CurrentUser
+from domain.schemas.openid import CurrentUser
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from integrations.keycloak import KeycloakAuthService
+from integrations.openid import OpenIdProvider
 from services import UserService
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ http_bearer = HTTPBearer()
 
 async def get_current_user(
     user_service: Annotated[UserService, Depends(UserService)],
-    keycloak_service: Annotated[KeycloakAuthService, Depends(KeycloakAuthService)],
+    openid_service: Annotated[OpenIdProvider, Depends(OpenIdProvider)],
     token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
 ) -> Any:
     """
@@ -29,7 +29,7 @@ async def get_current_user(
     :return: User object.
     """
     logger.debug("Retrieving current user from token.")
-    decoded_token = await keycloak_service.decode_token(token.credentials)
+    decoded_token = await openid_service.decode_token(token.credentials)
     user_from_token = CurrentUser.from_token(
         decoded_token,
         decoded_token["azp"],
@@ -39,7 +39,7 @@ async def get_current_user(
 
 
 async def get_current_user_from_token(
-    keycloak_service: Annotated[KeycloakAuthService, Depends(KeycloakAuthService)],
+    openid_service: Annotated[OpenIdProvider, Depends(OpenIdProvider)],
     token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
 ) -> Any:
     """
@@ -51,7 +51,7 @@ async def get_current_user_from_token(
     :return: User object.
     """
     logger.debug("Retrieving current user from token test.")
-    decoded_token = await keycloak_service.decode_token(token.credentials)
+    decoded_token = await openid_service.decode_token(token.credentials)
 
     return CurrentUser.from_token(
         decoded_token,

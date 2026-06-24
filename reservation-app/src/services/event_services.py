@@ -16,9 +16,10 @@ from core.application.exceptions import (
     Entity,
     SoftValidationError,
 )
-from core.enums import EventActor
-from core.models import EventState
-from core.schemas import (
+from crud import CRUDEvent, CRUDUser
+from domain.enums import EventActor
+from domain.models import EventState
+from domain.schemas import (
     CalendarDetail,
     EventCreate,
     EventDetail,
@@ -28,10 +29,9 @@ from core.schemas import (
     Rules,
     UserLite,
 )
-from core.schemas.calendar import CalendarDetailWithCollisions
-from core.schemas.event import EventLite
-from core.schemas.google_calendar import EventTime, GoogleCalendarEventCreate
-from crud import CRUDEvent, CRUDUser
+from domain.schemas.calendar import CalendarDetailWithCollisions
+from domain.schemas.event import EventLite
+from domain.schemas.google_calendar import EventTime, GoogleCalendarEventCreate
 from fastapi import BackgroundTasks, Depends
 from integrations.google import GoogleCalendarService
 from pytz import timezone

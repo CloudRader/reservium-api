@@ -6,7 +6,7 @@ from typing import Annotated
 from core import settings
 from fastapi import APIRouter, Depends, FastAPI, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2AuthorizationCodeBearer
-from integrations.keycloak import KeycloakAuthService
+from integrations.openid import OpenIdProvider
 from services import UserService
 
 logger = logging.getLogger(__name__)
@@ -20,9 +20,8 @@ http_bearer = HTTPBearer()
 
 
 oauth2_scheme = OAuth2AuthorizationCodeBearer(
-    authorizationUrl=f"{settings.KEYCLOAK.SERVER_URL}/realms/{settings.KEYCLOAK.REALM}"
-    f"/protocol/openid-connect/auth?scope=openid roles",
-    tokenUrl=f"{settings.KEYCLOAK.SERVER_URL}/realms/{settings.KEYCLOAK.REALM}/protocol/openid-connect/token",
+    authorizationUrl=settings.OPENID.AUTH_URL,
+    tokenUrl=settings.OPENID.TOKEN_URL,
 )
 
 
@@ -48,13 +47,13 @@ async def get_token(token: str = Depends(oauth2_scheme)) -> dict:
 )
 async def login(
     user_service: Annotated[UserService, Depends(UserService)],
-    keycloak_service: Annotated[KeycloakAuthService, Depends(KeycloakAuthService)],
+    openid_service: Annotated[OpenIdProvider, Depends(OpenIdProvider)],
     token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
 ):
     """Authenticate a user."""
     logger.info("Login attempt started with bearer token.")
 
-    user_info = await keycloak_service.get_user_info(token.credentials)
+    user_info = await openid_service.get_user_info(token)
     user = await user_service.create_user(user_info)
     logger.info("User %s successfully authenticated and synced.", user.id)
 

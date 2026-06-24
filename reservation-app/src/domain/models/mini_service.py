@@ -5,14 +5,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from core.models.base import Base
+from domain.models.base import Base
 from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:  # pragma: no cover
-    from core.models.calendar import Calendar
-    from core.models.reservation_service import ReservationService
+    from domain.models.calendar import Calendar
+    from domain.models.reservation_service import ReservationService
 
 
 class MiniService(Base):

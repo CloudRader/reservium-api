@@ -26,6 +26,10 @@ class FastApiDocs:
         "- authorization_code"
     )
     VERSION = "2.0.0"
+    WELL_KNOWN_TAG: ClassVar[dict] = {
+        "name": "well known",
+        "description": "Application health and readiness endpoints.",
+    }
     AUTHORISATION_TAG: ClassVar[dict] = {
         "name": "auth",
         "description": "Authorisation in IS.",
@@ -62,6 +66,7 @@ class FastApiDocs:
     def get_tags_metadata(self):
         """Get tags metadata."""
         return [
+            self.WELL_KNOWN_TAG,
             self.AUTHORISATION_TAG,
             self.USER_TAG,
             self.RESERVATION_SERVICE_TAG,

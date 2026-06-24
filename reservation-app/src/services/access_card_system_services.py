@@ -9,8 +9,8 @@ from typing import Annotated
 
 from core import db_session
 from core.application.exceptions import PermissionDeniedError
-from core.schemas import ClubAccessSystemRequest
 from crud import CRUDEvent, CRUDMiniService, CRUDReservationService, CRUDUser
+from domain.schemas import ClubAccessSystemRequest
 from fastapi import Depends
 from services import EventService
 from sqlalchemy.ext.asyncio import AsyncSession

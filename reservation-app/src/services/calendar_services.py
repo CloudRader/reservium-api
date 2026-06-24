@@ -14,8 +14,9 @@ from core.application.exceptions import (
     Entity,
     EntityNotFoundError,
 )
-from core.models import MiniServiceModel
-from core.schemas import (
+from crud import CRUDCalendar
+from domain.models import MiniServiceModel
+from domain.schemas import (
     CalendarCreate,
     CalendarDetail,
     CalendarLite,
@@ -23,9 +24,8 @@ from core.schemas import (
     MiniServiceLite,
     ReservationServiceDetail,
 )
-from core.schemas.calendar import CalendarDetailWithCollisions
-from core.schemas.google_calendar import CalendarImportResult, GoogleCalendarCalendar
-from crud import CRUDCalendar
+from domain.schemas.calendar import CalendarDetailWithCollisions
+from domain.schemas.google_calendar import CalendarImportResult, GoogleCalendarCalendar
 from fastapi import Depends
 from integrations.google import GoogleCalendarService
 from services import CrudServiceBase

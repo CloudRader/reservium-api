@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-from core.models import (
+from domain.models import (
     CalendarModel,
     EventModel,
     EventState,
@@ -13,7 +13,7 @@ from core.models import (
     ReservationServiceModel,
     UserModel,
 )
-from core.schemas import Rules
+from domain.schemas import Rules
 
 
 @pytest.fixture(scope="module")

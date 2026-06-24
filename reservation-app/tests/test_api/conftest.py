@@ -2,7 +2,7 @@
 #
 # import pytest
 # import pytest_asyncio
-# from core.schemas import ReservationServiceCreate, Room, UserCreate, UserIS, Zone
+# from domain.schemas import ReservationServiceCreate, Room, UserCreate, UserIS, Zone
 # from crud import CRUDReservationService, CRUDUser
 # from httpx import ASGITransport, AsyncClient
 # from src.main import app

@@ -1,10 +1,10 @@
-"""DTO schemes for Data from Keycloak."""
+"""DTO schemes for Data from OpenID Provider."""
 
 from pydantic import BaseModel, EmailStr, Field
 
 
-class UserKeycloak(BaseModel):
-    """Represent a user in the Keycloak."""
+class UserInfo(BaseModel):
+    """Represent a user in the OpenID Provider."""
 
     sub: str
     preferred_username: str
@@ -41,3 +41,7 @@ class CurrentUser(BaseModel):
 
     def has_permission(self, permission: str) -> bool:
         return permission in self.resource_roles
+
+
+# Keep backward compatibility with Keycloak models
+UserKeycloak = UserInfo

@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 import sqlalchemy
-from core.models import UserModel
+from domain.models import UserModel
 
 
 @pytest.mark.asyncio

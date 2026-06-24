@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
-from core.schemas.user import UserCreate, UserLite, UserUpdate
+from domain.schemas.user import UserCreate, UserLite, UserUpdate
 from pydantic import ValidationError
 
 

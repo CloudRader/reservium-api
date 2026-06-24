@@ -3,8 +3,8 @@
 import datetime as dt
 
 import pytest
-from core.models import EventState
-from core.schemas import EventUpdate
+from domain.models import EventState
+from domain.schemas import EventUpdate
 
 
 @pytest.mark.asyncio

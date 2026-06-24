@@ -13,14 +13,14 @@ from core.application.exceptions import (
     Entity,
     EntityNotFoundError,
 )
-from core.schemas import (
+from crud import CRUDCalendar, CRUDMiniService
+from domain.schemas import (
     MiniServiceCreate,
     MiniServiceDetail,
     MiniServiceLite,
     MiniServiceUpdate,
     ReservationServiceDetail,
 )
-from crud import CRUDCalendar, CRUDMiniService
 from fastapi import Depends
 from services import CrudServiceBase
 from services.reservation_service_services import ReservationServiceService

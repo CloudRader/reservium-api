@@ -9,7 +9,7 @@ from core.application.exceptions import (
     ERROR_RESPONSES,
     Entity,
 )
-from core.schemas import MiniServiceCreate, MiniServiceDetail, MiniServiceLite, MiniServiceUpdate
+from domain.schemas import MiniServiceCreate, MiniServiceDetail, MiniServiceLite, MiniServiceUpdate
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import MiniServiceService
 
