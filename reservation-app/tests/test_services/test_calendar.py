@@ -2,8 +2,8 @@
 #
 # import pytest
 # from core.application.exceptions import BaseAppError, PermissionDeniedError
-# from core.schemas import CalendarUpdate
-# from core.schemas.google_calendar import GoogleCalendarCalendar
+# from domain.schemas import CalendarUpdate
+# from domain.schemas.google_calendar import GoogleCalendarCalendar
 #
 #
 # @pytest.mark.asyncio

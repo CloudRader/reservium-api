@@ -10,15 +10,15 @@ from typing import Annotated
 
 from core import db_session
 from core.application.exceptions import Entity
-from core.schemas import (
+from crud import CRUDReservationService, CRUDUser
+from domain.schemas import (
     UserCreate,
     UserDetail,
     UserInfo,
     UserLite,
     UserUpdate,
 )
-from core.schemas.event import EventDetail
-from crud import CRUDReservationService, CRUDUser
+from domain.schemas.event import EventDetail
 from fastapi import Depends
 from services import CrudServiceBase, EventService
 from sqlalchemy.ext.asyncio import AsyncSession

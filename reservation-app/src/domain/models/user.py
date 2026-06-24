@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from core.models.base import Base
+from domain.models.base import Base
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:  # pragma: no cover
-    from core.models.event import Event
+    from domain.models.event import Event
 
 
 class User(Base):

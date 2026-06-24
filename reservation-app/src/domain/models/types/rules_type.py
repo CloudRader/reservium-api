@@ -1,7 +1,7 @@
 """Custom SQLAlchemy column type for storing `Rules` Pydantic models as JSON."""
 
-from core.models.types.pydantic_type import PydanticType
-from core.schemas import Rules
+from domain.models.types.pydantic_type import PydanticType
+from domain.schemas import Rules
 
 
 class RulesType(PydanticType):

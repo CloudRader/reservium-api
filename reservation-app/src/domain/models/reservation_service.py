@@ -4,14 +4,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from core.models.base import Base
+from domain.models.base import Base
 from sqlalchemy import Integer
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:  # pragma: no cover
-    from core.models.calendar import Calendar
-    from core.models.mini_service import MiniService
+    from domain.models.calendar import Calendar
+    from domain.models.mini_service import MiniService
 
 
 class ReservationService(Base):

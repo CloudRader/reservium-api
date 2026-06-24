@@ -12,7 +12,7 @@ from core.application.exceptions import (
     ExternalAPIError,
     PermissionDeniedError,
 )
-from core.schemas.google_calendar import (
+from domain.schemas.google_calendar import (
     CalendarImportResult,
     GoogleCalendarCalendar,
     GoogleCalendarEvent,

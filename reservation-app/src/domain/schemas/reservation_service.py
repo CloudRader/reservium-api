@@ -51,7 +51,7 @@ class ReservationServiceDetail(ReservationServiceLite):
     mini_services: list["MiniServiceLite"] = Field(default_factory=list)  # noqa
 
 
-from core.schemas.calendar import CalendarDetail  # noqa
-from core.schemas.mini_service import MiniServiceLite  # noqa
+from domain.schemas.calendar import CalendarDetail  # noqa
+from domain.schemas.mini_service import MiniServiceLite  # noqa
 
 ReservationServiceLite.model_rebuild()

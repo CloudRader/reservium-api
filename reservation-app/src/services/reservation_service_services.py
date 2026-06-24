@@ -13,16 +13,16 @@ from core.application.exceptions import (
     Entity,
     EntityNotFoundError,
 )
-from core.models import CalendarModel, EventState, MiniServiceModel
-from core.schemas import (
+from crud import CRUDReservationService
+from domain.models import CalendarModel, EventState, MiniServiceModel
+from domain.schemas import (
     CalendarDetail,
     MiniServiceDetail,
     ReservationServiceCreate,
     ReservationServiceDetail,
     ReservationServiceUpdate,
 )
-from core.schemas.event import EventDetail
-from crud import CRUDReservationService
+from domain.schemas.event import EventDetail
 from fastapi import Depends
 from services import CrudServiceBase
 from sqlalchemy.ext.asyncio import AsyncSession

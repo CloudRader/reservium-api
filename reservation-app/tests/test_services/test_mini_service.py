@@ -2,7 +2,7 @@
 #
 # import pytest
 # from core.application.exceptions import PermissionDeniedError
-# from core.schemas import MiniServiceUpdate
+# from domain.schemas import MiniServiceUpdate
 #
 #
 # @pytest.mark.asyncio

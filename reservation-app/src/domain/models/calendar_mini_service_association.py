@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from core.models.base import Base
+from domain.models.base import Base
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 

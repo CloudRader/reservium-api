@@ -3,7 +3,7 @@
 from typing import Annotated, Any
 
 from core.application.exceptions import ERROR_RESPONSES
-from core.schemas import (
+from domain.schemas import (
     ClubAccessSystemRequest,
 )
 from fastapi import APIRouter, Depends, status

@@ -17,9 +17,9 @@ from core.application.exceptions import (
     ERROR_RESPONSES,
     Entity,
 )
-from core.enums import EventActor
-from core.models import EventState
-from core.schemas import (
+from domain.enums import EventActor
+from domain.models import EventState
+from domain.schemas import (
     EventCreate,
     EventDetail,
     EventLite,

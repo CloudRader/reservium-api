@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from core.models.event import EventState
+from domain.models.event import EventState
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 
@@ -147,7 +147,7 @@ class EventDetail(EventLite):
     calendar: "CalendarWithReservationServiceInfo"  # noqa
 
 
-from core.schemas.user import UserLite  # noqa
-from core.schemas.calendar import CalendarWithReservationServiceInfo, CalendarLite  # noqa
+from domain.schemas.user import UserLite  # noqa
+from domain.schemas.calendar import CalendarWithReservationServiceInfo, CalendarLite  # noqa
 
 EventDetail.model_rebuild()

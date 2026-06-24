@@ -5,16 +5,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from core.models.base import Base
-from core.models.types.rules_type import RulesType
-from core.schemas.calendar import Rules
+from domain.models.base import Base
+from domain.models.types.rules_type import RulesType
+from domain.schemas.calendar import Rules
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:  # pragma: no cover
-    from core.models.event import Event
-    from core.models.mini_service import MiniService
-    from core.models.reservation_service import ReservationService
+    from domain.models.event import Event
+    from domain.models.mini_service import MiniService
+    from domain.models.reservation_service import ReservationService
 
 
 class Calendar(Base):

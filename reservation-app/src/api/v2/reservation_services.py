@@ -10,16 +10,16 @@ from core.application.exceptions import (
     ERROR_RESPONSES,
     Entity,
 )
-from core.models.event import EventState
-from core.schemas import (
+from domain.models.event import EventState
+from domain.schemas import (
     CalendarDetail,
     MiniServiceDetail,
     ReservationServiceCreate,
     ReservationServiceDetail,
     ReservationServiceUpdate,
 )
-from core.schemas.event import EventDetail
-from core.schemas.openid import CurrentUser
+from domain.schemas.event import EventDetail
+from domain.schemas.openid import CurrentUser
 from fastapi import APIRouter, Depends, Path, Query, status
 from services import ReservationServiceService
 

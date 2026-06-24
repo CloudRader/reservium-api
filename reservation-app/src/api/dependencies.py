@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated, Any
 
-from core.schemas.openid import CurrentUser
+from domain.schemas.openid import CurrentUser
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from integrations.openid import OpenIdProvider

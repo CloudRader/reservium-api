@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 
 import pytest
 import sqlalchemy
-from core.models import CalendarModel
+from domain.models import CalendarModel
 
 
 @pytest.mark.asyncio

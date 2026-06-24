@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from typing import Any, TypeVar
 from uuid import UUID
 
-from core.models.base import Base
+from domain.models.base import Base
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

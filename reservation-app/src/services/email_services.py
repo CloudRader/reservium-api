@@ -13,7 +13,7 @@ from typing import Any
 
 from anyio import Path as AsyncPath
 from core import email_connection, settings
-from core.schemas import (
+from domain.schemas import (
     CalendarLite,
     EmailCreate,
     EmailMeta,

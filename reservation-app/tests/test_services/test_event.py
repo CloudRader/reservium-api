@@ -4,8 +4,8 @@
 #
 # import pytest
 # from core.application.exceptions import BaseAppError, SoftValidationError
-# from core.models import EventState
-# from core.schemas import EventUpdate, EventUpdateTime
+# from domain.models import EventState
+# from domain.schemas import EventUpdate, EventUpdateTime
 #
 #
 # @pytest.mark.asyncio
