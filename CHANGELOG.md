@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.4.2](https://github.com/CloudRader/reservium-api/compare/v2.4.1...v2.4.2) (2026-06-24)
+
+
+### 🧱 Updates & Improvements
+
+* add well known endpoints ([2c76c6c](https://github.com/CloudRader/reservium-api/commit/2c76c6cdc6445d4c48f8f100a4c8833ae5e1ad35))
+* **deps:** update dependency astral-sh/uv to v0.11.22 ([#314](https://github.com/CloudRader/reservium-api/issues/314)) ([21c374f](https://github.com/CloudRader/reservium-api/commit/21c374f6eefd021d74f3b6149f9328f999555952))
+* **deps:** update dependency astral-sh/uv to v0.11.23 ([#317](https://github.com/CloudRader/reservium-api/issues/317)) ([7e257ec](https://github.com/CloudRader/reservium-api/commit/7e257ec8d99c60eae821ade6187390053d8dd818))
+* **deps:** update dependency astral-sh/uv to v0.11.24 ([#320](https://github.com/CloudRader/reservium-api/issues/320)) ([04bc702](https://github.com/CloudRader/reservium-api/commit/04bc702539c2308b99a2f85c49c8a76040fb7f4b))
+* **deps:** update dependency pytest to v9.1.1 ([#315](https://github.com/CloudRader/reservium-api/issues/315)) ([a7e14d3](https://github.com/CloudRader/reservium-api/commit/a7e14d3b88738eb79dd8f450eae65e9794e69369))
+* **deps:** update dependency ruff to v0.15.18 ([#313](https://github.com/CloudRader/reservium-api/issues/313)) ([5d5bed7](https://github.com/CloudRader/reservium-api/commit/5d5bed79165aa31901748c10c0195ff008625451))
+* **deps:** update dependency ruff to v0.15.19 ([#321](https://github.com/CloudRader/reservium-api/issues/321)) ([f8dfe12](https://github.com/CloudRader/reservium-api/commit/f8dfe12384546492e662c8f0cd7e52c69adfbf86))
+* **openid:** migrate keycloak to generic openid provider ([c2aaa1e](https://github.com/CloudRader/reservium-api/commit/c2aaa1eea7d83fe4463475dc1606010ffe8c92ea))
+
+
+### 🛠️ Fixes
+
+* **deps:** update dependency fastapi to v0.138.0 ([#318](https://github.com/CloudRader/reservium-api/issues/318)) ([12d9483](https://github.com/CloudRader/reservium-api/commit/12d94831917299808822a29bc730b7a0f5e6e36e))
+* **deps:** update dependency pydantic-settings to v2.14.2 ([#316](https://github.com/CloudRader/reservium-api/issues/316)) ([d2a778e](https://github.com/CloudRader/reservium-api/commit/d2a778e548ed285a3e108bab10de6916048abe25))
+* **deps:** update dependency pypdf to v6.14.2 ([#319](https://github.com/CloudRader/reservium-api/issues/319)) ([3a83cee](https://github.com/CloudRader/reservium-api/commit/3a83ceede73e8227391aa478073b277b8310ab7a))
+
+
+### 🧹 Refactors
+
+* **domain:** move schemas, enums, models under domain folder in src ([e51ed1e](https://github.com/CloudRader/reservium-api/commit/e51ed1e2bdea57f1e2071fb3e5f77f2b0e09f65e))
+
 ## [2.4.1](https://github.com/CloudRader/reservium-api/compare/v2.4.0...v2.4.1) (2026-06-18)
 
 
