@@ -20,7 +20,7 @@ dependencies = [
     "pypdf==6.14.2",
     "httpx==0.28.1",
     "google-auth-oauthlib==1.4.0",
-    "google-api-python-client==2.197.0",
+    "google-api-python-client==2.198.0",
     "python-dateutil==2.9.0.post0",
     "aiohttp==3.14.1",
     "jwcrypto==1.5.8",
