@@ -11,7 +11,7 @@ Backend service powering the **Reservium platform**, providing event, calendar, 
 ## 🌐 Overview
 
 Reservium is a **FastAPI-based backend** designed to automate and simplify reservation management.
-It integrates seamlessly with **Keycloak** for authentication, **Google Calendar** for scheduling, and **Dormitory Access APIs** for internal facility management.
+It integrates seamlessly with **OpenID** for authentication, **Google Calendar** for scheduling, and **Dormitory Access APIs** for internal facility management.
 
 **Part of the Reservium Suite:**
 - 🧩 **[Reservium API](https://github.com/CloudRader/reservium-api)** — core backend (this project)
@@ -76,10 +76,12 @@ services:
       MAIL__SENT_DORMITORY_HEAD: true  # defalt false
       MAIL__DORMITORY_HEAD_EMAIL: example@gmail.com
 
-      KEYCLOAK__SERVER_URL: ${KEYCLOAK__SERVER_URL}
-      KEYCLOAK__REALM: ${KEYCLOAK__REALM}
-      KEYCLOAK__CLIENT_ID: ${KEYCLOAK__CLIENT_ID}
-      KEYCLOAK__CLIENT_SECRET: ${KEYCLOAK__CLIENT_SECRET}
+      OPENID__CLIENT_NAME: ${OPENID__CLIENT_NAME}
+      OPENID__CLIENT_ID: ${OPENID__CLIENT_ID}
+      OPENID__CLIENT_SECRET: ${OPENID__CLIENT_SECRET}
+      OPENID__AUTH_URL: ${OPENID__AUTH_URL}
+      OPENID__TOKEN_URL: ${OPENID__TOKEN_URL}
+      OPENID__METADATA_URL: ${OPENID__METADATA_URL}
 
       GOOGLE__PROJECT_ID: ${GOOGLE__PROJECT_ID}
       GOOGLE__PRIVATE_KEY_ID: ${GOOGLE__PRIVATE_KEY_ID}
@@ -124,11 +126,13 @@ MAIL__USERNAME=reservium@buk.cvut.cz
 MAIL__PASSWORD=exampleapp123
 MAIL__FROM_NAME=Reservium System
 
-# Keycloak
-KEYCLOAK__SERVER_URL=https://auth.buk.cvut.cz
-KEYCLOAK__REALM=reservium
-KEYCLOAK__CLIENT_ID=reservium-api
-KEYCLOAK__CLIENT_SECRET=supersecret
+# OpenID
+OPENID__CLIENT_NAME=provider-name
+OPENID__CLIENT_ID=openid-client-id
+OPENID__CLIENT_SECRET=openid-client-secret
+OPENID__AUTH_URL='https://openid-auth-url'
+OPENID__TOKEN_URL='https://openid-token-url'
+OPENID__METADATA_URL='https://openid-metadata-url'
 
 # Google
 GOOGLE__CLIENT_ID=example.apps.googleusercontent.com
