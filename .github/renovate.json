@@ -1,12 +1,13 @@
-{
+  {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>cloudrader/renovate-config:org-inherited-config"
   ],
   "packageRules": [
     {
-      "matchPackageNames": ["python"],
-      "allowedVersions": "3.14.3"
+      "description": "Keep GitHub Actions on major-version tags",
+      "matchManagers": ["github-actions"],
+      "rangeStrategy": "replace"
     }
   ]
 }
