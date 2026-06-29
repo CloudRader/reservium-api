@@ -4,9 +4,9 @@ services:
     image: postgres:18.4
     restart: on-failure
     environment:
-      POSTGRES_USER: ${DB__POSTGRES_USER}
-      POSTGRES_PASSWORD: ${DB__POSTGRES_PASSWORD}
-      POSTGRES_DB: ${DB__POSTGRES_DB}
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: devdb
     volumes:
       - postgres_data:/var/lib/postgresql
     ports:
@@ -17,40 +17,17 @@ services:
   reservium-api:
     container_name: reservation-api
     build:
-      context: .
+      context: ./reservation-app
       dockerfile: Dockerfile
+    env_file:
+      - reservation-app/.env
     environment:
-      ORGANIZATION_NAME: "Buben Club"
-
-      DB__POSTGRES_USER: ${DB__POSTGRES_USER}
-      DB__POSTGRES_PASSWORD: ${DB__POSTGRES_PASSWORD}
-      DB__POSTGRES_DB: ${DB__POSTGRES_DB}
       DB__POSTGRES_SERVER: db
-
-      MAIL__USERNAME: ${MAIL__USERNAME}
-      MAIL__PASSWORD: ${MAIL__PASSWORD}
-      MAIL__FROM_NAME: ${MAIL__FROM_NAME}
-      MAIL__SENT_DORMITORY_HEAD: true
-      MAIL__DORMITORY_HEAD_EMAIL: develop@buk.cvut.cz
-
-      OPENID__CLIENT_NAME: ${OPENID__CLIENT_NAME}
-      OPENID__CLIENT_ID: ${OPENID__CLIENT_ID}
-      OPENID__CLIENT_SECRET: ${OPENID__CLIENT_SECRET}
-      OPENID__AUTH_URL: ${OPENID__AUTH_URL}
-      OPENID__TOKEN_URL: ${OPENID__TOKEN_URL}
-      OPENID__METADATA_URL: ${OPENID__METADATA_URL}
-
-      GOOGLE__PROJECT_ID: ${GOOGLE__PROJECT_ID}
-      GOOGLE__PRIVATE_KEY_ID: ${GOOGLE__PRIVATE_KEY_ID}
-      GOOGLE__PRIVATE_KEY: ${GOOGLE__PRIVATE_KEY}
-      GOOGLE__CLIENT_EMAIL: ${GOOGLE__CLIENT_EMAIL}
-      GOOGLE__CLIENT_ID: ${GOOGLE__CLIENT_ID}
-      GOOGLE__CLIENT_X509_CERT_URL: ${GOOGLE__CLIENT_X509_CERT_URL}
     depends_on:
       - db
     restart: on-failure
     volumes:
-      - ./reservation-app/src:/usr/src/app/src
+      - ./reservation-app/src:/app/src
     ports:
       - "8000:8000"
     networks:
@@ -60,12 +37,8 @@ services:
     container_name: reservium-ui
     image: ghcr.io/cloudrader/reservium-ui:latest
     platform: linux/amd64
-    environment:
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL}
-      VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
-      VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
-      VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
-      VITE_GOOGLE_CALENDAR_API_KEY: ${VITE_GOOGLE_CALENDAR_API_KEY}
+    env_file:
+      - reservation-app/.env
     ports:
       - "3000:3000"
     networks:

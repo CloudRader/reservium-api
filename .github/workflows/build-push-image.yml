@@ -36,7 +36,7 @@ jobs:
       - name: Build and Push Dev Image
         uses: docker/build-push-action@v7
         with:
-          context: .
+          context: ./reservation-app
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:latest-dev
@@ -74,7 +74,7 @@ jobs:
       - name: Build and Push Release Image
         uses: docker/build-push-action@v7
         with:
-          context: .
+          context: ./reservation-app
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:latest
