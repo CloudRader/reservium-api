@@ -6,8 +6,6 @@ from typing import Literal
 from pydantic import BaseModel, PostgresDsn, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from .utils import get_env_file_path
-
 LOG_DEFAULT_FORMAT = (
     "[%(asctime)s.%(msecs)03d] %(module)20s:%(lineno)-4d %(levelname)-7s - %(message)s"
 )
@@ -190,7 +188,7 @@ class Settings(BaseSettings):
         extra="ignore",
         case_sensitive=True,
         env_nested_delimiter="__",
-        env_file=get_env_file_path([".env"]),
+        env_file=".env",
     )
 
 
