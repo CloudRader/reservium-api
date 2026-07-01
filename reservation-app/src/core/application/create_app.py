@@ -1,17 +1,19 @@
 """App factory module for the FastAPI application."""
 
 import logging
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from core import settings
 from fastapi import FastAPI
+from infrastructure.database import db_session
 from starlette.middleware.cors import CORSMiddleware
 
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def startup_event(fast_api_app: FastAPI):  # noqa: ARG001
+async def startup_event(_: FastAPI) -> AsyncGenerator[None]:
     """
     Startup and shutdown lifecycle event handler.
 
@@ -22,6 +24,7 @@ async def startup_event(fast_api_app: FastAPI):  # noqa: ARG001
     """
     logger.info("Starting %s.", settings.APP_NAME)
     yield
+    await db_session.dispose()
     logger.info("Shutting down %s.", settings.APP_NAME)
 
 
@@ -58,7 +61,6 @@ def create_app():
         allow_origins=[
             "https://develop.reservation.buk.cvut.cz",
             "https://reservation.buk.cvut.cz",
-            "https://is.buk.cvut.cz",
             "http://localhost:3000",
         ],
         allow_credentials=True,

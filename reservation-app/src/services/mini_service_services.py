@@ -5,10 +5,8 @@ This class works with Mini Service.
 """
 
 from abc import ABC, abstractmethod
-from typing import Annotated
 from uuid import UUID
 
-from core import db_session
 from core.application.exceptions import (
     Entity,
     EntityNotFoundError,
@@ -21,10 +19,9 @@ from domain.schemas import (
     MiniServiceUpdate,
     ReservationServiceDetail,
 )
-from fastapi import Depends
+from infrastructure.database import AsyncSessionDep
 from services import CrudServiceBase
 from services.reservation_service_services import ReservationServiceService
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AbstractMiniServiceService(
@@ -92,7 +89,7 @@ class MiniServiceService(AbstractMiniServiceService):
 
     def __init__(
         self,
-        db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
+        db: AsyncSessionDep,
     ):
         super().__init__(CRUDMiniService(db), Entity.MINI_SERVICE)
         self.calendar_crud = CRUDCalendar(db)

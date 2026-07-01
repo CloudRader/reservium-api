@@ -7,10 +7,9 @@ This class works with Event.
 import datetime as dt
 import logging
 from abc import ABC, abstractmethod
-from typing import Annotated, Any
+from typing import Any
 from uuid import UUID
 
-from core import db_session
 from core.application.exceptions import (
     BaseAppError,
     Entity,
@@ -32,14 +31,14 @@ from domain.schemas import (
 from domain.schemas.calendar import CalendarDetailWithCollisions
 from domain.schemas.event import EventLite
 from domain.schemas.google_calendar import EventTime, GoogleCalendarEventCreate
-from fastapi import BackgroundTasks, Depends
+from fastapi import BackgroundTasks
+from infrastructure.database import AsyncSessionDep
 from infrastructure.google import GoogleCalendarService
 from pytz import timezone
 from services import CrudServiceBase
 from services.calendar_services import CalendarService
 from services.email_services import EmailService
 from services.reservation_service_services import ReservationServiceService
-from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -286,7 +285,7 @@ class EventService(AbstractEventService):
 
     def __init__(
         self,
-        db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
+        db: AsyncSessionDep,
     ):
         super().__init__(CRUDEvent(db), Entity.EVENT)
         self.reservation_service_service = ReservationServiceService(db)
