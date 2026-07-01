@@ -29,7 +29,7 @@ from domain.schemas import (
 )
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, Path, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
-from integrations.openid import OpenIdProvider
+from infrastructure.openid import OpenIdProvider
 from services import EventService
 
 logger = logging.getLogger(__name__)

@@ -4,11 +4,9 @@
 from .config import settings
 from .config_email import email_connection
 from .application import uvicorn_run, create_app
-from .db import db_session
 
 __all__ = [
     "create_app",
-    "db_session",
     "email_connection",
     "settings",
     "uvicorn_run",

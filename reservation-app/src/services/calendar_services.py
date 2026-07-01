@@ -5,10 +5,8 @@ This class works with Calendar.
 """
 
 from abc import ABC, abstractmethod
-from typing import Annotated
 from uuid import UUID
 
-from core import db_session
 from core.application.exceptions import (
     BaseAppError,
     Entity,
@@ -26,12 +24,11 @@ from domain.schemas import (
 )
 from domain.schemas.calendar import CalendarDetailWithCollisions
 from domain.schemas.google_calendar import CalendarImportResult, GoogleCalendarCalendar
-from fastapi import Depends
-from integrations.google import GoogleCalendarService
+from infrastructure.database import AsyncSessionDep
+from infrastructure.google import GoogleCalendarService
 from services import CrudServiceBase
 from services.mini_service_services import MiniServiceService
 from services.reservation_service_services import ReservationServiceService
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AbstractCalendarService(
@@ -159,7 +156,7 @@ class CalendarService(AbstractCalendarService):
 
     def __init__(
         self,
-        db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
+        db: AsyncSessionDep,
     ):
         super().__init__(CRUDCalendar(db), Entity.CALENDAR)
         self.reservation_service_service = ReservationServiceService(db)

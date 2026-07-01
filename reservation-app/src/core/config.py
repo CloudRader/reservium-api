@@ -78,6 +78,10 @@ class DatabaseConfig(BaseModel):
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: int = 5432
     SQLALCHEMY_SCHEME: str = "postgresql+asyncpg"
+    ECHO: bool = False
+    ECHO_POOL: bool = False
+    POOL_SIZE: int = 50
+    MAX_OVERFLOW: int = 10
 
     NAMING_CONVENTION: dict[str, str] = {
         "ix": "ix_%(column_0_label)s",

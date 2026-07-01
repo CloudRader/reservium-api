@@ -6,7 +6,7 @@ from typing import Annotated, Any
 from domain.schemas.openid import CurrentUser
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from integrations.openid import OpenIdProvider
+from infrastructure.openid import OpenIdProvider
 from services import UserService
 
 logger = logging.getLogger(__name__)

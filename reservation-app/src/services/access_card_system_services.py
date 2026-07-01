@@ -7,13 +7,12 @@ This class works with the Access Card System.
 from abc import ABC, abstractmethod
 from typing import Annotated
 
-from core import db_session
 from core.application.exceptions import PermissionDeniedError
 from crud import CRUDEvent, CRUDMiniService, CRUDReservationService, CRUDUser
 from domain.schemas import ClubAccessSystemRequest
 from fastapi import Depends
+from infrastructure.database import AsyncSessionDep
 from services import EventService
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AbstractAccessCardSystemService(ABC):
@@ -40,7 +39,7 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
 
     def __init__(
         self,
-        db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
+        db: AsyncSessionDep,
     ):
         self.event_crud = CRUDEvent(db)
         self.user_crud = CRUDUser(db)

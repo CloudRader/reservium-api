@@ -6,9 +6,7 @@ This class works with User.
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Annotated
 
-from core import db_session
 from core.application.exceptions import Entity
 from crud import CRUDReservationService, CRUDUser
 from domain.schemas import (
@@ -19,9 +17,8 @@ from domain.schemas import (
     UserUpdate,
 )
 from domain.schemas.event import EventDetail
-from fastapi import Depends
+from infrastructure.database import AsyncSessionDep
 from services import CrudServiceBase, EventService
-from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +88,7 @@ class UserService(AbstractUserService):
 
     def __init__(
         self,
-        db: Annotated[AsyncSession, Depends(db_session.scoped_session_dependency)],
+        db: AsyncSessionDep,
     ):
         super().__init__(CRUDUser(db), Entity.USER)
         self.reservation_service_crud = CRUDReservationService(db)
