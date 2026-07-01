@@ -33,7 +33,7 @@ from domain.schemas.calendar import CalendarDetailWithCollisions
 from domain.schemas.event import EventLite
 from domain.schemas.google_calendar import EventTime, GoogleCalendarEventCreate
 from fastapi import BackgroundTasks, Depends
-from integrations.google import GoogleCalendarService
+from infrastructure.google import GoogleCalendarService
 from pytz import timezone
 from services import CrudServiceBase
 from services.calendar_services import CalendarService

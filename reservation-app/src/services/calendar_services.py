@@ -27,7 +27,7 @@ from domain.schemas import (
 from domain.schemas.calendar import CalendarDetailWithCollisions
 from domain.schemas.google_calendar import CalendarImportResult, GoogleCalendarCalendar
 from fastapi import Depends
-from integrations.google import GoogleCalendarService
+from infrastructure.google import GoogleCalendarService
 from services import CrudServiceBase
 from services.mini_service_services import MiniServiceService
 from services.reservation_service_services import ReservationServiceService
