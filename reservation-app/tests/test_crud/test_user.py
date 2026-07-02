@@ -75,9 +75,9 @@ async def test_get_all_users(user_crud, test_user, test_user2):
 
 
 @pytest.mark.asyncio
-async def test_get_multi_users(user_crud, test_user, test_user2):
+async def test_get_list_users(user_crud, test_user, test_user2):
     """Test retrieving multi users."""
-    users_limited = await user_crud.get_multi(limit=1)
+    users_limited = await user_crud.get_list(limit=1)
     usernames = [user.username for user in users_limited]
     assert len(users_limited) == 1
     assert test_user.username not in usernames

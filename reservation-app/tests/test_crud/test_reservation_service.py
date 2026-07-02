@@ -72,7 +72,7 @@ async def test_get_multi_reservation_services(
     test_reservation_service2,
 ):
     """Test retrieving limited reservation services."""
-    services = await reservation_service_crud.get_multi(limit=1)
+    services = await reservation_service_crud.get_list(limit=1)
     names = [service.name for service in services]
     assert len(services) == 1
     if test_reservation_service.name in names:
