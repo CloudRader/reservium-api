@@ -34,6 +34,7 @@ jobs:
           cache-dependency-glob: |
             reservation-app/pyproject.toml
             reservation-app/uv.lock
+          cache-suffix: "mypy"
 
       - name: Install dependencies
         run: uv sync --group dev
@@ -72,6 +73,7 @@ jobs:
           cache-dependency-glob: |
             reservation-app/pyproject.toml
             reservation-app/uv.lock
+          cache-suffix: "ruff"
 
       - name: Install dependencies
         run: uv sync --group dev
@@ -110,6 +112,7 @@ jobs:
           cache-dependency-glob: |
             reservation-app/pyproject.toml
             reservation-app/uv.lock
+          cache-suffix: "pytest"
 
       - name: Install dependencies
         run: uv sync --group dev
