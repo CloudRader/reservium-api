@@ -8,7 +8,7 @@ from api.v2.events import router as events_router
 from api.v2.mini_services import router as mini_services_router
 from api.v2.reservation_services import router as reservation_services_router
 from api.v2.users import router as users_router
-from core.application.docs import fastapi_docs
+from core.bootstrap.docs import fastapi_docs
 from fastapi import APIRouter
 
 router = APIRouter(

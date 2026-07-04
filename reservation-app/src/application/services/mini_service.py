@@ -16,7 +16,7 @@ from api.schemas import (
 )
 from application.services import CrudServiceBase
 from application.services.reservation_service import ReservationServiceService
-from core.application.exceptions import (
+from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,
 )

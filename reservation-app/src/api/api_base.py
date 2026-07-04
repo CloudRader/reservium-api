@@ -7,7 +7,7 @@ from uuid import UUID
 
 from api import require_permission
 from application.services.base import CrudServiceBase
-from core.application.exceptions import ERROR_RESPONSES, BaseAppError, Entity
+from core.bootstrap.exceptions import ERROR_RESPONSES, BaseAppError, Entity
 from fastapi import APIRouter, Depends, Path, Query, status
 from pydantic import BaseModel
 

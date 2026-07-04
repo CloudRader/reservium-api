@@ -19,7 +19,7 @@ from api.schemas.calendar import CalendarDetailWithCollisions
 from application.services import CrudServiceBase
 from application.services.mini_service import MiniServiceService
 from application.services.reservation_service import ReservationServiceService
-from core.application.exceptions import (
+from core.bootstrap.exceptions import (
     BaseAppError,
     Entity,
     EntityNotFoundError,

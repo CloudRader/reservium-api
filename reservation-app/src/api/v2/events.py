@@ -22,7 +22,7 @@ from api.schemas import (
     UserLite,
 )
 from application.services import EventService
-from core.application.exceptions import (
+from core.bootstrap.exceptions import (
     ERROR_RESPONSES,
     Entity,
 )

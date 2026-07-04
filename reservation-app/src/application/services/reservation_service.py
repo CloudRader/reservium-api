@@ -16,7 +16,7 @@ from api.schemas import (
 )
 from api.schemas.event import EventDetail
 from application.services import CrudServiceBase
-from core.application.exceptions import (
+from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,
 )

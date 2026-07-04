@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from typing import TypeVar
 from uuid import UUID
 
-from core.application.exceptions import BaseAppError, Entity, EntityNotFoundError
+from core.bootstrap.exceptions import BaseAppError, Entity, EntityNotFoundError
 from crud import CRUDBase
 from pydantic import BaseModel
 

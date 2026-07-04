@@ -7,7 +7,7 @@ from api import get_current_user, require_permission
 from api.schemas import UserLite
 from api.schemas.event import EventDetail
 from application.services import UserService
-from core.application.exceptions import ERROR_RESPONSES
+from core.bootstrap.exceptions import ERROR_RESPONSES
 from fastapi import APIRouter, Depends, FastAPI, Query, status
 
 logger = logging.getLogger(__name__)

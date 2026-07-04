@@ -26,7 +26,7 @@ from application.services import CrudServiceBase
 from application.services.calendar import CalendarService
 from application.services.email import EmailService
 from application.services.reservation_service import ReservationServiceService
-from core.application.exceptions import (
+from core.bootstrap.exceptions import (
     BaseAppError,
     Entity,
     SoftValidationError,

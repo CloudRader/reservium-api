@@ -16,7 +16,7 @@ from api.schemas import (
 )
 from api.schemas.calendar import CalendarDetailWithCollisions
 from application.services import CalendarService
-from core.application.exceptions import ERROR_RESPONSES, Entity, PermissionDeniedError
+from core.bootstrap.exceptions import ERROR_RESPONSES, Entity, PermissionDeniedError
 from fastapi import APIRouter, Depends, Path, Query, status
 from infrastructure.google import (
     CalendarImportResult,

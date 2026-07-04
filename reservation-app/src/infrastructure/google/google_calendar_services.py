@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from core import settings
-from core.application.exceptions import (
+from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,
     ExternalAPIError,
