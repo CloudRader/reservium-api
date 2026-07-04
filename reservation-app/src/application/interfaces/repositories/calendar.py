@@ -10,12 +10,12 @@ from typing import Any
 from uuid import UUID
 
 from api.schemas import CalendarCreate, CalendarUpdate
-from application.interfaces.repositories import RepositoryBase
+from application.interfaces.repositories import BaseRepository
 from domain.models import CalendarModel, MiniServiceModel
 
 
-class RepositoryCalendar(
-    RepositoryBase[CalendarModel, CalendarCreate, CalendarUpdate],
+class CalendarRepository(
+    BaseRepository[CalendarModel, CalendarCreate, CalendarUpdate],
     ABC,
 ):
     """

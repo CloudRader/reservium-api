@@ -9,11 +9,11 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 
 from api.schemas import UserCreate, UserUpdate
-from application.interfaces.repositories import RepositoryBase
+from application.interfaces.repositories import BaseRepository
 from domain.models import EventModel, UserModel
 
 
-class RepositoryUser(RepositoryBase[UserModel, UserCreate, UserUpdate], ABC):
+class UserRepository(BaseRepository[UserModel, UserCreate, UserUpdate], ABC):
     """
     Abstract class for CRUD operations specific to the User model.
 

@@ -9,12 +9,12 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from uuid import UUID
 
-from api.schemas import EventLite, EventUpdate
-from application.interfaces.repositories import RepositoryBase
+from api.schemas import EventCreate, EventUpdate
+from application.interfaces.repositories import BaseRepository
 from domain.models import EventModel, EventState
 
 
-class RepositoryEvent(RepositoryBase[EventModel, EventLite, EventUpdate], ABC):
+class EventRepository(BaseRepository[EventModel, EventCreate, EventUpdate], ABC):
     """
     Abstract class for CRUD operations specific to the Event model.
 

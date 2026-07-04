@@ -18,7 +18,7 @@ CreateSchema = TypeVar("CreateSchema", bound=BaseModel)
 UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
 
 
-class RepositoryBase[Model, CreateSchema, UpdateSchema](ABC):
+class BaseRepository[Model, CreateSchema, UpdateSchema](ABC):
     """
     A generic repository interface defining standard CRUD operations.
 

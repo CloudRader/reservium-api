@@ -1,17 +1,17 @@
 """Provide repositories interfaces for each domain model to handle database operations."""
 
-from .base import RepositoryBase
-from .calendar import RepositoryCalendar
-from .event import RepositoryEvent
-from .mini_service import RepositoryMiniService
-from .reservation_service import RepositoryReservationService
-from .user import RepositoryUser
+from .base import BaseRepository
+from .calendar import CalendarRepository
+from .event import EventRepository
+from .mini_service import MiniServiceRepository
+from .reservation_service import ReservationServiceRepository
+from .user import UserRepository
 
 __all__ = [
-    "RepositoryBase",
-    "RepositoryCalendar",
-    "RepositoryEvent",
-    "RepositoryMiniService",
-    "RepositoryReservationService",
-    "RepositoryUser",
+    "BaseRepository",
+    "CalendarRepository",
+    "EventRepository",
+    "MiniServiceRepository",
+    "ReservationServiceRepository",
+    "UserRepository",
 ]
