@@ -15,6 +15,7 @@ from api.schemas import (
     ReservationServiceUpdate,
 )
 from api.schemas.event import EventDetail
+from application.services import CrudServiceBase
 from core.application.exceptions import (
     Entity,
     EntityNotFoundError,
@@ -22,7 +23,6 @@ from core.application.exceptions import (
 from crud import CRUDReservationService
 from domain.models import CalendarModel, EventState, MiniServiceModel
 from infrastructure.database import AsyncSessionDep
-from services import CrudServiceBase
 
 
 class AbstractReservationServiceService(

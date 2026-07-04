@@ -15,13 +15,13 @@ from api.schemas import (
 )
 from api.schemas.current_user import CurrentUser
 from api.schemas.event import EventDetail
+from application.services import ReservationServiceService
 from core.application.exceptions import (
     ERROR_RESPONSES,
     Entity,
 )
 from domain.models.event import EventState
 from fastapi import APIRouter, Depends, Path, Query, status
-from services import ReservationServiceService
 
 logger = logging.getLogger(__name__)
 

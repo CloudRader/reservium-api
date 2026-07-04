@@ -14,14 +14,14 @@ from api.schemas import (
     MiniServiceUpdate,
     ReservationServiceDetail,
 )
+from application.services import CrudServiceBase
+from application.services.reservation_service import ReservationServiceService
 from core.application.exceptions import (
     Entity,
     EntityNotFoundError,
 )
 from crud import CRUDCalendar, CRUDMiniService
 from infrastructure.database import AsyncSessionDep
-from services import CrudServiceBase
-from services.reservation_service_services import ReservationServiceService
 
 
 class AbstractMiniServiceService(

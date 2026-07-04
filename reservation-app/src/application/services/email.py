@@ -54,7 +54,7 @@ class EmailService(AbstractEmailService):
     def __init__(
         self,
     ):
-        self.template_dir = Path(__file__).parent.parent / "templates" / "email"
+        self.template_dir = Path(__file__).parent.parent.parent / "templates" / "email"
         self.env = Environment(
             loader=FileSystemLoader(self.template_dir), autoescape=select_autoescape()
         )

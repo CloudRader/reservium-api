@@ -22,6 +22,10 @@ from api.schemas import (
 )
 from api.schemas.calendar import CalendarDetailWithCollisions
 from api.schemas.event import EventLite
+from application.services import CrudServiceBase
+from application.services.calendar import CalendarService
+from application.services.email import EmailService
+from application.services.reservation_service import ReservationServiceService
 from core.application.exceptions import (
     BaseAppError,
     Entity,
@@ -34,10 +38,6 @@ from fastapi import BackgroundTasks
 from infrastructure.database import AsyncSessionDep
 from infrastructure.google import EventTime, GoogleCalendarEventCreate, GoogleCalendarService
 from pytz import timezone
-from services import CrudServiceBase
-from services.calendar_services import CalendarService
-from services.email_services import EmailService
-from services.reservation_service_services import ReservationServiceService
 
 logger = logging.getLogger(__name__)
 

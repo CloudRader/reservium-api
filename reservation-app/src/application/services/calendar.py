@@ -16,6 +16,9 @@ from api.schemas import (
     ReservationServiceDetail,
 )
 from api.schemas.calendar import CalendarDetailWithCollisions
+from application.services import CrudServiceBase
+from application.services.mini_service import MiniServiceService
+from application.services.reservation_service import ReservationServiceService
 from core.application.exceptions import (
     BaseAppError,
     Entity,
@@ -29,9 +32,6 @@ from infrastructure.google import (
     GoogleCalendarCalendar,
     GoogleCalendarService,
 )
-from services import CrudServiceBase
-from services.mini_service_services import MiniServiceService
-from services.reservation_service_services import ReservationServiceService
 
 
 class AbstractCalendarService(

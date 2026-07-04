@@ -5,9 +5,9 @@ from typing import Annotated, Any
 from api.schemas import (
     ClubAccessSystemRequest,
 )
+from application.services import AccessCardSystemService, EventService
 from core.application.exceptions import ERROR_RESPONSES
 from fastapi import APIRouter, Depends, status
-from services import AccessCardSystemService, EventService
 
 router = APIRouter()
 

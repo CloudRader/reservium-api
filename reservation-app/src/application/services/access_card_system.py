@@ -8,11 +8,11 @@ from abc import ABC, abstractmethod
 from typing import Annotated
 
 from api.schemas import ClubAccessSystemRequest
+from application.services import EventService
 from core.application.exceptions import PermissionDeniedError
 from crud import CRUDEvent, CRUDMiniService, CRUDReservationService, CRUDUser
 from fastapi import Depends
 from infrastructure.database import AsyncSessionDep
-from services import EventService
 
 
 class AbstractAccessCardSystemService(ABC):

@@ -15,6 +15,7 @@ from api.schemas import (
     UserLite,
 )
 from api.schemas.calendar import CalendarDetailWithCollisions
+from application.services import CalendarService
 from core.application.exceptions import ERROR_RESPONSES, Entity, PermissionDeniedError
 from fastapi import APIRouter, Depends, Path, Query, status
 from infrastructure.google import (
@@ -22,7 +23,6 @@ from infrastructure.google import (
     GoogleCalendarCalendar,
     GoogleCalendarImportRequest,
 )
-from services import CalendarService
 
 logger = logging.getLogger(__name__)
 

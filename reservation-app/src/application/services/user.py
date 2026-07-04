@@ -14,11 +14,11 @@ from api.schemas import (
     UserUpdate,
 )
 from api.schemas.event import EventDetail
+from application.services import CrudServiceBase, EventService
 from core.application.exceptions import Entity
 from crud import CRUDReservationService, CRUDUser
 from infrastructure.database import AsyncSessionDep
 from infrastructure.openid import UserInfo
-from services import CrudServiceBase, EventService
 
 logger = logging.getLogger(__name__)
 

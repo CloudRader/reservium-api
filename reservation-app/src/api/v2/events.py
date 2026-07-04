@@ -21,6 +21,7 @@ from api.schemas import (
     EventUpdateTime,
     UserLite,
 )
+from application.services import EventService
 from core.application.exceptions import (
     ERROR_RESPONSES,
     Entity,
@@ -30,7 +31,6 @@ from domain.models import EventState
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, Path, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
 from infrastructure.openid import OpenIdProvider
-from services import EventService
 
 logger = logging.getLogger(__name__)
 

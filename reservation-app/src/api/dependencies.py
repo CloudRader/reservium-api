@@ -4,10 +4,10 @@ import logging
 from typing import Annotated, Any
 
 from api.schemas.current_user import CurrentUser
+from application.services import UserService
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from infrastructure.openid import OpenIdProvider
-from services import UserService
 
 logger = logging.getLogger(__name__)
 
