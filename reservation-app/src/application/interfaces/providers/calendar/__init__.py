@@ -1,5 +1,5 @@
 """Provider interfaces for Calendar Provider."""
 
-from .calendar import CalendarProvider
+from .provider import CalendarProvider
 
 __all__ = ["CalendarProvider"]
