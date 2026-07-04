@@ -30,10 +30,9 @@ from domain.schemas import (
 )
 from domain.schemas.calendar import CalendarDetailWithCollisions
 from domain.schemas.event import EventLite
-from domain.schemas.google_calendar import EventTime, GoogleCalendarEventCreate
 from fastapi import BackgroundTasks
 from infrastructure.database import AsyncSessionDep
-from infrastructure.google import GoogleCalendarService
+from infrastructure.google import EventTime, GoogleCalendarEventCreate, GoogleCalendarService
 from pytz import timezone
 from services import CrudServiceBase
 from services.calendar_services import CalendarService

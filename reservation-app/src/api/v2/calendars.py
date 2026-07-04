@@ -16,12 +16,12 @@ from domain.schemas import (
     UserLite,
 )
 from domain.schemas.calendar import CalendarDetailWithCollisions
-from domain.schemas.google_calendar import (
+from fastapi import APIRouter, Depends, Path, Query, status
+from infrastructure.google import (
     CalendarImportResult,
     GoogleCalendarCalendar,
     GoogleCalendarImportRequest,
 )
-from fastapi import APIRouter, Depends, Path, Query, status
 from services import CalendarService
 
 logger = logging.getLogger(__name__)

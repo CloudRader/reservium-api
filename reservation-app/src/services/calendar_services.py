@@ -23,9 +23,12 @@ from domain.schemas import (
     ReservationServiceDetail,
 )
 from domain.schemas.calendar import CalendarDetailWithCollisions
-from domain.schemas.google_calendar import CalendarImportResult, GoogleCalendarCalendar
 from infrastructure.database import AsyncSessionDep
-from infrastructure.google import GoogleCalendarService
+from infrastructure.google import (
+    CalendarImportResult,
+    GoogleCalendarCalendar,
+    GoogleCalendarService,
+)
 from services import CrudServiceBase
 from services.mini_service_services import MiniServiceService
 from services.reservation_service_services import ReservationServiceService

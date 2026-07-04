@@ -12,17 +12,17 @@ from core.application.exceptions import (
     ExternalAPIError,
     PermissionDeniedError,
 )
-from domain.schemas.google_calendar import (
-    CalendarImportResult,
-    GoogleCalendarCalendar,
-    GoogleCalendarEvent,
-    GoogleCalendarEventCreate,
-)
 from fastapi import status
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import HttpRequest
+from infrastructure.google import (
+    CalendarImportResult,
+    GoogleCalendarCalendar,
+    GoogleCalendarEvent,
+    GoogleCalendarEventCreate,
+)
 from pytz import timezone
 
 
