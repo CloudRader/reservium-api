@@ -9,9 +9,9 @@ import httpx
 from authlib.integrations.starlette_client import OAuth
 from core import settings
 from core.application.exceptions import PermissionDeniedError, UnauthorizedError
-from domain.schemas import UserInfo
 from fastapi import status
 from fastapi.security import HTTPAuthorizationCredentials
+from infrastructure.openid import UserInfo
 from joserfc import jwt
 from joserfc.jwk import KeySet
 

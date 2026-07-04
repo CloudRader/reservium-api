@@ -12,12 +12,12 @@ from crud import CRUDReservationService, CRUDUser
 from domain.schemas import (
     UserCreate,
     UserDetail,
-    UserInfo,
     UserLite,
     UserUpdate,
 )
 from domain.schemas.event import EventDetail
 from infrastructure.database import AsyncSessionDep
+from infrastructure.openid import UserInfo
 from services import CrudServiceBase, EventService
 
 logger = logging.getLogger(__name__)
