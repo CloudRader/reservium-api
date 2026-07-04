@@ -1,5 +1,42 @@
 # Changelog
 
+## [2.4.3](https://github.com/CloudRader/reservium-api/compare/v2.4.2...v2.4.3) (2026-07-02)
+
+
+### 🧱 Updates & Improvements
+
+* **deps:** update dependency astral-sh/uv to v0.11.25 ([#333](https://github.com/CloudRader/reservium-api/issues/333)) ([f8215c5](https://github.com/CloudRader/reservium-api/commit/f8215c5d017209fa2d790f3a0941bb9adf46e040))
+* **deps:** update dependency ruff to v0.15.20 ([#329](https://github.com/CloudRader/reservium-api/issues/329)) ([03c36ba](https://github.com/CloudRader/reservium-api/commit/03c36ba9a3ac5c9ed189338e4ed777de561a74bc))
+* **deps:** update packages (security issue) ([243471f](https://github.com/CloudRader/reservium-api/commit/243471f59f96f2c30bfda281c4d33f6f00792eb5))
+* **deps:** update python ([#335](https://github.com/CloudRader/reservium-api/issues/335)) ([7da98a0](https://github.com/CloudRader/reservium-api/commit/7da98a0506062f244401b7f7149a3be0bc0006ac))
+* **renovate:** update config ([d17a22f](https://github.com/CloudRader/reservium-api/commit/d17a22ffc1fb8ccdceced0c3557b98702f00524b))
+* **repository:** add methods in base repository ([b6b7a83](https://github.com/CloudRader/reservium-api/commit/b6b7a83ebbad575ba170ddc07bf1bffb85193a31))
+
+
+### 🛠️ Fixes
+
+* **deps:** update dependency alembic to v1.18.5 ([#325](https://github.com/CloudRader/reservium-api/issues/325)) ([59c4e72](https://github.com/CloudRader/reservium-api/commit/59c4e72147c237bf947fe5fac661d74463998744))
+* **deps:** update dependency fastapi to v0.138.1 ([#326](https://github.com/CloudRader/reservium-api/issues/326)) ([d80353f](https://github.com/CloudRader/reservium-api/commit/d80353f1bab32663b27b5710089be8a5a71a6b5d))
+* **deps:** update dependency google-api-python-client to v2.198.0 ([#330](https://github.com/CloudRader/reservium-api/issues/330)) ([46c28ed](https://github.com/CloudRader/reservium-api/commit/46c28edc93b046e03ba49b6d3585e8bc9837df4a))
+* **deps:** update dependency jwcrypto to v1.5.8 ([#324](https://github.com/CloudRader/reservium-api/issues/324)) ([02ebac8](https://github.com/CloudRader/reservium-api/commit/02ebac80dcbfe2f3255c9389fc7cc39d47ab3f5f))
+
+
+### 🧹 Refactors
+
+* **db:** session and move under infra, add dispose ([93f31f4](https://github.com/CloudRader/reservium-api/commit/93f31f4fccae299ac10aeb68859d626f9f009d64))
+* rename integration to infra., remove commented tests ([2267efe](https://github.com/CloudRader/reservium-api/commit/2267efe47ff3e0ac0663e998f2ad436b1bffb730))
+
+
+### 📝 Documentation
+
+* **readme:** update description ([f9c040e](https://github.com/CloudRader/reservium-api/commit/f9c040e58653c34ec4f7128d4cf63db0d426bc6f))
+
+
+### ⚙️ DevOps & CI/CD
+
+* **fix:** paths after last refactoring ([49d00e6](https://github.com/CloudRader/reservium-api/commit/49d00e6556313fa272ed27f53eff7ea47e847884))
+* **tests:** fix "unable to reserve cache with", add cache-suffix ([f41074b](https://github.com/CloudRader/reservium-api/commit/f41074b5d7e45c560bb277d96b2947aa73b2e4c2))
+
 ## [2.4.2](https://github.com/CloudRader/reservium-api/compare/v2.4.1...v2.4.2) (2026-06-24)
 
 
