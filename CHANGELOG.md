@@ -9,7 +9,6 @@
 * **deps:** update dependency ruff to v0.15.20 ([#329](https://github.com/CloudRader/reservium-api/issues/329)) ([03c36ba](https://github.com/CloudRader/reservium-api/commit/03c36ba9a3ac5c9ed189338e4ed777de561a74bc))
 * **deps:** update packages (security issue) ([243471f](https://github.com/CloudRader/reservium-api/commit/243471f59f96f2c30bfda281c4d33f6f00792eb5))
 * **deps:** update python ([#335](https://github.com/CloudRader/reservium-api/issues/335)) ([7da98a0](https://github.com/CloudRader/reservium-api/commit/7da98a0506062f244401b7f7149a3be0bc0006ac))
-* **main:** release 2.4.2 ([#323](https://github.com/CloudRader/reservium-api/issues/323)) ([9c1f8f3](https://github.com/CloudRader/reservium-api/commit/9c1f8f30e5aba2ec5f5bec1bb3d01040bd248a6a))
 * **renovate:** update config ([d17a22f](https://github.com/CloudRader/reservium-api/commit/d17a22ffc1fb8ccdceced0c3557b98702f00524b))
 * **repository:** add methods in base repository ([b6b7a83](https://github.com/CloudRader/reservium-api/commit/b6b7a83ebbad575ba170ddc07bf1bffb85193a31))
 
