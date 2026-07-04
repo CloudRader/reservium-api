@@ -3,7 +3,7 @@
 from uuid import UUID
 
 import pytest
-from domain.schemas import CalendarUpdate
+from api.schemas import CalendarUpdate
 
 
 @pytest.mark.asyncio

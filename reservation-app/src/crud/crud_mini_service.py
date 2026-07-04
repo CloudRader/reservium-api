@@ -8,9 +8,9 @@ implementation (CRUDMiniService) using SQLAlchemy.
 from abc import ABC, abstractmethod
 from uuid import UUID
 
+from api.schemas import MiniServiceCreate, MiniServiceUpdate
 from crud import CRUDBase
 from domain.models import MiniServiceModel
-from domain.schemas import MiniServiceCreate, MiniServiceUpdate
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 

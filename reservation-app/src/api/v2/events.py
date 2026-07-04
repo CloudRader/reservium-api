@@ -13,13 +13,7 @@ from api import (
 )
 from api.api_base import BaseCRUDRouter
 from api.dependencies import get_current_user_from_token, http_bearer
-from core.application.exceptions import (
-    ERROR_RESPONSES,
-    Entity,
-)
-from domain.enums import EventActor
-from domain.models import EventState
-from domain.schemas import (
+from api.schemas import (
     EventCreate,
     EventDetail,
     EventLite,
@@ -27,6 +21,12 @@ from domain.schemas import (
     EventUpdateTime,
     UserLite,
 )
+from core.application.exceptions import (
+    ERROR_RESPONSES,
+    Entity,
+)
+from domain.enums import EventActor
+from domain.models import EventState
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, Path, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
 from infrastructure.openid import OpenIdProvider

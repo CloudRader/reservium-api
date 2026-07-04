@@ -1,7 +1,7 @@
 # """Module for testing user service."""
 #
 # import pytest
-# from domain.schemas import UserCreate
+# from api.schemas import UserCreate
 #
 #
 # @pytest.mark.asyncio

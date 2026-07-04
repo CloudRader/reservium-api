@@ -7,18 +7,18 @@ This class works with Mini Service.
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from core.application.exceptions import (
-    Entity,
-    EntityNotFoundError,
-)
-from crud import CRUDCalendar, CRUDMiniService
-from domain.schemas import (
+from api.schemas import (
     MiniServiceCreate,
     MiniServiceDetail,
     MiniServiceLite,
     MiniServiceUpdate,
     ReservationServiceDetail,
 )
+from core.application.exceptions import (
+    Entity,
+    EntityNotFoundError,
+)
+from crud import CRUDCalendar, CRUDMiniService
 from infrastructure.database import AsyncSessionDep
 from services import CrudServiceBase
 from services.reservation_service_services import ReservationServiceService

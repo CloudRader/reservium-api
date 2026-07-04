@@ -1,8 +1,8 @@
 """Module for testing reservation service crud."""
 
 import pytest
+from api.schemas import ReservationServiceUpdate
 from domain.models import CalendarModel, EventState, MiniServiceModel
-from domain.schemas import ReservationServiceUpdate
 
 
 @pytest.mark.asyncio

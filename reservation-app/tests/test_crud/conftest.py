@@ -5,9 +5,7 @@ from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-from crud import CRUDCalendar, CRUDEvent, CRUDMiniService, CRUDReservationService, CRUDUser
-from domain.models.event import EventState
-from domain.schemas import (
+from api.schemas import (
     CalendarCreate,
     EventLite,
     MiniServiceCreate,
@@ -15,6 +13,8 @@ from domain.schemas import (
     Rules,
     UserCreate,
 )
+from crud import CRUDCalendar, CRUDEvent, CRUDMiniService, CRUDReservationService, CRUDUser
+from domain.models.event import EventState
 
 
 @pytest.fixture

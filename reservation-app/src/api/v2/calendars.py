@@ -6,8 +6,7 @@ from uuid import UUID
 
 from api import abac_manage_rs_by_id, abac_manage_rs_from_body, get_current_user
 from api.api_base import BaseCRUDRouter
-from core.application.exceptions import ERROR_RESPONSES, Entity, PermissionDeniedError
-from domain.schemas import (
+from api.schemas import (
     CalendarCreate,
     CalendarDetail,
     CalendarLite,
@@ -15,7 +14,8 @@ from domain.schemas import (
     MiniServiceLite,
     UserLite,
 )
-from domain.schemas.calendar import CalendarDetailWithCollisions
+from api.schemas.calendar import CalendarDetailWithCollisions
+from core.application.exceptions import ERROR_RESPONSES, Entity, PermissionDeniedError
 from fastapi import APIRouter, Depends, Path, Query, status
 from infrastructure.google import (
     CalendarImportResult,

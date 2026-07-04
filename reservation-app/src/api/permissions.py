@@ -6,9 +6,9 @@ from typing import Annotated, TypeVar
 from uuid import UUID
 
 from api.dependencies import get_current_user, get_current_user_from_token
+from api.schemas.current_user import CurrentUser
 from core.application.exceptions import PermissionDeniedError
 from domain.enums import EventActor
-from domain.schemas.openid import CurrentUser
 from fastapi import Depends, Path
 from services import CrudServiceBase, EventService, ReservationServiceService
 

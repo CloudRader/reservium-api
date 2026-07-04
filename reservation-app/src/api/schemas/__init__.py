@@ -4,6 +4,7 @@ from .access_card_system import (
     ClubAccessSystemRequest,
 )
 from .calendar import CalendarCreate, CalendarDetail, CalendarLite, CalendarUpdate, Rules
+from .current_user import CurrentUser
 from .email import EmailCreate, EmailMeta, RegistrationFormCreate
 from .event import (
     EventCreate,
@@ -33,6 +34,7 @@ __all__ = [
     "CalendarLite",
     "CalendarUpdate",
     "ClubAccessSystemRequest",
+    "CurrentUser",
     "EmailCreate",
     "EmailMeta",
     "EventCreate",

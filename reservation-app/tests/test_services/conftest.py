@@ -3,7 +3,7 @@
 # import pytest
 # import pytest_asyncio
 # from domain.models.event import EventState
-# from domain.schemas import (
+# from api.schemas import (
 #     CalendarCreate,
 #     CalendarDetail,
 #     EventCreate,
@@ -24,7 +24,7 @@
 #     UserLite,
 #     Zone,
 # )
-# from domain.schemas.event import EventLite
+# from api.schemas.event import EventLite
 #
 #
 # @pytest.fixture()

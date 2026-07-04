@@ -1,7 +1,6 @@
 """Custom SQLAlchemy column type for storing `Rules` Pydantic models as JSON."""
 
 from domain.models.types.pydantic_type import PydanticType
-from domain.schemas import Rules
 
 
 class RulesType(PydanticType):
@@ -11,4 +10,9 @@ class RulesType(PydanticType):
     This type handles conversion of `Rules` objects to and from JSON for database storage.
     """
 
-    model_class = Rules
+    @property
+    def model_class(self):
+        # Local import to break the circular dependency!
+        from api.schemas.calendar import Rules
+
+        return Rules

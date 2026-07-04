@@ -3,7 +3,7 @@
 from typing import Annotated, Any
 
 from api import get_current_user
-from domain.schemas import (
+from api.schemas import (
     RegistrationFormCreate,
     UserLite,
 )

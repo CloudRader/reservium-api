@@ -4,9 +4,9 @@ import logging
 from typing import Annotated
 
 from api import get_current_user, require_permission
+from api.schemas import UserLite
+from api.schemas.event import EventDetail
 from core.application.exceptions import ERROR_RESPONSES
-from domain.schemas import UserLite
-from domain.schemas.event import EventDetail
 from fastapi import APIRouter, Depends, FastAPI, Query, status
 from services import UserService
 

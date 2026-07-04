@@ -7,15 +7,15 @@ This class works with User.
 import logging
 from abc import ABC, abstractmethod
 
-from core.application.exceptions import Entity
-from crud import CRUDReservationService, CRUDUser
-from domain.schemas import (
+from api.schemas import (
     UserCreate,
     UserDetail,
     UserLite,
     UserUpdate,
 )
-from domain.schemas.event import EventDetail
+from api.schemas.event import EventDetail
+from core.application.exceptions import Entity
+from crud import CRUDReservationService, CRUDUser
 from infrastructure.database import AsyncSessionDep
 from infrastructure.openid import UserInfo
 from services import CrudServiceBase, EventService

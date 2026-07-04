@@ -7,14 +7,7 @@ This class works with Calendar.
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from core.application.exceptions import (
-    BaseAppError,
-    Entity,
-    EntityNotFoundError,
-)
-from crud import CRUDCalendar
-from domain.models import MiniServiceModel
-from domain.schemas import (
+from api.schemas import (
     CalendarCreate,
     CalendarDetail,
     CalendarLite,
@@ -22,7 +15,14 @@ from domain.schemas import (
     MiniServiceLite,
     ReservationServiceDetail,
 )
-from domain.schemas.calendar import CalendarDetailWithCollisions
+from api.schemas.calendar import CalendarDetailWithCollisions
+from core.application.exceptions import (
+    BaseAppError,
+    Entity,
+    EntityNotFoundError,
+)
+from crud import CRUDCalendar
+from domain.models import MiniServiceModel
 from infrastructure.database import AsyncSessionDep
 from infrastructure.google import (
     CalendarImportResult,

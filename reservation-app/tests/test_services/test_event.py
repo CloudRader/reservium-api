@@ -5,7 +5,7 @@
 # import pytest
 # from core.application.exceptions import BaseAppError, SoftValidationError
 # from domain.models import EventState
-# from domain.schemas import EventUpdate, EventUpdateTime
+# from api.schemas import EventUpdate, EventUpdateTime
 #
 #
 # @pytest.mark.asyncio

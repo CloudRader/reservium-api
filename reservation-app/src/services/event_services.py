@@ -10,15 +10,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 from uuid import UUID
 
-from core.application.exceptions import (
-    BaseAppError,
-    Entity,
-    SoftValidationError,
-)
-from crud import CRUDEvent, CRUDUser
-from domain.enums import EventActor
-from domain.models import EventState
-from domain.schemas import (
+from api.schemas import (
     CalendarDetail,
     EventCreate,
     EventDetail,
@@ -28,8 +20,16 @@ from domain.schemas import (
     Rules,
     UserLite,
 )
-from domain.schemas.calendar import CalendarDetailWithCollisions
-from domain.schemas.event import EventLite
+from api.schemas.calendar import CalendarDetailWithCollisions
+from api.schemas.event import EventLite
+from core.application.exceptions import (
+    BaseAppError,
+    Entity,
+    SoftValidationError,
+)
+from crud import CRUDEvent, CRUDUser
+from domain.enums import EventActor
+from domain.models import EventState
 from fastapi import BackgroundTasks
 from infrastructure.database import AsyncSessionDep
 from infrastructure.google import EventTime, GoogleCalendarEventCreate, GoogleCalendarService

@@ -9,9 +9,9 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from uuid import UUID
 
+from api.schemas import EventLite, EventUpdate
 from crud import CRUDBase
 from domain.models import CalendarModel, EventModel, EventState, ReservationServiceModel
-from domain.schemas import EventLite, EventUpdate
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload

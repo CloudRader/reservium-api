@@ -9,9 +9,9 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Protocol, TypeVar, runtime_checkable
 from uuid import UUID
 
+from api.schemas import ReservationServiceCreate, ReservationServiceUpdate
 from crud import CRUDBase
 from domain.models import CalendarModel, EventModel, EventState, ReservationServiceModel
-from domain.schemas import ReservationServiceCreate, ReservationServiceUpdate
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload

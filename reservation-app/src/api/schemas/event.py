@@ -147,7 +147,7 @@ class EventDetail(EventLite):
     calendar: "CalendarWithReservationServiceInfo"  # noqa
 
 
-from domain.schemas.user import UserLite  # noqa
-from domain.schemas.calendar import CalendarWithReservationServiceInfo, CalendarLite  # noqa
+from api.schemas.user import UserLite  # noqa
+from api.schemas.calendar import CalendarWithReservationServiceInfo, CalendarLite  # noqa
 
 EventDetail.model_rebuild()

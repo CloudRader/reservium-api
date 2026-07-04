@@ -12,8 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from anyio import Path as AsyncPath
-from core import email_connection, settings
-from domain.schemas import (
+from api.schemas import (
     CalendarLite,
     EmailCreate,
     EmailMeta,
@@ -23,6 +22,7 @@ from domain.schemas import (
     ReservationServiceLite,
     UserLite,
 )
+from core import email_connection, settings
 from fastapi import BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema, MessageType, NameEmail
 from jinja2 import Environment, FileSystemLoader, select_autoescape
