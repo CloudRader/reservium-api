@@ -9,12 +9,12 @@ from typing import TypeVar
 from uuid import UUID
 
 from core.bootstrap.exceptions import BaseAppError, Entity, EntityNotFoundError
-from crud import CRUDBase
+from infrastructure.database.sqlalchemy.repositories import SQLAlchemyBaseRepository
 from pydantic import BaseModel
 
 SchemaLite = TypeVar("SchemaLite", bound=BaseModel)
 SchemaDetail = TypeVar("SchemaDetail", bound=BaseModel)
-Crud = TypeVar("Crud", bound=CRUDBase)
+Repository = TypeVar("Repository", bound=SQLAlchemyBaseRepository)
 CreateSchema = TypeVar("CreateSchema", bound=BaseModel)
 UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
 
@@ -22,7 +22,7 @@ UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
 class AbstractCRUDService[
     SchemaLite: BaseModel,
     SchemaDetail: BaseModel,
-    Crud: CRUDBase,
+    Crud: SQLAlchemyBaseRepository,
     CreateSchema: BaseModel,
     UpdateSchema: BaseModel,
 ](ABC):
@@ -129,7 +129,7 @@ class AbstractCRUDService[
 
 
 class CrudServiceBase(
-    AbstractCRUDService[SchemaLite, SchemaDetail, Crud, CreateSchema, UpdateSchema]
+    AbstractCRUDService[SchemaLite, SchemaDetail, Repository, CreateSchema, UpdateSchema]
 ):
     """
     A base class for implementing a CRUD (Create, Read, Update, Delete).
@@ -143,8 +143,8 @@ class CrudServiceBase(
     UpdateSchema which represents the input data for updating objects.
     """
 
-    def __init__(self, crud: Crud, entity_name: Entity):
-        self.crud: Crud = crud
+    def __init__(self, crud: Repository, entity_name: Entity):
+        self.crud: Repository = crud
         self.entity_name: Entity = entity_name
 
     async def get(

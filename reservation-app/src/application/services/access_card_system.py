@@ -10,9 +10,14 @@ from typing import Annotated
 from api.schemas import ClubAccessSystemRequest
 from application.services import EventService
 from core.bootstrap.exceptions import PermissionDeniedError
-from crud import CRUDEvent, CRUDMiniService, CRUDReservationService, CRUDUser
 from fastapi import Depends
 from infrastructure.database import AsyncSessionDep
+from infrastructure.database.sqlalchemy.repositories import (
+    SQLAlchemyEventRepository,
+    SQLAlchemyMiniServiceRepository,
+    SQLAlchemyReservationServiceRepository,
+    SQLAlchemyUserRepository,
+)
 
 
 class AbstractAccessCardSystemService(ABC):
@@ -41,10 +46,10 @@ class AccessCardSystemService(AbstractAccessCardSystemService):
         self,
         db: AsyncSessionDep,
     ):
-        self.event_crud = CRUDEvent(db)
-        self.user_crud = CRUDUser(db)
-        self.reservation_service_crud = CRUDReservationService(db)
-        self.mini_service_crud = CRUDMiniService(db)
+        self.event_crud = SQLAlchemyEventRepository(db)
+        self.user_crud = SQLAlchemyUserRepository(db)
+        self.reservation_service_crud = SQLAlchemyReservationServiceRepository(db)
+        self.mini_service_crud = SQLAlchemyMiniServiceRepository(db)
 
     async def reservation_access_authorize(
         self,

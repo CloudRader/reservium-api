@@ -20,15 +20,18 @@ from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,
 )
-from crud import CRUDCalendar, CRUDMiniService
 from infrastructure.database import AsyncSessionDep
+from infrastructure.database.sqlalchemy.repositories import (
+    SQLAlchemyCalendarRepository,
+    SQLAlchemyMiniServiceRepository,
+)
 
 
 class AbstractMiniServiceService(
     CrudServiceBase[
         MiniServiceLite,
         MiniServiceDetail,
-        CRUDMiniService,
+        SQLAlchemyMiniServiceRepository,
         MiniServiceCreate,
         MiniServiceUpdate,
     ],
@@ -91,8 +94,8 @@ class MiniServiceService(AbstractMiniServiceService):
         self,
         db: AsyncSessionDep,
     ):
-        super().__init__(CRUDMiniService(db), Entity.MINI_SERVICE)
-        self.calendar_crud = CRUDCalendar(db)
+        super().__init__(SQLAlchemyMiniServiceRepository(db), Entity.MINI_SERVICE)
+        self.calendar_crud = SQLAlchemyCalendarRepository(db)
         self.reservation_service_service = ReservationServiceService(db)
 
     async def get_by_name(

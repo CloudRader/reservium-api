@@ -16,8 +16,11 @@ from api.schemas import (
 from api.schemas.event import EventDetail
 from application.services import CrudServiceBase, EventService
 from core.bootstrap.exceptions import Entity
-from crud import CRUDReservationService, CRUDUser
 from infrastructure.database import AsyncSessionDep
+from infrastructure.database.sqlalchemy.repositories import (
+    SQLAlchemyReservationServiceRepository,
+    SQLAlchemyUserRepository,
+)
 from infrastructure.openid import UserInfo
 
 logger = logging.getLogger(__name__)
@@ -27,7 +30,7 @@ class AbstractUserService(
     CrudServiceBase[
         UserLite,
         UserDetail,
-        CRUDUser,
+        SQLAlchemyUserRepository,
         UserCreate,
         UserUpdate,
     ],
@@ -90,8 +93,8 @@ class UserService(AbstractUserService):
         self,
         db: AsyncSessionDep,
     ):
-        super().__init__(CRUDUser(db), Entity.USER)
-        self.reservation_service_crud = CRUDReservationService(db)
+        super().__init__(SQLAlchemyUserRepository(db), Entity.USER)
+        self.reservation_service_crud = SQLAlchemyReservationServiceRepository(db)
         self.event_service = EventService(db)
 
     async def create_user(

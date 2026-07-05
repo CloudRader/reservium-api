@@ -13,38 +13,44 @@ from api.schemas import (
     Rules,
     UserCreate,
 )
-from crud import CRUDCalendar, CRUDEvent, CRUDMiniService, CRUDReservationService, CRUDUser
 from domain.models.event import EventState
+from infrastructure.database.sqlalchemy.repositories import (
+    SQLAlchemyCalendarRepository,
+    SQLAlchemyEventRepository,
+    SQLAlchemyMiniServiceRepository,
+    SQLAlchemyReservationServiceRepository,
+    SQLAlchemyUserRepository,
+)
 
 
 @pytest.fixture
 def user_crud(async_session):
     """Return user crud."""
-    return CRUDUser(db=async_session)
+    return SQLAlchemyUserRepository(db=async_session)
 
 
 @pytest.fixture
 def reservation_service_crud(async_session):
     """Return reservation service crud."""
-    return CRUDReservationService(db=async_session)
+    return SQLAlchemyReservationServiceRepository(db=async_session)
 
 
 @pytest.fixture
 def mini_service_crud(async_session):
     """Return mini service crud."""
-    return CRUDMiniService(db=async_session)
+    return SQLAlchemyMiniServiceRepository(db=async_session)
 
 
 @pytest.fixture
 def calendar_crud(async_session):
     """Return calendar crud."""
-    return CRUDCalendar(db=async_session)
+    return SQLAlchemyCalendarRepository(db=async_session)
 
 
 @pytest.fixture
 def event_crud(async_session):
     """Return event crud."""
-    return CRUDEvent(db=async_session)
+    return SQLAlchemyEventRepository(db=async_session)
 
 
 @pytest_asyncio.fixture

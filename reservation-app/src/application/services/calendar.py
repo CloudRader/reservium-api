@@ -24,9 +24,9 @@ from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,
 )
-from crud import CRUDCalendar
 from domain.models import MiniServiceModel
 from infrastructure.database import AsyncSessionDep
+from infrastructure.database.sqlalchemy.repositories import SQLAlchemyCalendarRepository
 from infrastructure.google import (
     CalendarImportResult,
     GoogleCalendarCalendar,
@@ -38,7 +38,7 @@ class AbstractCalendarService(
     CrudServiceBase[
         CalendarLite,
         CalendarDetail,
-        CRUDCalendar,
+        SQLAlchemyCalendarRepository,
         CalendarCreate,
         CalendarUpdate,
     ],
@@ -161,7 +161,7 @@ class CalendarService(AbstractCalendarService):
         self,
         db: AsyncSessionDep,
     ):
-        super().__init__(CRUDCalendar(db), Entity.CALENDAR)
+        super().__init__(SQLAlchemyCalendarRepository(db), Entity.CALENDAR)
         self.reservation_service_service = ReservationServiceService(db)
         self.mini_service_service = MiniServiceService(db)
         self.google_calendar_service = GoogleCalendarService()

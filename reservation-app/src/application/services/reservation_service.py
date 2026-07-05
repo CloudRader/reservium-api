@@ -20,16 +20,16 @@ from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,
 )
-from crud import CRUDReservationService
 from domain.models import CalendarModel, EventState, MiniServiceModel
 from infrastructure.database import AsyncSessionDep
+from infrastructure.database.sqlalchemy.repositories import SQLAlchemyReservationServiceRepository
 
 
 class AbstractReservationServiceService(
     CrudServiceBase[
         ReservationServiceDetail,
         ReservationServiceDetail,
-        CRUDReservationService,
+        SQLAlchemyReservationServiceRepository,
         ReservationServiceCreate,
         ReservationServiceUpdate,
     ],
@@ -178,7 +178,7 @@ class ReservationServiceService(AbstractReservationServiceService):
         self,
         db: AsyncSessionDep,
     ):
-        super().__init__(CRUDReservationService(db), Entity.RESERVATION_SERVICE)
+        super().__init__(SQLAlchemyReservationServiceRepository(db), Entity.RESERVATION_SERVICE)
 
     async def get_by_alias(
         self,

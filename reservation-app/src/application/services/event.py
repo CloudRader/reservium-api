@@ -31,11 +31,14 @@ from core.bootstrap.exceptions import (
     Entity,
     SoftValidationError,
 )
-from crud import CRUDEvent, CRUDUser
 from domain.enums import EventActor
 from domain.models import EventState
 from fastapi import BackgroundTasks
 from infrastructure.database import AsyncSessionDep
+from infrastructure.database.sqlalchemy.repositories import (
+    SQLAlchemyEventRepository,
+    SQLAlchemyUserRepository,
+)
 from infrastructure.google import EventTime, GoogleCalendarEventCreate, GoogleCalendarService
 from pytz import timezone
 
@@ -46,7 +49,7 @@ class AbstractEventService(
     CrudServiceBase[
         EventLite,
         EventDetail,
-        CRUDEvent,
+        SQLAlchemyEventRepository,
         EventLite,
         EventUpdate,
     ],
@@ -286,10 +289,10 @@ class EventService(AbstractEventService):
         self,
         db: AsyncSessionDep,
     ):
-        super().__init__(CRUDEvent(db), Entity.EVENT)
+        super().__init__(SQLAlchemyEventRepository(db), Entity.EVENT)
         self.reservation_service_service = ReservationServiceService(db)
         self.calendar_service = CalendarService(db)
-        self.user_crud = CRUDUser(db)
+        self.user_crud = SQLAlchemyUserRepository(db)
         self.google_calendar_service = GoogleCalendarService()
         self.email_service = EmailService()
 
