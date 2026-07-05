@@ -3,7 +3,7 @@
 import datetime as dt
 
 import pytest
-from domain.schemas import EventUpdate, UserUpdate
+from api.schemas import EventUpdate, UserUpdate
 
 
 @pytest.mark.asyncio

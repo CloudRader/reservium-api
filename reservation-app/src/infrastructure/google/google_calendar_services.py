@@ -2,168 +2,31 @@
 
 import asyncio
 import datetime as dt
-from abc import ABC, abstractmethod
 from typing import Any
 
+from application.interfaces.providers.calendar import CalendarProvider
 from core import settings
-from core.application.exceptions import (
+from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,
     ExternalAPIError,
     PermissionDeniedError,
-)
-from domain.schemas.google_calendar import (
-    CalendarImportResult,
-    GoogleCalendarCalendar,
-    GoogleCalendarEvent,
-    GoogleCalendarEventCreate,
 )
 from fastapi import status
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import HttpRequest
+from infrastructure.google import (
+    CalendarImportResult,
+    GoogleCalendarCalendar,
+    GoogleCalendarEvent,
+    GoogleCalendarEventCreate,
+)
 from pytz import timezone
 
 
-class AbstractGoogleCalendarService(ABC):
-    """Interface for a service interacting with the Google Calendar API."""
-
-    @abstractmethod
-    async def get_calendar(self, calendar_id: str) -> GoogleCalendarCalendar:
-        """
-        Retrieve a Google Calendar by its ID.
-
-        :param calendar_id: The ID of the Google Calendar.
-
-        :return: The calendar object if found.
-        """
-
-    @abstractmethod
-    async def create_calendar(self, summary: str) -> GoogleCalendarCalendar:
-        """
-        Create a new Google Calendar and make it publicly readable.
-
-        :param summary: The summary (title) of the new calendar.
-
-        :return: The created calendar object.
-        """
-
-    @abstractmethod
-    async def get_all_calendars(self) -> list[GoogleCalendarCalendar]:
-        """
-        Retrieve all calendars from the authenticated Google account.
-
-        :return: A list of calendar objects.
-        """
-
-    @abstractmethod
-    async def user_has_calendar_access(self, calendar_id: str) -> None:
-        """
-        Check if the authenticated user has access to the specified Google Calendar.
-
-        This method retrieves the list of calendars accessible by the user and verifies
-        whether the given `calendar_id` is among them.
-
-        :param calendar_id: The ID of the calendar to check access for.
-        """
-
-    @abstractmethod
-    async def insert_event(
-        self, calendar_id: str, event_body: GoogleCalendarEventCreate
-    ) -> GoogleCalendarEvent:
-        """
-        Insert an event into a specific Google Calendar.
-
-        :param calendar_id: The ID of the Google Calendar.
-        :param event_body: Dictionary describing the event details.
-
-        :return: The created event object.
-        """
-
-    @abstractmethod
-    async def get_event(self, calendar_id: str, event_id: str) -> GoogleCalendarEvent:
-        """
-        Retrieve a specific event from a Google Calendar.
-
-        :param calendar_id: The ID of the calendar containing the event.
-        :param event_id: The ID of the event to retrieve.
-
-        :return: The event object if found.
-        """
-
-    @abstractmethod
-    async def update_event(
-        self, calendar_id: str, event_id: str, body: GoogleCalendarEvent
-    ) -> GoogleCalendarEvent:
-        """
-        Update an existing event in a specific Google Calendar.
-
-        :param calendar_id: The ID of the calendar containing the event.
-        :param event_id: The ID of the event to update.
-        :param body: A dictionary representing the updated event details.
-
-        :return: The updated event object.
-        """
-
-    @abstractmethod
-    async def delete_event(self, calendar_id: str, event_id: str) -> None:
-        """
-        Delete an event from a specific Google Calendar.
-
-        :param calendar_id: The ID of the calendar containing the event.
-        :param event_id: The ID of the event to delete.
-
-        :return: A response confirming the deletion.
-        """
-
-    @abstractmethod
-    async def fetch_events_in_time_range(
-        self, calendar_id: str, start_time: dt.datetime, end_time: dt.datetime
-    ) -> list[dict]:
-        """
-        Fetch all events from the specified Google Calendar between the given start and end times.
-
-        :param calendar_id: ID of the Google Calendar to query.
-        :param start_time: The start of the time range.
-        :param end_time: The end of the time range.
-
-        :return: List of calendar events within the specified time range.
-        """
-
-    @abstractmethod
-    async def get_acl(self, calendar_id: str) -> dict:
-        """
-        Retrieve the Access Control List (ACL) of a Google Calendar.
-
-        :param calendar_id: The ID of the Google Calendar.
-
-        :return: A dictionary containing ACL rules for the calendar.
-        """
-
-    @abstractmethod
-    async def subscribe(self, calendar_id: str) -> None:
-        """
-        Subscribe the service account to a Google Calendar.
-
-        :param calendar_id: The ID of the Google Calendar to subscribe to.
-        """
-
-    @abstractmethod
-    async def subscribe_calendars(
-        self,
-        calendar_ids: list[str],
-    ) -> list[CalendarImportResult]:
-        """
-        Subscribe the service account to multiple Google Calendars.
-
-        :param calendar_ids: List of Google Calendar IDs to subscribe to.
-
-        :return: List of results describing the outcome for each calendar.
-        """
-
-
-class GoogleCalendarService(AbstractGoogleCalendarService):
+class GoogleCalendarService(CalendarProvider):
     """Service implementation for interacting with the Google Calendar API."""
 
     def __init__(self):

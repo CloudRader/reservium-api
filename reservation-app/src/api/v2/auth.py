@@ -3,11 +3,11 @@
 import logging
 from typing import Annotated
 
+from application.services import UserService
 from core import settings
 from fastapi import APIRouter, Depends, FastAPI, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2AuthorizationCodeBearer
 from infrastructure.openid import OpenIdProvider
-from services import UserService
 
 logger = logging.getLogger(__name__)
 

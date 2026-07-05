@@ -1,7 +1,7 @@
 """Conftest for testing schema."""
 
 import pytest
-from domain.schemas import Rules
+from api.schemas import Rules
 
 
 @pytest.fixture(scope="module")

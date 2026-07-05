@@ -1,59 +1,21 @@
 """Defines the service for working with the OpenID authorization."""
 
 import logging
-from abc import ABC, abstractmethod
 from typing import Any
 
 import aiohttp
 import httpx
+from application.interfaces.providers.identity.provider import IdentityProvider
 from authlib.integrations.starlette_client import OAuth
 from core import settings
-from core.application.exceptions import PermissionDeniedError, UnauthorizedError
-from domain.schemas import UserInfo
+from core.bootstrap.exceptions import PermissionDeniedError, UnauthorizedError
 from fastapi import status
 from fastapi.security import HTTPAuthorizationCredentials
+from infrastructure.openid.openid_schemas import UserInfo
 from joserfc import jwt
 from joserfc.jwk import KeySet
 
 logger = logging.getLogger(__name__)
-
-
-class IdentityProvider(ABC):
-    """Interface for external authentication providers (SSO)."""
-
-    @abstractmethod
-    async def decode_token(self, token: str) -> dict[str, Any]:
-        """
-        Decode a token.
-
-        This method decodes the given token using provider's public key
-        and ensures it is valid. If the token is invalid or expired,
-        an HTTP 401 Unauthorized error is raised.
-
-        :param token: The access token to decode.
-
-        :return: A dictionary containing the decoded token information.
-        """
-
-    @abstractmethod
-    async def get_user_info(self, token: HTTPAuthorizationCredentials) -> UserInfo:
-        """
-        Get user information from an access token.
-
-        :param token: The access token.
-
-        :return: A dictionary containing user profile information.
-        """
-
-    @abstractmethod
-    async def logout(self, refresh_token: str) -> None:
-        """
-        Log out a user by invalidating their refresh token.
-
-        :param refresh_token: The refresh token to invalidate.
-
-        :return: None
-        """
 
 
 class OpenIdProvider(IdentityProvider):

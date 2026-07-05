@@ -6,22 +6,22 @@ from uuid import UUID
 
 from api import get_current_user_from_token
 from api.api_base import BaseCRUDRouter
-from core.application.exceptions import (
-    ERROR_RESPONSES,
-    Entity,
-)
-from domain.models.event import EventState
-from domain.schemas import (
+from api.schemas import (
     CalendarDetail,
     MiniServiceDetail,
     ReservationServiceCreate,
     ReservationServiceDetail,
     ReservationServiceUpdate,
 )
-from domain.schemas.event import EventDetail
-from domain.schemas.openid import CurrentUser
+from api.schemas.current_user import CurrentUser
+from api.schemas.event import EventDetail
+from application.services import ReservationServiceService
+from core.bootstrap.exceptions import (
+    ERROR_RESPONSES,
+    Entity,
+)
+from domain.models.event import EventState
 from fastapi import APIRouter, Depends, Path, Query, status
-from services import ReservationServiceService
 
 logger = logging.getLogger(__name__)
 

@@ -4,9 +4,8 @@ from datetime import datetime
 from uuid import uuid4
 
 import pytest
-from domain.models import EventState
-from domain.schemas.calendar import CalendarWithReservationServiceInfo
-from domain.schemas.event import (
+from api.schemas.calendar import CalendarWithReservationServiceInfo
+from api.schemas.event import (
     EventBase,
     EventCreate,
     EventDetail,
@@ -15,8 +14,9 @@ from domain.schemas.event import (
     EventUpdateTime,
     make_naive_datetime_validator,
 )
-from domain.schemas.reservation_service import ReservationServiceLite
-from domain.schemas.user import UserLite
+from api.schemas.reservation_service import ReservationServiceLite
+from api.schemas.user import UserLite
+from domain.models import EventState
 from pydantic import ValidationError
 
 # ----------------------------------------------------------------------

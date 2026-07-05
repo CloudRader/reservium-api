@@ -3,7 +3,7 @@
 # import pytest
 # import pytest_asyncio
 # from domain.models.event import EventState
-# from domain.schemas import (
+# from api.schemas import (
 #     CalendarCreate,
 #     CalendarDetail,
 #     EventCreate,
@@ -24,13 +24,13 @@
 #     UserLite,
 #     Zone,
 # )
-# from domain.schemas.event import EventLite
+# from api.schemas.event import EventLite
 #
 #
 # @pytest.fixture()
 # def service_user(async_session):
 #     """Return UserService."""
-#     from services import UserService
+#     from application.services import UserService
 #
 #     return UserService(db=async_session)
 #
@@ -38,7 +38,7 @@
 # @pytest.fixture()
 # def service_reservation_service(async_session):
 #     """Return ReservationServiceService."""
-#     from services import ReservationServiceService
+#     from application.services import ReservationServiceService
 #
 #     return ReservationServiceService(db=async_session)
 #
@@ -46,7 +46,7 @@
 # @pytest.fixture()
 # def service_mini_service(async_session):
 #     """Return MiniServiceService."""
-#     from services import MiniServiceService
+#     from application.services import MiniServiceService
 #
 #     return MiniServiceService(db=async_session)
 #
@@ -54,7 +54,7 @@
 # @pytest.fixture()
 # def service_calendar(async_session):
 #     """Return MiniServiceService."""
-#     from services import CalendarService
+#     from application.services import CalendarService
 #
 #     return CalendarService(db=async_session)
 #
@@ -62,7 +62,7 @@
 # @pytest.fixture()
 # def service_event(async_session):
 #     """Return EventService."""
-#     from services import EventService
+#     from application.services import EventService
 #
 #     return EventService(db=async_session)
 #
@@ -70,7 +70,7 @@
 # @pytest.fixture()
 # def service_email():
 #     """Return EmailService."""
-#     from services import EmailService
+#     from application.services import EmailService
 #
 #     return EmailService()
 #

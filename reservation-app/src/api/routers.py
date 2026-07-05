@@ -2,7 +2,7 @@
 
 from api.v2 import router as router_v2
 from api.well_known import router as router_well_known
-from core.application.docs import fastapi_docs
+from core.bootstrap.docs import fastapi_docs
 from fastapi import APIRouter
 
 router = APIRouter()

@@ -2,7 +2,7 @@
 #
 # import pytest
 # from core.application.exceptions import PermissionDeniedError
-# from domain.schemas import ReservationServiceUpdate
+# from api.schemas import ReservationServiceUpdate
 #
 #
 # @pytest.mark.asyncio

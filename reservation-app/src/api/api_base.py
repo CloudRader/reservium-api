@@ -6,10 +6,10 @@ from typing import Annotated, TypeVar
 from uuid import UUID
 
 from api import require_permission
-from core.application.exceptions import ERROR_RESPONSES, BaseAppError, Entity
+from application.services.base import CrudServiceBase
+from core.bootstrap.exceptions import ERROR_RESPONSES, BaseAppError, Entity
 from fastapi import APIRouter, Depends, Path, Query, status
 from pydantic import BaseModel
-from services.service_base import CrudServiceBase
 
 logger = logging.getLogger(__name__)
 
