@@ -25,7 +25,7 @@ from infrastructure.database.sqlalchemy.repositories import (
     SQLAlchemyUserRepository,
 )
 from infrastructure.google.google_calendar_services import GoogleCalendarProvider
-from infrastructure.openid import OpenIdProvider
+from infrastructure.openid.openid_auth import OpenIdProvider
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -91,10 +91,10 @@ class Container:
         return self._user_repository
 
     # =============== Providers ===============
-    def google_provider(self) -> CalendarProvider:
+    def calendar_provider(self) -> CalendarProvider:
         return self._calendar_provider
 
-    def openid_provider(self) -> IdentityProvider:
+    def identity_provider(self) -> IdentityProvider:
         return self._identity_provider
 
     # =============== Services ===============

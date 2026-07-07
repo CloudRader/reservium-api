@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated, Any
 
-from api import abac_manage_rs_by_id, abac_manage_rs_from_body
+from api import abac_manage_rs_by_id, abac_manage_rs_from_body, get_mini_service_service
 from api.api_base import BaseCRUDRouter
 from api.schemas import MiniServiceCreate, MiniServiceDetail, MiniServiceLite, MiniServiceUpdate
 from application.services import MiniServiceService
@@ -38,7 +38,7 @@ class MiniServiceRouter(
     def __init__(self):
         super().__init__(
             router=router,
-            service_dep=MiniServiceService,
+            service_dep=get_mini_service_service,
             schema_create=MiniServiceCreate,
             schema_update=MiniServiceUpdate,
             schema_lite=MiniServiceLite,
@@ -50,9 +50,9 @@ class MiniServiceRouter(
             permissions_delete=("mini_services.soft_delete",),
             permissions_hard_delete=("mini_services.hard_delete",),
             abac_create=[abac_manage_rs_from_body(MiniServiceCreate)],
-            abac_update=[abac_manage_rs_by_id(MiniServiceService)],
-            abac_restore=[abac_manage_rs_by_id(MiniServiceService)],
-            abac_delete=[abac_manage_rs_by_id(MiniServiceService)],
+            abac_update=[abac_manage_rs_by_id(get_mini_service_service)],
+            abac_restore=[abac_manage_rs_by_id(get_mini_service_service)],
+            abac_delete=[abac_manage_rs_by_id(get_mini_service_service)],
         )
 
         self.register_routes()
@@ -64,7 +64,7 @@ class MiniServiceRouter(
             status_code=status.HTTP_200_OK,
         )
         async def get_by_name(
-            service: Annotated[MiniServiceService, Depends(MiniServiceService)],
+            service: Annotated[MiniServiceService, Depends(get_mini_service_service)],
             name: Annotated[str, Path()],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:

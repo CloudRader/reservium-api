@@ -2,6 +2,7 @@
 
 from typing import Annotated, Any
 
+from api import get_event_service
 from api.schemas import (
     ClubAccessSystemRequest,
 )
@@ -19,7 +20,7 @@ router = APIRouter()
 )
 async def reservation_access_authorize(
     service: Annotated[AccessCardSystemService, Depends(AccessCardSystemService)],
-    event_service: Annotated[EventService, Depends(EventService)],
+    event_service: Annotated[EventService, Depends(get_event_service)],
     access_request: ClubAccessSystemRequest,
 ) -> Any:
     """
