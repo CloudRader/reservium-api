@@ -26,8 +26,8 @@ from infrastructure.google import (
 from pytz import timezone
 
 
-class GoogleCalendarService(CalendarProvider):
-    """Service implementation for interacting with the Google Calendar API."""
+class GoogleCalendarProvider(CalendarProvider):
+    """Provider implementation for interacting with the Google Calendar API."""
 
     def __init__(self):
         credentials = service_account.Credentials.from_service_account_info(

@@ -22,6 +22,8 @@ from api.schemas import (
 )
 from api.schemas.calendar import CalendarDetailWithCollisions
 from api.schemas.event import EventLite
+from application.interfaces.providers.calendar import CalendarProvider
+from application.interfaces.repositories import EventRepository, UserRepository
 from application.services import CrudServiceBase
 from application.services.calendar import CalendarService
 from application.services.email import EmailService
@@ -34,12 +36,7 @@ from core.bootstrap.exceptions import (
 from domain.enums import EventActor
 from domain.models import EventState
 from fastapi import BackgroundTasks
-from infrastructure.database import AsyncSessionDep
-from infrastructure.database.sqlalchemy.repositories import (
-    SQLAlchemyEventRepository,
-    SQLAlchemyUserRepository,
-)
-from infrastructure.google import EventTime, GoogleCalendarEventCreate, GoogleCalendarService
+from infrastructure.google import EventTime, GoogleCalendarEventCreate
 from pytz import timezone
 
 logger = logging.getLogger(__name__)
@@ -49,7 +46,7 @@ class AbstractEventService(
     CrudServiceBase[
         EventLite,
         EventDetail,
-        SQLAlchemyEventRepository,
+        EventRepository,
         EventLite,
         EventUpdate,
     ],
@@ -287,14 +284,19 @@ class EventService(AbstractEventService):
 
     def __init__(
         self,
-        db: AsyncSessionDep,
+        event_repository: EventRepository,
+        reservation_service_service: ReservationServiceService,
+        calendar_service: CalendarService,
+        user_repository: UserRepository,
+        calendar_provider: CalendarProvider,
+        email_service: EmailService,
     ):
-        super().__init__(SQLAlchemyEventRepository(db), Entity.EVENT)
-        self.reservation_service_service = ReservationServiceService(db)
-        self.calendar_service = CalendarService(db)
-        self.user_crud = SQLAlchemyUserRepository(db)
-        self.google_calendar_service = GoogleCalendarService()
-        self.email_service = EmailService()
+        super().__init__(event_repository, Entity.EVENT)
+        self.reservation_service_service = reservation_service_service
+        self.calendar_service = calendar_service
+        self.user_repo = user_repository
+        self.calendar_provider = calendar_provider
+        self.email_service = email_service
 
     async def post_event(
         self,
@@ -361,7 +363,7 @@ class EventService(AbstractEventService):
             additional_services=event_create.additional_services,
             provider_id=provider_id,
         )
-        return await self.crud.create(event_create_to_db)
+        return await self.repo.create(event_create_to_db)
 
     async def get_reservation_service_of_this_event(
         self,
@@ -387,10 +389,10 @@ class EventService(AbstractEventService):
         self,
         event: EventLite,
     ) -> UserLite:
-        return await self.user_crud.get(event.user_id)
+        return await self.user_repo.get(event.user_id)
 
     async def get_current_event_for_user(self, user_id: UUID) -> EventDetail | None:
-        return await self.crud.get_current_event_for_user(user_id)
+        return await self.repo.get_current_event_for_user(user_id)
 
     async def approve_update_reservation_time(
         self,
@@ -433,7 +435,7 @@ class EventService(AbstractEventService):
             updated_event = await self.update(id_, event_update)
 
             if updated_event.calendar.provider_id and updated_event.provider_id:
-                event_from_google_calendar = await self.google_calendar_service.get_event(
+                event_from_google_calendar = await self.calendar_provider.get_event(
                     updated_event.calendar.provider_id, updated_event.provider_id
                 )
 
@@ -445,7 +447,7 @@ class EventService(AbstractEventService):
                     updated_event.reservation_end,
                 ).isoformat()
 
-                await self.google_calendar_service.update_event(
+                await self.calendar_provider.update_event(
                     updated_event.calendar.provider_id,
                     updated_event.provider_id,
                     event_from_google_calendar,
@@ -495,17 +497,17 @@ class EventService(AbstractEventService):
         event = await self.update(id_, event_update)
 
         if event.calendar.provider_id and event.provider_id:
-            event_to_update = await self.google_calendar_service.get_event(
+            event_to_update = await self.calendar_provider.get_event(
                 event.calendar.provider_id, event.provider_id
             )
 
-            user = await self.user_crud.get(event.user_id)
+            user = await self.user_repo.get(event.user_id)
             event_to_update.description = self._description_of_event(user, event)
             prague = timezone("Europe/Prague")
             event_to_update.start.date_time = prague.localize(event.reservation_start).isoformat()
             event_to_update.end.date_time = prague.localize(event.reservation_end).isoformat()
 
-            await self.google_calendar_service.update_event(
+            await self.calendar_provider.update_event(
                 event.calendar.provider_id, event.provider_id, event_to_update
             )
 
@@ -584,9 +586,7 @@ class EventService(AbstractEventService):
         event = await self.update(event.id, EventUpdate(event_state=EventState.CANCELED))
 
         if event.calendar.provider_id and event.provider_id:
-            await self.google_calendar_service.delete_event(
-                event.calendar.provider_id, event.provider_id
-            )
+            await self.calendar_provider.delete_event(event.calendar.provider_id, event.provider_id)
 
         if actor == EventActor.OWNER:
             await self.email_service.preparing_email(
@@ -619,7 +619,7 @@ class EventService(AbstractEventService):
             message = "You can't delete a reservation unless it is canceled or not approved."
             raise BaseAppError(message)
 
-        await self.crud.remove(id_)
+        await self.repo.remove(id_)
 
     async def confirm_event(
         self,
@@ -636,13 +636,13 @@ class EventService(AbstractEventService):
         event = await self.update(id_, EventUpdate(event_state=EventState.CONFIRMED))
 
         if event.calendar.provider_id and event.provider_id:
-            event_to_update = await self.google_calendar_service.get_event(
+            event_to_update = await self.calendar_provider.get_event(
                 event.calendar.provider_id, event.provider_id
             )
 
             event_to_update.summary = event.calendar.reservation_type
 
-            await self.google_calendar_service.update_event(
+            await self.calendar_provider.update_event(
                 event.calendar.provider_id, event.provider_id, event_to_update
             )
 
@@ -665,7 +665,7 @@ class EventService(AbstractEventService):
         event_state: EventState | None = None,
         past: bool | None = None,
     ) -> list[EventDetail]:
-        events = await self.crud.get_events_by_aliases(user.roles, event_state, past)
+        events = await self.repo.get_events_by_aliases(user.roles, event_state, past)
         return [EventDetail.model_validate(e) for e in events]
 
     async def get_reservation_service(
@@ -692,7 +692,7 @@ class EventService(AbstractEventService):
         """
         calendar_ids = [calendar.id, *calendar.collision_ids]
 
-        overlapping_events = await self.crud.get_overlapping_events(
+        overlapping_events = await self.repo.get_overlapping_events(
             calendar_ids,
             event_input.start_datetime,
             event_input.end_datetime,
@@ -853,7 +853,7 @@ class EventService(AbstractEventService):
             event_body.summary = "Not approved - night time"
         else:
             if calendar.provider_id:
-                event_google_calendar = await self.google_calendar_service.insert_event(
+                event_google_calendar = await self.calendar_provider.insert_event(
                     calendar.provider_id, event_body
                 )
                 event_google_calendar_id = event_google_calendar.id
@@ -880,7 +880,7 @@ class EventService(AbstractEventService):
         event_summary = event_body.summary
 
         if calendar.provider_id:
-            event_google_calendar = await self.google_calendar_service.insert_event(
+            event_google_calendar = await self.calendar_provider.insert_event(
                 calendar.provider_id, event_body
             )
             event_google_calendar_id = event_google_calendar.id

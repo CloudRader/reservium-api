@@ -14,13 +14,9 @@ from api.schemas import (
     UserUpdate,
 )
 from api.schemas.event import EventDetail
-from application.services import CrudServiceBase, EventService
+from application.interfaces.repositories import ReservationServiceRepository, UserRepository
+from application.services import CrudServiceBase
 from core.bootstrap.exceptions import Entity
-from infrastructure.database import AsyncSessionDep
-from infrastructure.database.sqlalchemy.repositories import (
-    SQLAlchemyReservationServiceRepository,
-    SQLAlchemyUserRepository,
-)
 from infrastructure.openid import UserInfo
 
 logger = logging.getLogger(__name__)
@@ -30,7 +26,7 @@ class AbstractUserService(
     CrudServiceBase[
         UserLite,
         UserDetail,
-        SQLAlchemyUserRepository,
+        UserRepository,
         UserCreate,
         UserUpdate,
     ],
@@ -91,11 +87,11 @@ class UserService(AbstractUserService):
 
     def __init__(
         self,
-        db: AsyncSessionDep,
+        user_repository: UserRepository,
+        reservation_service_repository: ReservationServiceRepository,
     ):
-        super().__init__(SQLAlchemyUserRepository(db), Entity.USER)
-        self.reservation_service_crud = SQLAlchemyReservationServiceRepository(db)
-        self.event_service = EventService(db)
+        super().__init__(user_repository, Entity.USER)
+        self.reservation_service_repo = reservation_service_repository
 
     async def create_user(
         self,
@@ -109,7 +105,7 @@ class UserService(AbstractUserService):
 
         user_roles = []
 
-        services_aliases = await self.reservation_service_crud.get_all_aliases()
+        services_aliases = await self.reservation_service_repo.get_all_aliases()
         for role in user_data.roles:
             if role.startswith("service_admin:"):
                 service_name = role.split(":", 1)[1]
@@ -136,10 +132,10 @@ class UserService(AbstractUserService):
             active_member=active_member,
             roles=user_roles,
         )
-        return await self.crud.create(user_create)
+        return await self.repo.create(user_create)
 
     async def get_by_username(self, username: str) -> UserLite:
-        return await self.crud.get_by_username(username)
+        return await self.repo.get_by_username(username)
 
     async def get_events_by_user(
         self,
@@ -148,6 +144,6 @@ class UserService(AbstractUserService):
         limit: int = 20,
         past: bool | None = None,
     ) -> list[EventDetail]:
-        events = await self.crud.get_events_by_user_id(user.id, page, limit, past)
+        events = await self.repo.get_events_by_user_id(user.id, page, limit, past)
 
         return [EventDetail.model_validate(event) for event in events]
