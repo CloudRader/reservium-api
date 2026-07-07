@@ -66,12 +66,16 @@ class Container:
             self._calendar_provider,
         )
         self._event_service = EventService(
-            event_repository=self._event_repository,
-            reservation_service_service=self._reservation_service_service,
-            calendar_service=self._calendar_service,
-            user_repository=self._user_repository,
-            calendar_provider=self._calendar_provider,
-            email_service=self._email_service,
+            self._event_repository,
+            self._reservation_service_service,
+            self._calendar_service,
+            self._user_repository,
+            self._calendar_provider,
+            self._email_service,
+        )
+        self._user_service = UserService(
+            self._user_repository,
+            self._reservation_service_repository,
         )
 
     # =============== Repositories ===============
@@ -99,34 +103,16 @@ class Container:
 
     # =============== Services ===============
     def calendar_service(self) -> CalendarService:
-        return CalendarService(
-            self._calendar_repository,
-            self._reservation_service_service,
-            self._mini_service_service,
-            self._calendar_provider,
-        )
+        return self._calendar_service
 
     def event_service(self) -> EventService:
-        return EventService(
-            self._event_repository,
-            self._reservation_service_service,
-            self._calendar_service,
-            self._user_repository,
-            self._calendar_provider,
-            self._email_service,
-        )
+        return self._event_service
 
     def mini_service_service(self) -> MiniServiceService:
-        return MiniServiceService(
-            self._mini_service_repository,
-            self._reservation_service_service,
-        )
+        return self._mini_service_service
 
     def reservation_service_service(self) -> ReservationServiceService:
-        return ReservationServiceService(self._reservation_service_repository)
+        return self._reservation_service_service
 
     def user_service(self) -> UserService:
-        return UserService(
-            self._user_repository,
-            self._reservation_service_repository,
-        )
+        return self._user_service
