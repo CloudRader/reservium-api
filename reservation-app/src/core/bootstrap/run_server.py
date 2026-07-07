@@ -1,7 +1,7 @@
 """Entry point for running the FastAPI application using Uvicorn or Gunicorn."""
 
 import uvicorn
-from core import settings
+from core.config import settings
 
 
 def uvicorn_run():

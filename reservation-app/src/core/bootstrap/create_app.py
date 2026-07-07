@@ -4,7 +4,7 @@ import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from core import settings
+from core.config import settings
 from fastapi import FastAPI
 from infrastructure.database import db_session
 from starlette.middleware.cors import CORSMiddleware

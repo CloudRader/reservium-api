@@ -5,13 +5,13 @@ import datetime as dt
 from typing import Any
 
 from application.interfaces.providers.calendar import CalendarProvider
-from core import settings
 from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,
     ExternalAPIError,
     PermissionDeniedError,
 )
+from core.config import settings
 from fastapi import status
 from google.oauth2 import service_account
 from googleapiclient.discovery import build

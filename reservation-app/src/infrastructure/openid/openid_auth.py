@@ -7,8 +7,8 @@ import aiohttp
 import httpx
 from application.interfaces.providers.identity.provider import IdentityProvider
 from authlib.integrations.starlette_client import OAuth
-from core import settings
 from core.bootstrap.exceptions import PermissionDeniedError, UnauthorizedError
+from core.config import settings
 from fastapi import status
 from fastapi.security import HTTPAuthorizationCredentials
 from infrastructure.openid.openid_schemas import UserInfo
