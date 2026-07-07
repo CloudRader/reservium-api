@@ -4,7 +4,7 @@ import logging
 from collections.abc import AsyncGenerator
 from typing import Annotated
 
-from core import settings
+from core.config import settings
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import (
     AsyncSession,

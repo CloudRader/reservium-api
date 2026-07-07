@@ -9,7 +9,7 @@ from datetime import datetime
 from uuid import UUID
 
 from api.schemas import UserCreate, UserUpdate
-from application.interfaces.repositories import UserRepository
+from application.ports.repositories import UserRepository
 from domain.models import CalendarModel, EventModel, UserModel
 from infrastructure.database.sqlalchemy.repositories.base import SQLAlchemyBaseRepository
 from sqlalchemy import select

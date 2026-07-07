@@ -10,7 +10,7 @@ from datetime import datetime
 from uuid import UUID
 
 from api.schemas import EventCreate, EventUpdate
-from application.interfaces.repositories import BaseRepository
+from application.ports.repositories import BaseRepository
 from domain.models import EventModel, EventState
 
 

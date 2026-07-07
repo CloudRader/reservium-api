@@ -9,7 +9,7 @@ from typing import Any
 from uuid import UUID
 
 from api.schemas import CalendarCreate, CalendarUpdate
-from application.interfaces.repositories import CalendarRepository
+from application.ports.repositories import CalendarRepository
 from domain.models import CalendarModel, MiniServiceModel
 from domain.models.calendar_collisions_association import CalendarCollisionAssociation
 from infrastructure.database.sqlalchemy.repositories.base import SQLAlchemyBaseRepository

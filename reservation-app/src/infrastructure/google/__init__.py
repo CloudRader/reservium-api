@@ -12,7 +12,6 @@ from infrastructure.google.google_calendar_schemas import (
     GoogleCalendarEventCreate,
     GoogleCalendarImportRequest,
 )
-from infrastructure.google.google_calendar_services import GoogleCalendarService
 
 __all__ = [
     "CalendarImportResult",
@@ -25,5 +24,4 @@ __all__ = [
     "GoogleCalendarEvent",
     "GoogleCalendarEventCreate",
     "GoogleCalendarImportRequest",
-    "GoogleCalendarService",
 ]

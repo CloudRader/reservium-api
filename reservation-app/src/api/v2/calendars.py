@@ -4,7 +4,12 @@ import logging
 from typing import Annotated, Any
 from uuid import UUID
 
-from api import abac_manage_rs_by_id, abac_manage_rs_from_body, get_current_user
+from api import (
+    abac_manage_rs_by_id,
+    abac_manage_rs_from_body,
+    get_calendar_service,
+    get_current_user,
+)
 from api.api_base import BaseCRUDRouter
 from api.schemas import (
     CalendarCreate,
@@ -49,7 +54,7 @@ class CalendarRouter(
     def __init__(self):
         super().__init__(
             router=router,
-            service_dep=CalendarService,
+            service_dep=get_calendar_service,
             schema_create=CalendarCreate,
             schema_update=CalendarUpdate,
             schema_lite=CalendarLite,
@@ -61,9 +66,9 @@ class CalendarRouter(
             permissions_delete=("calendars.soft_delete",),
             permissions_hard_delete=("calendars.hard_delete",),
             abac_create=[abac_manage_rs_from_body(CalendarCreate)],
-            abac_update=[abac_manage_rs_by_id(CalendarService)],
-            abac_restore=[abac_manage_rs_by_id(CalendarService)],
-            abac_delete=[abac_manage_rs_by_id(CalendarService)],
+            abac_update=[abac_manage_rs_by_id(get_calendar_service)],
+            abac_restore=[abac_manage_rs_by_id(get_calendar_service)],
+            abac_delete=[abac_manage_rs_by_id(get_calendar_service)],
         )
 
         self.register_routes()
@@ -74,7 +79,7 @@ class CalendarRouter(
             status_code=status.HTTP_200_OK,
         )
         async def get_mini_services_by_calendar(
-            service: Annotated[CalendarService, Depends(CalendarService)],
+            service: Annotated[CalendarService, Depends(get_calendar_service)],
             id_: Annotated[UUID, Path(alias="id")],
         ) -> Any:
             """
@@ -94,7 +99,7 @@ class CalendarRouter(
             status_code=status.HTTP_200_OK,
         )
         async def google_calendars_available_for_import(
-            service: Annotated[CalendarService, Depends(CalendarService)],
+            service: Annotated[CalendarService, Depends(get_calendar_service)],
             user: Annotated[UserLite, Depends(get_current_user)],
         ) -> Any:
             """List Google calendars that the auth user owns but are not yet added to the system."""
@@ -104,7 +109,7 @@ class CalendarRouter(
 
         @router.post("/google/subscribe-calendars")
         async def google_subscribe_calendars(
-            service: Annotated[CalendarService, Depends(CalendarService)],
+            service: Annotated[CalendarService, Depends(get_calendar_service)],
             google_calendar_ids: GoogleCalendarImportRequest,
             user: Annotated[UserLite, Depends(get_current_user)],
         ) -> list[CalendarImportResult]:
@@ -115,7 +120,7 @@ class CalendarRouter(
 
         @router.post("/google/subscribe-existing-calendars")
         async def google_subscribe_existing_calendars(
-            service: Annotated[CalendarService, Depends(CalendarService)],
+            service: Annotated[CalendarService, Depends(get_calendar_service)],
             user: Annotated[UserLite, Depends(get_current_user)],
         ) -> list[CalendarImportResult]:
             """Ensure the service account is subscribed to all calendars stored in the system."""
@@ -128,7 +133,7 @@ class CalendarRouter(
             status_code=status.HTTP_200_OK,
         )
         async def get_google_calendars(
-            service: Annotated[CalendarService, Depends(CalendarService)],
+            service: Annotated[CalendarService, Depends(get_calendar_service)],
         ) -> list[GoogleCalendarCalendar]:
             """Retrieve all Google Calendars the service account is subscribed to."""
             return await service.google_get_subscribed_calendars()
@@ -140,7 +145,7 @@ class CalendarRouter(
             status_code=status.HTTP_200_OK,
         )
         async def get_with_collisions(
-            service: Annotated[CalendarService, Depends(CalendarService)],
+            service: Annotated[CalendarService, Depends(get_calendar_service)],
             id_: Annotated[UUID, Path(alias="id")],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:

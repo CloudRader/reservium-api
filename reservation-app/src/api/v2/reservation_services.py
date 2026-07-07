@@ -4,7 +4,7 @@ import logging
 from typing import Annotated, Any
 from uuid import UUID
 
-from api import get_current_user_from_token
+from api import get_current_user_from_token, get_reservation_service_service
 from api.api_base import BaseCRUDRouter
 from api.schemas import (
     CalendarDetail,
@@ -48,7 +48,7 @@ class ReservationServiceRouter(
     def __init__(self):
         super().__init__(
             router=router,
-            service_dep=ReservationServiceService,
+            service_dep=get_reservation_service_service,
             schema_create=ReservationServiceCreate,
             schema_update=ReservationServiceUpdate,
             schema_lite=ReservationServiceDetail,
@@ -68,7 +68,7 @@ class ReservationServiceRouter(
             status_code=status.HTTP_200_OK,
         )
         async def get_public(
-            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
         ) -> Any:
             """Get all public reservation services."""
             logger.info("Fetching public reservation services")
@@ -83,7 +83,7 @@ class ReservationServiceRouter(
             status_code=status.HTTP_200_OK,
         )
         async def get_reservation_services(
-            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
             user: Annotated[CurrentUser, Depends(get_current_user_from_token)],
             include_removed: bool = Query(False, description="Include `removed objects` or not."),
         ) -> Any:
@@ -113,7 +113,7 @@ class ReservationServiceRouter(
             status_code=status.HTTP_200_OK,
         )
         async def get_by_name(
-            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
             name: Annotated[str, Path()],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
@@ -134,7 +134,7 @@ class ReservationServiceRouter(
             status_code=status.HTTP_200_OK,
         )
         async def get_by_alias(
-            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
             alias: Annotated[str, Path()],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
@@ -155,7 +155,7 @@ class ReservationServiceRouter(
             status_code=status.HTTP_200_OK,
         )
         async def get_calendars_by_reservation_service(
-            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
@@ -176,7 +176,7 @@ class ReservationServiceRouter(
             status_code=status.HTTP_200_OK,
         )
         async def get_mini_services_by_reservation_service(
-            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
@@ -197,7 +197,7 @@ class ReservationServiceRouter(
             status_code=status.HTTP_200_OK,
         )
         async def get_events_by_reservation_service(
-            service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             event_state: Annotated[EventState | None, Query()] = None,
         ) -> Any:

@@ -4,14 +4,14 @@ import asyncio
 import datetime as dt
 from typing import Any
 
-from application.interfaces.providers.calendar import CalendarProvider
-from core import settings
+from application.ports.providers.calendar import CalendarProvider
 from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,
     ExternalAPIError,
     PermissionDeniedError,
 )
+from core.config import settings
 from fastapi import status
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -26,8 +26,8 @@ from infrastructure.google import (
 from pytz import timezone
 
 
-class GoogleCalendarService(CalendarProvider):
-    """Service implementation for interacting with the Google Calendar API."""
+class GoogleCalendarProvider(CalendarProvider):
+    """Provider implementation for interacting with the Google Calendar API."""
 
     def __init__(self):
         credentials = service_account.Credentials.from_service_account_info(

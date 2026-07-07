@@ -16,6 +16,8 @@ from api.schemas import (
     ReservationServiceDetail,
 )
 from api.schemas.calendar import CalendarDetailWithCollisions
+from application.ports.providers.calendar import CalendarProvider
+from application.ports.repositories import CalendarRepository
 from application.services import CrudServiceBase
 from application.services.mini_service import MiniServiceService
 from application.services.reservation_service import ReservationServiceService
@@ -25,12 +27,9 @@ from core.bootstrap.exceptions import (
     EntityNotFoundError,
 )
 from domain.models import MiniServiceModel
-from infrastructure.database import AsyncSessionDep
-from infrastructure.database.sqlalchemy.repositories import SQLAlchemyCalendarRepository
 from infrastructure.google import (
     CalendarImportResult,
     GoogleCalendarCalendar,
-    GoogleCalendarService,
 )
 
 
@@ -38,7 +37,7 @@ class AbstractCalendarService(
     CrudServiceBase[
         CalendarLite,
         CalendarDetail,
-        SQLAlchemyCalendarRepository,
+        CalendarRepository,
         CalendarCreate,
         CalendarUpdate,
     ],
@@ -159,19 +158,22 @@ class CalendarService(AbstractCalendarService):
 
     def __init__(
         self,
-        db: AsyncSessionDep,
+        calendar_repository: CalendarRepository,
+        reservation_service_service: ReservationServiceService,
+        mini_service_service: MiniServiceService,
+        calendar_provider: CalendarProvider,
     ):
-        super().__init__(SQLAlchemyCalendarRepository(db), Entity.CALENDAR)
-        self.reservation_service_service = ReservationServiceService(db)
-        self.mini_service_service = MiniServiceService(db)
-        self.google_calendar_service = GoogleCalendarService()
+        super().__init__(calendar_repository, Entity.CALENDAR)
+        self.reservation_service_service = reservation_service_service
+        self.mini_service_service = mini_service_service
+        self.google_calendar_service = calendar_provider
 
     async def get_with_collisions(
         self,
         id_: UUID,
         include_removed: bool = False,
     ) -> CalendarDetailWithCollisions:
-        calendar = await self.crud.get_with_collisions(id_, include_removed)
+        calendar = await self.repo.get_with_collisions(id_, include_removed)
         if calendar is None:
             raise EntityNotFoundError(self.entity_name, id_)
         return calendar
@@ -193,7 +195,7 @@ class CalendarService(AbstractCalendarService):
             obj_in.reservation_service_id, obj_in.mini_services
         )
 
-        return await self.crud.create_with_mini_services_and_collisions(
+        return await self.repo.create_with_mini_services_and_collisions(
             obj_in, mini_services_in_calendar
         )
 
@@ -202,7 +204,7 @@ class CalendarService(AbstractCalendarService):
         id_: UUID,
         obj_in: CalendarUpdate,
     ) -> CalendarDetail:
-        calendar_to_update = await self.crud.get(id_)
+        calendar_to_update = await self.repo.get(id_)
         if calendar_to_update is None:
             raise EntityNotFoundError(self.entity_name, id_)
 
@@ -210,7 +212,7 @@ class CalendarService(AbstractCalendarService):
             calendar_to_update.reservation_service_id, obj_in.mini_services
         )
 
-        return await self.crud.update_with_mini_services_and_collisions(
+        return await self.repo.update_with_mini_services_and_collisions(
             calendar_to_update, obj_in, mini_services_in_calendar
         )
 
@@ -250,7 +252,7 @@ class CalendarService(AbstractCalendarService):
         reservation_type: str,
         include_removed: bool = False,
     ) -> CalendarDetail | None:
-        return await self.crud.get_by_reservation_type(
+        return await self.repo.get_by_reservation_type(
             reservation_type,
             include_removed,
         )
@@ -260,7 +262,7 @@ class CalendarService(AbstractCalendarService):
         provider_id: str,
         include_removed: bool = False,
     ) -> CalendarDetail | None:
-        return await self.crud.get_by_provider_id(
+        return await self.repo.get_by_provider_id(
             provider_id,
             include_removed,
         )

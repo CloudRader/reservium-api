@@ -22,7 +22,7 @@ from api.schemas import (
     ReservationServiceLite,
     UserLite,
 )
-from core import email_connection, settings
+from core.config import email_connection, settings
 from fastapi import BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema, MessageType, NameEmail
 from jinja2 import Environment, FileSystemLoader, select_autoescape

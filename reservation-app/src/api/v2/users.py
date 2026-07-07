@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated
 
-from api import get_current_user, require_permission
+from api import get_current_user, get_user_service, require_permission
 from api.schemas import UserLite
 from api.schemas.event import EventDetail
 from application.services import UserService
@@ -25,7 +25,7 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 async def get_all(
-    service: Annotated[UserService, Depends(UserService)],
+    service: Annotated[UserService, Depends(get_user_service)],
     user: Annotated[UserLite, Depends(get_current_user)],
 ):
     """
@@ -63,7 +63,7 @@ async def get_me(
     status_code=status.HTTP_200_OK,
 )
 async def get_events_by_user(
-    service: Annotated[UserService, Depends(UserService)],
+    service: Annotated[UserService, Depends(get_user_service)],
     user: Annotated[UserLite, Depends(get_current_user)],
     page: int = Query(1, ge=1, description="Page number for pagination. Starts at 1."),
     limit: int = Query(

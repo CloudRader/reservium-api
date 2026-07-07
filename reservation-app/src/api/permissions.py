@@ -5,7 +5,12 @@ from collections.abc import Callable
 from typing import Annotated, TypeVar
 from uuid import UUID
 
-from api.dependencies import get_current_user, get_current_user_from_token
+from api.dependencies import (
+    get_current_user,
+    get_current_user_from_token,
+    get_event_service,
+    get_reservation_service_service,
+)
 from api.schemas.current_user import CurrentUser
 from application.services import CrudServiceBase, EventService, ReservationServiceService
 from core.bootstrap.exceptions import PermissionDeniedError
@@ -30,7 +35,7 @@ def abac_event_owner_or_manager():
 
     async def dependency(
         user: Annotated[CurrentUser, Depends(get_current_user)],
-        service: Annotated[EventService, Depends(EventService)],
+        service: Annotated[EventService, Depends(get_event_service)],
         id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
     ):
         logger.info(
@@ -82,7 +87,7 @@ def abac_event_owner_by_id():
 
     async def dependency(
         user: Annotated[CurrentUser, Depends(get_current_user)],
-        service: Annotated[EventService, Depends(EventService)],
+        service: Annotated[EventService, Depends(get_event_service)],
         id_: Annotated[UUID, Path(alias="id")],
     ):
 
@@ -130,7 +135,7 @@ def abac_manage_rs_from_body[TService: CrudServiceBase, TBody](
 
     async def dependency(
         user: Annotated[CurrentUser, Depends(get_current_user_from_token)],
-        service: Annotated[ReservationServiceService, Depends(ReservationServiceService)],
+        service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
         obj_create: body_type,
     ):
         logger.info(

@@ -9,6 +9,7 @@ from api import (
     abac_event_owner_or_manager,
     abac_manage_rs_by_id,
     get_current_user,
+    get_event_service,
     require_permission,
 )
 from api.api_base import BaseCRUDRouter
@@ -30,7 +31,7 @@ from domain.enums import EventActor
 from domain.models import EventState
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, Path, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
-from infrastructure.openid import OpenIdProvider
+from infrastructure.openid.openid_auth import OpenIdProvider
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ class EventRouter(
     def __init__(self):
         super().__init__(
             router=router,
-            service_dep=EventService,
+            service_dep=get_event_service,
             schema_create=EventCreate,
             schema_update=EventUpdate,
             schema_lite=EventLite,
@@ -68,7 +69,7 @@ class EventRouter(
             enable_update=False,
             enable_restore=False,
             enable_delete=False,
-            abac_hard_delete=[abac_manage_rs_by_id(EventService)],
+            abac_hard_delete=[abac_manage_rs_by_id(get_event_service)],
         )
 
         @router.get(
@@ -76,7 +77,7 @@ class EventRouter(
             status_code=status.HTTP_200_OK,
         )
         async def get_by_user_roles(
-            service: Annotated[EventService, Depends(EventService)],
+            service: Annotated[EventService, Depends(get_event_service)],
             user: Annotated[UserLite, Depends(get_current_user)],
             event_state: Annotated[
                 EventState | None, Query(description="Filter events by their state.")
@@ -104,7 +105,7 @@ class EventRouter(
         )
         async def create(
             background_tasks: BackgroundTasks,
-            service: Annotated[EventService, Depends(EventService)],
+            service: Annotated[EventService, Depends(get_event_service)],
             openid_service: Annotated[OpenIdProvider, Depends(OpenIdProvider)],
             user: Annotated[UserLite, Depends(get_current_user)],
             token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
@@ -130,13 +131,13 @@ class EventRouter(
             responses=ERROR_RESPONSES["400_401_403"],
             dependencies=[
                 Depends(require_permission("events.update")),
-                Depends(abac_manage_rs_by_id(EventService)),
+                Depends(abac_manage_rs_by_id(get_event_service)),
             ],
             status_code=status.HTTP_200_OK,
         )
         async def approve_time_change_request(
             background_tasks: BackgroundTasks,
-            service: Annotated[EventService, Depends(EventService)],
+            service: Annotated[EventService, Depends(get_event_service)],
             user: Annotated[UserLite, Depends(get_current_user_from_token)],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             approve: bool = Query(False, description="Approve this update or not."),
@@ -159,13 +160,13 @@ class EventRouter(
             responses=ERROR_RESPONSES["400_401_403"],
             dependencies=[
                 Depends(require_permission("events.update")),
-                Depends(abac_manage_rs_by_id(EventService)),
+                Depends(abac_manage_rs_by_id(get_event_service)),
             ],
             status_code=status.HTTP_200_OK,
         )
         async def update(
             background_tasks: BackgroundTasks,
-            service: Annotated[EventService, Depends(EventService)],
+            service: Annotated[EventService, Depends(get_event_service)],
             user: Annotated[UserLite, Depends(get_current_user_from_token)],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             event_update: Annotated[EventUpdate, Body()],
@@ -191,7 +192,7 @@ class EventRouter(
         )
         async def request_time_change(
             background_tasks: BackgroundTasks,
-            service: Annotated[EventService, Depends(EventService)],
+            service: Annotated[EventService, Depends(get_event_service)],
             user: Annotated[UserLite, Depends(get_current_user)],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             event_update: Annotated[EventUpdateTime, Body()],
@@ -211,13 +212,13 @@ class EventRouter(
             responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[
                 Depends(require_permission("events.update")),
-                Depends(abac_manage_rs_by_id(EventService)),
+                Depends(abac_manage_rs_by_id(get_event_service)),
             ],
             status_code=status.HTTP_200_OK,
         )
         async def approve_reservation(
             background_tasks: BackgroundTasks,
-            service: Annotated[EventService, Depends(EventService)],
+            service: Annotated[EventService, Depends(get_event_service)],
             user: Annotated[UserLite, Depends(get_current_user_from_token)],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             approve: bool = Query(False, description="Approve this reservation or not."),
@@ -254,7 +255,7 @@ class EventRouter(
         )
         async def cancel(
             background_tasks: BackgroundTasks,
-            service: Annotated[EventService, Depends(EventService)],
+            service: Annotated[EventService, Depends(get_event_service)],
             user: Annotated[UserLite, Depends(get_current_user)],
             event_ctx: Annotated[
                 tuple[EventLite, EventActor], Depends(abac_event_owner_or_manager())

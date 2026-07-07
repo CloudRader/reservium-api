@@ -10,7 +10,7 @@ from typing import Protocol, TypeVar, runtime_checkable
 from uuid import UUID
 
 from api.schemas import ReservationServiceCreate, ReservationServiceUpdate
-from application.interfaces.repositories import BaseRepository
+from application.ports.repositories import BaseRepository
 from domain.models import EventModel, EventState, ReservationServiceModel
 
 

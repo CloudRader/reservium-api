@@ -15,21 +15,20 @@ from api.schemas import (
     ReservationServiceUpdate,
 )
 from api.schemas.event import EventDetail
+from application.ports.repositories import ReservationServiceRepository
 from application.services import CrudServiceBase
 from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,
 )
 from domain.models import CalendarModel, EventState, MiniServiceModel
-from infrastructure.database import AsyncSessionDep
-from infrastructure.database.sqlalchemy.repositories import SQLAlchemyReservationServiceRepository
 
 
 class AbstractReservationServiceService(
     CrudServiceBase[
         ReservationServiceDetail,
         ReservationServiceDetail,
-        SQLAlchemyReservationServiceRepository,
+        ReservationServiceRepository,
         ReservationServiceCreate,
         ReservationServiceUpdate,
     ],
@@ -176,16 +175,16 @@ class ReservationServiceService(AbstractReservationServiceService):
 
     def __init__(
         self,
-        db: AsyncSessionDep,
+        reservation_service_repository: ReservationServiceRepository,
     ):
-        super().__init__(SQLAlchemyReservationServiceRepository(db), Entity.RESERVATION_SERVICE)
+        super().__init__(reservation_service_repository, Entity.RESERVATION_SERVICE)
 
     async def get_by_alias(
         self,
         alias: str,
         include_removed: bool = False,
     ) -> ReservationServiceDetail:
-        reservation_service = await self.crud.get_by_alias(alias, include_removed)
+        reservation_service = await self.repo.get_by_alias(alias, include_removed)
         if reservation_service is None:
             raise EntityNotFoundError(self.entity_name, alias)
         return reservation_service
@@ -195,7 +194,7 @@ class ReservationServiceService(AbstractReservationServiceService):
         name: str,
         include_removed: bool = False,
     ) -> ReservationServiceDetail:
-        reservation_service = await self.crud.get_by_name(name, include_removed)
+        reservation_service = await self.repo.get_by_name(name, include_removed)
         if reservation_service is None:
             raise EntityNotFoundError(self.entity_name, name)
         return reservation_service
@@ -205,7 +204,7 @@ class ReservationServiceService(AbstractReservationServiceService):
         room_id: int,
         include_removed: bool = False,
     ) -> ReservationServiceDetail:
-        reservation_service = await self.crud.get_by_room_id(room_id, include_removed)
+        reservation_service = await self.repo.get_by_room_id(room_id, include_removed)
         if reservation_service is None:
             raise EntityNotFoundError(self.entity_name, room_id)
         return reservation_service
@@ -214,25 +213,25 @@ class ReservationServiceService(AbstractReservationServiceService):
         self,
         include_removed: bool = False,
     ) -> list[ReservationServiceDetail]:
-        services = await self.crud.get_public_services(include_removed)
+        services = await self.repo.get_public_services(include_removed)
 
         return [ReservationServiceDetail.model_validate(service) for service in services]
 
     async def get_all_services_include_all_removed(
         self,
     ) -> list[ReservationServiceDetail]:
-        reservation_services = await self.crud.get_all(True)
+        reservation_services = await self.repo.get_all(True)
 
         reservation_services_result: list[ReservationServiceDetail] = []
 
         for reservation_service in reservation_services:
-            calendars = await self.crud.get_related_entities_by_reservation_service_id(
+            calendars = await self.repo.get_related_entities_by_reservation_service_id(
                 CalendarModel,
                 reservation_service.id,
                 include_removed=True,
             )
 
-            mini_services = await self.crud.get_related_entities_by_reservation_service_id(
+            mini_services = await self.repo.get_related_entities_by_reservation_service_id(
                 MiniServiceModel,
                 reservation_service.id,
                 include_removed=True,
@@ -254,7 +253,7 @@ class ReservationServiceService(AbstractReservationServiceService):
     ) -> list[CalendarDetail]:
         reservation_service = await self.get(id_, include_removed=True)
 
-        return await self.crud.get_related_entities_by_reservation_service_id(
+        return await self.repo.get_related_entities_by_reservation_service_id(
             CalendarModel, reservation_service.id, include_removed=include_removed
         )
 
@@ -265,7 +264,7 @@ class ReservationServiceService(AbstractReservationServiceService):
     ) -> list[MiniServiceDetail]:
         reservation_service = await self.get(id_, include_removed=True)
 
-        return await self.crud.get_related_entities_by_reservation_service_id(
+        return await self.repo.get_related_entities_by_reservation_service_id(
             MiniServiceModel, reservation_service.id, include_removed=include_removed
         )
 
@@ -276,7 +275,7 @@ class ReservationServiceService(AbstractReservationServiceService):
     ) -> list[EventDetail]:
         reservation_service = await self.get(id_, include_removed=True)
 
-        events = await self.crud.get_events_by_reservation_service_id(
+        events = await self.repo.get_events_by_reservation_service_id(
             reservation_service.id,
             event_state,
         )

@@ -14,16 +14,12 @@ from api.schemas import (
     MiniServiceUpdate,
     ReservationServiceDetail,
 )
+from application.ports.repositories import MiniServiceRepository
 from application.services import CrudServiceBase
 from application.services.reservation_service import ReservationServiceService
 from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,
-)
-from infrastructure.database import AsyncSessionDep
-from infrastructure.database.sqlalchemy.repositories import (
-    SQLAlchemyCalendarRepository,
-    SQLAlchemyMiniServiceRepository,
 )
 
 
@@ -31,7 +27,7 @@ class AbstractMiniServiceService(
     CrudServiceBase[
         MiniServiceLite,
         MiniServiceDetail,
-        SQLAlchemyMiniServiceRepository,
+        MiniServiceRepository,
         MiniServiceCreate,
         MiniServiceUpdate,
     ],
@@ -92,18 +88,18 @@ class MiniServiceService(AbstractMiniServiceService):
 
     def __init__(
         self,
-        db: AsyncSessionDep,
+        mini_service_repository: MiniServiceRepository,
+        reservation_service_service: ReservationServiceService,
     ):
-        super().__init__(SQLAlchemyMiniServiceRepository(db), Entity.MINI_SERVICE)
-        self.calendar_crud = SQLAlchemyCalendarRepository(db)
-        self.reservation_service_service = ReservationServiceService(db)
+        super().__init__(mini_service_repository, Entity.MINI_SERVICE)
+        self.reservation_service_service = reservation_service_service
 
     async def get_by_name(
         self,
         name: str,
         include_removed: bool = False,
     ) -> MiniServiceDetail:
-        mini_service = await self.crud.get_by_name(name, include_removed)
+        mini_service = await self.repo.get_by_name(name, include_removed)
         if mini_service is None:
             raise EntityNotFoundError(self.entity_name, name)
         return mini_service
@@ -113,7 +109,7 @@ class MiniServiceService(AbstractMiniServiceService):
         room_id: int,
         include_removed: bool = False,
     ) -> MiniServiceDetail:
-        mini_service = await self.crud.get_by_room_id(room_id, include_removed)
+        mini_service = await self.repo.get_by_room_id(room_id, include_removed)
         if mini_service is None:
             raise EntityNotFoundError(self.entity_name, room_id)
         return mini_service

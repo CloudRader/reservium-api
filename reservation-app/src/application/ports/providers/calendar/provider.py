@@ -3,7 +3,7 @@
 import datetime as dt
 from abc import ABC, abstractmethod
 
-from infrastructure.google import (
+from infrastructure.google.google_calendar_schemas import (
     CalendarImportResult,
     GoogleCalendarCalendar,
     GoogleCalendarEvent,

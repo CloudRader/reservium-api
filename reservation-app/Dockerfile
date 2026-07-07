@@ -23,7 +23,7 @@ RUN uv sync --no-dev --locked --no-editable --no-install-project
 # ==========================================
 # Runtime Stage
 # ==========================================
-FROM python:3.14.5-slim-trixie AS runtime
+FROM python:3.14.6-slim-trixie AS runtime
 
 ENV HOME=/app \
     PATH="/app/.venv/bin:$PATH" \
