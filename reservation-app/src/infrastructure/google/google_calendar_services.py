@@ -4,7 +4,7 @@ import asyncio
 import datetime as dt
 from typing import Any
 
-from application.interfaces.providers.calendar import CalendarProvider
+from application.ports.providers.calendar import CalendarProvider
 from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,

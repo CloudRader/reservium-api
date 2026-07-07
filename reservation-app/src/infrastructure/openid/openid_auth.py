@@ -5,7 +5,7 @@ from typing import Any
 
 import aiohttp
 import httpx
-from application.interfaces.providers.identity.provider import IdentityProvider
+from application.ports.providers.identity.provider import IdentityProvider
 from authlib.integrations.starlette_client import OAuth
 from core.bootstrap.exceptions import PermissionDeniedError, UnauthorizedError
 from core.config import settings

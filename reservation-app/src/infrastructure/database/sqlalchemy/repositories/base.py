@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from typing import Any, TypeVar
 from uuid import UUID
 
-from application.interfaces.repositories import BaseRepository
+from application.ports.repositories import BaseRepository
 from domain.models.base import Base
 from pydantic import BaseModel
 from sqlalchemy import func, select

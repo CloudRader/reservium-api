@@ -14,7 +14,7 @@ from api.schemas import (
     UserUpdate,
 )
 from api.schemas.event import EventDetail
-from application.interfaces.repositories import ReservationServiceRepository, UserRepository
+from application.ports.repositories import ReservationServiceRepository, UserRepository
 from application.services import CrudServiceBase
 from core.bootstrap.exceptions import Entity
 from infrastructure.openid import UserInfo

@@ -16,8 +16,8 @@ from api.schemas import (
     ReservationServiceDetail,
 )
 from api.schemas.calendar import CalendarDetailWithCollisions
-from application.interfaces.providers.calendar import CalendarProvider
-from application.interfaces.repositories import CalendarRepository
+from application.ports.providers.calendar import CalendarProvider
+from application.ports.repositories import CalendarRepository
 from application.services import CrudServiceBase
 from application.services.mini_service import MiniServiceService
 from application.services.reservation_service import ReservationServiceService

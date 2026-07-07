@@ -14,7 +14,7 @@ from api.schemas import (
     MiniServiceUpdate,
     ReservationServiceDetail,
 )
-from application.interfaces.repositories import MiniServiceRepository
+from application.ports.repositories import MiniServiceRepository
 from application.services import CrudServiceBase
 from application.services.reservation_service import ReservationServiceService
 from core.bootstrap.exceptions import (

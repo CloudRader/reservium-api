@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Protocol, TypeVar, runtime_checkable
 from uuid import UUID
 
 from api.schemas import ReservationServiceCreate, ReservationServiceUpdate
-from application.interfaces.repositories import ReservationServiceRepository
+from application.ports.repositories import ReservationServiceRepository
 from domain.models import CalendarModel, EventModel, EventState, ReservationServiceModel
 from infrastructure.database.sqlalchemy.repositories.base import SQLAlchemyBaseRepository
 from sqlalchemy import select

@@ -22,8 +22,8 @@ from api.schemas import (
 )
 from api.schemas.calendar import CalendarDetailWithCollisions
 from api.schemas.event import EventLite
-from application.interfaces.providers.calendar import CalendarProvider
-from application.interfaces.repositories import EventRepository, UserRepository
+from application.ports.providers.calendar import CalendarProvider
+from application.ports.repositories import EventRepository, UserRepository
 from application.services import CrudServiceBase
 from application.services.calendar import CalendarService
 from application.services.email import EmailService

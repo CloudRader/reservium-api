@@ -9,7 +9,7 @@ from datetime import datetime
 from uuid import UUID
 
 from api.schemas import EventCreate, EventUpdate
-from application.interfaces.repositories import EventRepository
+from application.ports.repositories import EventRepository
 from domain.models import CalendarModel, EventModel, EventState, ReservationServiceModel
 from infrastructure.database.sqlalchemy.repositories.base import SQLAlchemyBaseRepository
 from sqlalchemy import select

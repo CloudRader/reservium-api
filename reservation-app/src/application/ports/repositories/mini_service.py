@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 
 from api.schemas import MiniServiceCreate, MiniServiceUpdate
-from application.interfaces.repositories import BaseRepository
+from application.ports.repositories import BaseRepository
 from domain.models import MiniServiceModel
 
 

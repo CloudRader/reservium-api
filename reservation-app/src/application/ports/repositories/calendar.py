@@ -10,7 +10,7 @@ from typing import Any
 from uuid import UUID
 
 from api.schemas import CalendarCreate, CalendarUpdate
-from application.interfaces.repositories import BaseRepository
+from application.ports.repositories import BaseRepository
 from domain.models import CalendarModel, MiniServiceModel
 
 

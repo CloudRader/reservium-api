@@ -1,8 +1,8 @@
 """Dependency injection container for the application services, repositories, and providers."""
 
-from application.interfaces.providers.calendar import CalendarProvider
-from application.interfaces.providers.identity import IdentityProvider
-from application.interfaces.repositories import (
+from application.ports.providers.calendar import CalendarProvider
+from application.ports.providers.identity import IdentityProvider
+from application.ports.repositories import (
     CalendarRepository,
     EventRepository,
     MiniServiceRepository,

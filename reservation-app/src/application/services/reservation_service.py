@@ -15,7 +15,7 @@ from api.schemas import (
     ReservationServiceUpdate,
 )
 from api.schemas.event import EventDetail
-from application.interfaces.repositories import ReservationServiceRepository
+from application.ports.repositories import ReservationServiceRepository
 from application.services import CrudServiceBase
 from core.bootstrap.exceptions import (
     Entity,
