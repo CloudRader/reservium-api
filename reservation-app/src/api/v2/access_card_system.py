@@ -2,7 +2,7 @@
 
 from typing import Annotated, Any
 
-from api import get_event_service
+from api.dependencies import get_event_service
 from api.schemas import (
     ClubAccessSystemRequest,
 )

@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated
 
-from api import get_identity_provider, get_user_service
+from api.dependencies import get_identity_provider, get_user_service
 from application.ports.providers.identity.provider import IdentityProvider
 from application.services import UserService
 from core.config import settings

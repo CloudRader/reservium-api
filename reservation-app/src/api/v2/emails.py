@@ -2,7 +2,7 @@
 
 from typing import Annotated, Any
 
-from api import get_current_user
+from api.dependencies import get_current_user, get_email_service
 from api.schemas import (
     RegistrationFormCreate,
     UserLite,
@@ -18,7 +18,7 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
 )
 async def send_registration_form(
-    service: Annotated[EmailService, Depends(EmailService)],
+    service: Annotated[EmailService, Depends(get_email_service)],
     user: Annotated[UserLite, Depends(get_current_user)],
     registration_form: RegistrationFormCreate,
     background_tasks: BackgroundTasks,

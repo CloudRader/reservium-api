@@ -3,8 +3,9 @@
 import logging
 from typing import Annotated, Any
 
-from api import abac_manage_rs_by_id, abac_manage_rs_from_body, get_mini_service_service
 from api.api_base import BaseCRUDRouter
+from api.dependencies import get_mini_service_service
+from api.permissions import abac_manage_rs_by_id, abac_manage_rs_from_body
 from api.schemas import MiniServiceCreate, MiniServiceDetail, MiniServiceLite, MiniServiceUpdate
 from application.services import MiniServiceService
 from core.bootstrap.exceptions import (

@@ -4,8 +4,8 @@ import logging
 from typing import Annotated, Any
 from uuid import UUID
 
-from api import get_current_user_from_token, get_reservation_service_service
 from api.api_base import BaseCRUDRouter
+from api.dependencies import get_current_user_from_token, get_reservation_service_service
 from api.schemas import (
     CalendarDetail,
     MiniServiceDetail,
