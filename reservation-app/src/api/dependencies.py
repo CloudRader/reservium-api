@@ -7,13 +7,14 @@ from api.schemas.current_user import CurrentUser
 from application.ports.providers.identity.provider import IdentityProvider
 from application.services import (
     CalendarService,
+    EmailService,
     EventService,
     MiniServiceService,
     ReservationServiceService,
     UserService,
 )
 from core.bootstrap.container import Container
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from infrastructure.database import AsyncSessionDep
 
@@ -22,51 +23,61 @@ logger = logging.getLogger(__name__)
 http_bearer = HTTPBearer()
 
 
-async def get_container(db: AsyncSessionDep) -> Container:
+async def get_container(request: Request, db: AsyncSessionDep) -> Container:
     """Retrieve Session instance using DI container."""
-    return Container(db)
+    providers = request.app.state.providers
+
+    return Container(
+        db=db,
+        calendar_provider=providers.calendar_provider,
+        identity_provider=providers.identity_provider,
+        email_service=providers.email_service,
+    )
 
 
-async def get_identity_provider(
-    container: Annotated[Container, Depends(get_container)],
-) -> IdentityProvider:
+async def get_identity_provider(request: Request) -> IdentityProvider:
     """Retrieve IdentityProvider instance using DI container."""
-    return container.identity_provider()
+    return request.app.state.providers.identity_provider
+
+
+async def get_email_service(request: Request) -> EmailService:
+    """Retrieve EmailService instance using DI container."""
+    return request.app.state.providers.email_service
 
 
 async def get_user_service(
     container: Annotated[Container, Depends(get_container)],
 ) -> UserService:
     """Retrieve UserService instance using DI container."""
-    return container.user_service()
+    return container.user_service
 
 
 async def get_calendar_service(
     container: Annotated[Container, Depends(get_container)],
 ) -> CalendarService:
     """Retrieve CalendarService instance using DI container."""
-    return container.calendar_service()
+    return container.calendar_service
 
 
 async def get_event_service(
     container: Annotated[Container, Depends(get_container)],
 ) -> EventService:
     """Retrieve EventService instance using DI container."""
-    return container.event_service()
+    return container.event_service
 
 
 async def get_mini_service_service(
     container: Annotated[Container, Depends(get_container)],
 ) -> MiniServiceService:
     """Retrieve MiniServiceService instance using DI container."""
-    return container.mini_service_service()
+    return container.mini_service_service
 
 
 async def get_reservation_service_service(
     container: Annotated[Container, Depends(get_container)],
 ) -> ReservationServiceService:
     """Retrieve ReservationServiceService instance using DI container."""
-    return container.reservation_service_service()
+    return container.reservation_service_service
 
 
 async def get_current_user(

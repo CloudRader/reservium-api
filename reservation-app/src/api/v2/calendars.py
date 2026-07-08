@@ -4,13 +4,12 @@ import logging
 from typing import Annotated, Any
 from uuid import UUID
 
-from api import (
-    abac_manage_rs_by_id,
-    abac_manage_rs_from_body,
+from api.api_base import BaseCRUDRouter
+from api.dependencies import (
     get_calendar_service,
     get_current_user,
 )
-from api.api_base import BaseCRUDRouter
+from api.permissions import abac_manage_rs_by_id, abac_manage_rs_from_body
 from api.schemas import (
     CalendarCreate,
     CalendarDetail,

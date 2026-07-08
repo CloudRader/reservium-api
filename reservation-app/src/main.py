@@ -6,7 +6,7 @@ In other words it is an entry point of the application.
 
 import logging
 
-from core import create_app, uvicorn_run
+from core.bootstrap import create_app, uvicorn_run
 from core.config import settings
 
 logging.basicConfig(

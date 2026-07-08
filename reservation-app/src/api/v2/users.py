@@ -3,7 +3,8 @@
 import logging
 from typing import Annotated
 
-from api import get_current_user, get_user_service, require_permission
+from api.dependencies import get_current_user, get_user_service
+from api.permissions import require_permission
 from api.schemas import UserLite
 from api.schemas.event import EventDetail
 from application.services import UserService

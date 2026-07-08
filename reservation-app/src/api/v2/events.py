@@ -4,16 +4,19 @@ import logging
 from typing import Annotated, Any
 from uuid import UUID
 
-from api import (
+from api.api_base import BaseCRUDRouter
+from api.dependencies import (
+    get_current_user,
+    get_current_user_from_token,
+    get_event_service,
+    http_bearer,
+)
+from api.permissions import (
     abac_event_owner_by_id,
     abac_event_owner_or_manager,
     abac_manage_rs_by_id,
-    get_current_user,
-    get_event_service,
     require_permission,
 )
-from api.api_base import BaseCRUDRouter
-from api.dependencies import get_current_user_from_token, http_bearer
 from api.schemas import (
     EventCreate,
     EventDetail,

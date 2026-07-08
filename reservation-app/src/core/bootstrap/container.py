@@ -2,13 +2,6 @@
 
 from application.ports.providers.calendar import CalendarProvider
 from application.ports.providers.identity import IdentityProvider
-from application.ports.repositories import (
-    CalendarRepository,
-    EventRepository,
-    MiniServiceRepository,
-    ReservationServiceRepository,
-    UserRepository,
-)
 from application.services import (
     CalendarService,
     EmailService,
@@ -24,8 +17,6 @@ from infrastructure.database.sqlalchemy.repositories import (
     SQLAlchemyReservationServiceRepository,
     SQLAlchemyUserRepository,
 )
-from infrastructure.google.google_calendar_services import GoogleCalendarProvider
-from infrastructure.openid.openid_auth import OpenIdProvider
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -37,7 +28,13 @@ class Container:
     repositories, and external providers.
     """
 
-    def __init__(self, db: AsyncSession):
+    def __init__(
+        self,
+        db: AsyncSession,
+        calendar_provider: CalendarProvider,
+        identity_provider: IdentityProvider,
+        email_service: EmailService,
+    ):
 
         # Repositories
         self._calendar_repository = SQLAlchemyCalendarRepository(db)
@@ -47,8 +44,9 @@ class Container:
         self._user_repository = SQLAlchemyUserRepository(db)
 
         # Providers
-        self._calendar_provider = GoogleCalendarProvider()
-        self._identity_provider = OpenIdProvider()
+        self._calendar_provider = calendar_provider
+        self._identity_provider = identity_provider
+        self._email_service = email_service
 
         # Services
         self._reservation_service_service = ReservationServiceService(
@@ -58,7 +56,6 @@ class Container:
             self._mini_service_repository,
             self._reservation_service_service,
         )
-        self._email_service = EmailService()
         self._calendar_service = CalendarService(
             self._calendar_repository,
             self._reservation_service_service,
@@ -78,41 +75,23 @@ class Container:
             self._reservation_service_repository,
         )
 
-    # =============== Repositories ===============
-    def calendar_repository(self) -> CalendarRepository:
-        return self._calendar_repository
-
-    def event_repository(self) -> EventRepository:
-        return self._event_repository
-
-    def mini_service_repository(self) -> MiniServiceRepository:
-        return self._mini_service_repository
-
-    def reservation_service_repository(self) -> ReservationServiceRepository:
-        return self._reservation_service_repository
-
-    def user_repository(self) -> UserRepository:
-        return self._user_repository
-
-    # =============== Providers ===============
-    def calendar_provider(self) -> CalendarProvider:
-        return self._calendar_provider
-
-    def identity_provider(self) -> IdentityProvider:
-        return self._identity_provider
-
     # =============== Services ===============
+    @property
     def calendar_service(self) -> CalendarService:
         return self._calendar_service
 
+    @property
     def event_service(self) -> EventService:
         return self._event_service
 
+    @property
     def mini_service_service(self) -> MiniServiceService:
         return self._mini_service_service
 
+    @property
     def reservation_service_service(self) -> ReservationServiceService:
         return self._reservation_service_service
 
+    @property
     def user_service(self) -> UserService:
         return self._user_service
