@@ -10,8 +10,10 @@ from uuid import UUID
 
 from api.schemas import CalendarCreate, CalendarUpdate
 from application.ports.repositories import CalendarRepository
-from domain.models import CalendarModel, MiniServiceModel
-from domain.models.calendar_collisions_association import CalendarCollisionAssociation
+from infrastructure.database.sqlalchemy.models import CalendarModel, MiniServiceModel
+from infrastructure.database.sqlalchemy.models.calendar_collisions_association import (
+    CalendarCollisionAssociation,
+)
 from infrastructure.database.sqlalchemy.repositories.base import SQLAlchemyBaseRepository
 from sqlalchemy import delete, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession

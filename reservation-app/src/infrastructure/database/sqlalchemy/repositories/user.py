@@ -10,7 +10,7 @@ from uuid import UUID
 
 from api.schemas import UserCreate, UserUpdate
 from application.ports.repositories import UserRepository
-from domain.models import CalendarModel, EventModel, UserModel
+from infrastructure.database.sqlalchemy.models import CalendarModel, EventModel, UserModel
 from infrastructure.database.sqlalchemy.repositories.base import SQLAlchemyBaseRepository
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

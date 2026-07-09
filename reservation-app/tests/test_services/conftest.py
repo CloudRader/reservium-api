@@ -2,7 +2,7 @@
 #
 # import pytest
 # import pytest_asyncio
-# from domain.models.event import EventState
+# from infrastructure.database.sqlalchemy.models.event import EventState
 # from api.schemas import (
 #     CalendarCreate,
 #     CalendarDetail,

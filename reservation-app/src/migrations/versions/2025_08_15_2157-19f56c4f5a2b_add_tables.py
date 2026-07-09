@@ -10,7 +10,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from domain.models.types.rules_type import RulesType
+from infrastructure.database.sqlalchemy.models.types.rules_type import RulesType
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.

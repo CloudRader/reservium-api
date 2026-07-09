@@ -11,7 +11,11 @@ from uuid import UUID
 
 from api.schemas import ReservationServiceCreate, ReservationServiceUpdate
 from application.ports.repositories import BaseRepository
-from domain.models import EventModel, EventState, ReservationServiceModel
+from infrastructure.database.sqlalchemy.models import (
+    EventModel,
+    EventState,
+    ReservationServiceModel,
+)
 
 
 @runtime_checkable

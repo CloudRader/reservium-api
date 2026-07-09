@@ -34,8 +34,8 @@ from core.bootstrap.exceptions import (
     SoftValidationError,
 )
 from domain.enums import EventActor
-from domain.models import EventState
 from fastapi import BackgroundTasks
+from infrastructure.database.sqlalchemy.models import EventState
 from infrastructure.google import EventTime, GoogleCalendarEventCreate
 from pytz import timezone
 

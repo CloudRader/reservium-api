@@ -10,7 +10,7 @@ from uuid import UUID
 
 from api.schemas import MiniServiceCreate, MiniServiceUpdate
 from application.ports.repositories import BaseRepository
-from domain.models import MiniServiceModel
+from infrastructure.database.sqlalchemy.models import MiniServiceModel
 
 
 class MiniServiceRepository(

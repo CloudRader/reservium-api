@@ -9,7 +9,7 @@ from uuid import UUID
 
 from api.schemas import MiniServiceCreate, MiniServiceUpdate
 from application.ports.repositories import MiniServiceRepository
-from domain.models import MiniServiceModel
+from infrastructure.database.sqlalchemy.models import MiniServiceModel
 from infrastructure.database.sqlalchemy.repositories.base import SQLAlchemyBaseRepository
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

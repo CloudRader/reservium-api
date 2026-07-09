@@ -7,7 +7,7 @@ pretty = true
 show_error_codes = true
 
 [[tool.mypy.overrides]]
-module = "src.domain.models.soft_delete_mixin"
+module = "src.infrastructure.database.sqlalchemy.models.soft_delete_mixin"
 ignore_errors = true
 
 [[tool.mypy.overrides]]

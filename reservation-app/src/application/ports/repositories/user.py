@@ -10,7 +10,7 @@ from uuid import UUID
 
 from api.schemas import UserCreate, UserUpdate
 from application.ports.repositories import BaseRepository
-from domain.models import EventModel, UserModel
+from infrastructure.database.sqlalchemy.models import EventModel, UserModel
 
 
 class UserRepository(BaseRepository[UserModel, UserCreate, UserUpdate], ABC):

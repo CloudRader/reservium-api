@@ -31,9 +31,9 @@ from core.bootstrap.exceptions import (
     Entity,
 )
 from domain.enums import EventActor
-from domain.models import EventState
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, Path, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
+from infrastructure.database.sqlalchemy.models import EventState
 from infrastructure.openid.openid_auth import OpenIdProvider
 
 logger = logging.getLogger(__name__)

@@ -13,7 +13,7 @@ from api.schemas import (
     Rules,
     UserCreate,
 )
-from domain.models.event import EventState
+from infrastructure.database.sqlalchemy.models.event import EventState
 from infrastructure.database.sqlalchemy.repositories import (
     SQLAlchemyCalendarRepository,
     SQLAlchemyEventRepository,
