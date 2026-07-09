@@ -11,7 +11,7 @@ from uuid import UUID
 
 from api.schemas import EventCreate, EventUpdate
 from application.ports.repositories import BaseRepository
-from domain.models import EventModel, EventState
+from infrastructure.database.sqlalchemy.models import EventModel, EventState
 
 
 class EventRepository(BaseRepository[EventModel, EventCreate, EventUpdate], ABC):

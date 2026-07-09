@@ -16,7 +16,7 @@ from api.schemas.event import (
 )
 from api.schemas.reservation_service import ReservationServiceLite
 from api.schemas.user import UserLite
-from domain.models import EventState
+from infrastructure.database.sqlalchemy.models import EventState
 from pydantic import ValidationError
 
 # ----------------------------------------------------------------------

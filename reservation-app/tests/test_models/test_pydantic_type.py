@@ -2,7 +2,7 @@
 
 import json
 
-from domain.models.types.pydantic_type import PydanticType
+from infrastructure.database.sqlalchemy.models.types.pydantic_type import PydanticType
 from pydantic import BaseModel
 
 

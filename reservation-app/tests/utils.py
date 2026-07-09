@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from domain.models.base import Base
+    from infrastructure.database.sqlalchemy.models.base import Base
 
 
 def as_dict(model: Base) -> Mapping[str, Any]:

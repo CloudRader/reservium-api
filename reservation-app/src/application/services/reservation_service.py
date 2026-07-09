@@ -21,7 +21,7 @@ from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,
 )
-from domain.models import CalendarModel, EventState, MiniServiceModel
+from infrastructure.database.sqlalchemy.models import CalendarModel, EventState, MiniServiceModel
 
 
 class AbstractReservationServiceService(

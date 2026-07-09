@@ -26,7 +26,7 @@ from core.bootstrap.exceptions import (
     Entity,
     EntityNotFoundError,
 )
-from domain.models import MiniServiceModel
+from infrastructure.database.sqlalchemy.models import MiniServiceModel
 from infrastructure.google import (
     CalendarImportResult,
     GoogleCalendarCalendar,

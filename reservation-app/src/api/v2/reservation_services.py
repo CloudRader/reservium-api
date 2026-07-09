@@ -20,8 +20,8 @@ from core.bootstrap.exceptions import (
     ERROR_RESPONSES,
     Entity,
 )
-from domain.models.event import EventState
 from fastapi import APIRouter, Depends, Path, Query, status
+from infrastructure.database.sqlalchemy.models.event import EventState
 
 logger = logging.getLogger(__name__)
 

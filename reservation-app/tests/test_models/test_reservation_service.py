@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 import sqlalchemy
-from domain.models import ReservationServiceModel
+from infrastructure.database.sqlalchemy.models import ReservationServiceModel
 
 
 @pytest.mark.asyncio

@@ -5,7 +5,7 @@ from uuid import UUID, uuid7
 
 from common import get_utc_now, snake_case
 from core.config import settings
-from domain.models.soft_delete_mixin import SoftDeleteMixin
+from infrastructure.database.sqlalchemy.models.soft_delete_mixin import SoftDeleteMixin
 from sqlalchemy import DateTime, MetaData, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 

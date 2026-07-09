@@ -7,15 +7,15 @@ from enum import Enum
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from domain.models.base import Base
+from infrastructure.database.sqlalchemy.models.base import Base
 from sqlalchemy import DateTime, ForeignKey, String, text
 from sqlalchemy import Enum as SQLAlchemyEnum
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:  # pragma: no cover
-    from domain.models.calendar import Calendar
-    from domain.models.user import User
+    from infrastructure.database.sqlalchemy.models.calendar import Calendar
+    from infrastructure.database.sqlalchemy.models.user import User
 
 
 class EventState(Enum):

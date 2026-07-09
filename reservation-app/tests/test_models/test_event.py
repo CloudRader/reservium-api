@@ -4,7 +4,7 @@ from datetime import datetime
 from uuid import UUID
 
 import pytest
-from domain.models import EventModel, EventState
+from infrastructure.database.sqlalchemy.models import EventModel, EventState
 
 
 @pytest.mark.asyncio

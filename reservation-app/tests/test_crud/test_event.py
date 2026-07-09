@@ -4,7 +4,7 @@ import datetime as dt
 
 import pytest
 from api.schemas import EventUpdate
-from domain.models import EventState
+from infrastructure.database.sqlalchemy.models import EventState
 
 
 @pytest.mark.asyncio

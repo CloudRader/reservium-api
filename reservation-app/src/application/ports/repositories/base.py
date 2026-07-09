@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from typing import TypeVar
 from uuid import UUID
 
-from domain.models.base import Base
+from infrastructure.database.sqlalchemy.models.base import Base
 from pydantic import BaseModel
 
 Model = TypeVar("Model", bound=Base)

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from domain.models.event import EventState
+from infrastructure.database.sqlalchemy.models.event import EventState
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 

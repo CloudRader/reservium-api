@@ -11,7 +11,7 @@ from typing import Any, TypeVar
 from uuid import UUID
 
 from application.ports.repositories import BaseRepository
-from domain.models.base import Base
+from infrastructure.database.sqlalchemy.models.base import Base
 from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession

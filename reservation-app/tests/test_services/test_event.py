@@ -4,7 +4,7 @@
 #
 # import pytest
 # from core.application.exceptions import BaseAppError, SoftValidationError
-# from domain.models import EventState
+# from infrastructure.database.sqlalchemy.models import EventState
 # from api.schemas import EventUpdate, EventUpdateTime
 #
 #

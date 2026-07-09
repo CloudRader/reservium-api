@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 import sqlalchemy
-from domain.models import MiniServiceModel
+from infrastructure.database.sqlalchemy.models import MiniServiceModel
 
 
 @pytest.mark.asyncio
