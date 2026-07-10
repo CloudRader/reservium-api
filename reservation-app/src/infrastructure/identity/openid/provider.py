@@ -6,12 +6,10 @@ from typing import Any
 import aiohttp
 import httpx
 from application.ports.providers.identity.provider import IdentityProvider
-from authlib.integrations.starlette_client import OAuth
 from core.bootstrap.exceptions import PermissionDeniedError, UnauthorizedError
-from core.config import settings
 from fastapi import status
 from fastapi.security import HTTPAuthorizationCredentials
-from infrastructure.openid.openid_schemas import UserInfo
+from infrastructure.identity.openid import UserInfo
 from joserfc import jwt
 from joserfc.jwk import KeySet
 
@@ -21,16 +19,10 @@ logger = logging.getLogger(__name__)
 class OpenIdProvider(IdentityProvider):
     """OpenID client for authentication operations."""
 
-    def __init__(self) -> None:
-        self.oauth = OAuth()
-        self.oauth.register(
-            name=settings.openid.client_name,
-            client_id=settings.openid.client_id,
-            client_secret=settings.openid.client_secret,
-            server_metadata_url=settings.openid.metadata_url,
-            client_kwargs={"scope": settings.openid.scopes},
-        )
-        self.client = self.oauth.create_client(settings.openid.client_name)
+    def __init__(self, client: Any, client_id: str, client_secret: str) -> None:
+        self.client = client
+        self.client_id = client_id
+        self.client_secret = client_secret
         self.jwt = jwt
         self.allowed_algorithms = ["RS256", "ES256", "HS256"]
 
@@ -112,8 +104,8 @@ class OpenIdProvider(IdentityProvider):
                 session.post(
                     logout_url,
                     data={
-                        "client_id": settings.openid.client_id,
-                        "client_secret": settings.openid.client_secret,
+                        "client_id": self.client_id,
+                        "client_secret": self.client_secret,
                         "refresh_token": refresh_token,
                     },
                 ) as resp,

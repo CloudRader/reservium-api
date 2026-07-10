@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from fastapi.security import HTTPAuthorizationCredentials
-from infrastructure.openid.openid_schemas import UserInfo
+from infrastructure.identity.openid.schemas import UserInfo
 
 
 class IdentityProvider(ABC):
