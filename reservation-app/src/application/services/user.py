@@ -17,7 +17,7 @@ from api.schemas.event import EventDetail
 from application.ports.repositories import ReservationServiceRepository, UserRepository
 from application.services import CrudServiceBase
 from core.bootstrap.exceptions import Entity
-from infrastructure.openid import UserInfo
+from infrastructure.identity.openid import UserInfo
 
 logger = logging.getLogger(__name__)
 

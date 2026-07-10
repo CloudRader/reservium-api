@@ -23,10 +23,10 @@ from api.schemas import (
 from api.schemas.calendar import CalendarDetailWithCollisions
 from api.schemas.event import EventLite
 from application.ports.providers.calendar import CalendarProvider
+from application.ports.providers.email import EmailProvider
 from application.ports.repositories import EventRepository, UserRepository
 from application.services import CrudServiceBase
 from application.services.calendar import CalendarService
-from application.services.email import EmailService
 from application.services.reservation_service import ReservationServiceService
 from core.bootstrap.exceptions import (
     BaseAppError,
@@ -35,8 +35,8 @@ from core.bootstrap.exceptions import (
 )
 from domain.enums import EventActor
 from fastapi import BackgroundTasks
+from infrastructure.calendar.google import EventTime, GoogleCalendarEventCreate
 from infrastructure.database.sqlalchemy.models import EventState
-from infrastructure.google import EventTime, GoogleCalendarEventCreate
 from pytz import timezone
 
 logger = logging.getLogger(__name__)
@@ -289,14 +289,14 @@ class EventService(AbstractEventService):
         calendar_service: CalendarService,
         user_repository: UserRepository,
         calendar_provider: CalendarProvider,
-        email_service: EmailService,
+        email_provider: EmailProvider,
     ):
         super().__init__(event_repository, Entity.EVENT)
         self.reservation_service_service = reservation_service_service
         self.calendar_service = calendar_service
         self.user_repo = user_repository
         self.calendar_provider = calendar_provider
-        self.email_service = email_service
+        self.email_provider = email_provider
 
     async def post_event(
         self,

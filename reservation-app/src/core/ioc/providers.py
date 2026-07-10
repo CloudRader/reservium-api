@@ -3,6 +3,7 @@
 from collections.abc import AsyncIterator
 
 from application.ports.providers.calendar import CalendarProvider
+from application.ports.providers.email import EmailProvider
 from application.ports.providers.identity import IdentityProvider
 from application.ports.repositories import (
     CalendarRepository,
@@ -13,7 +14,6 @@ from application.ports.repositories import (
 )
 from application.services import (
     CalendarService,
-    EmailService,
     EventService,
     MiniServiceService,
     ReservationServiceService,
@@ -34,6 +34,7 @@ from infrastructure.database.sqlalchemy.repositories import (
     SQLAlchemyUserRepository,
 )
 from infrastructure.database.sqlalchemy.session import create_engine, create_session_factory
+from infrastructure.email.provider import FastEmailProvider
 from infrastructure.identity.openid import OpenIdProvider
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -132,7 +133,7 @@ class ServiceProvider(Provider):
         calendar_service: CalendarService,
         user_repository: UserRepository,
         calendar_provider: CalendarProvider,
-        email_service: EmailService,
+        email_provider: EmailProvider,
     ) -> EventService:
         """Provide an EventService instance."""
         return EventService(
@@ -141,7 +142,7 @@ class ServiceProvider(Provider):
             calendar_service=calendar_service,
             user_repository=user_repository,
             calendar_provider=calendar_provider,
-            email_service=email_service,
+            email_provider=email_provider,
         )
 
     @provide(scope=Scope.REQUEST)
@@ -215,10 +216,10 @@ class ExternalProvidersProvider(Provider):
         )
 
     @provide(scope=Scope.APP)
-    def get_email_service(self, settings: Settings) -> EmailService:
-        """Provide an EmailService implementation."""
+    def get_email_provider(self, settings: Settings) -> EmailProvider:
+        """Provide an EmailProvider implementation."""
         client = FastMail(settings.mail.connection)
-        return EmailService(
+        return FastEmailProvider(
             client=client,
             send_facility_manager=settings.mail.sent_dormitory_head,
             facility_manager_email=settings.mail.dormitory_head_email,

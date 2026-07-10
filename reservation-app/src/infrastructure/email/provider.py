@@ -6,7 +6,6 @@ This class works with Email.
 
 import os
 import shutil
-from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -14,46 +13,33 @@ from typing import Any
 from anyio import Path as AsyncPath
 from api.schemas import (
     CalendarLite,
-    EmailCreate,
-    EmailMeta,
     EventDetail,
     EventLite,
-    RegistrationFormCreate,
     ReservationServiceLite,
     UserLite,
 )
-from core.config import settings
+from application.ports.providers.email import EmailProvider
 from fastapi import BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema, MessageType, NameEmail
+from infrastructure.email.schemas import EmailCreate, EmailMeta, RegistrationFormCreate
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pypdf import PdfReader, PdfWriter
 
 
-class AbstractEmailService(ABC):
-    """Abstract class defines the interface for an email service."""
-
-    @abstractmethod
-    def prepare_registration_form(
-        self,
-        registration_form: RegistrationFormCreate,
-        full_name: str,
-    ) -> EmailCreate:
-        """
-        Prepare registration form in pdf for sending to head of the dormitory.
-
-        :param registration_form: Input data for adding in pdf.
-        :param full_name: User fullname.
-
-        :returns EventExtra json object: the created event or exception otherwise.
-        """
-
-
-class EmailService(AbstractEmailService):
-    """Class EmailService represent service that work with Email."""
+class FastEmailProvider(EmailProvider):
+    """Provider implementation for interacting with FastMail."""
 
     def __init__(
         self,
+        client: FastMail,
+        send_facility_manager: bool,
+        facility_manager_email: str,
+        organisation_name: str,
     ):
+        self.client = client
+        self.send_facility_manager = send_facility_manager
+        self.facility_manager_email = facility_manager_email
+        self.organisation_name = organisation_name
         self.template_dir = Path(__file__).parent.parent.parent / "templates" / "email"
         self.env = Environment(
             loader=FileSystemLoader(self.template_dir), autoescape=select_autoescape()
@@ -108,8 +94,8 @@ class EmailService(AbstractEmailService):
 
         emails = [registration_form.email, registration_form.manager_contact_mail]
 
-        if settings.mail.sent_dormitory_head:
-            emails.append(settings.mail.dormitory_head_email)
+        if self.send_facility_manager:
+            emails.append(self.facility_manager_email)
 
         return EmailCreate(
             email=emails,
@@ -123,7 +109,7 @@ class EmailService(AbstractEmailService):
                 "please go to the reception to sign the reservation form. "
                 "If you do not do so, your reservation will not be valid.\n\n"
                 "With appreciation,\n"
-                f"Your {settings.app.organization_name} Team"
+                f"Your {self.organisation_name} Team"
             ),
             attachment=output_path,
         )
@@ -148,11 +134,8 @@ class EmailService(AbstractEmailService):
             attachments=[email_create.attachment] if email_create.attachment else [],
         )
 
-        fm = FastMail(settings.mail.connection)
-
         background_tasks.add_task(
             self._send_and_cleanup,
-            fm,
             message,
             email_create.attachment,
         )
@@ -281,7 +264,7 @@ class EmailService(AbstractEmailService):
             "manager_email": reservation_service.contact_mail,
             "reservation_service": reservation_service.name,
             "reason": reason,
-            "club_name": settings.app.organization_name,
+            "club_name": self.organisation_name,
         }
 
     def create_email_meta(self, template_name: str, subject: str, reason: str = "") -> EmailMeta:
@@ -299,18 +282,15 @@ class EmailService(AbstractEmailService):
             reason=reason,
         )
 
-    async def _send_and_cleanup(
-        self, fm: FastMail, message: MessageSchema, attachment: str | None
-    ) -> None:
+    async def _send_and_cleanup(self, message: MessageSchema, attachment: str | None) -> None:
         """
         Send an email message and clean up the attachment file after sending.
 
-        :param fm: FastMail instance used to send the email.
         :param message: MessageSchema object containing email details.
         :param attachment: Optional file path to the attachment to be deleted after sending.
         """
         try:
-            await fm.send_message(message)
+            await self.client.send_message(message)
         finally:
             if attachment:
                 path = AsyncPath(attachment)
