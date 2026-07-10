@@ -36,7 +36,7 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
-config.set_main_option("sqlalchemy.url", str(settings.DB.POSTGRES_DATABASE_URI))
+config.set_main_option("sqlalchemy.url", str(settings.database.postgres_database_uri))
 
 
 def render_item(type_, obj, autogen_context):  # noqa: ARG001

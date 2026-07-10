@@ -1,23 +1,54 @@
-"""Database configuration."""
+"""
+Database configuration settings for PostgreSQL and SQLAlchemy.
 
-from pydantic import BaseModel, PostgresDsn, SecretStr
+Provides settings classes for secure connection credentials and ORM
+engine configuration (connection pooling, statement logging, etc.).
+"""
+
+from pydantic import Field, PostgresDsn, SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class DatabaseConfig(BaseModel):
-    """Config for db."""
+class PostgresConfig(BaseSettings):
+    """
+    Configuration settings for the physical PostgreSQL database resource.
 
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: SecretStr
-    POSTGRES_DB: str
-    POSTGRES_SERVER: str = "localhost"
-    POSTGRES_PORT: int = 5432
-    SQLALCHEMY_SCHEME: str = "postgresql+asyncpg"
-    ECHO: bool = False
-    ECHO_POOL: bool = False
-    POOL_SIZE: int = 50
-    MAX_OVERFLOW: int = 10
+    Validates and maps server address, port, username, password, and database name
+    directly from their respective uppercase environment variables (e.g. `POSTGRES_USER`).
+    """
 
-    NAMING_CONVENTION: dict[str, str] = {
+    user: str = Field(validation_alias="POSTGRES_USER")
+    password: SecretStr = Field(validation_alias="POSTGRES_PASSWORD")
+    db: str = Field(validation_alias="POSTGRES_DB")
+    server: str = Field(default="localhost", validation_alias="POSTGRES_SERVER")
+    port: int = Field(default=5432, validation_alias="POSTGRES_PORT")
+
+    model_config = SettingsConfigDict(
+        extra="ignore",
+        case_sensitive=True,
+        env_file=".env",
+    )
+
+
+class DatabaseConfig(BaseSettings):
+    """
+    SQLAlchemy Database Client configurations.
+
+    Orchestrates the connection pool settings, naming conventions for schema migrations,
+    statement echo logging flags, and nests database server credentials. Exposes a
+    property to assemble the fully validated database connection URI.
+    """
+
+    scheme: str = Field(default="postgresql+asyncpg", validation_alias="DB_SQLALCHEMY_SCHEME")
+    echo: bool = Field(default=False, validation_alias="DB_ECHO")
+    echo_pool: bool = Field(default=False, validation_alias="DB_ECHO_POOL")
+    pool_size: int = Field(default=50, validation_alias="DB_POOL_SIZE")
+    max_overflow: int = Field(default=10, validation_alias="DB_MAX_OVERFLOW")
+
+    # Nesting the credentials
+    credentials: PostgresConfig = Field(default_factory=PostgresConfig)  # type: ignore[arg-type]
+
+    naming_convention: dict[str, str] = {
         "ix": "ix_%(column_0_label)s",
         "uq": "uq_%(table_name)s_%(column_0_N_name)s",
         "ck": "ck_%(table_name)s_%(constraint_name)s",
@@ -26,15 +57,21 @@ class DatabaseConfig(BaseModel):
     }
 
     @property
-    def POSTGRES_DATABASE_URI(self) -> str:  # noqa: N802
+    def postgres_database_uri(self) -> str:
         """Assemble database connection URI."""
         return str(
             PostgresDsn.build(
-                scheme=self.SQLALCHEMY_SCHEME,
-                username=self.POSTGRES_USER,
-                password=self.POSTGRES_PASSWORD.get_secret_value(),
-                host=self.POSTGRES_SERVER,
-                port=self.POSTGRES_PORT,
-                path=self.POSTGRES_DB,
-            ),
+                scheme=self.scheme,
+                username=self.credentials.user,
+                password=self.credentials.password.get_secret_value(),
+                host=self.credentials.server,
+                port=self.credentials.port,
+                path=self.credentials.db,
+            )
         )
+
+    model_config = SettingsConfigDict(
+        extra="ignore",
+        case_sensitive=True,
+        env_file=".env",
+    )

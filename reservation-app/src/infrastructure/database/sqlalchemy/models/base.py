@@ -15,7 +15,7 @@ class Base(DeclarativeBase, SoftDeleteMixin):
 
     __abstract__ = True
 
-    metadata = MetaData(naming_convention=settings.DB.NAMING_CONVENTION)
+    metadata = MetaData(naming_convention=settings.database.naming_convention)
 
     id: Mapped[UUID] = mapped_column(
         primary_key=True,

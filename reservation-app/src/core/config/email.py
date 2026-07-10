@@ -1,50 +1,52 @@
-"""Email config."""
+"""
+SMTP Mail Server configuration and connection factory.
+
+Loads mail credentials and host settings from environment variables and
+dynamically instantiates a ConnectionConfig for fastapi-mail on demand.
+"""
 
 from fastapi_mail import ConnectionConfig
-from pydantic import BaseModel, SecretStr
+from pydantic import Field, SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class MailConfig(BaseModel):
-    """Config for mail."""
+class MailConfig(BaseSettings):
+    """
+    Configuration settings for sending transactional emails via SMTP.
 
-    USERNAME: str
-    PASSWORD: SecretStr
-    FROM_NAME: str
-    PORT: int = 587
-    SERVER: str = "smtp.gmail.com"
-    TLS: bool = True
-    SSL: bool = False
-    USE_CREDENTIALS: bool = True
-    VALIDATE_CERTS: bool = True
-    SENT_DORMITORY_HEAD: bool = False
-    DORMITORY_HEAD_EMAIL: str = ""
+    Loads and maps connection details (username, password, port, TLS/SSL preferences)
+    and optional system notifications properties (dormitory head notification).
+    """
 
+    username: str = Field(validation_alias="MAIL_USERNAME")
+    password: SecretStr = Field(validation_alias="MAIL_PASSWORD")
+    from_name: str = Field(validation_alias="MAIL_FROM_NAME")
+    port: int = Field(default=587, validation_alias="MAIL_PORT")
+    server: str = Field(default="smtp.gmail.com", validation_alias="MAIL_SERVER")
+    tls: bool = Field(default=True, validation_alias="MAIL_TLS")
+    ssl: bool = Field(default=False, validation_alias="MAIL_SSL")
+    use_credentials: bool = Field(default=True, validation_alias="MAIL_USE_CREDENTIALS")
+    validate_certs: bool = Field(default=True, validation_alias="MAIL_VALIDATE_CERTS")
+    sent_dormitory_head: bool = Field(default=False, validation_alias="MAIL_SENT_DORMITORY_HEAD")
+    dormitory_head_email: str = Field(default="", validation_alias="MAIL_DORMITORY_HEAD_EMAIL")
 
-# To avoid circular import of settings during module loading,
-# we construct email_connection dynamically on first access.
-_email_connection = None
-email_connection: ConnectionConfig
+    @property
+    def connection(self) -> ConnectionConfig:
+        return ConnectionConfig(
+            MAIL_USERNAME=self.username,
+            MAIL_PASSWORD=self.password,
+            MAIL_FROM=self.username,
+            MAIL_PORT=self.port,
+            MAIL_SERVER=self.server,
+            MAIL_FROM_NAME=self.from_name,
+            MAIL_STARTTLS=self.tls,
+            MAIL_SSL_TLS=self.ssl,
+            USE_CREDENTIALS=self.use_credentials,
+            VALIDATE_CERTS=self.validate_certs,
+        )
 
-
-def __getattr__(name: str):
-    global _email_connection
-    if name == "email_connection":
-        if _email_connection is None:
-            from core.config import settings
-
-            _email_connection = ConnectionConfig(
-                MAIL_USERNAME=settings.MAIL.USERNAME,
-                MAIL_PASSWORD=settings.MAIL.PASSWORD,
-                MAIL_FROM=settings.MAIL.USERNAME,
-                MAIL_PORT=settings.MAIL.PORT,
-                MAIL_SERVER=settings.MAIL.SERVER,
-                MAIL_FROM_NAME=settings.MAIL.FROM_NAME,
-                MAIL_STARTTLS=settings.MAIL.TLS,
-                MAIL_SSL_TLS=settings.MAIL.SSL,
-                USE_CREDENTIALS=settings.MAIL.USE_CREDENTIALS,
-                VALIDATE_CERTS=settings.MAIL.VALIDATE_CERTS,
-            )
-        return _email_connection
-
-    message = f"module {__name__} has no attribute {name}"
-    raise AttributeError(message)
+    model_config = SettingsConfigDict(
+        extra="ignore",
+        case_sensitive=True,
+        env_file=".env",
+    )

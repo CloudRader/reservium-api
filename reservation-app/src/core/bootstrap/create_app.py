@@ -24,10 +24,10 @@ async def startup_event(app: FastAPI) -> AsyncGenerator[None]:
     :param fast_api_app: The FastAPI application instance.
     """
     app.state.providers = create_providers()
-    logger.info("Starting %s.", settings.APP_NAME)
+    logger.info("Starting %s.", settings.app.name)
     yield
     await db_session.dispose()
-    logger.info("Shutting down %s.", settings.APP_NAME)
+    logger.info("Shutting down %s.", settings.app.name)
 
 
 def create_app():

@@ -1,44 +1,36 @@
-"""Config."""
+"""
+Application-wide general running and server configurations.
 
-from core.config.database import DatabaseConfig
-from core.config.email import MailConfig
-from core.config.google import GoogleConfig
-from core.config.logging import LoggingConfig
-from core.config.openid import OpenIdConfig
-from pydantic import BaseModel
+Defines host, port, reload options, and worker processes for the API server.
+"""
+
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class RunConfig(BaseModel):
-    """Config for running application."""
+class ApplicationConfig(BaseSettings):
+    """
+    General configuration for the application environment and HTTP server.
 
-    SERVER_HOST: str = "0.0.0.0"
-    SERVER_PORT: int = 8000
-    SERVER_USE_RELOAD: bool = False
-    SERVER_USE_PROXY_HEADERS: bool = False
-    WORKERS: int = 1
-    TIMEOUT: int = 900
+    Loads values from environment variables prefixed with `APP_` or defaults,
+    defining basic properties like application name, organization name,
+    and Uvicorn server runner settings.
+    """
 
+    name: str = Field(default="Reservium", validation_alias="APP_NAME")
+    organization_name: str = Field(default="CloudRader", validation_alias="APP_ORGANIZATION_NAME")
 
-class Settings(BaseSettings):
-    """Settings class."""
-
-    APP_NAME: str = "Reservation System"
-    ORGANIZATION_NAME: str = "Organization Name"
-
-    RUN: RunConfig = RunConfig()
-    LOGGING: LoggingConfig = LoggingConfig()
-    DB: DatabaseConfig
-    MAIL: MailConfig
-    OPENID: OpenIdConfig
-    GOOGLE: GoogleConfig
+    server_host: str = Field(default="0.0.0.0", validation_alias="APP_SERVER_HOST")
+    server_port: int = Field(default=8000, validation_alias="APP_SERVER_PORT")
+    server_use_reload: bool = Field(default=False, validation_alias="APP_SERVER_USE_RELOAD")
+    server_use_proxy_headers: bool = Field(
+        default=False, validation_alias="APP_SERVER_USE_PROXY_HEADERS"
+    )
+    workers: int = Field(default=1, validation_alias="APP_WORKERS")
+    timeout: int = Field(default=900, validation_alias="APP_TIMEOUT")
 
     model_config = SettingsConfigDict(
         extra="ignore",
         case_sensitive=True,
-        env_nested_delimiter="__",
         env_file=".env",
     )
-
-
-settings = Settings()  # type: ignore[call-arg] # reason: Pydantic handles attribute initialization

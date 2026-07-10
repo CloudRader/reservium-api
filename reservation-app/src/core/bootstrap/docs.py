@@ -8,9 +8,9 @@ from core.config import settings
 class FastApiDocs:
     """Information for fastapi documentation."""
 
-    NAME = f"Reservation System of the {settings.ORGANIZATION_NAME}"
+    NAME = f"Reservation System of the {settings.app.organization_name}"
     DESCRIPTION = (
-        f"Reservation System of the {settings.ORGANIZATION_NAME} API is "
+        f"Reservation System of the {settings.app.organization_name} API is "
         "a REST API that offers you an access to application!\n\n"
         "## Basic rules to follow\n"
         "- `POST`\n\n"

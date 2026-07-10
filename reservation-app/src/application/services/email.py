@@ -22,7 +22,7 @@ from api.schemas import (
     ReservationServiceLite,
     UserLite,
 )
-from core.config import email_connection, settings
+from core.config import settings
 from fastapi import BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema, MessageType, NameEmail
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -108,8 +108,8 @@ class EmailService(AbstractEmailService):
 
         emails = [registration_form.email, registration_form.manager_contact_mail]
 
-        if settings.MAIL.SENT_DORMITORY_HEAD:
-            emails.append(settings.MAIL.DORMITORY_HEAD_EMAIL)
+        if settings.mail.sent_dormitory_head:
+            emails.append(settings.mail.dormitory_head_email)
 
         return EmailCreate(
             email=emails,
@@ -123,7 +123,7 @@ class EmailService(AbstractEmailService):
                 "please go to the reception to sign the reservation form. "
                 "If you do not do so, your reservation will not be valid.\n\n"
                 "With appreciation,\n"
-                f"Your {settings.ORGANIZATION_NAME} Team"
+                f"Your {settings.app.organization_name} Team"
             ),
             attachment=output_path,
         )
@@ -148,7 +148,7 @@ class EmailService(AbstractEmailService):
             attachments=[email_create.attachment] if email_create.attachment else [],
         )
 
-        fm = FastMail(email_connection)
+        fm = FastMail(settings.mail.connection)
 
         background_tasks.add_task(
             self._send_and_cleanup,
@@ -281,7 +281,7 @@ class EmailService(AbstractEmailService):
             "manager_email": reservation_service.contact_mail,
             "reservation_service": reservation_service.name,
             "reason": reason,
-            "club_name": settings.ORGANIZATION_NAME,
+            "club_name": settings.app.organization_name,
         }
 
     def create_email_meta(self, template_name: str, subject: str, reason: str = "") -> EmailMeta:

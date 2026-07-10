@@ -78,11 +78,11 @@ class DatabaseSession:
 
 
 db_session = DatabaseSession(
-    url=str(settings.DB.POSTGRES_DATABASE_URI),
-    echo=settings.DB.ECHO,
-    echo_pool=settings.DB.ECHO_POOL,
-    pool_size=settings.DB.POOL_SIZE,
-    max_overflow=settings.DB.MAX_OVERFLOW,
+    url=str(settings.database.postgres_database_uri),
+    echo=settings.database.echo,
+    echo_pool=settings.database.echo_pool,
+    pool_size=settings.database.pool_size,
+    max_overflow=settings.database.max_overflow,
 )
 
 AsyncSessionDep = Annotated[AsyncSession, Depends(db_session.session_getter)]

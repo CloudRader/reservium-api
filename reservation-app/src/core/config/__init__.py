@@ -1,6 +1,5 @@
 """Packages for config module."""
 
-from .app import settings
-from .email import email_connection
+from .settings import settings
 
-__all__ = ["email_connection", "settings"]
+__all__ = ["settings"]
