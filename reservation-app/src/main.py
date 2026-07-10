@@ -10,8 +10,8 @@ from core.bootstrap import create_app, uvicorn_run
 from core.config import settings
 
 logging.basicConfig(
-    level=settings.LOGGING.LOG_LEVEL_VALUE,
-    format=settings.LOGGING.LOG_FORMAT,
+    level=settings.log.level_value,
+    format=settings.log.format,
 )
 
 app = create_app()

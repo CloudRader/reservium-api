@@ -22,7 +22,7 @@ services:
     env_file:
       - reservation-app/.env
     environment:
-      DB__POSTGRES_SERVER: db
+      POSTGRES_SERVER: db
     depends_on:
       - db
     restart: on-failure

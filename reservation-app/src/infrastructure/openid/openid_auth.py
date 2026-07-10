@@ -24,13 +24,13 @@ class OpenIdProvider(IdentityProvider):
     def __init__(self) -> None:
         self.oauth = OAuth()
         self.oauth.register(
-            name=settings.OPENID.CLIENT_NAME,
-            client_id=settings.OPENID.CLIENT_ID,
-            client_secret=settings.OPENID.CLIENT_SECRET,
-            server_metadata_url=settings.OPENID.METADATA_URL,
-            client_kwargs={"scope": " ".join(settings.OPENID.SCOPES)},
+            name=settings.openid.client_name,
+            client_id=settings.openid.client_id,
+            client_secret=settings.openid.client_secret,
+            server_metadata_url=settings.openid.metadata_url,
+            client_kwargs={"scope": settings.openid.scopes},
         )
-        self.client = self.oauth.create_client(settings.OPENID.CLIENT_NAME)
+        self.client = self.oauth.create_client(settings.openid.client_name)
         self.jwt = jwt
         self.allowed_algorithms = ["RS256", "ES256", "HS256"]
 
@@ -112,8 +112,8 @@ class OpenIdProvider(IdentityProvider):
                 session.post(
                     logout_url,
                     data={
-                        "client_id": settings.OPENID.CLIENT_ID,
-                        "client_secret": settings.OPENID.CLIENT_SECRET,
+                        "client_id": settings.openid.client_id,
+                        "client_secret": settings.openid.client_secret,
                         "refresh_token": refresh_token,
                     },
                 ) as resp,

@@ -21,8 +21,8 @@ http_bearer = HTTPBearer()
 
 
 oauth2_scheme = OAuth2AuthorizationCodeBearer(
-    authorizationUrl=settings.OPENID.AUTH_URL,
-    tokenUrl=settings.OPENID.TOKEN_URL,
+    authorizationUrl=settings.openid.auth_url,
+    tokenUrl=settings.openid.token_url,
 )
 
 

@@ -8,9 +8,9 @@ def uvicorn_run():
     """Run the FastAPI application using Uvicorn."""
     uvicorn.run(
         "main:app",
-        host=settings.RUN.SERVER_HOST,
-        port=settings.RUN.SERVER_PORT,
-        reload=settings.RUN.SERVER_USE_RELOAD,
-        proxy_headers=settings.RUN.SERVER_USE_PROXY_HEADERS,
-        log_config=settings.LOGGING.LOG_CONFIG,
+        host=settings.app.server_host,
+        port=settings.app.server_port,
+        reload=settings.app.server_use_reload,
+        proxy_headers=settings.app.server_use_proxy_headers,
+        log_config=settings.log.config,
     )

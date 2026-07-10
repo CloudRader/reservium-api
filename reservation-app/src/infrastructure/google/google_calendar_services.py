@@ -38,8 +38,8 @@ class GoogleCalendarProvider(CalendarProvider):
         """Lazy-loaded Google Calendar API service instance."""
         if self._service is None:
             credentials = service_account.Credentials.from_service_account_info(
-                settings.GOOGLE.INFO,
-                scopes=settings.GOOGLE.SCOPES,
+                settings.google.info,
+                scopes=settings.google.scopes,
             )
 
             self._service = build(
@@ -54,7 +54,7 @@ class GoogleCalendarProvider(CalendarProvider):
     @property
     def service_account_email(self) -> str:
         """Lazy-loaded service account email."""
-        return settings.GOOGLE.CLIENT_EMAIL
+        return settings.google.client_email
 
     async def get_calendar(self, calendar_id: str) -> GoogleCalendarCalendar:
         request = self.service.calendars().get(calendarId=calendar_id)

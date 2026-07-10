@@ -1,15 +1,31 @@
-"""OpenID configuration."""
+"""
+OpenID Connect (OIDC) identity provider configuration settings.
 
-from pydantic import BaseModel, SecretStr
+Defines credentials, URLs, and metadata endpoints for OIDC integration.
+"""
+
+from pydantic import Field, SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class OpenIdConfig(BaseModel):
-    """Config for OpenID."""
+class OpenIdConfig(BaseSettings):
+    """
+    Configuration settings for Single Sign-On (SSO) integration.
 
-    CLIENT_NAME: str
-    CLIENT_ID: str
-    CLIENT_SECRET: SecretStr
-    AUTH_URL: str
-    TOKEN_URL: str
-    METADATA_URL: str
-    SCOPES: list[str] = ["openid", "email", "profile"]
+    Loads and maps connection details (client ID, client secret, and server URLs)
+    directly from their respective uppercase environment variables (e.g. `OPENID_CLIENT_ID`).
+    """
+
+    client_name: str = Field(validation_alias="OPENID_CLIENT_NAME")
+    client_id: str = Field(validation_alias="OPENID_CLIENT_ID")
+    client_secret: SecretStr = Field(validation_alias="OPENID_CLIENT_SECRET")
+    auth_url: str = Field(validation_alias="OPENID_AUTH_URL")
+    token_url: str = Field(validation_alias="OPENID_TOKEN_URL")
+    metadata_url: str = Field(validation_alias="OPENID_METADATA_URL")
+    scopes: str = Field(default="openid email profile", validation_alias="OPENID_SCOPES")
+
+    model_config = SettingsConfigDict(
+        extra="ignore",
+        case_sensitive=True,
+        env_file=".env",
+    )
