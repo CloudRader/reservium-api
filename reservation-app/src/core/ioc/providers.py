@@ -25,7 +25,7 @@ from dishka import Provider, Scope, provide
 from fastapi_mail import FastMail
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from infrastructure.calendar.google import GoogleCalendarProvider
+from infrastructure.calendar.google.provider import GoogleCalendarProvider
 from infrastructure.database.sqlalchemy.repositories import (
     SQLAlchemyCalendarRepository,
     SQLAlchemyEventRepository,
@@ -35,12 +35,21 @@ from infrastructure.database.sqlalchemy.repositories import (
 )
 from infrastructure.database.sqlalchemy.session import create_engine, create_session_factory
 from infrastructure.email.provider import FastEmailProvider
-from infrastructure.identity.openid import OpenIdProvider
+from infrastructure.identity.openid.provider import OpenIdProvider
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
 )
+
+
+class SettingsProvider(Provider):
+    """Provides application settings."""
+
+    @provide(scope=Scope.APP)
+    def get_settings(self) -> Settings:
+        """Provide the Settings instance."""
+        return Settings()
 
 
 class DatabaseProvider(Provider):

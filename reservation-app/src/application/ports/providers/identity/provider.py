@@ -1,10 +1,14 @@
 """Defines an abstract base class for working with the Identity Provider."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from fastapi.security import HTTPAuthorizationCredentials
-from infrastructure.identity.openid.schemas import UserInfo
+
+if TYPE_CHECKING:
+    from infrastructure.identity.openid.schemas import UserInfo
 
 
 class IdentityProvider(ABC):

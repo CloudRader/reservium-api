@@ -183,9 +183,10 @@ def abac_manage_rs_by_id[TService: CrudServiceBase](
     :return: A FastAPI dependency callable enforcing ABAC rules for ID-based access.
     """
 
+    @inject
     async def dependency(
         user: Annotated[CurrentUser, Depends(get_current_user_from_token)],
-        service: Annotated[TService, Depends(service_dep)],
+        service: FromDishka[service_dep],
         id_: Annotated[str | int, Path(alias="id")],
     ):
         logger.info(

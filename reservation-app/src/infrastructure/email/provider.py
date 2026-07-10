@@ -115,17 +115,6 @@ class FastEmailProvider(EmailProvider):
         )
 
     async def send_email(self, email_create: EmailCreate, background_tasks: BackgroundTasks) -> Any:
-        """
-        Send an email asynchronously.
-
-        This endpoint sends an email using the provided email details. The email is
-        sent in the background to avoid blocking the request-response cycle.
-
-        :param email_create: Email Create schema.
-        :param background_tasks: BackgroundTasks used to run the email sending asynchronously.
-
-        :returns Dictionary: Confirming that the email has been sent.
-        """
         message = MessageSchema(
             subject=email_create.subject,
             recipients=[NameEmail(name=e, email=e) for e in email_create.email],
@@ -159,15 +148,6 @@ class FastEmailProvider(EmailProvider):
         email_meta: EmailMeta,
         background_tasks: BackgroundTasks,
     ) -> Any:
-        """
-        Prepare and send both member and manager information emails based on an event.
-
-        :param event: The EventExtra object in db.
-        :param email_meta: Email metadata containing template name, subject and reason.
-        :param background_tasks: BackgroundTasks used to run the email sending asynchronously.
-
-        :return: Dictionary confirming the emails have been sent.
-        """
         calendar = event.calendar
         reservation_service = event.calendar.reservation_service
         user = event.user
@@ -268,14 +248,6 @@ class FastEmailProvider(EmailProvider):
         }
 
     def create_email_meta(self, template_name: str, subject: str, reason: str = "") -> EmailMeta:
-        """
-        Construct an EmailMeta object from parameters.
-
-        :param template_name: Name of the email template.
-        :param subject: Email subject.
-        :param reason: Optional reason content.
-        :return: EmailMeta instance.
-        """
         return EmailMeta(
             template_name=template_name,
             subject=subject,

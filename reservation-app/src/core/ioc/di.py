@@ -5,6 +5,7 @@ from core.ioc.providers import (
     ExternalProvidersProvider,
     RepositoryProvider,
     ServiceProvider,
+    SettingsProvider,
 )
 from dishka import Provider
 
@@ -16,6 +17,7 @@ def get_providers() -> list[Provider]:
     :return: A list of configured providers.
     """
     return [
+        SettingsProvider(),
         DatabaseProvider(),
         ExternalProvidersProvider(),
         RepositoryProvider(),

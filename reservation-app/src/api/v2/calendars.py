@@ -109,6 +109,7 @@ class CalendarRouter(
             return await service.google_calendars_available_for_import()
 
         @router.post("/google/subscribe-calendars")
+        @inject
         async def google_subscribe_calendars(
             service: FromDishka[CalendarService],
             google_calendar_ids: GoogleCalendarImportRequest,

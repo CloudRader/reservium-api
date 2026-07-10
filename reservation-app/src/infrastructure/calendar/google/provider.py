@@ -14,7 +14,7 @@ from core.bootstrap.exceptions import (
 from fastapi import status
 from googleapiclient.errors import HttpError
 from googleapiclient.http import HttpRequest
-from infrastructure.calendar.google import (
+from infrastructure.calendar.google.schemas import (
     CalendarImportResult,
     GoogleCalendarCalendar,
     GoogleCalendarEvent,

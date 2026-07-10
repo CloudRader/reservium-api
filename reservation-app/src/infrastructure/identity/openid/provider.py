@@ -9,7 +9,7 @@ from application.ports.providers.identity.provider import IdentityProvider
 from core.bootstrap.exceptions import PermissionDeniedError, UnauthorizedError
 from fastapi import status
 from fastapi.security import HTTPAuthorizationCredentials
-from infrastructure.identity.openid import UserInfo
+from infrastructure.identity.openid.schemas import UserInfo
 from joserfc import jwt
 from joserfc.jwk import KeySet
 
