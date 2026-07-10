@@ -1,6 +1,11 @@
 """Dependency injection setup and provider registration."""
 
-from core.ioc.providers import DatabaseProvider, RepositoryProvider
+from core.ioc.providers import (
+    DatabaseProvider,
+    ExternalProvidersProvider,
+    RepositoryProvider,
+    ServiceProvider,
+)
 from dishka import Provider
 
 
@@ -12,5 +17,7 @@ def get_providers() -> list[Provider]:
     """
     return [
         DatabaseProvider(),
+        ExternalProvidersProvider(),
         RepositoryProvider(),
+        ServiceProvider(),
     ]

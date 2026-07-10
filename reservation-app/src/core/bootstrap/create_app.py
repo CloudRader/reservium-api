@@ -4,7 +4,6 @@ import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from core.bootstrap.providers import create_providers
 from core.config import settings
 from core.ioc.di import get_providers
 from dishka import AsyncContainer, make_async_container
@@ -16,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def startup_event(app: FastAPI) -> AsyncGenerator[None]:
+async def startup_event(_: FastAPI) -> AsyncGenerator[None]:
     """
     Startup and shutdown lifecycle event handler.
 
@@ -25,7 +24,6 @@ async def startup_event(app: FastAPI) -> AsyncGenerator[None]:
 
     :param fast_api_app: The FastAPI application instance.
     """
-    app.state.providers = create_providers()
     logger.info("Starting %s.", settings.app.name)
     yield
     logger.info("Shutting down %s.", settings.app.name)
