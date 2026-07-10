@@ -11,13 +11,10 @@ from core.bootstrap.exceptions import (
     ExternalAPIError,
     PermissionDeniedError,
 )
-from core.config import settings
 from fastapi import status
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import HttpRequest
-from infrastructure.google import (
+from infrastructure.calendar.google import (
     CalendarImportResult,
     GoogleCalendarCalendar,
     GoogleCalendarEvent,
@@ -29,35 +26,13 @@ from pytz import timezone
 class GoogleCalendarProvider(CalendarProvider):
     """Provider implementation for interacting with the Google Calendar API."""
 
-    def __init__(self):
-        self._service = None
-        self._service_account_email = None
-
-    @property
-    def service(self) -> Any:
-        """Lazy-loaded Google Calendar API service instance."""
-        if self._service is None:
-            credentials = service_account.Credentials.from_service_account_info(
-                settings.google.info,
-                scopes=settings.google.scopes,
-            )
-
-            self._service = build(
-                "calendar",
-                "v3",
-                credentials=credentials,
-                cache_discovery=False,
-            )
-
-        return self._service
-
-    @property
-    def service_account_email(self) -> str:
-        """Lazy-loaded service account email."""
-        return settings.google.client_email
+    def __init__(self, client: Any, service_account_email: str, mail_username: str):
+        self.client = client
+        self.service_account_email = service_account_email
+        self.mail_username = mail_username
 
     async def get_calendar(self, calendar_id: str) -> GoogleCalendarCalendar:
-        request = self.service.calendars().get(calendarId=calendar_id)
+        request = self.client.calendars().get(calendarId=calendar_id)
         response = await self._execute_safe(
             request,
             error_message="Failed to fetch calendar from Google Calendar.",
@@ -76,7 +51,7 @@ class GoogleCalendarProvider(CalendarProvider):
             "timeZone": "Europe/Prague",  # Set your desired timezone
         }
 
-        create_request = self.service.calendars().insert(body=calendar_body)
+        create_request = self.client.calendars().insert(body=calendar_body)
         created_calendar_data = await self._execute_safe(
             create_request,
             error_message="Failed to create calendar in Google Calendar.",
@@ -85,13 +60,13 @@ class GoogleCalendarProvider(CalendarProvider):
         created_calendar = GoogleCalendarCalendar(**created_calendar_data)
 
         await self._execute_safe(
-            self.service.acl().insert(
+            self.client.acl().insert(
                 calendarId=created_calendar.id,
                 body={
                     "role": "owner",
                     "scope": {
                         "type": "user",
-                        "value": settings.MAIL.USERNAME,
+                        "value": self.mail_username,
                     },
                 },
                 sendNotifications=True,
@@ -100,7 +75,7 @@ class GoogleCalendarProvider(CalendarProvider):
         )
 
         await self._execute_safe(
-            self.service.acl().insert(
+            self.client.acl().insert(
                 calendarId=created_calendar.id,
                 body={
                     "role": "reader",
@@ -116,7 +91,7 @@ class GoogleCalendarProvider(CalendarProvider):
         return created_calendar
 
     async def get_all_calendars(self) -> list[GoogleCalendarCalendar]:
-        request = self.service.calendarList().list()
+        request = self.client.calendarList().list()
         response = await self._execute_safe(
             request,
             error_message="Failed to list Google calendars.",
@@ -126,7 +101,7 @@ class GoogleCalendarProvider(CalendarProvider):
         return [GoogleCalendarCalendar(**calendar) for calendar in calendars]
 
     async def user_has_calendar_access(self, calendar_id: str) -> None:
-        request = self.service.calendarList().list()
+        request = self.client.calendarList().list()
         response = await self._execute_safe(
             request,
             error_message="Failed to get calendars in Google Calendar.",
@@ -141,7 +116,7 @@ class GoogleCalendarProvider(CalendarProvider):
     async def insert_event(
         self, calendar_id: str, event_body: GoogleCalendarEventCreate
     ) -> GoogleCalendarEvent:
-        request = self.service.events().insert(
+        request = self.client.events().insert(
             calendarId=calendar_id,
             body=event_body.model_dump(by_alias=True),
         )
@@ -153,7 +128,7 @@ class GoogleCalendarProvider(CalendarProvider):
         return GoogleCalendarEvent(**response)
 
     async def get_event(self, calendar_id: str, event_id: str) -> GoogleCalendarEvent:
-        request = self.service.events().get(
+        request = self.client.events().get(
             calendarId=calendar_id,
             eventId=event_id,
         )
@@ -172,7 +147,7 @@ class GoogleCalendarProvider(CalendarProvider):
     async def update_event(
         self, calendar_id: str, event_id: str, body: GoogleCalendarEvent
     ) -> GoogleCalendarEvent:
-        request = self.service.events().update(
+        request = self.client.events().update(
             calendarId=calendar_id,
             eventId=event_id,
             body=body.model_dump(by_alias=True),
@@ -191,7 +166,7 @@ class GoogleCalendarProvider(CalendarProvider):
         return GoogleCalendarEvent(**response)
 
     async def delete_event(self, calendar_id: str, event_id: str) -> None:
-        request = self.service.events().delete(
+        request = self.client.events().delete(
             calendarId=calendar_id,
             eventId=event_id,
         )
@@ -212,7 +187,7 @@ class GoogleCalendarProvider(CalendarProvider):
         start_time_str = prague.localize(start_time).isoformat()
         end_time_str = prague.localize(end_time).isoformat()
 
-        request = self.service.events().list(
+        request = self.client.events().list(
             calendarId=calendar_id,
             timeMin=start_time_str,
             timeMax=end_time_str,
@@ -229,7 +204,7 @@ class GoogleCalendarProvider(CalendarProvider):
         return response.get("items", [])
 
     async def get_acl(self, calendar_id: str) -> dict:
-        request = self.service.acl().list(calendarId=calendar_id)
+        request = self.client.acl().list(calendarId=calendar_id)
 
         return await self._execute_safe(
             request,
@@ -237,7 +212,7 @@ class GoogleCalendarProvider(CalendarProvider):
         )
 
     async def subscribe(self, calendar_id: str) -> None:
-        request = self.service.calendarList().insert(body={"id": calendar_id})
+        request = self.client.calendarList().insert(body={"id": calendar_id})
 
         await self._execute_safe(
             request,

@@ -1,6 +1,7 @@
 """Google-specific service integrations such as Calendar and Authentication."""
 
-from infrastructure.google.google_calendar_schemas import (
+from infrastructure.calendar.google.provider import GoogleCalendarProvider
+from infrastructure.calendar.google.schemas import (
     CalendarImportResult,
     ConferenceProperties,
     EventCreator,
@@ -24,4 +25,5 @@ __all__ = [
     "GoogleCalendarEvent",
     "GoogleCalendarEventCreate",
     "GoogleCalendarImportRequest",
+    "GoogleCalendarProvider",
 ]
