@@ -5,7 +5,7 @@ from typing import Annotated, Any
 from uuid import UUID
 
 from api.api_base import BaseCRUDRouter
-from api.dependencies import get_current_user_from_token, get_reservation_service_service
+from api.dependencies import get_current_user_from_token
 from api.schemas import (
     CalendarDetail,
     MiniServiceDetail,
@@ -20,6 +20,7 @@ from core.bootstrap.exceptions import (
     ERROR_RESPONSES,
     Entity,
 )
+from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Path, Query, status
 from infrastructure.database.sqlalchemy.models.event import EventState
 
@@ -48,7 +49,7 @@ class ReservationServiceRouter(
     def __init__(self):
         super().__init__(
             router=router,
-            service_dep=get_reservation_service_service,
+            service_dep=ReservationServiceService,
             schema_create=ReservationServiceCreate,
             schema_update=ReservationServiceUpdate,
             schema_lite=ReservationServiceDetail,
@@ -67,8 +68,9 @@ class ReservationServiceRouter(
             response_model=list[ReservationServiceDetail],
             status_code=status.HTTP_200_OK,
         )
+        @inject
         async def get_public(
-            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
+            service: FromDishka[ReservationServiceService],
         ) -> Any:
             """Get all public reservation services."""
             logger.info("Fetching public reservation services")
@@ -82,8 +84,9 @@ class ReservationServiceRouter(
             responses=ERROR_RESPONSES["401_403"],
             status_code=status.HTTP_200_OK,
         )
+        @inject
         async def get_reservation_services(
-            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
+            service: FromDishka[ReservationServiceService],
             user: Annotated[CurrentUser, Depends(get_current_user_from_token)],
             include_removed: bool = Query(False, description="Include `removed objects` or not."),
         ) -> Any:
@@ -112,8 +115,9 @@ class ReservationServiceRouter(
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
+        @inject
         async def get_by_name(
-            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
+            service: FromDishka[ReservationServiceService],
             name: Annotated[str, Path()],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
@@ -133,8 +137,9 @@ class ReservationServiceRouter(
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
+        @inject
         async def get_by_alias(
-            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
+            service: FromDishka[ReservationServiceService],
             alias: Annotated[str, Path()],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
@@ -154,8 +159,9 @@ class ReservationServiceRouter(
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
+        @inject
         async def get_calendars_by_reservation_service(
-            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
+            service: FromDishka[ReservationServiceService],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
@@ -175,8 +181,9 @@ class ReservationServiceRouter(
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
+        @inject
         async def get_mini_services_by_reservation_service(
-            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
+            service: FromDishka[ReservationServiceService],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
@@ -196,8 +203,9 @@ class ReservationServiceRouter(
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
+        @inject
         async def get_events_by_reservation_service(
-            service: Annotated[ReservationServiceService, Depends(get_reservation_service_service)],
+            service: FromDishka[ReservationServiceService],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             event_state: Annotated[EventState | None, Query()] = None,
         ) -> Any:

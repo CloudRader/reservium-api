@@ -1,7 +1,9 @@
 """Defines a interface port for working with the Email Provider."""
 
 from abc import ABC, abstractmethod
+from typing import Any
 
+from fastapi import BackgroundTasks
 from infrastructure.email.schemas import EmailCreate, RegistrationFormCreate
 
 
@@ -21,4 +23,19 @@ class EmailProvider(ABC):
         :param full_name: User fullname.
 
         :returns EmailCreate json object: the created event or exception otherwise.
+        """
+
+    @abstractmethod
+    async def send_email(
+        self,
+        email_create: EmailCreate,
+        background_tasks: BackgroundTasks,
+    ) -> Any:
+        """
+        Send an email asynchronously.
+
+        :param email_create: Email Create schema.
+        :param background_tasks: BackgroundTasks used to run the email sending asynchronously.
+
+        :returns Any: Response indicating status of the sent email.
         """

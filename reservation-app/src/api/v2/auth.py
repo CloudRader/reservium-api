@@ -3,10 +3,10 @@
 import logging
 from typing import Annotated
 
-from api.dependencies import get_identity_provider, get_user_service
 from application.ports.providers.identity.provider import IdentityProvider
 from application.services import UserService
 from core.config import settings
+from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, FastAPI, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2AuthorizationCodeBearer
 
@@ -46,9 +46,10 @@ async def get_token(token: str = Depends(oauth2_scheme)) -> dict:
     "/login",
     status_code=status.HTTP_200_OK,
 )
+@inject
 async def login(
-    user_service: Annotated[UserService, Depends(get_user_service)],
-    openid_service: Annotated[IdentityProvider, Depends(get_identity_provider)],
+    user_service: FromDishka[UserService],
+    openid_service: FromDishka[IdentityProvider],
     token: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
 ):
     """Authenticate a user."""
