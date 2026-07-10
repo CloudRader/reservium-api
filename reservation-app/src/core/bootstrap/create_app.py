@@ -6,8 +6,10 @@ from contextlib import asynccontextmanager
 
 from core.bootstrap.providers import create_providers
 from core.config import settings
+from core.ioc.di import get_providers
+from dishka import AsyncContainer, make_async_container
+from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
-from infrastructure.database import db_session
 from starlette.middleware.cors import CORSMiddleware
 
 logger = logging.getLogger(__name__)
@@ -26,11 +28,10 @@ async def startup_event(app: FastAPI) -> AsyncGenerator[None]:
     app.state.providers = create_providers()
     logger.info("Starting %s.", settings.app.name)
     yield
-    await db_session.dispose()
     logger.info("Shutting down %s.", settings.app.name)
 
 
-def create_app():
+def create_app() -> FastAPI:
     """
     Create and configure the FastAPI app.
 
@@ -53,6 +54,9 @@ def create_app():
         openapi_tags=fastapi_docs.get_tags_metadata(),
         lifespan=startup_event,
     )
+
+    container: AsyncContainer = make_async_container(*get_providers())
+    setup_dishka(container, app)
 
     app.include_router(router)
 

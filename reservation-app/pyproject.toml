@@ -26,6 +26,7 @@ dependencies = [
     "jwcrypto==1.5.8",
     "authzed==1.24.4",
     "authlib==1.7.2",
+    "dishka==1.10.1",
 ]
 
 [dependency-groups]

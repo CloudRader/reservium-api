@@ -44,6 +44,8 @@ class DatabaseConfig(BaseSettings):
     echo_pool: bool = Field(default=False, validation_alias="DB_ECHO_POOL")
     pool_size: int = Field(default=50, validation_alias="DB_POOL_SIZE")
     max_overflow: int = Field(default=10, validation_alias="DB_MAX_OVERFLOW")
+    pool_pre_ping: bool = Field(default=True, validation_alias="DB_POOL_PRE_PING")
+    pool_recycle: int = Field(default=3600, validation_alias="DB_POOL_RECYCLE")
 
     # Nesting the credentials
     credentials: PostgresConfig = Field(default_factory=PostgresConfig)  # type: ignore[arg-type]
