@@ -1,6 +1,5 @@
 """API router for v2 of the Reservation System."""
 
-from api.v2.access_card_system import router as access_card_system_router
 from api.v2.auth import router as auth_router
 from api.v2.calendars import router as calendars_router
 from api.v2.emails import router as emails_router
@@ -55,10 +54,4 @@ router.include_router(
     emails_router,
     prefix="/emails",
     tags=[fastapi_docs.EMAIL_TAG["name"]],
-)
-
-router.include_router(
-    access_card_system_router,
-    prefix="/cards",
-    tags=[fastapi_docs.ACCESS_CARD_SYSTEM_TAG["name"]],
 )

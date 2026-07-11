@@ -4,7 +4,6 @@ import logging
 from typing import Annotated, Any
 
 from api.api_base import BaseCRUDRouter
-from api.dependencies import get_mini_service_service
 from api.permissions import abac_manage_rs_by_id, abac_manage_rs_from_body
 from api.schemas import MiniServiceCreate, MiniServiceDetail, MiniServiceLite, MiniServiceUpdate
 from application.services import MiniServiceService
@@ -12,7 +11,8 @@ from core.bootstrap.exceptions import (
     ERROR_RESPONSES,
     Entity,
 )
-from fastapi import APIRouter, Depends, Path, Query, status
+from dishka.integrations.fastapi import FromDishka, inject
+from fastapi import APIRouter, Path, Query, status
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class MiniServiceRouter(
     def __init__(self):
         super().__init__(
             router=router,
-            service_dep=get_mini_service_service,
+            service_dep=MiniServiceService,
             schema_create=MiniServiceCreate,
             schema_update=MiniServiceUpdate,
             schema_lite=MiniServiceLite,
@@ -51,9 +51,9 @@ class MiniServiceRouter(
             permissions_delete=("mini_services.soft_delete",),
             permissions_hard_delete=("mini_services.hard_delete",),
             abac_create=[abac_manage_rs_from_body(MiniServiceCreate)],
-            abac_update=[abac_manage_rs_by_id(get_mini_service_service)],
-            abac_restore=[abac_manage_rs_by_id(get_mini_service_service)],
-            abac_delete=[abac_manage_rs_by_id(get_mini_service_service)],
+            abac_update=[abac_manage_rs_by_id(MiniServiceService)],
+            abac_restore=[abac_manage_rs_by_id(MiniServiceService)],
+            abac_delete=[abac_manage_rs_by_id(MiniServiceService)],
         )
 
         self.register_routes()
@@ -64,8 +64,9 @@ class MiniServiceRouter(
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
+        @inject
         async def get_by_name(
-            service: Annotated[MiniServiceService, Depends(get_mini_service_service)],
+            service: FromDishka[MiniServiceService],
             name: Annotated[str, Path()],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:

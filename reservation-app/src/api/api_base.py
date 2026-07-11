@@ -8,6 +8,7 @@ from uuid import UUID
 from api.permissions import require_permission
 from application.services.base import CrudServiceBase
 from core.bootstrap.exceptions import ERROR_RESPONSES, BaseAppError, Entity
+from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Path, Query, status
 from pydantic import BaseModel
 
@@ -137,7 +138,7 @@ class BaseCRUDRouter[
                 register_fn()
 
     # ---------- route registrations ----------
-    def register_get_all(self):
+    def register_get_all(self) -> None:
         """Register the GET / endpoint to retrieve all entities."""
         schema_lite: type[TReadLite] = self.schema_lite
         service_dep: Callable[..., TService] = self.service_dep
@@ -151,8 +152,9 @@ class BaseCRUDRouter[
             ],
             status_code=status.HTTP_200_OK,
         )
+        @inject
         async def get_all(
-            service: Annotated[service_dep, Depends(service_dep)],
+            service: FromDishka[service_dep],
             include_removed: bool = Query(False, description="Include `removed objects` or not."),
         ):
             """Get all objects."""
@@ -163,7 +165,7 @@ class BaseCRUDRouter[
             logger.debug("Fetched %d objects", len(result))
             return result
 
-    def register_get_by_id(self):
+    def register_get_by_id(self) -> None:
         """Register the GET /{id} endpoint to retrieve an entity by its ID."""
         schema_detail: type[TReadDetail] = self.schema_detail
         service_dep: Callable[..., TService] = self.service_dep
@@ -178,8 +180,9 @@ class BaseCRUDRouter[
             ],
             status_code=status.HTTP_200_OK,
         )
+        @inject
         async def get_by_id(
-            service: Annotated[service_dep, Depends(service_dep)],
+            service: FromDishka[service_dep],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ):
@@ -194,7 +197,7 @@ class BaseCRUDRouter[
             logger.debug("Fetched %s: %s", self.entity_name.value, obj)
             return obj
 
-    def register_create(self):
+    def register_create(self) -> None:
         """Register the POST / endpoint to create a new entity."""
         schema_create: type[TCreate] = self.schema_create
         schema_detail: type[TReadDetail] = self.schema_detail
@@ -210,8 +213,9 @@ class BaseCRUDRouter[
             ],
             status_code=status.HTTP_201_CREATED,
         )
+        @inject
         async def create(
-            service: Annotated[service_dep, Depends(service_dep)],
+            service: FromDishka[service_dep],
             obj_create: schema_create,
         ):
             """Create object, only users with special roles can create object."""
@@ -219,7 +223,7 @@ class BaseCRUDRouter[
             logger.debug("Created %s: %s", self.entity_name.value, obj)
             return obj
 
-    def register_create_multiple(self):
+    def register_create_multiple(self) -> None:
         """Register the POST / endpoint to create multiple entities."""
         schema_create: type[TCreate] = self.schema_create
         schema_detail: type[TReadDetail] = self.schema_detail
@@ -235,8 +239,9 @@ class BaseCRUDRouter[
             ],
             status_code=status.HTTP_201_CREATED,
         )
+        @inject
         async def create_multiple(
-            service: Annotated[service_dep, Depends(service_dep)],
+            service: FromDishka[service_dep],
             objs_create: list[schema_create],
         ):
             """Create multiple objects in a single request."""
@@ -247,7 +252,7 @@ class BaseCRUDRouter[
                 objs_result.append(obj)
             return objs_result
 
-    def register_update(self):
+    def register_update(self) -> None:
         """Register the PUT /{id} endpoint to update an existing entity."""
         schema_update: type[TUpdate] = self.schema_update
         schema_detail: type[TReadDetail] = self.schema_detail
@@ -263,8 +268,9 @@ class BaseCRUDRouter[
             ],
             status_code=status.HTTP_200_OK,
         )
+        @inject
         async def update(
-            service: Annotated[service_dep, Depends(service_dep)],
+            service: FromDishka[service_dep],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             obj_update: schema_update,
         ):
@@ -273,7 +279,7 @@ class BaseCRUDRouter[
             logger.debug("Updated %s: %s", self.entity_name.value, obj)
             return obj
 
-    def register_restore(self):
+    def register_restore(self) -> None:
         """Register the PUT /{id}/restore endpoint to restore soft delete entity."""
         schema_detail: type[TReadDetail] = self.schema_detail
         service_dep: Callable[..., TService] = self.service_dep
@@ -288,8 +294,9 @@ class BaseCRUDRouter[
             ],
             status_code=status.HTTP_200_OK,
         )
+        @inject
         async def restore(
-            service: Annotated[service_dep, Depends(service_dep)],
+            service: FromDishka[service_dep],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
         ):
             """Restore a soft-deleted object, only users with special roles can restore object."""
@@ -297,7 +304,7 @@ class BaseCRUDRouter[
             logger.debug("Restored object: %s", obj)
             return obj
 
-    def register_delete(self):
+    def register_delete(self) -> None:
         """Register the DELETE /{id} endpoint to delete an entity."""
         schema_lite: type[TReadLite] = self.schema_lite
         service_dep: Callable[..., TService] = self.service_dep
@@ -312,8 +319,9 @@ class BaseCRUDRouter[
             ],
             status_code=status.HTTP_200_OK,
         )
+        @inject
         async def delete(
-            service: Annotated[service_dep, Depends(service_dep)],
+            service: FromDishka[service_dep],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
         ):
             """Delete object, only users with special roles can delete object."""
@@ -321,7 +329,7 @@ class BaseCRUDRouter[
             logger.debug("Deleted object: %s", obj)
             return obj
 
-    def register_hard_delete(self):
+    def register_hard_delete(self) -> None:
         """Register the DELETE /{id}/hard endpoint to delete an entity permanently."""
         service_dep: Callable[..., TService] = self.service_dep
 
@@ -334,8 +342,9 @@ class BaseCRUDRouter[
             ],
             status_code=status.HTTP_204_NO_CONTENT,
         )
+        @inject
         async def hard_delete(
-            service: Annotated[service_dep, Depends(service_dep)],
+            service: FromDishka[service_dep],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
         ):
             """Hard delete object, only users with special roles can delete object."""

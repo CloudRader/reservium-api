@@ -2,13 +2,12 @@
 
 from typing import Annotated, Any
 
-from api.dependencies import get_current_user, get_email_service
-from api.schemas import (
-    RegistrationFormCreate,
-    UserLite,
-)
-from application.services import EmailService
+from api.dependencies import get_current_user
+from api.schemas import UserLite
+from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, BackgroundTasks, Depends, status
+from infrastructure.email.provider import EmailProvider
+from infrastructure.email.schemas import RegistrationFormCreate
 
 router = APIRouter()
 
@@ -17,8 +16,9 @@ router = APIRouter()
     "/send-registration-form",
     status_code=status.HTTP_201_CREATED,
 )
+@inject
 async def send_registration_form(
-    service: Annotated[EmailService, Depends(get_email_service)],
+    service: FromDishka[EmailProvider],
     user: Annotated[UserLite, Depends(get_current_user)],
     registration_form: RegistrationFormCreate,
     background_tasks: BackgroundTasks,

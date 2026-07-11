@@ -1,11 +1,7 @@
 """Shortcuts to easily import schemes."""
 
-from .access_card_system import (
-    ClubAccessSystemRequest,
-)
 from .calendar import CalendarCreate, CalendarDetail, CalendarLite, CalendarUpdate, Rules
 from .current_user import CurrentUser
-from .email import EmailCreate, EmailMeta, RegistrationFormCreate
 from .event import (
     EventCreate,
     EventDetail,
@@ -33,10 +29,7 @@ __all__ = [
     "CalendarDetail",
     "CalendarLite",
     "CalendarUpdate",
-    "ClubAccessSystemRequest",
     "CurrentUser",
-    "EmailCreate",
-    "EmailMeta",
     "EventCreate",
     "EventDetail",
     "EventLite",
@@ -46,7 +39,6 @@ __all__ = [
     "MiniServiceDetail",
     "MiniServiceLite",
     "MiniServiceUpdate",
-    "RegistrationFormCreate",
     "ReservationServiceCreate",
     "ReservationServiceDetail",
     "ReservationServiceLite",

@@ -1,12 +1,9 @@
 """Module which includes classes and methods responsible for connection to database."""
 
 import logging
-from collections.abc import AsyncGenerator
-from typing import Annotated
 
-from core.config import settings
-from fastapi import Depends
 from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
@@ -15,74 +12,52 @@ from sqlalchemy.ext.asyncio import (
 logger = logging.getLogger(__name__)
 
 
-class DatabaseSession:
+def create_engine(
+    url: str,
+    *,
+    echo: bool = False,
+    echo_pool: bool = False,
+    pool_size: int = 5,
+    max_overflow: int = 10,
+    pool_pre_ping: bool = True,
+    pool_recycle: int = 3600,
+) -> AsyncEngine:
     """
-    Asynchronous database session manager using SQLAlchemy.
+    Create an asynchronous SQLAlchemy engine.
 
-    This class handles the creation of an asynchronous database engine and
-    provides an `async_sessionmaker` factory for producing `AsyncSession` objects.
-    It allows consuming code to acquire database sessions in an async context
-    using `async with`, and ensures proper cleanup.
+    :param url: Database connection URL.
+    :param echo: If True, SQL statements are logged.
+    :param echo_pool: If True, connection pool events are logged.
+    :param pool_size: Number of connections to keep in the pool.
+    :param max_overflow: Max connections allowed beyond pool_size.
+    :param pool_pre_ping: If True, the pool will ping connections before using them.
+    :param pool_recycle: Time in seconds before recycling connections.
+    :return: An AsyncEngine instance.
     """
-
-    def __init__(
-        self,
-        url: str,
-        *,
-        echo: bool = False,
-        echo_pool: bool = False,
-        pool_size: int = 5,
-        max_overflow: int = 10,
-    ):
-        """
-        Initialize the database engine and session factory.
-
-        :param: url (str): Database connection URL.
-        :param: echo (bool): If True, SQLAlchemy will log all SQL statements.
-        :param: echo_pool (bool): If True, SQLAlchemy will log connection pool events.
-        :param: pool_size (int): Number of connections to keep in the pool.
-        :param: max_overflow (int): Maximum number of connections to allow beyond pool_size.
-        """
-        self.engine = create_async_engine(
-            url=url,
-            echo=echo,
-            echo_pool=echo_pool,
-            pool_size=pool_size,
-            max_overflow=max_overflow,
-        )
-        self.session_factory = async_sessionmaker(
-            bind=self.engine,
-            autoflush=False,
-            autocommit=False,
-            expire_on_commit=False,
-        )
-
-    async def dispose(self) -> None:
-        """
-        Dispose of the database engine and release all connections.
-
-        This should be called when shutting down the application to cleanly
-        close the connection pool.
-        """
-        await self.engine.dispose()
-        logger.info("Database engine disposed")
-
-    async def session_getter(self) -> AsyncGenerator[AsyncSession]:
-        """
-        Yield an asynchronous database session.
-
-        The session is automatically closed after use.
-        """
-        async with self.session_factory() as session:
-            yield session
+    return create_async_engine(
+        url=url,
+        echo=echo,
+        echo_pool=echo_pool,
+        pool_size=pool_size,
+        max_overflow=max_overflow,
+        pool_pre_ping=pool_pre_ping,
+        pool_recycle=pool_recycle,
+    )
 
 
-db_session = DatabaseSession(
-    url=str(settings.database.postgres_database_uri),
-    echo=settings.database.echo,
-    echo_pool=settings.database.echo_pool,
-    pool_size=settings.database.pool_size,
-    max_overflow=settings.database.max_overflow,
-)
+def create_session_factory(
+    engine: AsyncEngine,
+) -> async_sessionmaker[AsyncSession]:
+    """
+    Create an asynchronous sessionmaker bound to the given engine.
 
-AsyncSessionDep = Annotated[AsyncSession, Depends(db_session.session_getter)]
+    :param engine: The AsyncEngine instance.
+    :return: An async_sessionmaker configured for AsyncSession.
+    """
+    return async_sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        autoflush=False,
+        autocommit=False,
+        expire_on_commit=False,
+    )

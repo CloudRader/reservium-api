@@ -23,10 +23,10 @@ from api.schemas import (
 from api.schemas.calendar import CalendarDetailWithCollisions
 from api.schemas.event import EventLite
 from application.ports.providers.calendar import CalendarProvider
+from application.ports.providers.email import EmailProvider
 from application.ports.repositories import EventRepository, UserRepository
 from application.services import CrudServiceBase
 from application.services.calendar import CalendarService
-from application.services.email import EmailService
 from application.services.reservation_service import ReservationServiceService
 from core.bootstrap.exceptions import (
     BaseAppError,
@@ -35,8 +35,8 @@ from core.bootstrap.exceptions import (
 )
 from domain.enums import EventActor
 from fastapi import BackgroundTasks
+from infrastructure.calendar.google import EventTime, GoogleCalendarEventCreate
 from infrastructure.database.sqlalchemy.models import EventState
-from infrastructure.google import EventTime, GoogleCalendarEventCreate
 from pytz import timezone
 
 logger = logging.getLogger(__name__)
@@ -289,14 +289,14 @@ class EventService(AbstractEventService):
         calendar_service: CalendarService,
         user_repository: UserRepository,
         calendar_provider: CalendarProvider,
-        email_service: EmailService,
+        email_provider: EmailProvider,
     ):
         super().__init__(event_repository, Entity.EVENT)
         self.reservation_service_service = reservation_service_service
         self.calendar_service = calendar_service
         self.user_repo = user_repository
         self.calendar_provider = calendar_provider
-        self.email_service = email_service
+        self.email_provider = email_provider
 
     async def post_event(
         self,
@@ -417,9 +417,9 @@ class EventService(AbstractEventService):
             logger.debug("Declining requested time change for event %s", id_)
             updated_event = await self.update(id_, event_update)
 
-            await self.email_service.preparing_email(
+            await self.email_provider.preparing_email(
                 updated_event,
-                self.email_service.create_email_meta(
+                self.email_provider.create_email_meta(
                     "decline_update_reservation_time",
                     "Request Update Reservation Time Has Been Declined",
                     manager_notes,
@@ -453,9 +453,9 @@ class EventService(AbstractEventService):
                     event_from_google_calendar,
                 )
 
-            await self.email_service.preparing_email(
+            await self.email_provider.preparing_email(
                 updated_event,
-                self.email_service.create_email_meta(
+                self.email_provider.create_email_meta(
                     "approve_update_reservation_time",
                     "Request Update Reservation Time Has Been Approved",
                     manager_notes,
@@ -511,9 +511,9 @@ class EventService(AbstractEventService):
                 event.calendar.provider_id, event.provider_id, event_to_update
             )
 
-        await self.email_service.preparing_email(
+        await self.email_provider.preparing_email(
             event,
-            self.email_service.create_email_meta(
+            self.email_provider.create_email_meta(
                 "update_reservation",
                 "Update Reservation By Manager",
                 reason,
@@ -555,9 +555,9 @@ class EventService(AbstractEventService):
         event = await self.update(id_, event_update_time)
         event = await self.get(id_)
 
-        await self.email_service.preparing_email(
+        await self.email_provider.preparing_email(
             event,
-            self.email_service.create_email_meta(
+            self.email_provider.create_email_meta(
                 "request_update_reservation_time",
                 "Request Update Reservation Time",
                 reason,
@@ -589,15 +589,15 @@ class EventService(AbstractEventService):
             await self.calendar_provider.delete_event(event.calendar.provider_id, event.provider_id)
 
         if actor == EventActor.OWNER:
-            await self.email_service.preparing_email(
+            await self.email_provider.preparing_email(
                 event,
-                self.email_service.create_email_meta("cancel_reservation", "Cancel Reservation"),
+                self.email_provider.create_email_meta("cancel_reservation", "Cancel Reservation"),
                 background_tasks,
             )
         else:
-            await self.email_service.preparing_email(
+            await self.email_provider.preparing_email(
                 event,
-                self.email_service.create_email_meta(
+                self.email_provider.create_email_meta(
                     "cancel_reservation_by_manager",
                     "Cancel Reservation by Manager",
                     reason,
@@ -646,9 +646,9 @@ class EventService(AbstractEventService):
                 event.calendar.provider_id, event.provider_id, event_to_update
             )
 
-        await self.email_service.preparing_email(
+        await self.email_provider.preparing_email(
             event,
-            self.email_service.create_email_meta(
+            self.email_provider.create_email_meta(
                 "approve_reservation",
                 "Reservation Has Been Approved",
                 manager_notes,
@@ -867,9 +867,9 @@ class EventService(AbstractEventService):
                 event_google_calendar_id,
             )
             event = await self.get(event.id)  # type: ignore[union-attr]
-            await self.email_service.preparing_email(
+            await self.email_provider.preparing_email(
                 event,
-                self.email_service.create_email_meta(
+                self.email_provider.create_email_meta(
                     "confirm_reservation",
                     f"{reservation_service.name} Reservation Confirmation",
                 ),
@@ -895,9 +895,9 @@ class EventService(AbstractEventService):
         )
         event = await self.get(event.id)  # type: ignore[union-attr]
         if "night time" in event_summary.lower():
-            await self.email_service.preparing_email(
+            await self.email_provider.preparing_email(
                 event,
-                self.email_service.create_email_meta(
+                self.email_provider.create_email_meta(
                     "not_approve_night_time_reservation", event_summary
                 ),
                 background_tasks,

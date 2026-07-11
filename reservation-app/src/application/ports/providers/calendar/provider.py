@@ -1,14 +1,18 @@
 """Defines an abstract base class for working with the Calendar Provider."""
 
+from __future__ import annotations
+
 import datetime as dt
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
-from infrastructure.google.google_calendar_schemas import (
-    CalendarImportResult,
-    GoogleCalendarCalendar,
-    GoogleCalendarEvent,
-    GoogleCalendarEventCreate,
-)
+if TYPE_CHECKING:
+    from infrastructure.calendar.google.schemas import (
+        CalendarImportResult,
+        GoogleCalendarCalendar,
+        GoogleCalendarEvent,
+        GoogleCalendarEventCreate,
+    )
 
 
 class CalendarProvider(ABC):

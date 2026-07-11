@@ -1,4 +1,4 @@
-"""DTO schemes for Email entity."""
+"""DTO schemes for Email provider."""
 
 from datetime import datetime
 

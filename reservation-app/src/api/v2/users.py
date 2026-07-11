@@ -3,12 +3,13 @@
 import logging
 from typing import Annotated
 
-from api.dependencies import get_current_user, get_user_service
+from api.dependencies import get_current_user
 from api.permissions import require_permission
 from api.schemas import UserLite
 from api.schemas.event import EventDetail
 from application.services import UserService
 from core.bootstrap.exceptions import ERROR_RESPONSES
+from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, FastAPI, Query, status
 
 logger = logging.getLogger(__name__)
@@ -25,8 +26,9 @@ router = APIRouter()
     dependencies=[Depends(require_permission("users.read"))],
     status_code=status.HTTP_200_OK,
 )
+@inject
 async def get_all(
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: FromDishka[UserService],
     user: Annotated[UserLite, Depends(get_current_user)],
 ):
     """
@@ -63,8 +65,9 @@ async def get_me(
     responses=ERROR_RESPONSES["400_404"],
     status_code=status.HTTP_200_OK,
 )
+@inject
 async def get_events_by_user(
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: FromDishka[UserService],
     user: Annotated[UserLite, Depends(get_current_user)],
     page: int = Query(1, ge=1, description="Page number for pagination. Starts at 1."),
     limit: int = Query(
