@@ -18,6 +18,9 @@ else
     echo "Virtual environment $env_name already exists"
 fi
 
+# Activate the virtual environment
+source $env_name/bin/activate
+
 # Install dependencies from pyproject.toml and uv.lock
 uv sync
 
