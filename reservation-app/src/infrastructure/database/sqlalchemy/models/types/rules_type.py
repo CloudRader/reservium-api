@@ -13,6 +13,6 @@ class RulesType(PydanticType):
     @property
     def model_class(self):
         # Local import to break the circular dependency!
-        from api.schemas.calendar import Rules
+        from application.schemas.calendar import Rules
 
         return Rules

@@ -8,8 +8,8 @@ implementation (CRUDReservationService) using SQLAlchemy.
 from typing import TYPE_CHECKING, Protocol, TypeVar, runtime_checkable
 from uuid import UUID
 
-from api.schemas import ReservationServiceCreate, ReservationServiceUpdate
 from application.ports.repositories import ReservationServiceRepository
+from application.schemas import ReservationServiceCreate, ReservationServiceUpdate
 from infrastructure.database.sqlalchemy.models import (
     CalendarModel,
     EventModel,

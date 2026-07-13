@@ -7,15 +7,15 @@ This class works with Mini Service.
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from api.schemas import (
+from application.ports.repositories import ReservationServiceRepository
+from application.schemas import (
     CalendarDetail,
     MiniServiceDetail,
     ReservationServiceCreate,
     ReservationServiceDetail,
     ReservationServiceUpdate,
 )
-from api.schemas.event import EventDetail
-from application.ports.repositories import ReservationServiceRepository
+from application.schemas.event import EventDetail
 from application.services import CrudServiceBase
 from core.bootstrap.exceptions import (
     Entity,

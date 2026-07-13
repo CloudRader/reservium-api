@@ -11,7 +11,7 @@ from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:  # pragma: no cover
-    from api.schemas.calendar import Rules
+    from application.schemas.calendar import Rules
     from infrastructure.database.sqlalchemy.models.event import Event
     from infrastructure.database.sqlalchemy.models.mini_service import MiniService
     from infrastructure.database.sqlalchemy.models.reservation_service import ReservationService

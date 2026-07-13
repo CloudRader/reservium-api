@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-from api.schemas import (
+from application.schemas import (
     CalendarCreate,
     EventLite,
     MiniServiceCreate,

@@ -7,7 +7,9 @@ This class works with Calendar.
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from api.schemas import (
+from application.ports.providers.calendar import CalendarProvider
+from application.ports.repositories import CalendarRepository
+from application.schemas import (
     CalendarCreate,
     CalendarDetail,
     CalendarLite,
@@ -15,9 +17,7 @@ from api.schemas import (
     MiniServiceLite,
     ReservationServiceDetail,
 )
-from api.schemas.calendar import CalendarDetailWithCollisions
-from application.ports.providers.calendar import CalendarProvider
-from application.ports.repositories import CalendarRepository
+from application.schemas.calendar import CalendarDetailWithCollisions
 from application.services import CrudServiceBase
 from application.services.mini_service import MiniServiceService
 from application.services.reservation_service import ReservationServiceService

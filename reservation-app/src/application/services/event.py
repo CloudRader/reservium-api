@@ -10,7 +10,10 @@ from abc import ABC, abstractmethod
 from typing import Any
 from uuid import UUID
 
-from api.schemas import (
+from application.ports.providers.calendar import CalendarProvider
+from application.ports.providers.email import EmailProvider
+from application.ports.repositories import EventRepository, UserRepository
+from application.schemas import (
     CalendarDetail,
     EventCreate,
     EventDetail,
@@ -20,11 +23,8 @@ from api.schemas import (
     Rules,
     UserLite,
 )
-from api.schemas.calendar import CalendarDetailWithCollisions
-from api.schemas.event import EventLite
-from application.ports.providers.calendar import CalendarProvider
-from application.ports.providers.email import EmailProvider
-from application.ports.repositories import EventRepository, UserRepository
+from application.schemas.calendar import CalendarDetailWithCollisions
+from application.schemas.event import EventLite
 from application.services import CrudServiceBase
 from application.services.calendar import CalendarService
 from application.services.reservation_service import ReservationServiceService

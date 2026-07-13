@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
-from api.schemas.mini_service import (
+from application.schemas.mini_service import (
     MiniServiceCreate,
     MiniServiceDetail,
     MiniServiceLite,

@@ -9,8 +9,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from uuid import UUID
 
-from api.schemas import EventCreate, EventUpdate
 from application.ports.repositories import BaseRepository
+from application.schemas import EventCreate, EventUpdate
 from infrastructure.database.sqlalchemy.models import EventModel, EventState
 
 

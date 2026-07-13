@@ -1,7 +1,7 @@
 """Module for testing mini service crud."""
 
 import pytest
-from api.schemas import MiniServiceUpdate
+from application.schemas import MiniServiceUpdate
 
 
 @pytest.mark.asyncio

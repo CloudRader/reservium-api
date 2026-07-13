@@ -8,8 +8,8 @@ implementation (CRUDEvent) using SQLAlchemy.
 from datetime import datetime
 from uuid import UUID
 
-from api.schemas import EventCreate, EventUpdate
 from application.ports.repositories import EventRepository
+from application.schemas import EventCreate, EventUpdate
 from infrastructure.database.sqlalchemy.models import (
     CalendarModel,
     EventModel,

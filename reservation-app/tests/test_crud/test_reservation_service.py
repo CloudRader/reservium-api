@@ -1,7 +1,7 @@
 """Module for testing reservation service crud."""
 
 import pytest
-from api.schemas import ReservationServiceUpdate
+from application.schemas import ReservationServiceUpdate
 from infrastructure.database.sqlalchemy.models import CalendarModel, EventState, MiniServiceModel
 
 

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 from fastapi import BackgroundTasks
 
 if TYPE_CHECKING:
-    from api.schemas.event import EventDetail
+    from application.schemas.event import EventDetail
     from infrastructure.email.schemas import EmailCreate, EmailMeta, RegistrationFormCreate
 
 

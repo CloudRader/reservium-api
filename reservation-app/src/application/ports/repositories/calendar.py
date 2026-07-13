@@ -9,8 +9,8 @@ from abc import ABC, abstractmethod
 from typing import Any
 from uuid import UUID
 
-from api.schemas import CalendarCreate, CalendarUpdate
 from application.ports.repositories import BaseRepository
+from application.schemas import CalendarCreate, CalendarUpdate
 from infrastructure.database.sqlalchemy.models import CalendarModel, MiniServiceModel
 
 

@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-from api.schemas import Rules
+from application.schemas import Rules
 from infrastructure.database.sqlalchemy.models import (
     CalendarModel,
     EventModel,

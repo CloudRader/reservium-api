@@ -3,7 +3,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from api.schemas.calendar import CalendarLite
+from application.schemas.calendar import CalendarLite
 from pydantic import BaseModel, ConfigDict, Field
 
 
