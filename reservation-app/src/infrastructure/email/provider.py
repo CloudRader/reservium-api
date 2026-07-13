@@ -11,14 +11,14 @@ from pathlib import Path
 from typing import Any
 
 from anyio import Path as AsyncPath
-from api.schemas import (
+from application.ports.providers.email import EmailProvider
+from application.schemas import (
     CalendarLite,
     EventDetail,
     EventLite,
     ReservationServiceLite,
     UserLite,
 )
-from application.ports.providers.email import EmailProvider
 from fastapi import BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema, MessageType, NameEmail
 from infrastructure.email.schemas import EmailCreate, EmailMeta, RegistrationFormCreate

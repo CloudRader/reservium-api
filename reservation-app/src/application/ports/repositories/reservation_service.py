@@ -9,8 +9,8 @@ from abc import ABC, abstractmethod
 from typing import Protocol, TypeVar, runtime_checkable
 from uuid import UUID
 
-from api.schemas import ReservationServiceCreate, ReservationServiceUpdate
 from application.ports.repositories import BaseRepository
+from application.schemas import ReservationServiceCreate, ReservationServiceUpdate
 from infrastructure.database.sqlalchemy.models import (
     EventModel,
     EventState,

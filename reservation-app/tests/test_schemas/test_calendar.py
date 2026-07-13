@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
-from api.schemas.calendar import (
+from application.schemas.calendar import (
     CalendarCreate,
     CalendarDetail,
     CalendarLite,

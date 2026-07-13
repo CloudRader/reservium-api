@@ -8,8 +8,8 @@ implementation (CRUDCalendar) using SQLAlchemy.
 from typing import Any
 from uuid import UUID
 
-from api.schemas import CalendarCreate, CalendarUpdate
 from application.ports.repositories import CalendarRepository
+from application.schemas import CalendarCreate, CalendarUpdate
 from infrastructure.database.sqlalchemy.models import CalendarModel, MiniServiceModel
 from infrastructure.database.sqlalchemy.models.calendar_collisions_association import (
     CalendarCollisionAssociation,

@@ -6,8 +6,8 @@ from uuid import uuid4
 import pytest
 
 # Dummy mini service and calendar references
-from api.schemas import CalendarDetail, MiniServiceDetail
-from api.schemas.reservation_service import (
+from application.schemas import CalendarDetail, MiniServiceDetail
+from application.schemas.reservation_service import (
     ReservationServiceCreate,
     ReservationServiceDetail,
     ReservationServiceLite,

@@ -3,7 +3,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from api.schemas.event import EventDetail
+from application.schemas.event import EventDetail
 from pydantic import BaseModel, ConfigDict, Field
 
 

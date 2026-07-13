@@ -8,8 +8,8 @@ implementation (CRUDUser) using SQLAlchemy.
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from api.schemas import UserCreate, UserUpdate
 from application.ports.repositories import BaseRepository
+from application.schemas import UserCreate, UserUpdate
 from infrastructure.database.sqlalchemy.models import EventModel, UserModel
 
 

@@ -93,8 +93,8 @@ class CalendarDetailWithCollisions(CalendarDetail):
     collision_ids: list[UUID] = Field(default_factory=list)
 
 
-from api.schemas.reservation_service import ReservationServiceLite  # noqa
-from api.schemas.mini_service import MiniServiceLite  # noqa
+from application.schemas.reservation_service import ReservationServiceLite  # noqa
+from application.schemas.mini_service import MiniServiceLite  # noqa
 
 CalendarWithReservationServiceInfo.model_rebuild()
 CalendarDetail.model_rebuild()

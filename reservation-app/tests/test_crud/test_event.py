@@ -3,7 +3,7 @@
 import datetime as dt
 
 import pytest
-from api.schemas import EventUpdate
+from application.schemas import EventUpdate
 from infrastructure.database.sqlalchemy.models import EventState
 
 

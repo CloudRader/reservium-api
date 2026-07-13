@@ -7,14 +7,14 @@ This class works with User.
 import logging
 from abc import ABC, abstractmethod
 
-from api.schemas import (
+from application.ports.repositories import ReservationServiceRepository, UserRepository
+from application.schemas import (
     UserCreate,
     UserDetail,
     UserLite,
     UserUpdate,
 )
-from api.schemas.event import EventDetail
-from application.ports.repositories import ReservationServiceRepository, UserRepository
+from application.schemas.event import EventDetail
 from application.services import CrudServiceBase
 from core.bootstrap.exceptions import Entity
 from infrastructure.identity.openid.schemas import UserInfo

@@ -8,8 +8,8 @@ implementation (CRUDMiniService) using SQLAlchemy.
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from api.schemas import MiniServiceCreate, MiniServiceUpdate
 from application.ports.repositories import BaseRepository
+from application.schemas import MiniServiceCreate, MiniServiceUpdate
 from infrastructure.database.sqlalchemy.models import MiniServiceModel
 
 
