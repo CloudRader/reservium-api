@@ -3,7 +3,7 @@
 from typing import Annotated, Any
 
 from api.dependencies import get_current_user
-from api.schemas import UserLite
+from application.schemas import UserLite
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, BackgroundTasks, Depends, status
 from infrastructure.email.provider import EmailProvider

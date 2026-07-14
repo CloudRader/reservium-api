@@ -5,8 +5,8 @@ from typing import Annotated
 
 from api.dependencies import get_current_user
 from api.permissions import require_permission
-from api.schemas import UserLite
-from api.schemas.event import EventDetail
+from application.schemas import UserLite
+from application.schemas.event import EventDetail
 from application.services import UserService
 from core.bootstrap.exceptions import ERROR_RESPONSES
 from dishka.integrations.fastapi import FromDishka, inject
