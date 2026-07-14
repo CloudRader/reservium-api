@@ -22,7 +22,7 @@ from application.services import (
 from authlib.integrations.starlette_client import OAuth
 from core.config.settings import Settings
 from dishka import Provider, Scope, provide
-from fastapi_mail import FastMail
+from fastapi_mail import ConnectionConfig, FastMail
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from infrastructure.calendar.google.provider import GoogleCalendarProvider
@@ -227,7 +227,19 @@ class ExternalProvidersProvider(Provider):
     @provide(scope=Scope.APP)
     def get_email_provider(self, settings: Settings) -> EmailProvider:
         """Provide an EmailProvider implementation."""
-        client = FastMail(settings.mail.connection)
+        connection = ConnectionConfig(
+            MAIL_USERNAME=settings.mail.username,
+            MAIL_PASSWORD=settings.mail.password,
+            MAIL_FROM=settings.mail.username,
+            MAIL_PORT=settings.mail.port,
+            MAIL_SERVER=settings.mail.server,
+            MAIL_FROM_NAME=settings.mail.from_name,
+            MAIL_STARTTLS=settings.mail.tls,
+            MAIL_SSL_TLS=settings.mail.ssl,
+            USE_CREDENTIALS=settings.mail.use_credentials,
+            VALIDATE_CERTS=settings.mail.validate_certs,
+        )
+        client = FastMail(connection)
         return FastEmailProvider(
             client=client,
             send_facility_manager=settings.mail.sent_dormitory_head,
