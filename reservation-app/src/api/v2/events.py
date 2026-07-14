@@ -16,7 +16,8 @@ from api.permissions import (
     abac_manage_rs_by_id,
     require_permission,
 )
-from api.schemas import (
+from application.ports.providers.identity.provider import IdentityProvider
+from application.schemas import (
     EventCreate,
     EventDetail,
     EventLite,
@@ -24,7 +25,6 @@ from api.schemas import (
     EventUpdateTime,
     UserLite,
 )
-from application.ports.providers.identity.provider import IdentityProvider
 from application.services import EventService
 from core.bootstrap.exceptions import (
     ERROR_RESPONSES,

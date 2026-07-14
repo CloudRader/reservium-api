@@ -9,7 +9,7 @@ from api.dependencies import (
     get_current_user,
 )
 from api.permissions import abac_manage_rs_by_id, abac_manage_rs_from_body
-from api.schemas import (
+from application.schemas import (
     CalendarCreate,
     CalendarDetail,
     CalendarLite,
@@ -17,7 +17,7 @@ from api.schemas import (
     MiniServiceLite,
     UserLite,
 )
-from api.schemas.calendar import CalendarDetailWithCollisions
+from application.schemas.calendar import CalendarDetailWithCollisions
 from application.services import CalendarService
 from core.bootstrap.exceptions import ERROR_RESPONSES, Entity, PermissionDeniedError
 from dishka.integrations.fastapi import FromDishka, inject

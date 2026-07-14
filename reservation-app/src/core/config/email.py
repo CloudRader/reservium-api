@@ -5,7 +5,6 @@ Loads mail credentials and host settings from environment variables and
 dynamically instantiates a ConnectionConfig for fastapi-mail on demand.
 """
 
-from fastapi_mail import ConnectionConfig
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -29,21 +28,6 @@ class MailConfig(BaseSettings):
     validate_certs: bool = Field(default=True, validation_alias="MAIL_VALIDATE_CERTS")
     sent_dormitory_head: bool = Field(default=False, validation_alias="MAIL_SENT_DORMITORY_HEAD")
     dormitory_head_email: str = Field(default="", validation_alias="MAIL_DORMITORY_HEAD_EMAIL")
-
-    @property
-    def connection(self) -> ConnectionConfig:
-        return ConnectionConfig(
-            MAIL_USERNAME=self.username,
-            MAIL_PASSWORD=self.password,
-            MAIL_FROM=self.username,
-            MAIL_PORT=self.port,
-            MAIL_SERVER=self.server,
-            MAIL_FROM_NAME=self.from_name,
-            MAIL_STARTTLS=self.tls,
-            MAIL_SSL_TLS=self.ssl,
-            USE_CREDENTIALS=self.use_credentials,
-            VALIDATE_CERTS=self.validate_certs,
-        )
 
     model_config = SettingsConfigDict(
         extra="ignore",

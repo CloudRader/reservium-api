@@ -6,15 +6,15 @@ from uuid import UUID
 
 from api.api_base import BaseCRUDRouter
 from api.dependencies import get_current_user_from_token
-from api.schemas import (
+from api.schemas.current_user import CurrentUser
+from application.schemas import (
     CalendarDetail,
     MiniServiceDetail,
     ReservationServiceCreate,
     ReservationServiceDetail,
     ReservationServiceUpdate,
 )
-from api.schemas.current_user import CurrentUser
-from api.schemas.event import EventDetail
+from application.schemas.event import EventDetail
 from application.services import ReservationServiceService
 from core.bootstrap.exceptions import (
     ERROR_RESPONSES,

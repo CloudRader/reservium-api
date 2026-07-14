@@ -5,7 +5,12 @@ from typing import Annotated, Any
 
 from api.api_base import BaseCRUDRouter
 from api.permissions import abac_manage_rs_by_id, abac_manage_rs_from_body
-from api.schemas import MiniServiceCreate, MiniServiceDetail, MiniServiceLite, MiniServiceUpdate
+from application.schemas import (
+    MiniServiceCreate,
+    MiniServiceDetail,
+    MiniServiceLite,
+    MiniServiceUpdate,
+)
 from application.services import MiniServiceService
 from core.bootstrap.exceptions import (
     ERROR_RESPONSES,

@@ -1,3 +1,5 @@
+name: reservium
+
 services:
   db:
     container_name: db
@@ -14,8 +16,8 @@ services:
     networks:
       - internal
 
-  reservium-api:
-    container_name: reservation-api
+  api:
+    container_name: api
     build:
       context: ./reservation-app
       dockerfile: Dockerfile
@@ -33,8 +35,8 @@ services:
     networks:
       - internal
 
-  reservium-ui:
-    container_name: reservium-ui
+  ui:
+    container_name: ui
     image: ghcr.io/cloudrader/reservium-ui:latest
     platform: linux/amd64
     env_file:
