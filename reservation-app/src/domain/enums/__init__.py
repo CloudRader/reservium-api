@@ -1,5 +1,5 @@
 """Package for enums."""
 
-from .event import EventActor
+from .event import EventActor, EventState
 
-__all__ = ["EventActor"]
+__all__ = ["EventActor", "EventState"]
