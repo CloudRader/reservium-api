@@ -50,3 +50,22 @@ clean: ## Clean up cache and temporary files
 	rm -rf .mypy_cache/
 	rm -rf htmlcov/
 	rm -rf .coverage
+
+# Database migration commands
+migration: ## Create a new migration file
+	uv run alembic revision --autogenerate -m "$(msg)"
+
+migrate: ## Apply all pending migrations
+	uv run alembic upgrade head
+
+migrate-downgrade: ## Downgrade to previous migration
+	uv run alembic downgrade -1
+
+migrate-history: ## Show migration history
+	uv run alembic history
+
+migrate-current: ## Show current migration
+	uv run alembic current
+
+migrate-stamp: ## Stamp database with current migration (without applying)
+	uv run alembic stamp head
