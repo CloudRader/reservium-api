@@ -69,3 +69,7 @@ migrate-current: ## Show current migration
 
 migrate-stamp: ## Stamp database with current migration (without applying)
 	uv run alembic stamp head
+
+# Environment setup
+setup-env: ## Create .env file from template
+	scripts/setup-env.sh
