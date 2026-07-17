@@ -1,7 +1,7 @@
-"""Domain entity models."""
+"""Domain entities package."""
 
 from .base import BaseEntity
-from .calendar import Calendar, Rules
+from .calendar import Calendar
 from .event import Event
 from .mini_service import MiniService
 from .reservation_service import ReservationService
@@ -13,6 +13,5 @@ __all__ = [
     "Event",
     "MiniService",
     "ReservationService",
-    "Rules",
     "User",
 ]

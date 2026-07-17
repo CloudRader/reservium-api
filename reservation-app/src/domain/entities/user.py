@@ -3,8 +3,8 @@
 from dataclasses import dataclass, field
 from typing import final
 
+from domain.entities.base import BaseEntity
 from domain.exceptions import DomainValidationError
-from domain.models.base import BaseEntity
 
 
 @final

@@ -5,9 +5,9 @@ from datetime import datetime
 from typing import final
 from uuid import UUID
 
+from domain.entities.base import BaseEntity
 from domain.enums import EventState
 from domain.exceptions import DomainValidationError
-from domain.models.base import BaseEntity
 
 
 @final
