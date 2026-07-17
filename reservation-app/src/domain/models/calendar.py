@@ -1,17 +1,11 @@
 """Calendar domain entity."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import TYPE_CHECKING, final
+from typing import final
 from uuid import UUID
 
 from domain.exceptions import DomainValidationError
-
-if TYPE_CHECKING:
-    from .event import Event
-    from .mini_service import MiniService
+from domain.models.base import BaseEntity
 
 
 @final
@@ -44,10 +38,9 @@ class Rules:
 
 @final
 @dataclass(frozen=True, slots=True, kw_only=True)
-class Calendar:
+class Calendar(BaseEntity):
     """Domain Entity representing a Calendar."""
 
-    id: UUID
     reservation_type: str
     reservation_service_id: UUID
     color: str = "#05baf5"
@@ -58,12 +51,8 @@ class Calendar:
     active_member_rules: Rules | None = None
     manager_rules: Rules | None = None
     provider_id: str | None = None
-    created_at: datetime | None = None
-    updated_at: datetime | None = None
-    deleted_at: datetime | None = None
-    collisions: list[Calendar] = field(default_factory=list)
-    events: list[Event] = field(default_factory=list)
-    mini_services: list[MiniService] = field(default_factory=list)
+    collision_ids: list[UUID] = field(default_factory=list)
+    mini_service_ids: list[UUID] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         """Validate business invariants of Calendar."""
@@ -76,8 +65,3 @@ class Calendar:
         if not self.color.startswith("#") or len(self.color) not in (4, 7):
             message = f"Invalid color format: '{self.color}'"
             raise DomainValidationError(message)
-
-    @property
-    def collision_ids(self) -> list[UUID]:
-        """Return only the IDs of calendars this one collides with."""
-        return [c.id for c in self.collisions if hasattr(c, "id")]

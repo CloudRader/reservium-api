@@ -1,25 +1,17 @@
 """ReservationService domain entity."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import TYPE_CHECKING, final
-from uuid import UUID
+from typing import final
 
 from domain.exceptions import DomainValidationError
-
-if TYPE_CHECKING:
-    from .calendar import Calendar
-    from .mini_service import MiniService
+from domain.models.base import BaseEntity
 
 
 @final
 @dataclass(frozen=True, slots=True, kw_only=True)
-class ReservationService:
+class ReservationService(BaseEntity):
     """Domain Entity representing a Reservation Service."""
 
-    id: UUID
     name: str
     alias: str
     contact_mail: str
@@ -28,11 +20,6 @@ class ReservationService:
     access_group: str | None = None
     room_id: int | None = None
     lockers_id: list[int] = field(default_factory=list)
-    created_at: datetime | None = None
-    updated_at: datetime | None = None
-    deleted_at: datetime | None = None
-    calendars: list[Calendar] = field(default_factory=list)
-    mini_services: list[MiniService] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         """Validate business invariants of ReservationService."""
