@@ -1,5 +1,80 @@
 # Changelog
 
+## [2.4.4](https://github.com/CloudRader/reservium-api/compare/v2.4.3...v2.4.4) (2026-07-18)
+
+
+### ♻️ Updates & Improvements
+
+* **access_system:** removed service ([8600f5c](https://github.com/CloudRader/reservium-api/commit/8600f5ca3fbddbc1d76b17fd391a920ddc4cff54))
+* add Makefile for automatisation ([eb0374b](https://github.com/CloudRader/reservium-api/commit/eb0374bafb4676623be27ad3b073e6ce0fb96154))
+* **compose:** add name of application and update services names ([c722ef8](https://github.com/CloudRader/reservium-api/commit/c722ef865e79142827b19a649c17b2e3e66c66d4))
+* **dependencies:** add di in api for all services and providers ([4913419](https://github.com/CloudRader/reservium-api/commit/4913419685861b71c7aecab7f6b530d141e10d72))
+* **dependency-injection:** add container for DI, refactor services ([a7b163f](https://github.com/CloudRader/reservium-api/commit/a7b163f307efee4023841cd7182d2605ed53653f))
+* **deps:** update astral-sh/setup-uv action to v8.3.0 ([#353](https://github.com/CloudRader/reservium-api/issues/353)) ([bfb7f93](https://github.com/CloudRader/reservium-api/commit/bfb7f9364c84101efe6ef79b0c5df0db9fabd91e))
+* **deps:** update astral-sh/setup-uv action to v8.3.1 ([#359](https://github.com/CloudRader/reservium-api/issues/359)) ([d23ff4b](https://github.com/CloudRader/reservium-api/commit/d23ff4b98b71a871455f7430fcebfe7392ca1faa))
+* **deps:** update astral-sh/setup-uv action to v8.3.2 ([#363](https://github.com/CloudRader/reservium-api/issues/363)) ([4ce85a7](https://github.com/CloudRader/reservium-api/commit/4ce85a719b9889eafedd40dd588d71f75acacf7d))
+* **deps:** update dependency astral-sh/uv to v0.11.26 ([#345](https://github.com/CloudRader/reservium-api/issues/345)) ([6914881](https://github.com/CloudRader/reservium-api/commit/6914881a12b6f65b6b70601c608b5f06edd35637))
+* **deps:** update dependency astral-sh/uv to v0.11.27 ([#358](https://github.com/CloudRader/reservium-api/issues/358)) ([1dc5e83](https://github.com/CloudRader/reservium-api/commit/1dc5e83dd43729de3e59d84ba445d1b170021ddd))
+* **deps:** update dependency astral-sh/uv to v0.11.28 ([#361](https://github.com/CloudRader/reservium-api/issues/361)) ([559ddc6](https://github.com/CloudRader/reservium-api/commit/559ddc6f151cf1522a41ff78b1688c90fc816fcb))
+* **deps:** update dependency mypy to v2.2.0 ([#362](https://github.com/CloudRader/reservium-api/issues/362)) ([92aa468](https://github.com/CloudRader/reservium-api/commit/92aa4680cbcc8f08ac79bdeecc256737556ad778))
+* **deps:** update dependency ruff to v0.15.21 ([#367](https://github.com/CloudRader/reservium-api/issues/367)) ([ad3f49c](https://github.com/CloudRader/reservium-api/commit/ad3f49cb9178549a15bcb83d2947792c3dab3f15))
+* **deps:** update python docker tag to v3.14.6 ([#343](https://github.com/CloudRader/reservium-api/issues/343)) ([bac9ac0](https://github.com/CloudRader/reservium-api/commit/bac9ac00355af86ed60138fc8a37e9544a2274fb))
+* **di:** add Services and External Providers to dishka, remove custom ([ffc0b8f](https://github.com/CloudRader/reservium-api/commit/ffc0b8f2a6bc1204f3877d946b077090135f0be3))
+* **docs:** remove access card system tag from openapi docs ([da143b4](https://github.com/CloudRader/reservium-api/commit/da143b4c2adf626357f1a13919661dd03cf1a00d))
+* **domain:** add business domain models undependent from orm ([e2494e0](https://github.com/CloudRader/reservium-api/commit/e2494e052b5b98d4c1896c41415aafa86b8f55f2))
+* **domain:** do more pure releationships and add base entity class ([b0dfcf4](https://github.com/CloudRader/reservium-api/commit/b0dfcf46b61aa7cb8e95ee9a122dd00672f956eb))
+* **domain:** rename models to entities under domain, add value objects ([27bc571](https://github.com/CloudRader/reservium-api/commit/27bc57196145b6f0ee56e70ddb5de121ccf1f490))
+* **env:** add env template, add script for creating .env + add to make ([97770f4](https://github.com/CloudRader/reservium-api/commit/97770f4852154f16be8c78e9906190b79a2f25fd))
+* **make:** add migrations commands to Makefile for alembic ([79c82d3](https://github.com/CloudRader/reservium-api/commit/79c82d3a0439ac0a1949d19630dc739fbb2dd436))
+
+
+### 🐛 Fixes
+
+* **api:** update v2 routers to import from application schemas ([71ad36a](https://github.com/CloudRader/reservium-api/commit/71ad36aa7ad5d47954e537fee7dfad256a45af41))
+* **calendar_provider:** rename from calendar to provider ([f3653d0](https://github.com/CloudRader/reservium-api/commit/f3653d09fff3273860807107e8496b31fbc29932))
+* **container:** double init services in containers ([0d7315b](https://github.com/CloudRader/reservium-api/commit/0d7315b20403edd958158a1896be9d8b1c917106))
+* **deps:** update dependency fastapi to v0.138.2 ([#344](https://github.com/CloudRader/reservium-api/issues/344)) ([9b7df6f](https://github.com/CloudRader/reservium-api/commit/9b7df6f0b5967146354b44488fa984b544e12cff))
+* **deps:** update dependency fastapi to v0.139.0 ([#347](https://github.com/CloudRader/reservium-api/issues/347)) ([47d665e](https://github.com/CloudRader/reservium-api/commit/47d665e5b82da674faa8e79019cf7bbc5afe8f42))
+* **deps:** update dependency uvicorn to v0.50.0 ([#351](https://github.com/CloudRader/reservium-api/issues/351)) ([ef6e7d5](https://github.com/CloudRader/reservium-api/commit/ef6e7d52bac0c4407cf26364249d6ee8922ddf38))
+* **deps:** update dependency uvicorn to v0.50.1 ([#355](https://github.com/CloudRader/reservium-api/issues/355)) ([b04ecb2](https://github.com/CloudRader/reservium-api/commit/b04ecb203b3cb85e6eb33e7c8c77e2d9c117e9c3))
+* **deps:** update dependency uvicorn to v0.50.2 ([#356](https://github.com/CloudRader/reservium-api/issues/356)) ([5b6395d](https://github.com/CloudRader/reservium-api/commit/5b6395d91a8a1134b7e9bf87b6deb1cbacffd092))
+* **deps:** update dependency uvicorn to v0.51.0 ([#365](https://github.com/CloudRader/reservium-api/issues/365)) ([e952f19](https://github.com/CloudRader/reservium-api/commit/e952f196543f0d398fb376b5c7cfa98cc27d67fd))
+* **dishka:** fixes after migration to dishka in api layer ([9c8d5b4](https://github.com/CloudRader/reservium-api/commit/9c8d5b45c07226b0ff64bc5b16f722d82f5d283d))
+
+
+### 🧹 Refactors
+
+* **calendar_provider:** add interface for CalendarProvider move ([c421f6a](https://github.com/CloudRader/reservium-api/commit/c421f6a6048637cd3e82c7cd59c22937cedd5339))
+* **config:** decouple mail config from fastapi-mail library ([e2f7432](https://github.com/CloudRader/reservium-api/commit/e2f74321ff4598ee5ad2edc99dc18027712103e1))
+* **config:** do configs more supportable and clean ([89433e3](https://github.com/CloudRader/reservium-api/commit/89433e38992586b65b4c352fa49997e6a8fee4b3))
+* **config:** split configs for every component ([8a7bda1](https://github.com/CloudRader/reservium-api/commit/8a7bda125fb7c8dcbf30a173a69641baf25c76c0))
+* **container:** separate containers and update dependencies ([6ccc0c6](https://github.com/CloudRader/reservium-api/commit/6ccc0c63d26c893441d62faa3f937e504aa346c7))
+* **core:** rename application to bootstrap ([608441b](https://github.com/CloudRader/reservium-api/commit/608441be7b63d8d88a8467de76f3bdc6b986bac4))
+* **database:** create provider and di with dishka, remove custom ([16a9073](https://github.com/CloudRader/reservium-api/commit/16a90730368a5932ee2b58808e3b535c13361400))
+* **email:** move under infra, do proper di wire with dishka ([755e78b](https://github.com/CloudRader/reservium-api/commit/755e78b45156db9f8b3242267791e08175d5e46e))
+* **google:** cleanup google provider for proper di wire ([555bf1a](https://github.com/CloudRader/reservium-api/commit/555bf1a3562192643c029cd65fe799295ea1a54d))
+* **google:** move google calendar dtos under infrastructure ([5acde4f](https://github.com/CloudRader/reservium-api/commit/5acde4f3819aa3dc3a7097c7c9be8ee94e1b9b5b))
+* **identity_provider:** add interface for IdentityProvider move ([9a03c55](https://github.com/CloudRader/reservium-api/commit/9a03c558da9e11cfdb767ad5612491cfb1c1ca46))
+* **migrations:** move under infra ([61dd092](https://github.com/CloudRader/reservium-api/commit/61dd09288fe98a6e5350ff88fc3066d4918ac305))
+* **models:** move sqlalchemy under infrastracture ([7707fef](https://github.com/CloudRader/reservium-api/commit/7707fef055d2885f9c75b62ed9dcfd83a0b485a0))
+* **openid:** cleanup openid provider for proper di wire ([838df9b](https://github.com/CloudRader/reservium-api/commit/838df9b1f5fc6689cfca6ef9b3d91ce681412db2))
+* **openid:** move openid dtos under infrastructure ([5af38b9](https://github.com/CloudRader/reservium-api/commit/5af38b9f177faf40a60ea66c71865d3daf4f9c69))
+* **ports:** rename interfaces to ports ([880aafa](https://github.com/CloudRader/reservium-api/commit/880aafaaff2587b82d6d92d4e0b9b33d90e057ff))
+* **repositories:** add adapters for repositories under ([9866ce4](https://github.com/CloudRader/reservium-api/commit/9866ce4e99628989717f2daa7e8b16c3b0e6a199))
+* **repositories:** add interfaces (ports) for repositories ([37fc6b8](https://github.com/CloudRader/reservium-api/commit/37fc6b89528f3df22546b5155ecebd82f087fb4b))
+* **repositories:** remove depricated crud repositories and change ([e1d1bd3](https://github.com/CloudRader/reservium-api/commit/e1d1bd35d090f0e2a1067957c921b77e0121060f))
+* **repositories:** rename interfaces class names ([90bb16b](https://github.com/CloudRader/reservium-api/commit/90bb16bb0fd6bca2e954472652e7e7a07a3e5ecf))
+* **routers:** migrate to di with dishka in api layer ([ed6e692](https://github.com/CloudRader/reservium-api/commit/ed6e692bcd08005452391ebd0427ff13129d8d69))
+* **schemas:** move api dtos under api ([3cd303e](https://github.com/CloudRader/reservium-api/commit/3cd303e134208f33a052ab8a951c3701da2b9fee))
+* **schemas:** move domain schemas under application layer ([311a0dc](https://github.com/CloudRader/reservium-api/commit/311a0dcbb091cdd002c09d730860113063f35c73))
+* **scripts:** remove depricated and move virt envs scripts under ([cff34c6](https://github.com/CloudRader/reservium-api/commit/cff34c62507408b395743288234af9d2a6185d16))
+* **services:** move under application and remove "services" prefix ([f14eefd](https://github.com/CloudRader/reservium-api/commit/f14eefd5fdf4c79a23fd16daf48d51f1c000a6ab))
+
+
+### 🧪 Tests & Quality
+
+* **pytest:** remove test_services package ([e0031d3](https://github.com/CloudRader/reservium-api/commit/e0031d3595925394c9d59b00e9608efb4cbb6c29))
+
 ## [2.4.3](https://github.com/CloudRader/reservium-api/compare/v2.4.2...v2.4.3) (2026-07-02)
 
 
