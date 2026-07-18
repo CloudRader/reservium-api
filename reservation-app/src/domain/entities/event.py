@@ -1,26 +1,20 @@
 """Event domain entity."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, final
+from typing import final
 from uuid import UUID
 
+from domain.entities.base import BaseEntity
 from domain.enums import EventState
 from domain.exceptions import DomainValidationError
-
-if TYPE_CHECKING:
-    from .calendar import Calendar
-    from .user import User
 
 
 @final
 @dataclass(frozen=True, slots=True, kw_only=True)
-class Event:
+class Event(BaseEntity):
     """Domain Entity representing an Event."""
 
-    id: UUID
     reservation_start: datetime
     reservation_end: datetime
     purpose: str
@@ -33,11 +27,6 @@ class Event:
     event_state: EventState = EventState.NOT_APPROVED
     provider_id: str | None = None
     additional_services: list[str] | None = None
-    created_at: datetime | None = None
-    updated_at: datetime | None = None
-    deleted_at: datetime | None = None
-    user: User | None = None
-    calendar: Calendar | None = None
 
     def __post_init__(self) -> None:
         """Validate business invariants of Event."""
