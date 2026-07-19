@@ -26,6 +26,13 @@ from fastapi_mail import ConnectionConfig, FastMail
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from infrastructure.calendar.google.provider import GoogleCalendarProvider
+from infrastructure.database.sqlalchemy.mappers import (
+    CalendarDBMapper,
+    EventDBMapper,
+    MiniServiceDBMapper,
+    ReservationServiceDBMapper,
+    UserDBMapper,
+)
 from infrastructure.database.sqlalchemy.repositories import (
     SQLAlchemyCalendarRepository,
     SQLAlchemyEventRepository,
@@ -88,31 +95,42 @@ class RepositoryProvider(Provider):
     """Provides repository implementations."""
 
     @provide(scope=Scope.REQUEST)
-    def get_calendar_repository(self, session: AsyncSession) -> CalendarRepository:
+    def get_calendar_repository(
+        self, session: AsyncSession, mapper: CalendarDBMapper
+    ) -> CalendarRepository:
         """Provide a CalendarRepository implementation."""
-        return SQLAlchemyCalendarRepository(db=session)
+        return SQLAlchemyCalendarRepository(db=session, mapper=mapper)
 
     @provide(scope=Scope.REQUEST)
-    def get_event_repository(self, session: AsyncSession) -> EventRepository:
+    def get_event_repository(self, session: AsyncSession, mapper: EventDBMapper) -> EventRepository:
         """Provide an EventRepository implementation."""
-        return SQLAlchemyEventRepository(db=session)
+        return SQLAlchemyEventRepository(db=session, mapper=mapper)
 
     @provide(scope=Scope.REQUEST)
-    def get_mini_service_repository(self, session: AsyncSession) -> MiniServiceRepository:
+    def get_mini_service_repository(
+        self, session: AsyncSession, mapper: MiniServiceDBMapper
+    ) -> MiniServiceRepository:
         """Provide a MiniServiceRepository implementation."""
-        return SQLAlchemyMiniServiceRepository(db=session)
+        return SQLAlchemyMiniServiceRepository(db=session, mapper=mapper)
 
     @provide(scope=Scope.REQUEST)
     def get_reservation_service_repository(
-        self, session: AsyncSession
+        self,
+        session: AsyncSession,
+        mapper: ReservationServiceDBMapper,
+        event_mapper: EventDBMapper,
     ) -> ReservationServiceRepository:
         """Provide a ReservationServiceRepository implementation."""
-        return SQLAlchemyReservationServiceRepository(db=session)
+        return SQLAlchemyReservationServiceRepository(
+            db=session, mapper=mapper, event_mapper=event_mapper
+        )
 
     @provide(scope=Scope.REQUEST)
-    def get_user_repository(self, session: AsyncSession) -> UserRepository:
+    def get_user_repository(
+        self, session: AsyncSession, mapper: UserDBMapper, event_mapper: EventDBMapper
+    ) -> UserRepository:
         """Provide a UserRepository implementation."""
-        return SQLAlchemyUserRepository(db=session)
+        return SQLAlchemyUserRepository(db=session, mapper=mapper, event_mapper=event_mapper)
 
 
 class ServiceProvider(Provider):
@@ -246,3 +264,32 @@ class ExternalProvidersProvider(Provider):
             facility_manager_email=settings.mail.dormitory_head_email,
             organisation_name=settings.app.organization_name,
         )
+
+
+class MapperProvider(Provider):
+    """Provide various mapper implementations for different layers."""
+
+    @provide(scope=Scope.APP)
+    def get_calendar_mapper(self) -> CalendarDBMapper:
+        """Provide a CalendarDBMapper instance."""
+        return CalendarDBMapper()
+
+    @provide(scope=Scope.APP)
+    def get_event_mapper(self) -> EventDBMapper:
+        """Provide an EventDBMapper instance."""
+        return EventDBMapper()
+
+    @provide(scope=Scope.APP)
+    def get_mini_service_mapper(self) -> MiniServiceDBMapper:
+        """Provide a MiniServiceDBMapper instance."""
+        return MiniServiceDBMapper()
+
+    @provide(scope=Scope.APP)
+    def get_reservation_service_mapper(self) -> ReservationServiceDBMapper:
+        """Provide a ReservationServiceDBMapper instance."""
+        return ReservationServiceDBMapper()
+
+    @provide(scope=Scope.APP)
+    def get_user_mapper(self) -> UserDBMapper:
+        """Provide a UserDBMapper instance."""
+        return UserDBMapper()

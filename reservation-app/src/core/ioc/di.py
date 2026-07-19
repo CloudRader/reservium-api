@@ -3,6 +3,7 @@
 from core.ioc.providers import (
     DatabaseProvider,
     ExternalProvidersProvider,
+    MapperProvider,
     RepositoryProvider,
     ServiceProvider,
     SettingsProvider,
@@ -22,4 +23,5 @@ def get_providers() -> list[Provider]:
         ExternalProvidersProvider(),
         RepositoryProvider(),
         ServiceProvider(),
+        MapperProvider(),
     ]
