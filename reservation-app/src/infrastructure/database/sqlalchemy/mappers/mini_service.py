@@ -36,8 +36,5 @@ class MiniServiceDBMapper:
             deleted_at=model.deleted_at,
             name=model.name,
             reservation_service_id=model.reservation_service_id,
-            access_group=model.access_group,
-            room_id=model.room_id,
-            lockers_id=model.lockers_id,
             calendar_ids=[c.id for c in model.calendars or []],
         )

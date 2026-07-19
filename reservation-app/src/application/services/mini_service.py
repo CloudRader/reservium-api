@@ -55,21 +55,6 @@ class AbstractMiniServiceService(
         """
 
     @abstractmethod
-    async def get_by_room_id(
-        self,
-        room_id: int,
-        include_removed: bool = False,
-    ) -> MiniServiceDetail:
-        """
-        Retrieve a Mini Service instance by its room id.
-
-        :param room_id: The room id of the Mini Service.
-        :param include_removed: Include removed object or not.
-
-        :return: The Mini Service instance.
-        """
-
-    @abstractmethod
     async def get_reservation_service(
         self,
         id_: UUID,
@@ -102,16 +87,6 @@ class MiniServiceService(AbstractMiniServiceService):
         mini_service = await self.repo.get_by_name(name, include_removed)
         if mini_service is None:
             raise EntityNotFoundError(self.entity_name, name)
-        return mini_service
-
-    async def get_by_room_id(
-        self,
-        room_id: int,
-        include_removed: bool = False,
-    ) -> MiniServiceDetail:
-        mini_service = await self.repo.get_by_room_id(room_id, include_removed)
-        if mini_service is None:
-            raise EntityNotFoundError(self.entity_name, room_id)
         return mini_service
 
     async def get_reservation_service(

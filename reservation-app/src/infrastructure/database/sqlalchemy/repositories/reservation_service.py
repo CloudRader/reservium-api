@@ -89,18 +89,6 @@ class SQLAlchemyReservationServiceRepository(
         db_obj = result.scalar_one_or_none()
         return self.mapper.to_entity(db_obj) if db_obj else None
 
-    async def get_by_room_id(
-        self,
-        room_id: int,
-        include_removed: bool = False,
-    ) -> ReservationService | None:
-        stmt = select(self.model).filter(self.model.room_id == room_id)
-        if include_removed:
-            stmt = stmt.execution_options(include_deleted=True)
-        result = await self.db.execute(stmt)
-        db_obj = result.scalar_one_or_none()
-        return self.mapper.to_entity(db_obj) if db_obj else None
-
     async def get_all_aliases(self) -> list[str]:
         stmt = select(self.model.alias)
         result = await self.db.execute(stmt)

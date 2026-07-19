@@ -10,10 +10,6 @@ from pydantic import BaseModel, ConfigDict, Field
 class MiniServiceBase(BaseModel):
     """Shared properties of MiniService."""
 
-    lockers_id: list[int] = Field(default_factory=list)
-    access_group: str | None = None
-    room_id: int | None = None
-
 
 class MiniServiceCreate(MiniServiceBase):
     """Properties to receive via API on creation."""

@@ -1,6 +1,6 @@
 """ReservationService domain entity."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import final
 
 from domain.entities.base import BaseEntity
@@ -17,9 +17,6 @@ class ReservationService(BaseEntity):
     contact_mail: str
     public: bool = True
     web: str
-    access_group: str | None = None
-    room_id: int | None = None
-    lockers_id: list[int] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         """Validate business invariants of ReservationService."""

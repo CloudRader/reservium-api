@@ -40,21 +40,6 @@ class MiniServiceRepository(
         """
 
     @abstractmethod
-    async def get_by_room_id(
-        self,
-        room_id: int,
-        include_removed: bool = False,
-    ) -> MiniService | None:
-        """
-        Retrieve a MiniService instance by its room id.
-
-        :param room_id: The room id of the MiniService.
-        :param include_removed: Include removed object or not.
-
-        :return: The MiniService instance if found, None otherwise.
-        """
-
-    @abstractmethod
     async def get_names_by_reservation_service_id(
         self,
         reservation_service_id: UUID,

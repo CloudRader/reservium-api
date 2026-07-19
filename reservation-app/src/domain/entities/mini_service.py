@@ -15,9 +15,6 @@ class MiniService(BaseEntity):
 
     name: str
     reservation_service_id: UUID
-    access_group: str | None = None
-    room_id: int | None = None
-    lockers_id: list[int] = field(default_factory=list)
     calendar_ids: list[UUID] = field(default_factory=list)
 
     def __post_init__(self) -> None:

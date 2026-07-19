@@ -71,21 +71,6 @@ class AbstractReservationServiceService(
         """
 
     @abstractmethod
-    async def get_by_room_id(
-        self,
-        room_id: int,
-        include_removed: bool = False,
-    ) -> ReservationServiceDetail:
-        """
-        Retrieve a Reservation Service instance by its room id.
-
-        :param room_id: The room id of the Reservation Service.
-        :param include_removed: Include removed object or not.
-
-        :return: The Reservation Service instance.
-        """
-
-    @abstractmethod
     async def get_public_services(
         self,
         include_removed: bool = False,
@@ -197,16 +182,6 @@ class ReservationServiceService(AbstractReservationServiceService):
         reservation_service = await self.repo.get_by_name(name, include_removed)
         if reservation_service is None:
             raise EntityNotFoundError(self.entity_name, name)
-        return reservation_service
-
-    async def get_by_room_id(
-        self,
-        room_id: int,
-        include_removed: bool = False,
-    ) -> ReservationServiceDetail:
-        reservation_service = await self.repo.get_by_room_id(room_id, include_removed)
-        if reservation_service is None:
-            raise EntityNotFoundError(self.entity_name, room_id)
         return reservation_service
 
     async def get_public_services(

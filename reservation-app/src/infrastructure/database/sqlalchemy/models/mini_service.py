@@ -6,8 +6,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from infrastructure.database.sqlalchemy.models.base import Base
-from sqlalchemy import ForeignKey, Integer
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -19,8 +18,6 @@ class MiniService(Base):
     """Mini service model to create and manipulate mini service entity in the database."""
 
     name: Mapped[str] = mapped_column(nullable=False)
-    access_group: Mapped[str] = mapped_column(nullable=True)
-    room_id: Mapped[int] = mapped_column(nullable=True)
     reservation_service_id: Mapped[UUID] = mapped_column(ForeignKey("reservation_services.id"))
 
     reservation_service: Mapped[ReservationService] = relationship(
@@ -30,9 +27,4 @@ class MiniService(Base):
         secondary="calendar_mini_service_associations",
         back_populates="mini_services",
         lazy="selectin",
-    )
-    lockers_id: Mapped[list[int]] = mapped_column(
-        ARRAY(Integer),
-        nullable=False,
-        default=list,
     )

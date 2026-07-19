@@ -5,8 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from infrastructure.database.sqlalchemy.models.base import Base
-from sqlalchemy import Integer
-from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -22,8 +20,6 @@ class ReservationService(Base):
     public: Mapped[bool] = mapped_column(nullable=False, default=True)
     web: Mapped[str] = mapped_column(nullable=True)
     contact_mail: Mapped[str] = mapped_column(nullable=False)
-    access_group: Mapped[str] = mapped_column(nullable=True)
-    room_id: Mapped[int] = mapped_column(nullable=True)
 
     calendars: Mapped[list[Calendar]] = relationship(
         back_populates="reservation_service",
@@ -32,9 +28,4 @@ class ReservationService(Base):
     mini_services: Mapped[list[MiniService]] = relationship(
         back_populates="reservation_service",
         lazy="selectin",
-    )
-    lockers_id: Mapped[list[int]] = mapped_column(
-        ARRAY(Integer),
-        nullable=False,
-        default=list,
     )

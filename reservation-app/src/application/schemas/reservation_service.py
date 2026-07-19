@@ -11,9 +11,6 @@ class ReservationServiceBase(BaseModel):
 
     web: str | None = None
     public: bool | None = None
-    lockers_id: list[int] = Field(default_factory=list)
-    access_group: str | None = None
-    room_id: int | None = None
 
 
 class ReservationServiceCreate(ReservationServiceBase):

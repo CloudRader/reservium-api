@@ -39,9 +39,6 @@ class ReservationServiceDBMapper:
             contact_mail=model.contact_mail,
             public=model.public,
             web=model.web,
-            access_group=model.access_group,
-            room_id=model.room_id,
-            lockers_id=model.lockers_id,
         )
 
     def to_model(self, entity: ReservationService) -> ReservationServiceModel:
@@ -58,9 +55,6 @@ class ReservationServiceDBMapper:
             contact_mail=entity.contact_mail,
             public=entity.public,
             web=entity.web,
-            access_group=entity.access_group,
-            room_id=entity.room_id,
-            lockers_id=entity.lockers_id,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
             deleted_at=entity.deleted_at,
