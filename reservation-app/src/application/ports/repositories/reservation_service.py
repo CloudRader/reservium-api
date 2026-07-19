@@ -1,8 +1,8 @@
 """
-Define CRUD operations for the ReservationService model.
+Define the repository port interface for ReservationService domain entities.
 
-Includes an abstract base class (AbstractCRUDReservationService) and a concrete
-implementation (CRUDReservationService) using SQLAlchemy.
+This module establishes the contract for CRUD and query operations on ReservationService
+entities, decoupled from database-specific implementation details.
 """
 
 from abc import ABC, abstractmethod
@@ -11,11 +11,8 @@ from uuid import UUID
 
 from application.ports.repositories import BaseRepository
 from application.schemas import ReservationServiceCreate, ReservationServiceUpdate
-from infrastructure.database.sqlalchemy.models import (
-    EventModel,
-    EventState,
-    ReservationServiceModel,
-)
+from domain.entities import Event, ReservationService
+from domain.enums import EventState
 
 
 @runtime_checkable
@@ -30,17 +27,17 @@ T = TypeVar("T", bound=HasReservationServiceId)
 
 class ReservationServiceRepository(
     BaseRepository[
-        ReservationServiceModel,
+        ReservationService,
         ReservationServiceCreate,
         ReservationServiceUpdate,
     ],
     ABC,
 ):
     """
-    Abstract class for CRUD operations specific to the ReservationService model.
+    Repository port interface for ReservationService domain entities.
 
-    It extends the generic CRUDBase class and defines additional abstract methods
-    for querying and manipulating ReservationService instances.
+    Establishes abstract operations specific to ReservationServices, extending the base
+    repository interface.
     """
 
     @abstractmethod
@@ -48,14 +45,14 @@ class ReservationServiceRepository(
         self,
         name: str,
         include_removed: bool = False,
-    ) -> ReservationServiceModel | None:
+    ) -> ReservationService | None:
         """
-        Retrieve a Reservation Service instance by its name.
+        Retrieve a ReservationService instance by its name.
 
-        :param name: The name of the Reservation Service.
+        :param name: The name of the ReservationService.
         :param include_removed: Include removed object or not.
 
-        :return: The Reservation Service instance if found, None otherwise.
+        :return: The ReservationService instance if found, None otherwise.
         """
 
     @abstractmethod
@@ -63,14 +60,14 @@ class ReservationServiceRepository(
         self,
         alias: str,
         include_removed: bool = False,
-    ) -> ReservationServiceModel | None:
+    ) -> ReservationService | None:
         """
-        Retrieve a Reservation Services instance by its service alias.
+        Retrieve a ReservationService instance by its service alias.
 
-        :param alias: The alias of the Reservation Service.
+        :param alias: The alias of the ReservationService.
         :param include_removed: Include removed object or not.
 
-        :return: The Reservation Service instance if found, None otherwise.
+        :return: The ReservationService instance if found, None otherwise.
         """
 
     @abstractmethod
@@ -78,20 +75,20 @@ class ReservationServiceRepository(
         self,
         room_id: int,
         include_removed: bool = False,
-    ) -> ReservationServiceModel | None:
+    ) -> ReservationService | None:
         """
-        Retrieve a Reservation Service instance by its room id.
+        Retrieve a ReservationService instance by its room id.
 
-        :param room_id: The room id of the Reservation Service.
+        :param room_id: The room id of the ReservationService.
         :param include_removed: Include removed object or not.
 
-        :return: The Reservation Service instance if found, None otherwise.
+        :return: The ReservationService instance if found, None otherwise.
         """
 
     @abstractmethod
     async def get_all_aliases(self) -> list[str]:
         """
-        Retrieve all aliases from all Reservation Services.
+        Retrieve all aliases from all ReservationServices.
 
         :return: list of aliases.
         """
@@ -100,13 +97,13 @@ class ReservationServiceRepository(
     async def get_public_services(
         self,
         include_removed: bool = False,
-    ) -> list[ReservationServiceModel]:
+    ) -> list[ReservationService]:
         """
-        Retrieve a public Reservation Service instance.
+        Retrieve a public ReservationService instance.
 
         :param include_removed: Include removed object or not.
 
-        :return: The public Reservation Service instance if found, None otherwise.
+        :return: The public ReservationService instance if found, None otherwise.
         """
 
     @abstractmethod
@@ -120,10 +117,10 @@ class ReservationServiceRepository(
         Fetch related entities by reservation_service_id.
 
         :param model: The SQLAlchemy model class to query.
-        :param reservation_service_id: UUID of the Reservation Service.
+        :param reservation_service_id: UUID of the ReservationService.
         :param include_removed: Whether to include soft-deleted records.
 
-        :return: List of related entities of type `model`.
+        :return: List of related entities.
         """
 
     @abstractmethod
@@ -131,12 +128,12 @@ class ReservationServiceRepository(
         self,
         reservation_service_id: UUID,
         event_state: EventState | None = None,
-    ) -> list[EventModel]:
+    ) -> list[Event]:
         """
         Fetch related events by reservation_service_id.
 
-        :param reservation_service_id: UUID of the Reservation Service.
+        :param reservation_service_id: UUID of the ReservationService.
         :param event_state: Event state of the event.
 
-        :return: List of related events of type `model`.
+        :return: List of related events.
         """

@@ -1,8 +1,8 @@
 """
-Define CRUD operations for the MiniService model.
+Define the repository port interface for MiniService domain entities.
 
-Includes an abstract base class (AbstractCRUDMiniService) and a concrete
-implementation (CRUDMiniService) using SQLAlchemy.
+This module establishes the contract for CRUD and query operations on MiniService
+entities, decoupled from database-specific implementation details.
 """
 
 from abc import ABC, abstractmethod
@@ -10,18 +10,18 @@ from uuid import UUID
 
 from application.ports.repositories import BaseRepository
 from application.schemas import MiniServiceCreate, MiniServiceUpdate
-from infrastructure.database.sqlalchemy.models import MiniServiceModel
+from domain.entities import MiniService
 
 
 class MiniServiceRepository(
-    BaseRepository[MiniServiceModel, MiniServiceCreate, MiniServiceUpdate],
+    BaseRepository[MiniService, MiniServiceCreate, MiniServiceUpdate],
     ABC,
 ):
     """
-    Abstract class for CRUD operations specific to the MiniService model.
+    Repository port interface for MiniService domain entities.
 
-    It extends the generic CRUDBase class and defines additional abstract methods
-    for querying and manipulating MiniService instances.
+    Establishes abstract operations specific to MiniServices, extending the base
+    repository interface.
     """
 
     @abstractmethod
@@ -29,14 +29,14 @@ class MiniServiceRepository(
         self,
         name: str,
         include_removed: bool = False,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         """
         Retrieve a MiniService instance by its name.
 
-        :param name: The name of the Mini Service.
+        :param name: The name of the MiniService.
         :param include_removed: Include removed object or not.
 
-        :return: The Mini Service instance if found, None otherwise.
+        :return: The MiniService instance if found, None otherwise.
         """
 
     @abstractmethod
@@ -44,14 +44,14 @@ class MiniServiceRepository(
         self,
         room_id: int,
         include_removed: bool = False,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         """
-        Retrieve a Mini Service instance by its room id.
+        Retrieve a MiniService instance by its room id.
 
-        :param room_id: The room id of the Mini Service.
+        :param room_id: The room id of the MiniService.
         :param include_removed: Include removed object or not.
 
-        :return: The Mini Service instance if found, None otherwise.
+        :return: The MiniService instance if found, None otherwise.
         """
 
     @abstractmethod
@@ -60,7 +60,7 @@ class MiniServiceRepository(
         reservation_service_id: UUID,
     ) -> list[str]:
         """
-        Retrieve all names from all Mini Services by reservation service uuid.
+        Retrieve all names from all MiniServices by reservation service uuid.
 
         :param reservation_service_id: The uuid of the reservation service.
 
@@ -73,7 +73,7 @@ class MiniServiceRepository(
         reservation_service_id: UUID,
     ) -> list[UUID]:
         """
-        Retrieve all ids from all Mini Services by reservation service uuid.
+        Retrieve all ids from all MiniServices by reservation service uuid.
 
         :param reservation_service_id: The uuid of the reservation service.
 

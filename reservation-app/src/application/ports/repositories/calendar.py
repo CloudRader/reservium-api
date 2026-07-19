@@ -1,8 +1,8 @@
 """
-Define CRUD operations for the Calendar model.
+Define the repository port interface for Calendar domain entities.
 
-Includes an abstract base class (AbstractCRUDCalendar) and a concrete
-implementation (CRUDCalendar) using SQLAlchemy.
+This module establishes the contract for CRUD and query operations on Calendar
+entities, decoupled from database-specific implementation details.
 """
 
 from abc import ABC, abstractmethod
@@ -11,18 +11,18 @@ from uuid import UUID
 
 from application.ports.repositories import BaseRepository
 from application.schemas import CalendarCreate, CalendarUpdate
-from infrastructure.database.sqlalchemy.models import CalendarModel, MiniServiceModel
+from domain.entities import Calendar, MiniService
 
 
 class CalendarRepository(
-    BaseRepository[CalendarModel, CalendarCreate, CalendarUpdate],
+    BaseRepository[Calendar, CalendarCreate, CalendarUpdate],
     ABC,
 ):
     """
-    Abstract class for CRUD operations specific to the Calendar model.
+    Repository port interface for Calendar domain entities.
 
-    It extends the generic CRUDBase class and defines additional abstract methods
-    for querying and manipulating Calendar instances.
+    Establishes abstract operations specific to Calendars, extending the base
+    repository interface.
     """
 
     @abstractmethod
@@ -30,7 +30,7 @@ class CalendarRepository(
         self,
         id_: UUID,
         include_removed: bool = False,
-    ) -> CalendarModel | None:
+    ) -> Calendar | None:
         """
         Retrieve a single record by its id_ with collisions.
 
@@ -42,29 +42,29 @@ class CalendarRepository(
     async def create_with_mini_services_and_collisions(
         self,
         calendar_create: CalendarCreate | dict[str, Any],
-        mini_services: list[MiniServiceModel],
-    ) -> CalendarModel:
+        mini_services: list[MiniService],
+    ) -> Calendar:
         """
         Create a new Calendar instance with associated mini services and collisions.
 
         This method extends the base create method by:
-        - Attaching multiple MiniServiceModel instances to the created calendar.
+        - Attaching multiple MiniService instances to the created calendar.
         - Creating symmetric collision relationships with other Calendar instances
           as specified in the input.
 
         :param calendar_create: Data used to create the Calendar (schema or dict).
-        :param mini_services: List of MiniServiceModel objects to associate with the calendar.
+        :param mini_services: List of MiniService objects to associate with the calendar.
 
-        :return: The created CalendarModel instance with mini services and collisions attached.
+        :return: The created Calendar instance with mini services and collisions attached.
         """
 
     @abstractmethod
     async def update_with_mini_services_and_collisions(
         self,
-        db_obj: CalendarModel,
+        obj: Calendar,
         obj_in: CalendarUpdate | dict[str, Any],
-        mini_services: list[MiniServiceModel],
-    ) -> CalendarModel:
+        mini_services: list[MiniService],
+    ) -> Calendar:
         """
         Update an existing Calendar instance including mini services and collisions.
 
@@ -73,11 +73,11 @@ class CalendarRepository(
         - Updating symmetric collision relationships for the calendar.
           Existing collisions are removed and replaced according to the input.
 
-        :param db_obj: The existing CalendarModel instance to update.
+        :param obj: The existing Calendar instance to update.
         :param obj_in: Data to update the Calendar (schema or dict).
-        :param mini_services: List of MiniServiceModel objects to associate with the calendar.
+        :param mini_services: List of MiniService objects to associate with the calendar.
 
-        :return: The updated CalendarModel instance with updated mini services and collisions.
+        :return: The updated Calendar instance with updated mini services and collisions.
         """
 
     @abstractmethod
@@ -85,7 +85,7 @@ class CalendarRepository(
         self,
         reservation_type: str,
         include_removed: bool = False,
-    ) -> CalendarModel | None:
+    ) -> Calendar | None:
         """
         Retrieve a Calendar instance by its reservation type.
 
@@ -100,7 +100,7 @@ class CalendarRepository(
         self,
         provider_id: str,
         include_removed: bool = False,
-    ) -> CalendarModel | None:
+    ) -> Calendar | None:
         """
         Retrieve a Calendar instance by its provider ID.
 

@@ -7,18 +7,13 @@ of any specific database infrastructure.
 """
 
 from abc import ABC, abstractmethod
-from typing import TypeVar
 from uuid import UUID
 
-from infrastructure.database.sqlalchemy.models.base import Base
+from domain.entities import BaseEntity
 from pydantic import BaseModel
 
-Model = TypeVar("Model", bound=Base)
-CreateSchema = TypeVar("CreateSchema", bound=BaseModel)
-UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
 
-
-class BaseRepository[Model, CreateSchema, UpdateSchema](ABC):
+class BaseRepository[Entity: BaseEntity, CreateSchema: BaseModel, UpdateSchema: BaseModel](ABC):
     """
     A generic repository interface defining standard CRUD operations.
 
@@ -32,7 +27,7 @@ class BaseRepository[Model, CreateSchema, UpdateSchema](ABC):
         self,
         id_: UUID,
         include_removed: bool = False,
-    ) -> Model | None:
+    ) -> Entity | None:
         """
         Retrieve a single record by its ID.
 
@@ -41,13 +36,13 @@ class BaseRepository[Model, CreateSchema, UpdateSchema](ABC):
         :param id_: The UUID of the record to retrieve.
         :param include_removed: Whether to include soft-deleted records.
 
-        :return: The Model instance if found, otherwise None.
+        :return: The Entity instance if found, otherwise None.
         """
 
     @abstractmethod
     async def get_list(
         self, skip: int = 0, limit: int = 10, *, include_removed: bool = False
-    ) -> list[Model]:
+    ) -> list[Entity]:
         """
         Retrieve a paginated list of objects from the database.
 
@@ -57,11 +52,11 @@ class BaseRepository[Model, CreateSchema, UpdateSchema](ABC):
         :param limit: Maximum number of records to return.
         :param include_removed: Whether to include soft-deleted records.
 
-        :returns: List of Model instances.
+        :returns: List of Entity instances.
         """
 
     @abstractmethod
-    async def get_all(self, include_removed: bool = False) -> list[Model]:
+    async def get_all(self, include_removed: bool = False) -> list[Entity]:
         """
         Retrieve all records without pagination.
 
@@ -69,21 +64,21 @@ class BaseRepository[Model, CreateSchema, UpdateSchema](ABC):
 
         :param include_removed: Whether to include soft-deleted records.
 
-        :return: List of all Model instances.
+        :return: List of all Entity instances.
         """
 
     @abstractmethod
-    async def create(self, obj_in: CreateSchema) -> Model:
+    async def create(self, obj_in: CreateSchema) -> Entity:
         """
         Create a new record from the input schema.
 
         :param obj_in: The schema containing data for the new record.
 
-        :return: The newly created Model instance.
+        :return: The newly created Entity instance.
         """
 
     @abstractmethod
-    async def create_bulk(self, objs_in: list[CreateSchema]) -> list[Model]:
+    async def create_bulk(self, objs_in: list[CreateSchema]) -> list[Entity]:
         """
         Create multiple objects in a single transaction.
 
@@ -96,29 +91,29 @@ class BaseRepository[Model, CreateSchema, UpdateSchema](ABC):
     async def update(
         self,
         *,
-        db_obj: Model,
+        db_obj: Entity,
         obj_in: UpdateSchema,
-    ) -> Model:
+    ) -> Entity:
         """
         Update an existing record with data from the input schema.
 
         :param db_obj: The existing database model instance to update.
         :param obj_in: The schema containing the updated data.
 
-        :return: The updated Model instance.
+        :return: The updated Entity instance.
         """
 
     @abstractmethod
     async def restore(
         self,
-        obj: Model,
-    ) -> Model:
+        obj: Entity,
+    ) -> Entity:
         """
         Restore a previously soft-deleted object.
 
         :param obj: The soft-deleted model instance to restore.
 
-        :return: The restored Model instance.
+        :return: The restored Entity instance.
         """
 
     @abstractmethod
@@ -132,7 +127,7 @@ class BaseRepository[Model, CreateSchema, UpdateSchema](ABC):
         """
 
     @abstractmethod
-    async def soft_remove(self, obj: Model) -> Model:
+    async def soft_remove(self, obj: Entity) -> Entity:
         """
         Soft-remove a record.
 
@@ -141,7 +136,7 @@ class BaseRepository[Model, CreateSchema, UpdateSchema](ABC):
 
         :param obj: The model instance to soft-remove.
 
-        :return: The updated Model instance marked as deleted.
+        :return: The updated Entity instance marked as deleted.
         """
 
     @abstractmethod

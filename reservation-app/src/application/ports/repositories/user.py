@@ -1,8 +1,8 @@
 """
-Define CRUD operations for the User model.
+Define the repository port interface for User domain entities.
 
-Includes an abstract base class (AbstractCRUDUser) and a concrete
-implementation (CRUDUser) using SQLAlchemy.
+This module establishes the contract for CRUD and query operations on User
+entities, decoupled from database-specific implementation details.
 """
 
 from abc import ABC, abstractmethod
@@ -10,19 +10,19 @@ from uuid import UUID
 
 from application.ports.repositories import BaseRepository
 from application.schemas import UserCreate, UserUpdate
-from infrastructure.database.sqlalchemy.models import EventModel, UserModel
+from domain.entities import Event, User
 
 
-class UserRepository(BaseRepository[UserModel, UserCreate, UserUpdate], ABC):
+class UserRepository(BaseRepository[User, UserCreate, UserUpdate], ABC):
     """
-    Abstract class for CRUD operations specific to the User model.
+    Repository port interface for User domain entities.
 
-    It extends the generic CRUDBase class and defines additional abstract methods
-    for querying and manipulating User instances.
+    Establishes abstract operations specific to Users, extending the base
+    repository interface.
     """
 
     @abstractmethod
-    async def get_by_username(self, username: str) -> UserModel | None:
+    async def get_by_username(self, username: str) -> User | None:
         """
         Retrieve a User instance by its username.
 
@@ -32,7 +32,7 @@ class UserRepository(BaseRepository[UserModel, UserCreate, UserUpdate], ABC):
         """
 
     @abstractmethod
-    async def get_by_provider_id(self, provider_id: str) -> UserModel | None:
+    async def get_by_provider_id(self, provider_id: str) -> User | None:
         """
         Retrieve a User instance by its provider_id.
 
@@ -48,7 +48,7 @@ class UserRepository(BaseRepository[UserModel, UserCreate, UserUpdate], ABC):
         page: int = 1,
         limit: int = 20,
         past: bool | None = None,
-    ) -> list[EventModel]:
+    ) -> list[Event]:
         """
         Fetch related events for a specific user with pagination and time filtering.
 
@@ -58,5 +58,5 @@ class UserRepository(BaseRepository[UserModel, UserCreate, UserUpdate], ABC):
         :param past: Filter for event time. `True` for past events, `False` for future events.
             `None` to fetch all events (no time filtering).
 
-        :return: List of related events of type `model`.
+        :return: List of related events.
         """

@@ -1,8 +1,8 @@
 """
-Define CRUD operations for the Event model.
+Define the repository port interface for Event domain entities.
 
-Includes an abstract base class (AbstractCRUDEvent) and a concrete
-implementation (CRUDEvent) using SQLAlchemy.
+This module establishes the contract for CRUD and query operations on Event
+entities, decoupled from database-specific implementation details.
 """
 
 from abc import ABC, abstractmethod
@@ -11,15 +11,16 @@ from uuid import UUID
 
 from application.ports.repositories import BaseRepository
 from application.schemas import EventCreate, EventUpdate
-from infrastructure.database.sqlalchemy.models import EventModel, EventState
+from domain.entities import Event
+from domain.enums import EventState
 
 
-class EventRepository(BaseRepository[EventModel, EventCreate, EventUpdate], ABC):
+class EventRepository(BaseRepository[Event, EventCreate, EventUpdate], ABC):
     """
-    Abstract class for CRUD operations specific to the Event model.
+    Repository port interface for Event domain entities.
 
-    It extends the generic CRUDBase class and defines additional abstract methods
-    for querying and manipulating Event instances.
+    Establishes abstract operations specific to Events, extending the base
+    repository interface.
     """
 
     @abstractmethod
@@ -27,7 +28,7 @@ class EventRepository(BaseRepository[EventModel, EventCreate, EventUpdate], ABC)
         self,
         id_: UUID,
         include_removed: bool = False,
-    ) -> EventModel | None:
+    ) -> Event | None:
         """
         Retrieve a single record by its id_.
 
@@ -36,7 +37,7 @@ class EventRepository(BaseRepository[EventModel, EventCreate, EventUpdate], ABC)
         """
 
     @abstractmethod
-    async def get_current_event_for_user(self, user_id: UUID) -> EventModel | None:
+    async def get_current_event_for_user(self, user_id: UUID) -> Event | None:
         """
         Retrieve the current event for the given user where the current.
 
@@ -53,7 +54,7 @@ class EventRepository(BaseRepository[EventModel, EventCreate, EventUpdate], ABC)
         aliases: list[str],
         event_state: EventState | None = None,
         past: bool | None = None,
-    ) -> list[EventModel]:
+    ) -> list[Event]:
         """
         Retrieve events for the given reservation service aliases.
 
@@ -62,7 +63,7 @@ class EventRepository(BaseRepository[EventModel, EventCreate, EventUpdate], ABC)
         :param past: Filter for event time. `True` for past events, `False` for future events.
             `None` to fetch all events (no time filtering).
 
-        :return: Matching list of EventModel.
+        :return: Matching list of Event.
         """
 
     @abstractmethod
@@ -71,7 +72,7 @@ class EventRepository(BaseRepository[EventModel, EventCreate, EventUpdate], ABC)
         calendar_ids: list[UUID],
         start_time: datetime,
         end_time: datetime,
-    ) -> list[EventModel]:
+    ) -> list[Event]:
         """
         Retrieve events that overlap with the given time range for specific calendars.
 
