@@ -13,6 +13,13 @@ from application.schemas import (
     Rules,
     UserCreate,
 )
+from infrastructure.database.sqlalchemy.mappers import (
+    CalendarDBMapper,
+    EventDBMapper,
+    MiniServiceDBMapper,
+    ReservationServiceDBMapper,
+    UserDBMapper,
+)
 from infrastructure.database.sqlalchemy.models.event import EventState
 from infrastructure.database.sqlalchemy.repositories import (
     SQLAlchemyCalendarRepository,
@@ -26,31 +33,48 @@ from infrastructure.database.sqlalchemy.repositories import (
 @pytest.fixture
 def user_crud(async_session):
     """Return user crud."""
-    return SQLAlchemyUserRepository(db=async_session)
+    return SQLAlchemyUserRepository(
+        db=async_session,
+        mapper=UserDBMapper(),
+        event_mapper=EventDBMapper(),
+    )
 
 
 @pytest.fixture
 def reservation_service_crud(async_session):
     """Return reservation service crud."""
-    return SQLAlchemyReservationServiceRepository(db=async_session)
+    return SQLAlchemyReservationServiceRepository(
+        db=async_session,
+        mapper=ReservationServiceDBMapper(),
+        event_mapper=EventDBMapper(),
+    )
 
 
 @pytest.fixture
 def mini_service_crud(async_session):
     """Return mini service crud."""
-    return SQLAlchemyMiniServiceRepository(db=async_session)
+    return SQLAlchemyMiniServiceRepository(
+        db=async_session,
+        mapper=MiniServiceDBMapper(),
+    )
 
 
 @pytest.fixture
 def calendar_crud(async_session):
     """Return calendar crud."""
-    return SQLAlchemyCalendarRepository(db=async_session)
+    return SQLAlchemyCalendarRepository(
+        db=async_session,
+        mapper=CalendarDBMapper(),
+    )
 
 
 @pytest.fixture
 def event_crud(async_session):
     """Return event crud."""
-    return SQLAlchemyEventRepository(db=async_session)
+    return SQLAlchemyEventRepository(
+        db=async_session,
+        mapper=EventDBMapper(),
+    )
 
 
 @pytest_asyncio.fixture
@@ -149,13 +173,14 @@ async def test_calendar(
     calendar_crud,
     calendar_rules,
     test_reservation_service,
+    async_session,
 ):
     """Create and return a test calendar."""
-    return await calendar_crud.create_with_mini_services_and_collisions(
+    calendar = await calendar_crud.create_with_mini_services_and_collisions(
         CalendarCreate(
             provider_id="fixteure.calen.id@exgogl.eu",
             reservation_type="Grillcentrum",
-            color="#fe679",
+            color="#fe6790",
             max_people=15,
             more_than_max_people_with_permission=False,
             collision_with_itself=False,
@@ -166,6 +191,8 @@ async def test_calendar(
         ),
         [],
     )
+    async_session.expunge_all()
+    return calendar
 
 
 @pytest_asyncio.fixture
@@ -174,13 +201,14 @@ async def test_calendar2(
     calendar_rules,
     test_reservation_service2,
     test_calendar,
+    async_session,
 ):
     """Create and return a test calendar."""
-    return await calendar_crud.create_with_mini_services_and_collisions(
+    calendar = await calendar_crud.create_with_mini_services_and_collisions(
         CalendarCreate(
             provider_id="klubar.calen.id@exgogl.eu",
             reservation_type="Klubovna",
-            color="#fe375",
+            color="#fe3750",
             max_people=10,
             more_than_max_people_with_permission=False,
             collision_with_itself=False,
@@ -192,6 +220,8 @@ async def test_calendar2(
         ),
         [],
     )
+    async_session.expunge_all()
+    return calendar
 
 
 @pytest_asyncio.fixture

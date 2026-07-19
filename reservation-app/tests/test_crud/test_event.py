@@ -93,7 +93,7 @@ async def test_get_events_by_aliases(test_event, event_crud):
 
     start_time = dt.datetime.now() - dt.timedelta(days=3, hours=3)
     end_time = dt.datetime.now() - dt.timedelta(days=3)
-    await event_crud.update(
+    test_event = await event_crud.update(
         db_obj=test_event,
         obj_in=EventUpdate(reservation_start=start_time, reservation_end=end_time),
     )
@@ -102,7 +102,7 @@ async def test_get_events_by_aliases(test_event, event_crud):
 
     start_time = dt.datetime.now() + dt.timedelta(days=10)
     end_time = dt.datetime.now() + dt.timedelta(days=10, hours=3)
-    await event_crud.update(
+    test_event = await event_crud.update(
         db_obj=test_event,
         obj_in=EventUpdate(reservation_start=start_time, reservation_end=end_time),
     )
