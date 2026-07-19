@@ -1,8 +1,8 @@
 """
-Define CRUD operations for the Event model.
+SQLAlchemy implementation of the EventRepository port.
 
-Includes an abstract base class (AbstractCRUDEvent) and a concrete
-implementation (CRUDEvent) using SQLAlchemy.
+This module adapts the EventRepository port to SQLAlchemy, handling database
+operations for Event domain entities.
 """
 
 from datetime import datetime
@@ -10,10 +10,12 @@ from uuid import UUID
 
 from application.ports.repositories import EventRepository
 from application.schemas import EventCreate, EventUpdate
+from domain.entities import Event
+from domain.enums import EventState
+from infrastructure.database.sqlalchemy.mappers import EventDBMapper
 from infrastructure.database.sqlalchemy.models import (
     CalendarModel,
     EventModel,
-    EventState,
     ReservationServiceModel,
 )
 from infrastructure.database.sqlalchemy.repositories.base import SQLAlchemyBaseRepository
@@ -23,17 +25,16 @@ from sqlalchemy.orm import joinedload
 
 
 class SQLAlchemyEventRepository(
-    SQLAlchemyBaseRepository[EventModel, EventCreate, EventUpdate], EventRepository
+    SQLAlchemyBaseRepository[Event, EventCreate, EventUpdate], EventRepository
 ):
     """
-    Concrete class for CRUD operations specific to the Event model.
+    SQLAlchemy adapter implementing the EventRepository port.
 
-    It extends the abstract AbstractCRUDEvent class and implements the required methods
-    for querying and manipulating Event instances.
+    Handles persistence operations for Event domain entities using SQLAlchemy.
     """
 
-    def __init__(self, db: AsyncSession):
-        super().__init__(EventModel, db)
+    def __init__(self, db: AsyncSession, mapper: EventDBMapper):
+        super().__init__(EventModel, db, mapper)
         self.state = EventState
         self.calendar_model = CalendarModel
         self.reservation_service_model = ReservationServiceModel
@@ -42,7 +43,7 @@ class SQLAlchemyEventRepository(
         self,
         id_: UUID,
         include_removed: bool = False,
-    ) -> EventModel | None:
+    ) -> Event | None:
         stmt = (
             select(self.model)
             .options(
@@ -53,9 +54,10 @@ class SQLAlchemyEventRepository(
             .filter(self.model.id == id_)
         )
         result = await self.db.execute(stmt)
-        return result.scalar_one_or_none()
+        db_obj = result.scalar_one_or_none()
+        return self.mapper.to_entity(db_obj) if db_obj else None
 
-    async def get_current_event_for_user(self, user_id: UUID) -> EventModel | None:
+    async def get_current_event_for_user(self, user_id: UUID) -> Event | None:
         now = datetime.now()
 
         stmt = (
@@ -69,14 +71,15 @@ class SQLAlchemyEventRepository(
             .limit(1)
         )
         result = await self.db.execute(stmt)
-        return result.scalar_one_or_none()
+        db_obj = result.scalar_one_or_none()
+        return self.mapper.to_entity(db_obj) if db_obj else None
 
     async def get_events_by_aliases(
         self,
         aliases: list[str],
         event_state: EventState | None = None,
         past: bool | None = None,
-    ) -> list[EventModel]:
+    ) -> list[Event]:
         now = datetime.now()
 
         stmt = (
@@ -103,14 +106,14 @@ class SQLAlchemyEventRepository(
             stmt = stmt.filter(self.model.reservation_start > now)
 
         result = await self.db.execute(stmt)
-        return list(result.scalars().all())
+        return [self.mapper.to_entity(obj) for obj in result.scalars().all()]
 
     async def get_overlapping_events(
         self,
         calendar_ids: list[UUID],
         start_time: datetime,
         end_time: datetime,
-    ) -> list[EventModel]:
+    ) -> list[Event]:
         stmt = select(self.model).filter(
             self.model.calendar_id.in_(calendar_ids),
             self.model.reservation_start < end_time,
@@ -118,4 +121,4 @@ class SQLAlchemyEventRepository(
             self.model.event_state != EventState.CANCELED,
         )
         result = await self.db.execute(stmt)
-        return list(result.scalars().all())
+        return [self.mapper.to_entity(obj) for obj in result.scalars().all()]

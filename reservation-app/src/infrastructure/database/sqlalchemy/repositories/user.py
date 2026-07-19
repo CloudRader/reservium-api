@@ -1,8 +1,8 @@
 """
-Define CRUD operations for the User model.
+SQLAlchemy implementation of the UserRepository port.
 
-Includes an abstract base class (AbstractCRUDUser) and a concrete
-implementation (CRUDUser) using SQLAlchemy.
+This module adapts the UserRepository port to SQLAlchemy, handling database
+operations for User domain entities.
 """
 
 from datetime import datetime
@@ -10,6 +10,8 @@ from uuid import UUID
 
 from application.ports.repositories import UserRepository
 from application.schemas import UserCreate, UserUpdate
+from domain.entities import Event, User
+from infrastructure.database.sqlalchemy.mappers import EventDBMapper, UserDBMapper
 from infrastructure.database.sqlalchemy.models import CalendarModel, EventModel, UserModel
 from infrastructure.database.sqlalchemy.repositories.base import SQLAlchemyBaseRepository
 from sqlalchemy import select
@@ -18,28 +20,30 @@ from sqlalchemy.orm import joinedload
 
 
 class SQLAlchemyUserRepository(
-    SQLAlchemyBaseRepository[UserModel, UserCreate, UserUpdate], UserRepository
+    SQLAlchemyBaseRepository[User, UserCreate, UserUpdate], UserRepository
 ):
     """
-    Concrete class for CRUD operations specific to the User model.
+    SQLAlchemy adapter implementing the UserRepository port.
 
-    It extends the abstract AbstractCRUDUser class and implements the required methods
-    for querying and manipulating User instances.
+    Handles persistence operations for User domain entities using SQLAlchemy.
     """
 
-    def __init__(self, db: AsyncSession):
-        super().__init__(UserModel, db)
+    def __init__(self, db: AsyncSession, mapper: UserDBMapper, event_mapper: EventDBMapper):
+        super().__init__(UserModel, db, mapper)
         self.event_model = EventModel
+        self.event_mapper = event_mapper
 
-    async def get_by_username(self, username: str) -> UserModel | None:
+    async def get_by_username(self, username: str) -> User | None:
         stmt = select(self.model).filter(self.model.username == username)
         result = await self.db.execute(stmt)
-        return result.scalar_one_or_none()
+        db_obj = result.scalar_one_or_none()
+        return self.mapper.to_entity(db_obj) if db_obj else None
 
-    async def get_by_provider_id(self, provider_id: str) -> UserModel | None:
+    async def get_by_provider_id(self, provider_id: str) -> User | None:
         stmt = select(self.model).filter(self.model.provider_id == provider_id)
         result = await self.db.execute(stmt)
-        return result.scalar_one_or_none()
+        db_obj = result.scalar_one_or_none()
+        return self.mapper.to_entity(db_obj) if db_obj else None
 
     async def get_events_by_user_id(
         self,
@@ -47,7 +51,7 @@ class SQLAlchemyUserRepository(
         page: int = 1,
         limit: int = 20,
         past: bool | None = None,
-    ) -> list[EventModel]:
+    ) -> list[Event]:
         now = datetime.now()
 
         stmt = (
@@ -67,4 +71,4 @@ class SQLAlchemyUserRepository(
         stmt = stmt.offset(offset).limit(limit)
 
         result = await self.db.execute(stmt)
-        return list(result.scalars().all())
+        return [self.event_mapper.to_entity(obj) for obj in result.scalars().all()]

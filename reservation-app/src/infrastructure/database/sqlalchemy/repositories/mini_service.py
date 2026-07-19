@@ -1,14 +1,16 @@
 """
-Define CRUD operations for the MiniService model.
+SQLAlchemy implementation of the MiniServiceRepository port.
 
-Includes an abstract base class (AbstractCRUDMiniService) and a concrete
-implementation (CRUDMiniService) using SQLAlchemy.
+This module adapts the MiniServiceRepository port to SQLAlchemy, handling database
+operations for MiniService domain entities.
 """
 
 from uuid import UUID
 
 from application.ports.repositories import MiniServiceRepository
 from application.schemas import MiniServiceCreate, MiniServiceUpdate
+from domain.entities import MiniService
+from infrastructure.database.sqlalchemy.mappers import MiniServiceDBMapper
 from infrastructure.database.sqlalchemy.models import MiniServiceModel
 from infrastructure.database.sqlalchemy.repositories.base import SQLAlchemyBaseRepository
 from sqlalchemy import select
@@ -16,40 +18,41 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class SQLAlchemyMiniServiceRepository(
-    SQLAlchemyBaseRepository[MiniServiceModel, MiniServiceCreate, MiniServiceUpdate],
+    SQLAlchemyBaseRepository[MiniService, MiniServiceCreate, MiniServiceUpdate],
     MiniServiceRepository,
 ):
     """
-    Concrete class for CRUD operations specific to the MiniService model.
+    SQLAlchemy adapter implementing the MiniServiceRepository port.
 
-    It extends the abstract AbstractCRUDMiniService class and implements
-    the required methods for querying and manipulating MiniService instances.
+    Handles persistence operations for MiniService domain entities using SQLAlchemy.
     """
 
-    def __init__(self, db: AsyncSession):
-        super().__init__(MiniServiceModel, db)
+    def __init__(self, db: AsyncSession, mapper: MiniServiceDBMapper):
+        super().__init__(MiniServiceModel, db, mapper)
 
     async def get_by_name(
         self,
         name: str,
         include_removed: bool = False,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         stmt = select(self.model).where(self.model.name == name)
         if include_removed:
             stmt = stmt.execution_options(include_deleted=True)
         result = await self.db.execute(stmt)
-        return result.scalar_one_or_none()
+        db_obj = result.scalar_one_or_none()
+        return self.mapper.to_entity(db_obj) if db_obj else None
 
     async def get_by_room_id(
         self,
         room_id: int,
         include_removed: bool = False,
-    ) -> MiniServiceModel | None:
+    ) -> MiniService | None:
         stmt = select(self.model).where(self.model.room_id == room_id)
         if include_removed:
             stmt = stmt.execution_options(include_deleted=True)
         result = await self.db.execute(stmt)
-        return result.scalar_one_or_none()
+        db_obj = result.scalar_one_or_none()
+        return self.mapper.to_entity(db_obj) if db_obj else None
 
     async def get_names_by_reservation_service_id(
         self,
