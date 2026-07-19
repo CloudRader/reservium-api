@@ -11,7 +11,7 @@ from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:  # pragma: no cover
-    from application.schemas.calendar import Rules
+    from domain.value_objects import Rules
     from infrastructure.database.sqlalchemy.models.event import Event
     from infrastructure.database.sqlalchemy.models.mini_service import MiniService
     from infrastructure.database.sqlalchemy.models.reservation_service import ReservationService
@@ -63,6 +63,6 @@ class Calendar(Base):
     )
 
     @property
-    def collision_ids(self) -> list[str]:
+    def collision_ids(self) -> list[UUID]:
         """Return only the IDs of calendars this one collides with."""
         return [c.id for c in self.collisions or []]

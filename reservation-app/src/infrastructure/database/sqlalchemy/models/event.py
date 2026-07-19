@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -18,20 +17,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from infrastructure.database.sqlalchemy.models.user import User
 
 
-class EventState(Enum):
-    """
-    State of the event.
-
-    - **not_approved** - The event has been created but not yet approved.
-    - **update_request** - A user has requested changes to the event.
-    - **confirmed** - The event is confirmed.
-    - **canceled** - The event was previously scheduled but has been canceled.
-    """
-
-    NOT_APPROVED = "not_approved"
-    UPDATE_REQUESTED = "update_requested"
-    CONFIRMED = "confirmed"
-    CANCELED = "canceled"
+from domain.enums import EventState
 
 
 class Event(Base):
