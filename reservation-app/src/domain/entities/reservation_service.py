@@ -16,7 +16,7 @@ class ReservationService(BaseEntity):
     alias: str
     contact_mail: str
     public: bool = True
-    web: str | None = None
+    web: str
     access_group: str | None = None
     room_id: int | None = None
     lockers_id: list[int] = field(default_factory=list)

@@ -16,13 +16,13 @@ class Calendar(BaseEntity):
 
     reservation_type: str
     reservation_service_id: UUID
-    color: str = "#05baf5"
-    max_people: int = 0
+    color: str
+    max_people: int
     more_than_max_people_with_permission: bool = True
-    collision_with_itself: bool = False
-    club_member_rules: Rules | None = None
-    active_member_rules: Rules | None = None
-    manager_rules: Rules | None = None
+    collision_with_itself: bool = True
+    club_member_rules: Rules
+    active_member_rules: Rules
+    manager_rules: Rules
     provider_id: str | None = None
     collision_ids: list[UUID] = field(default_factory=list)
     mini_service_ids: list[UUID] = field(default_factory=list)

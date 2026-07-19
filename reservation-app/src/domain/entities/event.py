@@ -1,6 +1,6 @@
 """Event domain entity."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import final
 from uuid import UUID
@@ -26,7 +26,7 @@ class Event(BaseEntity):
     requested_reservation_end: datetime | None = None
     event_state: EventState = EventState.NOT_APPROVED
     provider_id: str | None = None
-    additional_services: list[str] | None = None
+    additional_services: list[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         """Validate business invariants of Event."""
