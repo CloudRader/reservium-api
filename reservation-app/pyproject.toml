@@ -24,7 +24,7 @@ dependencies = [
     "python-dateutil==2.9.0.post0",
     "aiohttp==3.14.1",
     "jwcrypto==1.5.8",
-    "authzed==1.24.4",
+    "authzed==1.25.0",
     "authlib==1.7.2",
     "dishka==1.10.1",
 ]
