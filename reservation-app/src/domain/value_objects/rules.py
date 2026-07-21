@@ -11,8 +11,8 @@ from domain.exceptions import DomainValidationError
 class Rules:
     """Represents booking rules for a member type."""
 
-    night_time: bool
-    reservation_without_permission: bool
+    night_time: bool = False
+    reservation_without_permission: bool = True
     max_reservation_hours: int
     in_advance_hours: int
     in_advance_minutes: int

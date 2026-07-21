@@ -16,7 +16,7 @@ class Calendar(BaseEntity):
 
     reservation_type: str
     reservation_service_id: UUID
-    color: str
+    color: str = "#000000"
     max_people: int
     more_than_max_people_with_permission: bool = True
     collision_with_itself: bool = True
