@@ -5,11 +5,9 @@ This module adapts the CalendarRepository port to SQLAlchemy, handling database
 operations for Calendar domain entities.
 """
 
-from typing import Any
 from uuid import UUID
 
 from application.ports.repositories import CalendarRepository
-from application.schemas import CalendarCreate, CalendarUpdate
 from domain.entities import Calendar, MiniService
 from infrastructure.database.sqlalchemy.mappers import CalendarDBMapper
 from infrastructure.database.sqlalchemy.models import CalendarModel, MiniServiceModel
@@ -22,9 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 
-class SQLAlchemyCalendarRepository(
-    SQLAlchemyBaseRepository[Calendar, CalendarCreate, CalendarUpdate], CalendarRepository
-):
+class SQLAlchemyCalendarRepository(SQLAlchemyBaseRepository[Calendar], CalendarRepository):
     """
     SQLAlchemy adapter implementing the CalendarRepository port.
 
@@ -51,24 +47,22 @@ class SQLAlchemyCalendarRepository(
 
     async def create_with_mini_services_and_collisions(
         self,
-        calendar_create: CalendarCreate | dict[str, Any],
+        calendar: Calendar,
         mini_services: list[MiniService],
     ) -> Calendar:
-        obj_in_data = (
-            calendar_create if isinstance(calendar_create, dict) else calendar_create.model_dump()
-        )
+        db_obj = self.mapper.to_model(calendar)
 
-        collision_ids = obj_in_data.pop("collision_ids", [])
-        obj_in_data.pop("mini_services", None)
-
-        db_obj = self.model(**obj_in_data)
-        db_obj.mini_services = mini_services
+        mini_service_ids = [m.id for m in mini_services]
+        if mini_service_ids:
+            stmt_ms = select(MiniServiceModel).filter(MiniServiceModel.id.in_(mini_service_ids))
+            res_ms = await self.db.execute(stmt_ms)
+            db_obj.mini_services = list(res_ms.scalars().all())
 
         self.db.add(db_obj)
         await self.db.flush()
 
-        if collision_ids:
-            await self._add_symmetric_collisions(db_obj, collision_ids)
+        if calendar.collision_ids:
+            await self._add_symmetric_collisions(db_obj, calendar.collision_ids)
 
         self.db.add(db_obj)
         await self.db.commit()
@@ -77,21 +71,14 @@ class SQLAlchemyCalendarRepository(
 
     async def update_with_mini_services_and_collisions(
         self,
-        obj: Calendar,
-        obj_in: CalendarUpdate | dict[str, Any],
+        calendar: Calendar,
         mini_services: list[MiniService],
     ) -> Calendar:
-        update_data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
-
-        collision_ids = update_data.pop("collision_ids", None)
-        update_data.pop("mini_services", None)
-
-        stmt = select(self.model).filter(self.model.id == obj.id)
+        stmt = select(self.model).filter(self.model.id == calendar.id)
         result = await self.db.execute(stmt)
         db_obj = result.scalar_one()
 
-        for field, value in update_data.items():
-            setattr(db_obj, field, value)
+        self.mapper.to_model(calendar, target=db_obj)
 
         mini_service_ids = [m.id for m in mini_services]
         if mini_service_ids:
@@ -104,15 +91,14 @@ class SQLAlchemyCalendarRepository(
         self.db.add(db_obj)
         await self.db.flush()
 
-        if collision_ids is not None:
-            stmt_delete = delete(CalendarCollisionAssociation).where(
-                (CalendarCollisionAssociation.calendar_id == db_obj.id)
-                | (CalendarCollisionAssociation.collides_with_id == db_obj.id)
-            )
+        stmt_delete = delete(CalendarCollisionAssociation).where(
+            (CalendarCollisionAssociation.calendar_id == db_obj.id)
+            | (CalendarCollisionAssociation.collides_with_id == db_obj.id)
+        )
+        await self.db.execute(stmt_delete)
 
-            await self.db.execute(stmt_delete)
-            if collision_ids:
-                await self._add_symmetric_collisions(db_obj, collision_ids)
+        if calendar.collision_ids:
+            await self._add_symmetric_collisions(db_obj, calendar.collision_ids)
 
         self.db.add(db_obj)
         await self.db.commit()
@@ -146,15 +132,16 @@ class SQLAlchemyCalendarRepository(
     async def _add_symmetric_collisions(
         self,
         calendar: CalendarModel,
-        collision_ids: list[str],
+        collision_ids: list[UUID] | list[str],
     ) -> None:
         """Add symmetric collisions for a given calendar."""
-        collision_ids = [cid for cid in collision_ids if cid != calendar.id]
+        cid_strs = [str(cid) for cid in collision_ids if str(cid) != str(calendar.id)]
 
         collisions_bulk = []
-        for cid in collision_ids:
+        for cid in cid_strs:
             collisions_bulk.append({"calendar_id": calendar.id, "collides_with_id": cid})
             collisions_bulk.append({"calendar_id": cid, "collides_with_id": calendar.id})
 
-        stmt = insert(CalendarCollisionAssociation).values(collisions_bulk)
-        await self.db.execute(stmt)
+        if collisions_bulk:
+            stmt = insert(CalendarCollisionAssociation).values(collisions_bulk)
+            await self.db.execute(stmt)

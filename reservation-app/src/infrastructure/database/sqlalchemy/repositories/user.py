@@ -9,7 +9,6 @@ from datetime import datetime
 from uuid import UUID
 
 from application.ports.repositories import UserRepository
-from application.schemas import UserCreate, UserUpdate
 from domain.entities import Event, User
 from infrastructure.database.sqlalchemy.mappers import EventDBMapper, UserDBMapper
 from infrastructure.database.sqlalchemy.models import CalendarModel, EventModel, UserModel
@@ -19,9 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 
-class SQLAlchemyUserRepository(
-    SQLAlchemyBaseRepository[User, UserCreate, UserUpdate], UserRepository
-):
+class SQLAlchemyUserRepository(SQLAlchemyBaseRepository[User], UserRepository):
     """
     SQLAlchemy adapter implementing the UserRepository port.
 

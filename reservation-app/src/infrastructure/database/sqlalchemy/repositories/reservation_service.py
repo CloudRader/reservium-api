@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Protocol, TypeVar, runtime_checkable
 from uuid import UUID
 
 from application.ports.repositories import ReservationServiceRepository
-from application.schemas import ReservationServiceCreate, ReservationServiceUpdate
 from domain.entities import Event, ReservationService
 from infrastructure.database.sqlalchemy.mappers import (
     EventDBMapper,
@@ -41,12 +40,7 @@ T = TypeVar("T", bound=HasReservationServiceId)
 
 
 class SQLAlchemyReservationServiceRepository(
-    SQLAlchemyBaseRepository[
-        ReservationService,
-        ReservationServiceCreate,
-        ReservationServiceUpdate,
-    ],
-    ReservationServiceRepository,
+    SQLAlchemyBaseRepository[ReservationService], ReservationServiceRepository
 ):
     """
     SQLAlchemy adapter implementing the ReservationServiceRepository port.

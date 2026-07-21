@@ -13,7 +13,6 @@ from uuid import UUID
 from application.ports.repositories import BaseRepository
 from domain.entities import BaseEntity
 from infrastructure.database.sqlalchemy.models.base import Base
-from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,12 +24,12 @@ class DBMapper[DbModel, DomainEntity](Protocol):
         """Map database model to domain entity."""
         ...
 
+    def to_model(self, entity: DomainEntity, target: DbModel | None = None) -> DbModel:
+        """Map domain entity to database model."""
+        ...
 
-class SQLAlchemyBaseRepository[
-    DomainEntity: BaseEntity,
-    CreateSchema: BaseModel,
-    UpdateSchema: BaseModel,
-](BaseRepository[DomainEntity, CreateSchema, UpdateSchema]):
+
+class SQLAlchemyBaseRepository[DomainEntity: BaseEntity](BaseRepository[DomainEntity]):
     """Adapter implementing RepositoryBase with SQLAlchemy."""
 
     def __init__(
@@ -75,43 +74,34 @@ class SQLAlchemyBaseRepository[
         result = await self.db.execute(stmt)
         return [self.mapper.to_entity(obj) for obj in result.scalars().all()]
 
-    async def create(self, obj_in: CreateSchema | dict[str, Any]) -> DomainEntity:
-        obj_in_data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump()
-        db_obj = self.model(**obj_in_data)
+    async def create(self, entity: DomainEntity) -> DomainEntity:
+        db_obj = self.mapper.to_model(entity)
         self.db.add(db_obj)
         await self.db.commit()
         await self.db.refresh(db_obj)
         return self.mapper.to_entity(db_obj)
 
-    async def create_bulk(self, objs_in: list[CreateSchema]) -> list[DomainEntity]:
-        if not objs_in:
+    async def create_bulk(self, entities: list[DomainEntity]) -> list[DomainEntity]:
+        if not entities:
             return []
 
-        db_objs = [self.model(**obj_in.model_dump()) for obj_in in objs_in]
+        db_objs = [self.mapper.to_model(entity) for entity in entities]
 
         self.db.add_all(db_objs)
         await self.db.flush()
         await self.db.commit()
         return [self.mapper.to_entity(obj) for obj in db_objs]
 
-    async def update(
-        self,
-        *,
-        db_obj: DomainEntity,
-        obj_in: UpdateSchema | dict[str, Any],
-    ) -> DomainEntity:
+    async def update(self, *, entity: DomainEntity) -> DomainEntity:
         stmt = (
             select(self.model)
-            .filter(self.model.id == db_obj.id)
+            .filter(self.model.id == entity.id)
             .execution_options(include_deleted=True)
         )
         result = await self.db.execute(stmt)
         db_model_obj = result.scalar_one()
 
-        update_data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
-
-        for field, value in update_data.items():
-            setattr(db_model_obj, field, value)
+        self.mapper.to_model(entity, target=db_model_obj)
 
         self.db.add(db_model_obj)
         await self.db.commit()

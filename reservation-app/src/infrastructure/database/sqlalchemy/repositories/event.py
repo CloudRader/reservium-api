@@ -9,7 +9,6 @@ from datetime import datetime
 from uuid import UUID
 
 from application.ports.repositories import EventRepository
-from application.schemas import EventCreate, EventUpdate
 from domain.entities import Event
 from domain.enums import EventState
 from infrastructure.database.sqlalchemy.mappers import EventDBMapper
@@ -24,9 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 
-class SQLAlchemyEventRepository(
-    SQLAlchemyBaseRepository[Event, EventCreate, EventUpdate], EventRepository
-):
+class SQLAlchemyEventRepository(SQLAlchemyBaseRepository[Event], EventRepository):
     """
     SQLAlchemy adapter implementing the EventRepository port.
 

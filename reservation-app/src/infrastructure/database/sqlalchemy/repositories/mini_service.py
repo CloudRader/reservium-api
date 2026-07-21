@@ -8,7 +8,6 @@ operations for MiniService domain entities.
 from uuid import UUID
 
 from application.ports.repositories import MiniServiceRepository
-from application.schemas import MiniServiceCreate, MiniServiceUpdate
 from domain.entities import MiniService
 from infrastructure.database.sqlalchemy.mappers import MiniServiceDBMapper
 from infrastructure.database.sqlalchemy.models import MiniServiceModel
@@ -17,10 +16,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class SQLAlchemyMiniServiceRepository(
-    SQLAlchemyBaseRepository[MiniService, MiniServiceCreate, MiniServiceUpdate],
-    MiniServiceRepository,
-):
+class SQLAlchemyMiniServiceRepository(SQLAlchemyBaseRepository[MiniService], MiniServiceRepository):
     """
     SQLAlchemy adapter implementing the MiniServiceRepository port.
 
