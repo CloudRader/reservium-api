@@ -10,7 +10,6 @@ from typing import Protocol, TypeVar, runtime_checkable
 from uuid import UUID
 
 from application.ports.repositories import BaseRepository
-from application.schemas import ReservationServiceCreate, ReservationServiceUpdate
 from domain.entities import Event, ReservationService
 from domain.enums import EventState
 
@@ -25,14 +24,7 @@ class HasReservationServiceId(Protocol):
 T = TypeVar("T", bound=HasReservationServiceId)
 
 
-class ReservationServiceRepository(
-    BaseRepository[
-        ReservationService,
-        ReservationServiceCreate,
-        ReservationServiceUpdate,
-    ],
-    ABC,
-):
+class ReservationServiceRepository(BaseRepository[ReservationService,], ABC):
     """
     Repository port interface for ReservationService domain entities.
 

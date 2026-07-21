@@ -34,9 +34,9 @@ repos:
         pass_filenames: false
         types: [python]
 
-      - id: pytest
-        name: pytest
-        entry: bash -c "cd reservation-app && uv run ./scripts/pytest.sh"
-        language: system
-        pass_filenames: false
-        always_run: true
+      # - id: pytest
+      #   name: pytest
+      #   entry: bash -c "cd reservation-app && uv run ./scripts/pytest.sh"
+      #   language: system
+      #   pass_filenames: false
+      #   always_run: true

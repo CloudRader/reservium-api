@@ -9,11 +9,10 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 
 from application.ports.repositories import BaseRepository
-from application.schemas import UserCreate, UserUpdate
 from domain.entities import Event, User
 
 
-class UserRepository(BaseRepository[User, UserCreate, UserUpdate], ABC):
+class UserRepository(BaseRepository[User], ABC):
     """
     Repository port interface for User domain entities.
 

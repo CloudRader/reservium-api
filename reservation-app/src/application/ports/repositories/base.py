@@ -10,10 +10,9 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 
 from domain.entities import BaseEntity
-from pydantic import BaseModel
 
 
-class BaseRepository[Entity: BaseEntity, CreateSchema: BaseModel, UpdateSchema: BaseModel](ABC):
+class BaseRepository[Entity: BaseEntity](ABC):
     """
     A generic repository interface defining standard CRUD operations.
 
@@ -68,37 +67,31 @@ class BaseRepository[Entity: BaseEntity, CreateSchema: BaseModel, UpdateSchema: 
         """
 
     @abstractmethod
-    async def create(self, obj_in: CreateSchema) -> Entity:
+    async def create(self, entity: Entity) -> Entity:
         """
         Create a new record from the input schema.
 
-        :param obj_in: The schema containing data for the new record.
+        :param entity: The entity to create.
 
         :return: The newly created Entity instance.
         """
 
     @abstractmethod
-    async def create_bulk(self, objs_in: list[CreateSchema]) -> list[Entity]:
+    async def create_bulk(self, entities: list[Entity]) -> list[Entity]:
         """
         Create multiple objects in a single transaction.
 
-        :param objs_in: List of objects to create.
+        :param entities: List of entities to create.
 
-        :return: List of created objects.
+        :return: List of created entities.
         """
 
     @abstractmethod
-    async def update(
-        self,
-        *,
-        db_obj: Entity,
-        obj_in: UpdateSchema,
-    ) -> Entity:
+    async def update(self, *, entity: Entity) -> Entity:
         """
         Update an existing record with data from the input schema.
 
-        :param db_obj: The existing database model instance to update.
-        :param obj_in: The schema containing the updated data.
+        :param entity: The entity to update.
 
         :return: The updated Entity instance.
         """

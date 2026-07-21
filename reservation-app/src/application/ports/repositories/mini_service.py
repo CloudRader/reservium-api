@@ -9,14 +9,10 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 
 from application.ports.repositories import BaseRepository
-from application.schemas import MiniServiceCreate, MiniServiceUpdate
 from domain.entities import MiniService
 
 
-class MiniServiceRepository(
-    BaseRepository[MiniService, MiniServiceCreate, MiniServiceUpdate],
-    ABC,
-):
+class MiniServiceRepository(BaseRepository[MiniService], ABC):
     """
     Repository port interface for MiniService domain entities.
 

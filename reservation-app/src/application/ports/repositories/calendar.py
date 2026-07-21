@@ -6,18 +6,13 @@ entities, decoupled from database-specific implementation details.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
 from uuid import UUID
 
 from application.ports.repositories import BaseRepository
-from application.schemas import CalendarCreate, CalendarUpdate
 from domain.entities import Calendar, MiniService
 
 
-class CalendarRepository(
-    BaseRepository[Calendar, CalendarCreate, CalendarUpdate],
-    ABC,
-):
+class CalendarRepository(BaseRepository[Calendar], ABC):
     """
     Repository port interface for Calendar domain entities.
 
@@ -41,43 +36,31 @@ class CalendarRepository(
     @abstractmethod
     async def create_with_mini_services_and_collisions(
         self,
-        calendar_create: CalendarCreate | dict[str, Any],
+        calendar: Calendar,
         mini_services: list[MiniService],
     ) -> Calendar:
         """
         Create a new Calendar instance with associated mini services and collisions.
 
-        This method extends the base create method by:
-        - Attaching multiple MiniService instances to the created calendar.
-        - Creating symmetric collision relationships with other Calendar instances
-          as specified in the input.
+        :param calendar: Domain Calendar entity to create.
+        :param mini_services: List of MiniService domain objects to associate.
 
-        :param calendar_create: Data used to create the Calendar (schema or dict).
-        :param mini_services: List of MiniService objects to associate with the calendar.
-
-        :return: The created Calendar instance with mini services and collisions attached.
+        :return: The created Calendar domain instance.
         """
 
     @abstractmethod
     async def update_with_mini_services_and_collisions(
         self,
-        obj: Calendar,
-        obj_in: CalendarUpdate | dict[str, Any],
+        calendar: Calendar,
         mini_services: list[MiniService],
     ) -> Calendar:
         """
         Update an existing Calendar instance including mini services and collisions.
 
-        This method extends the base update functionality by:
-        - Replacing the existing mini services with the provided list.
-        - Updating symmetric collision relationships for the calendar.
-          Existing collisions are removed and replaced according to the input.
+        :param calendar: The updated Domain Calendar entity.
+        :param mini_services: List of MiniService domain objects to associate.
 
-        :param obj: The existing Calendar instance to update.
-        :param obj_in: Data to update the Calendar (schema or dict).
-        :param mini_services: List of MiniService objects to associate with the calendar.
-
-        :return: The updated Calendar instance with updated mini services and collisions.
+        :return: The updated Calendar domain instance.
         """
 
     @abstractmethod

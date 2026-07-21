@@ -10,12 +10,11 @@ from datetime import datetime
 from uuid import UUID
 
 from application.ports.repositories import BaseRepository
-from application.schemas import EventCreate, EventUpdate
 from domain.entities import Event
 from domain.enums import EventState
 
 
-class EventRepository(BaseRepository[Event, EventCreate, EventUpdate], ABC):
+class EventRepository(BaseRepository[Event], ABC):
     """
     Repository port interface for Event domain entities.
 
