@@ -41,21 +41,21 @@ class ReservationServiceDBMapper:
             web=model.web,
         )
 
-    def to_model(self, entity: ReservationService) -> ReservationServiceModel:
+    def to_model(
+        self, entity: ReservationService, target: ReservationServiceModel | None = None
+    ) -> ReservationServiceModel:
         """
         Convert a Domain ReservationService to an SQLAlchemy ReservationServiceModel.
 
         :param entity: The Domain ReservationService instance.
+        :param target: The target ReservationServiceModel instance to update.
         :return: A ReservationServiceModel instance.
         """
-        return ReservationServiceModel(
-            id=entity.id,
-            name=entity.name,
-            alias=entity.alias,
-            contact_mail=entity.contact_mail,
-            public=entity.public,
-            web=entity.web,
-            created_at=entity.created_at,
-            updated_at=entity.updated_at,
-            deleted_at=entity.deleted_at,
-        )
+        if target is None:
+            target = ReservationServiceModel(id=entity.id)
+        target.name = entity.name
+        target.alias = entity.alias
+        target.contact_mail = entity.contact_mail
+        target.public = entity.public
+        target.web = entity.web
+        return target

@@ -34,12 +34,29 @@ class UserDBMapper:
             roles = model.roles
         return User(
             id=model.id,
-            provider_id=model.provider_id,
             created_at=model.created_at,
             updated_at=model.updated_at,
             deleted_at=model.deleted_at,
+            provider_id=model.provider_id,
             username=model.username,
             full_name=model.full_name,
             active_member=model.active_member,
             roles=roles,
         )
+
+    def to_model(self, entity: User, target: UserModel | None = None) -> UserModel:
+        """
+        Convert a Domain User to an SQLAlchemy UserModel.
+
+        :param entity: The Domain User instance.
+        :param target: The target UserModel instance to update.
+        :return: A UserModel instance.
+        """
+        if target is None:
+            target = UserModel(id=entity.id)
+        target.provider_id = entity.provider_id
+        target.username = entity.username
+        target.full_name = entity.full_name
+        target.active_member = entity.active_member
+        target.roles = entity.roles
+        return target

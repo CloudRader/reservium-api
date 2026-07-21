@@ -38,3 +38,19 @@ class MiniServiceDBMapper:
             reservation_service_id=model.reservation_service_id,
             calendar_ids=[c.id for c in model.calendars or []],
         )
+
+    def to_model(
+        self, entity: MiniService, target: MiniServiceModel | None = None
+    ) -> MiniServiceModel:
+        """
+        Convert a Domain MiniService to an SQLAlchemy MiniServiceModel.
+
+        :param entity: The Domain MiniService instance.
+        :param target: The target MiniServiceModel instance to update.
+        :return: A MiniServiceModel instance.
+        """
+        if target is None:
+            target = MiniServiceModel(id=entity.id)
+        target.name = entity.name
+        target.reservation_service_id = entity.reservation_service_id
+        return target

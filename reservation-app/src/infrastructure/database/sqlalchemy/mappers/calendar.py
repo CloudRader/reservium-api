@@ -34,8 +34,8 @@ class CalendarDBMapper:
             created_at=model.created_at,
             updated_at=model.updated_at,
             deleted_at=model.deleted_at,
-            reservation_service_id=model.reservation_service_id,
             provider_id=model.provider_id,
+            reservation_service_id=model.reservation_service_id,
             reservation_type=model.reservation_type,
             color=model.color,
             max_people=model.max_people,
@@ -47,3 +47,25 @@ class CalendarDBMapper:
             collision_ids=model.collision_ids,
             mini_service_ids=[c.id for c in model.mini_services or []],
         )
+
+    def to_model(self, entity: Calendar, target: CalendarModel | None = None) -> CalendarModel:
+        """
+        Convert a Domain Calendar to an SQLAlchemy CalendarModel.
+
+        :param entity: The Domain Calendar instance.
+        :param target: The target CalendarModel instance to update.
+        :return: A CalendarModel instance.
+        """
+        if target is None:
+            target = CalendarModel(id=entity.id)
+        target.provider_id = entity.provider_id
+        target.reservation_service_id = entity.reservation_service_id
+        target.reservation_type = entity.reservation_type
+        target.color = entity.color
+        target.max_people = entity.max_people
+        target.more_than_max_people_with_permission = entity.more_than_max_people_with_permission
+        target.collision_with_itself = entity.collision_with_itself
+        target.club_member_rules = entity.club_member_rules
+        target.active_member_rules = entity.active_member_rules
+        target.manager_rules = entity.manager_rules
+        return target
