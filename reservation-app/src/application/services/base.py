@@ -1,41 +1,34 @@
 """
-Define an abstract base class AbstractCRUDService.
+Define abstract and concrete base application services.
 
-This class provides a common interface for services that implement CRUD operations on objects.
+This module provides generic application services that orchestrate domain entities,
+repository ports, and presentation DTO mappers following Domain-Driven Design (DDD)
+and Clean Architecture principles.
 """
 
 from abc import ABC, abstractmethod
-from typing import TypeVar
 from uuid import UUID
 
+from application.mappers import SchemaEntityMapper
 from application.ports.repositories import BaseRepository
 from core.bootstrap.exceptions import BaseAppError, Entity, EntityNotFoundError
+from domain.entities import BaseEntity
 from pydantic import BaseModel
 
-SchemaLite = TypeVar("SchemaLite", bound=BaseModel)
-SchemaDetail = TypeVar("SchemaDetail", bound=BaseModel)
-Repository = TypeVar("Repository", bound=BaseRepository)
-CreateSchema = TypeVar("CreateSchema", bound=BaseModel)
-UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
 
-
-class AbstractCRUDService[
+class AbstractBaseService[
     SchemaLite: BaseModel,
     SchemaDetail: BaseModel,
     Repository: BaseRepository,
+    DomainEntity: BaseEntity,
     CreateSchema: BaseModel,
     UpdateSchema: BaseModel,
 ](ABC):
     """
-    Abstract base class for a CRUD service.
+    Abstract base class for application use-case services.
 
-    This class defines a common interface for services that implement CRUD
-    (Create, Read, Update, Delete) operations on objects of type `ModelType`.
-
-    Additionally added the read_all implementation.
-
-    By subclassing this class, you can create a CRUD service that works with
-    objects of any type `ModelType`.
+    Defines a contract for application services operating on domain entities and
+    translating between presentation-layer DTO schemas and domain representations.
     """
 
     @abstractmethod
@@ -45,150 +38,160 @@ class AbstractCRUDService[
         include_removed: bool = False,
     ) -> SchemaDetail:
         """
-        Retrieve an object from the database.
+        Retrieve a domain entity by ID and map it to a detailed DTO schema.
 
-        If include_removed is True retrieve a single record
-        including marked as deleted.
-
-        :param id_: the ID of the object to retrieve.
-        :param include_removed: include removed object or not.
-
-        :returns T: the retrieved object.
+        :param id_: The unique identifier of the domain entity.
+        :param include_removed: Whether to include soft-deleted entities.
+        :return: Detailed DTO schema representation of the domain entity.
         """
 
     @abstractmethod
     async def get_all(self, include_removed: bool = False) -> list[SchemaLite]:
         """
-        Retrieve all objects from the database.
+        Retrieve all domain entities and map them to lite DTO schemas.
 
-        If include_removed is True retrieve all objects
-        including marked as deleted.
-
-        :param include_removed: include removed object or not.
-
-        :returns List[T]: A list of all objects in the database.
+        :param include_removed: Whether to include soft-deleted entities.
+        :return: List of lite DTO schema representations.
         """
 
     @abstractmethod
-    async def create(self, obj_in: CreateSchema) -> SchemaDetail:
+    async def create(self, create_schema: CreateSchema) -> SchemaDetail:
         """
-        Create an object in the database.
+        Create a new domain entity from an input DTO schema and persist it.
 
-        :param obj_in: the object to create.
-
-        :returns T: the created object.
+        :param create_schema: Pydantic creation DTO schema.
+        :return: Detailed DTO schema representation of the created entity.
         """
 
     @abstractmethod
     async def update(
         self,
         id_: UUID,
-        obj_in: UpdateSchema,
+        update_schema: UpdateSchema,
     ) -> SchemaDetail:
         """
-        Update an object in the database.
+        Apply updates to an existing domain entity and persist changes.
 
-        :param id_: the ID of the object to update.
-        :param obj_in: the updated object.
-
-        :returns T: the updated object.
+        :param id_: The unique identifier of the domain entity to update.
+        :param update_schema: Pydantic update DTO schema containing modification data.
+        :return: Detailed DTO schema representation of the updated entity.
         """
 
     @abstractmethod
     async def restore(self, id_: UUID) -> SchemaDetail:
         """
-        Restore a previously soft-removed object by its ID.
+        Restore a previously soft-removed domain entity by ID.
 
-        :param id_: The ID of the object to restore.
-
-        :returns T: The restored object.
+        :param id_: Unique identifier of the domain entity to restore.
+        :return: Detailed DTO schema representation of the restored entity.
         """
 
     @abstractmethod
     async def soft_delete(self, id_: UUID) -> SchemaDetail:
         """
-        Soft-delete an object.
+        Soft-delete a domain entity by marking it as deleted.
 
-        This operation marks the object as deleted without removing it from the database.
-
-        :param id_: Unique identifier of the object.
-
-        :return T: The soft-deleted object.
+        :param id_: Unique identifier of the domain entity.
+        :return: Detailed DTO schema representation of the soft-deleted entity.
         """
 
     @abstractmethod
     async def delete(self, id_: UUID) -> None:
         """
-        Permanently delete an object.
+        Permanently remove a domain entity from persistence storage.
 
-        This operation removes the object from the database.
-
-        :param id_: The ID of the object to delete.
-        :param hard_remove: hard remove the object or not.
+        :param id_: Unique identifier of the domain entity to delete.
         """
 
 
-class CrudServiceBase(
-    AbstractCRUDService[SchemaLite, SchemaDetail, Repository, CreateSchema, UpdateSchema]
+class BaseService[
+    SchemaLite: BaseModel,
+    SchemaDetail: BaseModel,
+    Repository: BaseRepository,
+    DomainEntity: BaseEntity,
+    CreateSchema: BaseModel,
+    UpdateSchema: BaseModel,
+](
+    AbstractBaseService[
+        SchemaLite, SchemaDetail, Repository, DomainEntity, CreateSchema, UpdateSchema
+    ]
 ):
     """
-    A base class for implementing a CRUD (Create, Read, Update, Delete).
+    Generic application service implementing use-case operations for domain entities.
 
-    Service with methods for creating, reading, reading all, updating and deleting objects.
-
-    It's a generic class that takes three type parameters:
-
-    ModelType which represents the type of objects being stored in the database,
-    CreateSchema which represents the input data for creating objects, and
-    UpdateSchema which represents the input data for updating objects.
+    Orchestrates interaction between repository ports, domain entity invariants, and
+    schema mappers.
     """
 
-    def __init__(self, repo: Repository, entity_name: Entity):
+    def __init__(
+        self,
+        repo: Repository,
+        entity_name: Entity,
+        schema_lite: type[SchemaLite],
+        schema_detail: type[SchemaDetail],
+        mapper: SchemaEntityMapper,
+    ):
         self.repo: Repository = repo
         self.entity_name: Entity = entity_name
+        self.schema_lite: type[SchemaLite] = schema_lite
+        self.schema_detail: type[SchemaDetail] = schema_detail
+        self.mapper: SchemaEntityMapper = mapper
 
     async def get(
         self,
         id_: UUID,
         include_removed: bool = False,
     ) -> SchemaDetail:
-        obj = await self.repo.get(id_, include_removed)
-        if obj is None:
+        entity = await self.repo.get(id_, include_removed)
+        if entity is None:
             raise EntityNotFoundError(self.entity_name, id_)
-        return obj
+        return self.mapper.to_schema(entity)
 
     async def get_all(self, include_removed: bool = False) -> list[SchemaLite]:
-        return await self.repo.get_all(include_removed)
+        entities = await self.repo.get_all(include_removed)
+        return [self.mapper.to_schema(entity) for entity in entities]
 
-    async def create(self, obj_in: CreateSchema) -> SchemaDetail:
-        return await self.repo.create(obj_in)
+    async def create(self, create_schema: CreateSchema) -> SchemaDetail:
+        entity = self.mapper.to_entity(create_schema)
+        saved_entity = await self.repo.create(entity)
+        return self.mapper.to_schema(saved_entity)
 
     async def update(
         self,
         id_: UUID,
-        obj_in: UpdateSchema,
+        update_schema: UpdateSchema,
     ) -> SchemaDetail:
-        obj_to_update = await self.get(id_)
-        if obj_to_update is None:
+        entity = await self.repo.get(id_)
+        if entity is None:
             raise EntityNotFoundError(self.entity_name, id_)
-        return await self.repo.update(db_obj=obj_to_update, obj_in=obj_in)
+        updated_entity = self.mapper.update_entity(entity, update_schema)
+        updated = await self.repo.update(updated_entity)
+        return self.mapper.to_schema(updated)
 
     async def restore(self, id_: UUID) -> SchemaDetail:
-        obj = await self.get(id_, True)
-        if obj.deleted_at is None:  # type: ignore
-            message = f"A {self.entity_name.value} was not soft deleted."
-            raise BaseAppError(message)
+        obj = await self.repo.get(id_, True)
         if obj is None:
             raise EntityNotFoundError(self.entity_name, id_)
-        return await self.repo.restore(obj)
+        deleted_at = getattr(obj, "deleted_at", None)
+        if deleted_at is None:
+            message = f"A {self.entity_name.value} was not soft deleted."
+            raise BaseAppError(message)
+        restored = await self.repo.restore(obj)
+        return self.mapper.to_schema(restored)
 
     async def soft_delete(self, id_: UUID) -> SchemaDetail:
-        obj = await self.get(id_, True)
-        if obj.deleted_at is not None:  # type: ignore
+        entity = await self.repo.get(id_, True)
+        if entity is None:
+            raise EntityNotFoundError(self.entity_name, id_)
+        deleted_at = getattr(entity, "deleted_at", None)
+        if deleted_at is not None:
             message = f"A {self.entity_name.value} is already soft deleted."
             raise BaseAppError(message)
-        return await self.repo.soft_remove(obj)
+        deleted = await self.repo.soft_remove(entity)
+        return self.mapper.to_schema(deleted)
 
     async def delete(self, id_: UUID) -> None:
-        await self.get(id_, True)
+        entity = await self.repo.get(id_, True)
+        if entity is None:
+            raise EntityNotFoundError(self.entity_name, id_)
         await self.repo.remove(id_)
