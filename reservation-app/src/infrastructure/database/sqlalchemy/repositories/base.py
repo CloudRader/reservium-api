@@ -92,7 +92,7 @@ class SQLAlchemyBaseRepository[DomainEntity: BaseEntity](BaseRepository[DomainEn
         await self.db.commit()
         return [self.mapper.to_entity(obj) for obj in db_objs]
 
-    async def update(self, *, entity: DomainEntity) -> DomainEntity:
+    async def update(self, entity: DomainEntity) -> DomainEntity:
         stmt = (
             select(self.model)
             .filter(self.model.id == entity.id)

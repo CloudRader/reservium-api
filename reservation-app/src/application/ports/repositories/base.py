@@ -87,7 +87,7 @@ class BaseRepository[Entity: BaseEntity](ABC):
         """
 
     @abstractmethod
-    async def update(self, *, entity: Entity) -> Entity:
+    async def update(self, entity: Entity) -> Entity:
         """
         Update an existing record with data from the input schema.
 
