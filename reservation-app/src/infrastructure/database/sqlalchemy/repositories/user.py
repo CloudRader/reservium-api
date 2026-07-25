@@ -61,7 +61,7 @@ class SQLAlchemyUserRepository(
         if past:
             stmt = stmt.where(self.event_model.reservation_end < now)
         elif past is False:
-            stmt = stmt.where(self.event_model.reservation_start > now)
+            stmt = stmt.where(self.event_model.reservation_end > now)
 
         offset = (page - 1) * limit
         stmt = stmt.offset(offset).limit(limit)
