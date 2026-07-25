@@ -100,7 +100,7 @@ class SQLAlchemyEventRepository(
         if past:
             stmt = stmt.filter(self.model.reservation_end < now)
         elif past is False:
-            stmt = stmt.filter(self.model.reservation_start > now)
+            stmt = stmt.filter(self.model.reservation_end > now)
 
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
