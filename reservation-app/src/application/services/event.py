@@ -533,8 +533,8 @@ class EventService(AbstractEventService):
     ) -> EventLite:
         event_to_update = await self.get(id_)
 
-        if event_to_update.reservation_start < dt.datetime.now():
-            message = "You cannot change the reservation time after it has started."
+        if event_to_update.reservation_end < dt.datetime.now():
+            message = "You cannot change the reservation time after it has ended."
             raise BaseAppError(message)
 
         if event_to_update.event_state == EventState.CANCELED:
