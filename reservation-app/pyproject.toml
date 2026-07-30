@@ -22,7 +22,7 @@ dependencies = [
     "google-auth-oauthlib==1.4.0",
     "google-api-python-client==2.198.0",
     "python-dateutil==2.9.0.post0",
-    "aiohttp==3.14.2",
+    "aiohttp==3.14.3",
     "jwcrypto==1.5.8",
     "authzed==1.25.0",
     "authlib==1.7.2",
