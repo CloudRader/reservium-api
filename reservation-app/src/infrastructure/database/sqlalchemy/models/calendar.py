@@ -2,21 +2,19 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 from uuid import UUID
 
+from domain.value_objects import Rules
 from infrastructure.database.sqlalchemy.models.base import Base
 from infrastructure.database.sqlalchemy.models.types.rules_type import RulesType
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:  # pragma: no cover
-    from domain.value_objects import Rules
     from infrastructure.database.sqlalchemy.models.event import Event
     from infrastructure.database.sqlalchemy.models.mini_service import MiniService
     from infrastructure.database.sqlalchemy.models.reservation_service import ReservationService
-else:
-    Rules = Any
 
 
 class Calendar(Base):
@@ -31,7 +29,7 @@ class Calendar(Base):
     )
     collision_with_itself: Mapped[bool] = mapped_column(default=False, nullable=False)
 
-    club_member_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=True)
+    club_member_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
     active_member_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
     manager_rules: Mapped[Rules] = mapped_column(RulesType(), nullable=False)
 
