@@ -45,7 +45,7 @@ def render_item(type_, obj, autogen_context):  # noqa: ARG001
         autogen_context.imports.add(
             "from infrastructure.database.sqlalchemy.models.types.rules_type import RulesType"
         )
-        return "RulesType(length=sa.TEXT())"
+        return "RulesType()"
     return False
 
 
