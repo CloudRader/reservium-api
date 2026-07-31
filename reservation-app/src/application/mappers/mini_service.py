@@ -10,14 +10,14 @@ from dataclasses import dataclass
 from typing import final
 
 from application.mappers.base import SchemaEntityMapper
-from application.schemas import MiniServiceCreate, MiniServiceLite, MiniServiceUpdate
+from application.schemas import MiniServiceCreate, MiniServiceSchema, MiniServiceUpdate
 from domain.entities import MiniService
 
 
 @final
 @dataclass(frozen=True, slots=True)
 class MiniServiceMapper(
-    SchemaEntityMapper[MiniService, MiniServiceCreate, MiniServiceUpdate, MiniServiceLite]
+    SchemaEntityMapper[MiniService, MiniServiceCreate, MiniServiceUpdate, MiniServiceSchema]
 ):
     """Mapper for converting between MiniService Domain Entities and Pydantic Schemas."""
 
@@ -31,9 +31,10 @@ class MiniServiceMapper(
         name = schema.name if schema.name is not None else entity.name
         return dataclasses.replace(entity, name=name)
 
-    def to_schema(self, entity: MiniService) -> MiniServiceLite:
-        return MiniServiceLite(
+    def to_schema(self, entity: MiniService) -> MiniServiceSchema:
+        return MiniServiceSchema(
             id=entity.id,
+            deleted_at=entity.deleted_at,
             name=entity.name,
             reservation_service_id=entity.reservation_service_id,
         )

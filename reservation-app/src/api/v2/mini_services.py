@@ -7,8 +7,7 @@ from api.api_base import BaseCRUDRouter
 from api.permissions import abac_manage_rs_by_id, abac_manage_rs_from_body
 from application.schemas import (
     MiniServiceCreate,
-    MiniServiceDetail,
-    MiniServiceLite,
+    MiniServiceSchema,
     MiniServiceUpdate,
 )
 from application.services import MiniServiceService
@@ -28,8 +27,7 @@ class MiniServiceRouter(
     BaseCRUDRouter[
         MiniServiceCreate,
         MiniServiceUpdate,
-        MiniServiceLite,
-        MiniServiceDetail,
+        MiniServiceSchema,
         MiniServiceService,
     ]
 ):
@@ -47,8 +45,7 @@ class MiniServiceRouter(
             service_dep=MiniServiceService,
             schema_create=MiniServiceCreate,
             schema_update=MiniServiceUpdate,
-            schema_lite=MiniServiceLite,
-            schema_detail=MiniServiceDetail,
+            schema_read=MiniServiceSchema,
             entity_name=Entity.MINI_SERVICE,
             permissions_create=("mini_services.create",),
             permissions_update=("mini_services.update",),
@@ -56,16 +53,16 @@ class MiniServiceRouter(
             permissions_delete=("mini_services.soft_delete",),
             permissions_hard_delete=("mini_services.hard_delete",),
             abac_create=[abac_manage_rs_from_body(MiniServiceCreate)],
-            abac_update=[abac_manage_rs_by_id(MiniServiceService)],
-            abac_restore=[abac_manage_rs_by_id(MiniServiceService)],
-            abac_delete=[abac_manage_rs_by_id(MiniServiceService)],
+            abac_update=[abac_manage_rs_by_id()],
+            abac_restore=[abac_manage_rs_by_id()],
+            abac_delete=[abac_manage_rs_by_id()],
         )
 
         self.register_routes()
 
         @router.get(
             "/name/{name}",
-            response_model=MiniServiceDetail,
+            response_model=MiniServiceSchema,
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )

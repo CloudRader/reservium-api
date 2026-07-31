@@ -57,3 +57,47 @@ class SQLAlchemyMiniServiceRepository(SQLAlchemyBaseRepository[MiniService], Min
         )
         result = await self.db.execute(stmt)
         return [row[0] for row in result.fetchall()]
+
+    async def get_by_reservation_service_id(
+        self,
+        reservation_service_id: UUID,
+        include_removed: bool = False,
+    ) -> list[MiniService]:
+        stmt = select(self.model).where(self.model.reservation_service_id == reservation_service_id)
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=include_removed)
+
+        result = await self.db.execute(stmt)
+        return [self.mapper.to_entity(obj) for obj in result.scalars().all()]
+
+    async def get_by_reservation_service_ids(
+        self,
+        reservation_service_ids: list[UUID],
+        include_removed: bool = False,
+    ) -> list[MiniService]:
+        if not reservation_service_ids:
+            return []
+
+        stmt = select(self.model).where(
+            self.model.reservation_service_id.in_(reservation_service_ids)
+        )
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=include_removed)
+
+        result = await self.db.execute(stmt)
+        return [self.mapper.to_entity(obj) for obj in result.scalars().all()]
+
+    async def get_by_calendar_ids(
+        self,
+        calendar_ids: list[UUID],
+        include_removed: bool = False,
+    ) -> list[MiniService]:
+        if not calendar_ids:
+            return []
+
+        stmt = select(self.model).where(self.model.calendar_ids.in_(calendar_ids))
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=include_removed)
+
+        result = await self.db.execute(stmt)
+        return [self.mapper.to_entity(obj) for obj in result.scalars().all()]

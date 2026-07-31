@@ -60,3 +60,48 @@ class MiniServiceRepository(BaseRepository[MiniService], ABC):
 
         :return: list of ids.
         """
+
+    @abstractmethod
+    async def get_by_reservation_service_id(
+        self,
+        reservation_service_id: UUID,
+        include_removed: bool = False,
+    ) -> list[MiniService]:
+        """
+        Fetch related mini services for a specific reservation service.
+
+        :param reservation_service_id: ID of the Reservation Service.
+        :param include_removed: Include removed object or not.
+
+        :return: List of related mini services.
+        """
+
+    @abstractmethod
+    async def get_by_reservation_service_ids(
+        self,
+        reservation_service_ids: list[UUID],
+        include_removed: bool = False,
+    ) -> list[MiniService]:
+        """
+        Fetch related mini services for multiple reservation service IDs in bulk.
+
+        :param reservation_service_ids: List of Reservation Service IDs.
+        :param include_removed: Include removed objects or not.
+
+        :return: List of related mini services for all specified service IDs.
+        """
+
+    @abstractmethod
+    async def get_by_calendar_ids(
+        self,
+        calendar_ids: list[UUID],
+        include_removed: bool = False,
+    ) -> list[MiniService]:
+        """
+        Fetch related mini services for multiple calendar IDs in bulk.
+
+        :param calendar_ids: List of Calendar IDs.
+        :param include_removed: Include removed objects or not.
+
+        :return: List of related mini services for all specified calendar IDs.
+        """
