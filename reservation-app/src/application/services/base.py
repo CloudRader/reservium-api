@@ -17,8 +17,7 @@ from pydantic import BaseModel
 
 
 class AbstractBaseService[
-    SchemaLite: BaseModel,
-    SchemaDetail: BaseModel,
+    Schema: BaseModel,
     Repository: BaseRepository,
     DomainEntity: BaseEntity,
     CreateSchema: BaseModel,
@@ -36,7 +35,7 @@ class AbstractBaseService[
         self,
         id_: UUID,
         include_removed: bool = False,
-    ) -> SchemaDetail:
+    ) -> Schema:
         """
         Retrieve a domain entity by ID and map it to a detailed DTO schema.
 
@@ -46,7 +45,7 @@ class AbstractBaseService[
         """
 
     @abstractmethod
-    async def get_all(self, include_removed: bool = False) -> list[SchemaLite]:
+    async def get_all(self, include_removed: bool = False) -> list[Schema]:
         """
         Retrieve all domain entities and map them to lite DTO schemas.
 
@@ -55,7 +54,7 @@ class AbstractBaseService[
         """
 
     @abstractmethod
-    async def create(self, create_schema: CreateSchema) -> SchemaDetail:
+    async def create(self, create_schema: CreateSchema) -> Schema:
         """
         Create a new domain entity from an input DTO schema and persist it.
 
@@ -68,7 +67,7 @@ class AbstractBaseService[
         self,
         id_: UUID,
         update_schema: UpdateSchema,
-    ) -> SchemaDetail:
+    ) -> Schema:
         """
         Apply updates to an existing domain entity and persist changes.
 
@@ -78,7 +77,7 @@ class AbstractBaseService[
         """
 
     @abstractmethod
-    async def restore(self, id_: UUID) -> SchemaDetail:
+    async def restore(self, id_: UUID) -> Schema:
         """
         Restore a previously soft-removed domain entity by ID.
 
@@ -87,7 +86,7 @@ class AbstractBaseService[
         """
 
     @abstractmethod
-    async def soft_delete(self, id_: UUID) -> SchemaDetail:
+    async def soft_delete(self, id_: UUID) -> Schema:
         """
         Soft-delete a domain entity by marking it as deleted.
 
@@ -105,17 +104,12 @@ class AbstractBaseService[
 
 
 class BaseService[
-    SchemaLite: BaseModel,
-    SchemaDetail: BaseModel,
+    Schema: BaseModel,
     Repository: BaseRepository,
     DomainEntity: BaseEntity,
     CreateSchema: BaseModel,
     UpdateSchema: BaseModel,
-](
-    AbstractBaseService[
-        SchemaLite, SchemaDetail, Repository, DomainEntity, CreateSchema, UpdateSchema
-    ]
-):
+](AbstractBaseService[Schema, Repository, DomainEntity, CreateSchema, UpdateSchema]):
     """
     Generic application service implementing use-case operations for domain entities.
 
@@ -127,31 +121,29 @@ class BaseService[
         self,
         repo: Repository,
         entity_name: Entity,
-        schema_lite: type[SchemaLite],
-        schema_detail: type[SchemaDetail],
+        schema: type[Schema],
         mapper: SchemaEntityMapper,
     ):
         self.repo: Repository = repo
         self.entity_name: Entity = entity_name
-        self.schema_lite: type[SchemaLite] = schema_lite
-        self.schema_detail: type[SchemaDetail] = schema_detail
+        self.schema: type[Schema] = schema
         self.mapper: SchemaEntityMapper = mapper
 
     async def get(
         self,
         id_: UUID,
         include_removed: bool = False,
-    ) -> SchemaDetail:
+    ) -> Schema:
         entity = await self.repo.get(id_, include_removed)
         if entity is None:
             raise EntityNotFoundError(self.entity_name, id_)
         return self.mapper.to_schema(entity)
 
-    async def get_all(self, include_removed: bool = False) -> list[SchemaLite]:
+    async def get_all(self, include_removed: bool = False) -> list[Schema]:
         entities = await self.repo.get_all(include_removed)
         return [self.mapper.to_schema(entity) for entity in entities]
 
-    async def create(self, create_schema: CreateSchema) -> SchemaDetail:
+    async def create(self, create_schema: CreateSchema) -> Schema:
         entity = self.mapper.to_entity(create_schema)
         saved_entity = await self.repo.create(entity)
         return self.mapper.to_schema(saved_entity)
@@ -160,7 +152,7 @@ class BaseService[
         self,
         id_: UUID,
         update_schema: UpdateSchema,
-    ) -> SchemaDetail:
+    ) -> Schema:
         entity = await self.repo.get(id_)
         if entity is None:
             raise EntityNotFoundError(self.entity_name, id_)
@@ -168,7 +160,7 @@ class BaseService[
         updated = await self.repo.update(updated_entity)
         return self.mapper.to_schema(updated)
 
-    async def restore(self, id_: UUID) -> SchemaDetail:
+    async def restore(self, id_: UUID) -> Schema:
         obj = await self.repo.get(id_, True)
         if obj is None:
             raise EntityNotFoundError(self.entity_name, id_)
@@ -179,7 +171,7 @@ class BaseService[
         restored = await self.repo.restore(obj)
         return self.mapper.to_schema(restored)
 
-    async def soft_delete(self, id_: UUID) -> SchemaDetail:
+    async def soft_delete(self, id_: UUID) -> Schema:
         entity = await self.repo.get(id_, True)
         if entity is None:
             raise EntityNotFoundError(self.entity_name, id_)

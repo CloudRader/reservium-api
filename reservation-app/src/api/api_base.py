@@ -2,11 +2,11 @@
 
 import logging
 from collections.abc import Awaitable, Callable
-from typing import Annotated, TypeVar
+from typing import Annotated
 from uuid import UUID
 
 from api.permissions import require_permission
-from application.services.base import CrudServiceBase
+from application.services.base import BaseService
 from core.bootstrap.exceptions import ERROR_RESPONSES, BaseAppError, Entity
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Path, Query, status
@@ -14,20 +14,13 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
-TCreate = TypeVar("TCreate", bound=BaseModel)
-TUpdate = TypeVar("TUpdate", bound=BaseModel)
-TReadLite = TypeVar("TReadLite", bound=BaseModel)
-TReadDetail = TypeVar("TReadDetail", bound=BaseModel)
-TService = TypeVar("TService", bound=CrudServiceBase)
-ABACDep = Callable[..., Awaitable[None]]
-
 
 class BaseCRUDRouter[
     TCreate: BaseModel,
     TUpdate: BaseModel,
-    TReadLite: BaseModel,
-    TReadDetail: BaseModel,
-    TService: CrudServiceBase,
+    TReadSchema: BaseModel,
+    TService: BaseService,
+    ABACDep: Callable[..., Awaitable[None]],
 ]:
     """
     A base class for automatically registering standard CRUD routes to a FastAPI router.
@@ -45,8 +38,7 @@ class BaseCRUDRouter[
     :param service_dep: Dependency-injected service providing business logic.
     :param schema_create: Pydantic schema used for creating the resource.
     :param schema_update: Pydantic schema used for updating the resource.
-    :param schema_lite: Pydantic schema lite used for reading the resource.
-    :param schema_detail: Pydantic schema detail used for reading the resource.
+    :param schema_read: Pydantic schema used for reading the resource.
     :param entity_name: A human-readable name for the entity (used in error messages).
     :param enable_create: Whether to register the create endpoint.
     :param enable_read: Whether to register the read (get) endpoints.
@@ -61,8 +53,7 @@ class BaseCRUDRouter[
         service_dep: Callable[..., TService],
         schema_create: type[TCreate],
         schema_update: type[TUpdate],
-        schema_lite: type[TReadLite],
-        schema_detail: type[TReadDetail],
+        schema_read: type[TReadSchema],
         entity_name: Entity,
         enable_create: bool = True,
         enable_read: bool = True,
@@ -89,8 +80,7 @@ class BaseCRUDRouter[
         self.service_dep = service_dep
         self.schema_create = schema_create
         self.schema_update = schema_update
-        self.schema_lite = schema_lite
-        self.schema_detail = schema_detail
+        self.schema_read = schema_read
         self.entity_name = entity_name
 
         # route toggles
@@ -140,12 +130,12 @@ class BaseCRUDRouter[
     # ---------- route registrations ----------
     def register_get_all(self) -> None:
         """Register the GET / endpoint to retrieve all entities."""
-        schema_lite: type[TReadLite] = self.schema_lite
+        schema_read: type[TReadSchema] = self.schema_read
         service_dep: Callable[..., TService] = self.service_dep
 
         @self.router.get(
             "/",
-            response_model=list[schema_lite],
+            response_model=list[schema_read],
             dependencies=[
                 Depends(require_permission(*self.permissions_read)),
                 *[Depends(dep) for dep in self.abac_read],
@@ -167,12 +157,12 @@ class BaseCRUDRouter[
 
     def register_get_by_id(self) -> None:
         """Register the GET /{id} endpoint to retrieve an entity by its ID."""
-        schema_detail: type[TReadDetail] = self.schema_detail
+        schema_read: type[TReadSchema] = self.schema_read
         service_dep: Callable[..., TService] = self.service_dep
 
         @self.router.get(
             "/{id}",
-            response_model=schema_detail,
+            response_model=schema_read,
             responses=ERROR_RESPONSES["404"],
             dependencies=[
                 Depends(require_permission(*self.permissions_read)),
@@ -200,12 +190,12 @@ class BaseCRUDRouter[
     def register_create(self) -> None:
         """Register the POST / endpoint to create a new entity."""
         schema_create: type[TCreate] = self.schema_create
-        schema_detail: type[TReadDetail] = self.schema_detail
+        schema_read: type[TReadSchema] = self.schema_read
         service_dep: Callable[..., TService] = self.service_dep
 
         @self.router.post(
             "/",
-            response_model=schema_detail,
+            response_model=schema_read,
             responses=ERROR_RESPONSES["400_401_403_409"],
             dependencies=[
                 Depends(require_permission(*self.permissions_create)),
@@ -226,12 +216,12 @@ class BaseCRUDRouter[
     def register_create_multiple(self) -> None:
         """Register the POST / endpoint to create multiple entities."""
         schema_create: type[TCreate] = self.schema_create
-        schema_detail: type[TReadDetail] = self.schema_detail
+        schema_read: type[TReadSchema] = self.schema_read
         service_dep: Callable[..., TService] = self.service_dep
 
         @self.router.post(
             "/batch",
-            response_model=list[schema_detail],
+            response_model=list[schema_read],
             responses=ERROR_RESPONSES["400_401_403_409"],
             dependencies=[
                 Depends(require_permission(*self.permissions_create)),
@@ -245,7 +235,7 @@ class BaseCRUDRouter[
             objs_create: list[schema_create],
         ):
             """Create multiple objects in a single request."""
-            objs_result: list[schema_detail] = []
+            objs_result: list[schema_read] = []
             for obj_create in objs_create:
                 obj = await self._create_single_object(service, obj_create)
                 logger.debug("Created %s: %s", self.entity_name.value, obj)
@@ -255,12 +245,12 @@ class BaseCRUDRouter[
     def register_update(self) -> None:
         """Register the PUT /{id} endpoint to update an existing entity."""
         schema_update: type[TUpdate] = self.schema_update
-        schema_detail: type[TReadDetail] = self.schema_detail
+        schema_read: type[TReadSchema] = self.schema_read
         service_dep: Callable[..., TService] = self.service_dep
 
         @self.router.put(
             "/{id}",
-            response_model=schema_detail,
+            response_model=schema_read,
             responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[
                 Depends(require_permission(*self.permissions_update)),
@@ -281,12 +271,12 @@ class BaseCRUDRouter[
 
     def register_restore(self) -> None:
         """Register the PUT /{id}/restore endpoint to restore soft delete entity."""
-        schema_detail: type[TReadDetail] = self.schema_detail
+        schema_read: type[TReadSchema] = self.schema_read
         service_dep: Callable[..., TService] = self.service_dep
 
         @self.router.put(
             "/{id}/restore",
-            response_model=schema_detail,
+            response_model=schema_read,
             responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[
                 Depends(require_permission(*self.permissions_restore)),
@@ -306,12 +296,12 @@ class BaseCRUDRouter[
 
     def register_delete(self) -> None:
         """Register the DELETE /{id} endpoint to delete an entity."""
-        schema_lite: type[TReadLite] = self.schema_lite
+        schema_read: type[TReadSchema] = self.schema_read
         service_dep: Callable[..., TService] = self.service_dep
 
         @self.router.delete(
             "/{id}",
-            response_model=schema_lite,
+            response_model=schema_read,
             responses=ERROR_RESPONSES["400_401_403_404"],
             dependencies=[
                 Depends(require_permission(*self.permissions_delete)),
@@ -355,7 +345,7 @@ class BaseCRUDRouter[
     async def _create_single_object(
         service: TService,
         obj_create: TCreate,
-    ) -> TReadDetail:
+    ) -> TReadSchema:
         """
         Help creating a single object with permission checks.
 
