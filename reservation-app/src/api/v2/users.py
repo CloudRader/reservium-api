@@ -5,9 +5,9 @@ from typing import Annotated
 
 from api.dependencies import get_current_user
 from api.permissions import require_permission
-from application.schemas import UserLite
+from application.schemas import UserSchema
 from application.schemas.event import EventDetail
-from application.services import UserService
+from application.services import EventService, UserService
 from core.bootstrap.exceptions import ERROR_RESPONSES
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, FastAPI, Query, status
@@ -21,7 +21,7 @@ router = APIRouter()
 
 @router.get(
     "/",
-    response_model=list[UserLite],
+    response_model=list[UserSchema],
     responses=ERROR_RESPONSES["401_403"],
     dependencies=[Depends(require_permission("users.read"))],
     status_code=status.HTTP_200_OK,
@@ -29,7 +29,7 @@ router = APIRouter()
 @inject
 async def get_all(
     service: FromDishka[UserService],
-    user: Annotated[UserLite, Depends(get_current_user)],
+    user: Annotated[UserSchema, Depends(get_current_user)],
 ):
     """
     Retrieve all users from the database.
@@ -47,12 +47,12 @@ async def get_all(
 
 @router.get(
     "/me",
-    response_model=UserLite,
+    response_model=UserSchema,
     responses=ERROR_RESPONSES["401"],
     status_code=status.HTTP_200_OK,
 )
 async def get_me(
-    user: Annotated[UserLite, Depends(get_current_user)],
+    user: Annotated[UserSchema, Depends(get_current_user)],
 ):
     """Get currently authenticated user."""
     logger.debug("Returning profile for user %s.", user.id)
@@ -67,8 +67,8 @@ async def get_me(
 )
 @inject
 async def get_events_by_user(
-    service: FromDishka[UserService],
-    user: Annotated[UserLite, Depends(get_current_user)],
+    event_service: FromDishka[EventService],
+    user: Annotated[UserSchema, Depends(get_current_user)],
     page: int = Query(1, ge=1, description="Page number for pagination. Starts at 1."),
     limit: int = Query(
         20, ge=1, le=100, description="Number of events per page (pagination limit)."
@@ -83,4 +83,4 @@ async def get_events_by_user(
     logger.info(
         "User %s requested events (page=%s, limit=%s, past=%s).", user.id, page, limit, past
     )
-    return await service.get_events_by_user(user, page, limit, past)
+    return await event_service.get_by_user_id(user.id, page, limit, past)

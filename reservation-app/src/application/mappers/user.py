@@ -10,13 +10,13 @@ from dataclasses import dataclass
 from typing import final
 
 from application.mappers.base import SchemaEntityMapper
-from application.schemas import UserCreate, UserLite, UserUpdate
+from application.schemas import UserCreate, UserSchema, UserUpdate
 from domain.entities import User
 
 
 @final
 @dataclass(frozen=True, slots=True)
-class UserMapper(SchemaEntityMapper[User, UserCreate, UserUpdate, UserLite]):
+class UserMapper(SchemaEntityMapper[User, UserCreate, UserUpdate, UserSchema]):
     """Mapper for converting between User Domain Entities and Pydantic Schemas."""
 
     def to_entity(self, schema: UserCreate) -> User:
@@ -46,9 +46,10 @@ class UserMapper(SchemaEntityMapper[User, UserCreate, UserUpdate, UserLite]):
             roles=roles,
         )
 
-    def to_schema(self, entity: User) -> UserLite:
-        return UserLite(
+    def to_schema(self, entity: User) -> UserSchema:
+        return UserSchema(
             id=entity.id,
+            deleted_at=entity.deleted_at,
             username=entity.username,
             full_name=entity.full_name,
             provider_id=entity.provider_id,

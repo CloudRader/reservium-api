@@ -6,10 +6,9 @@ entities, decoupled from database-specific implementation details.
 """
 
 from abc import ABC, abstractmethod
-from uuid import UUID
 
 from application.ports.repositories import BaseRepository
-from domain.entities import Event, User
+from domain.entities import User
 
 
 class UserRepository(BaseRepository[User], ABC):
@@ -38,24 +37,4 @@ class UserRepository(BaseRepository[User], ABC):
         :param provider_id: The provider ID of the User.
 
         :return: The User instance if found, None otherwise.
-        """
-
-    @abstractmethod
-    async def get_events_by_user_id(
-        self,
-        id_: UUID,
-        page: int = 1,
-        limit: int = 20,
-        past: bool | None = None,
-    ) -> list[Event]:
-        """
-        Fetch related events for a specific user with pagination and time filtering.
-
-        :param id_: ID of the User.
-        :param page: The page number for pagination. Defaults to 1.
-        :param limit: The maximum number of events to return per page. Defaults to 20.
-        :param past: Filter for event time. `True` for past events, `False` for future events.
-            `None` to fetch all events (no time filtering).
-
-        :return: List of related events.
         """

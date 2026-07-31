@@ -1,102 +1,90 @@
 """
-Define an abstract base class AbstractUserService.
+Define user application services.
 
-This class works with User.
+This module provides abstract and concrete user application services for managing
+User domain entities, user role assignments, and Identity Provider user synchronization.
 """
 
 import logging
 from abc import ABC, abstractmethod
 
-from application.ports.repositories import ReservationServiceRepository, UserRepository
+from application.mappers import UserMapper
+from application.ports.repositories import (
+    ReservationServiceRepository,
+    UserRepository,
+)
 from application.schemas import (
     UserCreate,
-    UserDetail,
-    UserLite,
+    UserSchema,
     UserUpdate,
 )
-from application.schemas.event import EventDetail
-from application.services import CrudServiceBase
-from core.bootstrap.exceptions import Entity
+from application.services import BaseService
+from core.bootstrap.exceptions import Entity, EntityNotFoundError
+from domain.entities import User
 from infrastructure.identity.openid.schemas import UserInfo
 
 logger = logging.getLogger(__name__)
 
 
 class AbstractUserService(
-    CrudServiceBase[
-        UserLite,
-        UserDetail,
+    BaseService[
+        UserSchema,
         UserRepository,
+        User,
         UserCreate,
         UserUpdate,
     ],
     ABC,
 ):
     """
-    Abstract class defines the interface for a user service.
+    Abstract class defining the contract for user application services.
 
-    Provides CRUD operations for a specific UserModel.
+    Provides operations for managing User domain entities and synchronizing identity data.
     """
 
     @abstractmethod
     async def create_user(
         self,
         user_data: UserInfo,
-    ) -> UserLite:
+    ) -> UserSchema:
         """
-        Create a User in the database.
+        Create or update a User domain entity from Identity Provider UserInfo data.
 
-        :param user_data: Received data from IS.
-
-        :return: the created UserLite.
-        """
-
-    @abstractmethod
-    async def get_by_username(self, username: str) -> UserLite:
-        """
-        Retrieve a User instance by its username.
-
-        :param username: The username of the UserLite.
-
-        :return: The UserLite instance if found, None otherwise.
+        :param user_data: User claims received from Identity Provider.
+        :return: Lite DTO representation of the created or updated user entity.
         """
 
     @abstractmethod
-    async def get_events_by_user(
-        self,
-        user: UserLite,
-        page: int = 1,
-        limit: int = 20,
-        past: bool | None = None,
-    ) -> list[EventDetail]:
+    async def get_by_username(self, username: str) -> UserSchema:
         """
-        Retrieve all events linked to a given UserLite.
+        Retrieve a User domain entity by its username and map to a UserLite DTO.
 
-        :param user: The User object in database.
-        :param page: The page number for pagination. Defaults to 1.
-        :param limit: The maximum number of events to return per page. Defaults to 20.
-        :param past: Filter for event time. `True` for past events, `False` for future events.
-            `None` to fetch all events (no time filtering).
-
-        :return: List of EventWithCalendarInfo objects linked to the user.
+        :param username: The username of the User.
+        :return: Lite DTO representation if found, None otherwise.
         """
 
 
 class UserService(AbstractUserService):
-    """Class UserService represent service that work with UserLite."""
+    """Application service implementing user management and identity synchronization."""
 
     def __init__(
         self,
         user_repository: UserRepository,
         reservation_service_repository: ReservationServiceRepository,
+        mapper: UserMapper,
     ):
-        super().__init__(user_repository, Entity.USER)
+        super().__init__(
+            user_repository,
+            Entity.USER,
+            UserSchema,
+            mapper,
+        )
         self.reservation_service_repo = reservation_service_repository
 
     async def create_user(
         self,
         user_data: UserInfo,
-    ) -> UserLite:
+    ) -> UserSchema:
         user = await self.get_by_username(user_data.preferred_username)
         if not user:
             logger.info(
@@ -123,7 +111,8 @@ class UserService(AbstractUserService):
                 active_member=active_member,
                 roles=user_roles,
             )
-            return await self.update(user.id, user_update)
+            updated_user = await self.update(user.id, user_update)
+            return self.mapper.to_schema(updated_user)
 
         user_create = UserCreate(
             username=user_data.preferred_username,
@@ -132,18 +121,11 @@ class UserService(AbstractUserService):
             active_member=active_member,
             roles=user_roles,
         )
-        return await self.repo.create(user_create)
+        new_user = await self.create(user_create)
+        return self.mapper.to_schema(new_user)
 
-    async def get_by_username(self, username: str) -> UserLite:
-        return await self.repo.get_by_username(username)
-
-    async def get_events_by_user(
-        self,
-        user: UserLite,
-        page: int = 1,
-        limit: int = 20,
-        past: bool | None = None,
-    ) -> list[EventDetail]:
-        events = await self.repo.get_events_by_user_id(user.id, page, limit, past)
-
-        return [EventDetail.model_validate(event) for event in events]
+    async def get_by_username(self, username: str) -> UserSchema | None:
+        user = await self.repo.get_by_username(username)
+        if user is None:
+            raise EntityNotFoundError(self.entity_name, username)
+        return self.mapper.to_schema(user)

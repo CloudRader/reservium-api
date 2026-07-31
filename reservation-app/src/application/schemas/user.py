@@ -31,7 +31,7 @@ class UserUpdate(UserBase):
     active_member: bool | None = None
 
 
-class UserLite(UserBase):
+class UserSchema(UserBase):
     """Base model for user in database."""
 
     id: UUID
@@ -44,7 +44,7 @@ class UserLite(UserBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class UserDetail(UserLite):
+class UserDetail(UserSchema):
     """Extended API response schema with events."""
 
     events: list[EventDetail] = Field(default_factory=list)
