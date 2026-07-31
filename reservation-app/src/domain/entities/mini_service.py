@@ -1,6 +1,6 @@
 """MiniService domain entity."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import final
 from uuid import UUID
 
@@ -15,7 +15,6 @@ class MiniService(BaseEntity):
 
     name: str
     reservation_service_id: UUID
-    calendar_ids: list[UUID] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         """Validate business invariants of MiniService."""

@@ -1,6 +1,6 @@
 """Calendar domain entity."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import final
 from uuid import UUID
 
@@ -24,8 +24,6 @@ class Calendar(BaseEntity):
     active_member_rules: Rules
     manager_rules: Rules
     provider_id: str | None = None
-    collision_ids: list[UUID] = field(default_factory=list)
-    mini_service_ids: list[UUID] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         """Validate business invariants of Calendar."""
