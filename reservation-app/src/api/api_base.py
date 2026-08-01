@@ -14,13 +14,14 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
+type ABACDep = Callable[..., Awaitable[None]]
+
 
 class BaseCRUDRouter[
     TCreate: BaseModel,
     TUpdate: BaseModel,
     TReadSchema: BaseModel,
     TService: BaseService,
-    ABACDep: Callable[..., Awaitable[None]],
 ]:
     """
     A base class for automatically registering standard CRUD routes to a FastAPI router.
