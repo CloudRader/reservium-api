@@ -4,40 +4,38 @@ Define an abstract base class AbstractCalendarService.
 This class works with Calendar.
 """
 
+import dataclasses
 from abc import ABC, abstractmethod
 from uuid import UUID
 
+from application.mappers import CalendarMapper
 from application.ports.providers.calendar import CalendarProvider
-from application.ports.repositories import CalendarRepository
+from application.ports.repositories import CalendarRepository, MiniServiceRepository
 from application.schemas import (
     CalendarCreate,
-    CalendarDetail,
-    CalendarLite,
+    CalendarSchema,
     CalendarUpdate,
-    MiniServiceLite,
-    ReservationServiceDetail,
 )
-from application.schemas.calendar import CalendarDetailWithCollisions
-from application.services import CrudServiceBase
-from application.services.mini_service import MiniServiceService
-from application.services.reservation_service import ReservationServiceService
+from application.schemas.calendar import CalendarWithCollisions
+from application.services import BaseService
 from core.bootstrap.exceptions import (
     BaseAppError,
     Entity,
     EntityNotFoundError,
 )
+from domain.entities import Calendar, MiniService
+from domain.value_objects import Rules as DomainRules
 from infrastructure.calendar.google import (
     CalendarImportResult,
     GoogleCalendarCalendar,
 )
-from infrastructure.database.sqlalchemy.models import MiniServiceModel
 
 
 class AbstractCalendarService(
-    CrudServiceBase[
-        CalendarLite,
-        CalendarDetail,
+    BaseService[
+        CalendarSchema,
         CalendarRepository,
+        Calendar,
         CalendarCreate,
         CalendarUpdate,
     ],
@@ -54,7 +52,7 @@ class AbstractCalendarService(
         self,
         id_: UUID,
         include_removed: bool = False,
-    ) -> CalendarDetailWithCollisions:
+    ) -> CalendarWithCollisions:
         """
         Retrieve a single record by its id_ with collisions.
 
@@ -104,7 +102,7 @@ class AbstractCalendarService(
         self,
         reservation_type: str,
         include_removed: bool = False,
-    ) -> CalendarDetail | None:
+    ) -> CalendarSchema | None:
         """
         Retrieve a Calendar instance by its reservation_type.
 
@@ -119,7 +117,7 @@ class AbstractCalendarService(
         self,
         provider_id: str,
         include_removed: bool = False,
-    ) -> CalendarDetail | None:
+    ) -> CalendarSchema | None:
         """
         Retrieve a Calendar instance by its provider_id.
 
@@ -130,26 +128,17 @@ class AbstractCalendarService(
         """
 
     @abstractmethod
-    async def get_mini_services_by_id(self, calendar_id: UUID) -> list[MiniServiceLite]:
-        """
-        Retrieve all mini services linked to a given Calendar.
-
-        :param calendar_id: The id of the Calendar.
-
-        :return: The list of mini services.
-        """
-
-    @abstractmethod
-    async def get_reservation_service(
+    async def get_by_reservation_service_id(
         self,
-        id_: UUID,
-    ) -> ReservationServiceDetail:
+        reservation_service_id: UUID,
+        include_removed: bool = False,
+    ) -> list[CalendarSchema]:
         """
-        Retrieve the reservation service of this calendar by reservation service id.
+        Retrieve calendars by reservation service ID.
 
-        :param id_: The id of the calendar.
-
-        :return: Reservation Service of this calendar if found.
+        :param reservation_service_id: The ID of the reservation service.
+        :param include_removed: Optional flag to include removed calendars.
+        :return: List of CalendarDetail schemas linked to the reservation service.
         """
 
 
@@ -159,51 +148,56 @@ class CalendarService(AbstractCalendarService):
     def __init__(
         self,
         calendar_repository: CalendarRepository,
-        reservation_service_service: ReservationServiceService,
-        mini_service_service: MiniServiceService,
+        mini_service_repository: MiniServiceRepository,
         calendar_provider: CalendarProvider,
+        mapper: CalendarMapper,
     ):
-        super().__init__(calendar_repository, Entity.CALENDAR)
-        self.reservation_service_service = reservation_service_service
-        self.mini_service_service = mini_service_service
+        super().__init__(
+            calendar_repository,
+            Entity.CALENDAR,
+            CalendarSchema,
+            mapper,
+        )
+        self.mini_service_repo = mini_service_repository
         self.google_calendar_service = calendar_provider
 
     async def get_with_collisions(
         self,
         id_: UUID,
         include_removed: bool = False,
-    ) -> CalendarDetailWithCollisions:
+    ) -> CalendarWithCollisions:
         calendar = await self.repo.get_with_collisions(id_, include_removed)
         if calendar is None:
             raise EntityNotFoundError(self.entity_name, id_)
-        return calendar
+        return self.mapper.to_entity(calendar)
 
     async def create(
         self,
         obj_in: CalendarCreate,
-    ) -> CalendarDetail:
+    ) -> CalendarSchema:
         if obj_in.provider_id:
             await self.google_calendar_service.user_has_calendar_access(obj_in.provider_id)
         else:
             obj_in.provider_id = (
-                await self.google_calendar_service.create_calendar(
-                    obj_in.reservation_type,
-                )
+                await self.google_calendar_service.create_calendar(obj_in.reservation_type)
             ).id
 
         mini_services_in_calendar = await self._prepare_calendar_mini_services(
             obj_in.reservation_service_id, obj_in.mini_services
         )
 
-        return await self.repo.create_with_mini_services_and_collisions(
-            obj_in, mini_services_in_calendar
+        calendar_entity = CalendarMapper().to_entity(obj_in)
+
+        created = await self.repo.create_with_mini_services_and_collisions(
+            calendar_entity, mini_services_in_calendar, obj_in.collision_ids
         )
+        return self.mapper.to_schema(created)
 
     async def update(
         self,
         id_: UUID,
         obj_in: CalendarUpdate,
-    ) -> CalendarDetail:
+    ) -> CalendarSchema:
         calendar_to_update = await self.repo.get(id_)
         if calendar_to_update is None:
             raise EntityNotFoundError(self.entity_name, id_)
@@ -212,9 +206,22 @@ class CalendarService(AbstractCalendarService):
             calendar_to_update.reservation_service_id, obj_in.mini_services
         )
 
-        return await self.repo.update_with_mini_services_and_collisions(
-            calendar_to_update, obj_in, mini_services_in_calendar
+        update_data = obj_in.model_dump(exclude_unset=True)
+        if "mini_services" in update_data:
+            update_data["mini_service_ids"] = update_data.pop("mini_services")
+        if update_data.get("club_member_rules"):
+            update_data["club_member_rules"] = DomainRules(**update_data["club_member_rules"])
+        if update_data.get("active_member_rules"):
+            update_data["active_member_rules"] = DomainRules(**update_data["active_member_rules"])
+        if update_data.get("manager_rules"):
+            update_data["manager_rules"] = DomainRules(**update_data["manager_rules"])
+
+        updated_calendar = dataclasses.replace(calendar_to_update, **update_data)
+
+        updated = await self.repo.update_with_mini_services_and_collisions(
+            updated_calendar, mini_services_in_calendar, obj_in.collision_ids
         )
+        return self.mapper.to_schema(updated)
 
     async def google_calendars_available_for_import(self) -> list[GoogleCalendarCalendar] | None:
         google_calendars = await self.google_calendar_service.get_all_calendars()
@@ -251,37 +258,39 @@ class CalendarService(AbstractCalendarService):
         self,
         reservation_type: str,
         include_removed: bool = False,
-    ) -> CalendarDetail | None:
-        return await self.repo.get_by_reservation_type(
+    ) -> CalendarSchema | None:
+        calendar = await self.repo.get_by_reservation_type(
             reservation_type,
             include_removed,
         )
+        return self.mapper.to_schema(calendar)
 
     async def get_by_provider_id(
         self,
         provider_id: str,
         include_removed: bool = False,
-    ) -> CalendarDetail | None:
-        return await self.repo.get_by_provider_id(
+    ) -> CalendarSchema | None:
+        calendar = await self.repo.get_by_provider_id(
             provider_id,
             include_removed,
         )
+        return self.mapper.to_schema(calendar)
 
-    async def get_mini_services_by_id(self, calendar_id: UUID) -> list[MiniServiceLite]:
-        return (await self.get(calendar_id)).mini_services
-
-    async def get_reservation_service(
+    async def get_by_reservation_service_id(
         self,
-        id_: UUID,
-    ) -> ReservationServiceDetail:
-        calendar = await self.get(id_, True)
-        return await self.reservation_service_service.get(calendar.reservation_service_id, True)
+        reservation_service_id: UUID,
+        include_removed: bool = False,
+    ) -> list[CalendarSchema]:
+        calendars = await self.repo.get_by_reservation_service_id(
+            reservation_service_id, include_removed
+        )
+        return [self.mapper.to_schema(calendar) for calendar in calendars]
 
     async def _prepare_calendar_mini_services(
         self,
         reservation_service_id: UUID,
         mini_services_ids: list[UUID],
-    ) -> list[MiniServiceModel]:
+    ) -> list[MiniService]:
         """
         Validate mini service IDs.
 
@@ -289,9 +298,10 @@ class CalendarService(AbstractCalendarService):
         Ensures that all provided mini service IDs exist for the given reservation service.
         """
         mini_services_in_calendar = []
-        mini_services = await self.reservation_service_service.get_mini_services_by_id(
+        mini_services = await self.mini_service_repo.get_by_reservation_service_id(
             reservation_service_id
         )
+
         existing_mini_services_by_id = {ms.id: ms for ms in mini_services}
 
         for mini_service_id in mini_services_ids:

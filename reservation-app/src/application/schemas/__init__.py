@@ -1,6 +1,6 @@
 """Package for application schemas."""
 
-from .calendar import CalendarCreate, CalendarDetail, CalendarLite, CalendarUpdate, Rules
+from .calendar import CalendarCreate, CalendarSchema, CalendarUpdate, Rules
 from .event import (
     EventCreate,
     EventDetail,
@@ -10,8 +10,7 @@ from .event import (
 )
 from .mini_service import (
     MiniServiceCreate,
-    MiniServiceDetail,
-    MiniServiceLite,
+    MiniServiceSchema,
     MiniServiceUpdate,
 )
 from .reservation_service import (
@@ -20,12 +19,11 @@ from .reservation_service import (
     ReservationServiceLite,
     ReservationServiceUpdate,
 )
-from .user import UserCreate, UserDetail, UserLite, UserUpdate
+from .user import UserCreate, UserSchema, UserUpdate
 
 __all__ = [
     "CalendarCreate",
-    "CalendarDetail",
-    "CalendarLite",
+    "CalendarSchema",
     "CalendarUpdate",
     "EventCreate",
     "EventDetail",
@@ -33,8 +31,7 @@ __all__ = [
     "EventUpdate",
     "EventUpdateTime",
     "MiniServiceCreate",
-    "MiniServiceDetail",
-    "MiniServiceLite",
+    "MiniServiceSchema",
     "MiniServiceUpdate",
     "ReservationServiceCreate",
     "ReservationServiceDetail",
@@ -42,7 +39,6 @@ __all__ = [
     "ReservationServiceUpdate",
     "Rules",
     "UserCreate",
-    "UserDetail",
-    "UserLite",
+    "UserSchema",
     "UserUpdate",
 ]

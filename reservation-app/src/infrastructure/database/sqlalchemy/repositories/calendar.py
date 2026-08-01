@@ -49,6 +49,7 @@ class SQLAlchemyCalendarRepository(SQLAlchemyBaseRepository[Calendar], CalendarR
         self,
         calendar: Calendar,
         mini_services: list[MiniService],
+        collision_ids: list[UUID],
     ) -> Calendar:
         db_obj = self.mapper.to_model(calendar)
 
@@ -61,8 +62,8 @@ class SQLAlchemyCalendarRepository(SQLAlchemyBaseRepository[Calendar], CalendarR
         self.db.add(db_obj)
         await self.db.flush()
 
-        if calendar.collision_ids:
-            await self._add_symmetric_collisions(db_obj, calendar.collision_ids)
+        if collision_ids:
+            await self._add_symmetric_collisions(db_obj, collision_ids)
 
         self.db.add(db_obj)
         await self.db.commit()
@@ -73,6 +74,7 @@ class SQLAlchemyCalendarRepository(SQLAlchemyBaseRepository[Calendar], CalendarR
         self,
         calendar: Calendar,
         mini_services: list[MiniService],
+        collision_ids: list[UUID],
     ) -> Calendar:
         stmt = select(self.model).filter(self.model.id == calendar.id)
         result = await self.db.execute(stmt)
@@ -97,8 +99,8 @@ class SQLAlchemyCalendarRepository(SQLAlchemyBaseRepository[Calendar], CalendarR
         )
         await self.db.execute(stmt_delete)
 
-        if calendar.collision_ids:
-            await self._add_symmetric_collisions(db_obj, calendar.collision_ids)
+        if collision_ids:
+            await self._add_symmetric_collisions(db_obj, collision_ids)
 
         self.db.add(db_obj)
         await self.db.commit()
@@ -128,6 +130,35 @@ class SQLAlchemyCalendarRepository(SQLAlchemyBaseRepository[Calendar], CalendarR
         result = await self.db.execute(stmt)
         db_obj = result.scalars().first()
         return self.mapper.to_entity(db_obj) if db_obj else None
+
+    async def get_by_reservation_service_id(
+        self,
+        reservation_service_id: UUID,
+        include_removed: bool = False,
+    ) -> list[Calendar]:
+        stmt = select(self.model).where(self.model.reservation_service_id == reservation_service_id)
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=include_removed)
+
+        result = await self.db.execute(stmt)
+        return [self.mapper.to_entity(obj) for obj in result.scalars().all()]
+
+    async def get_by_reservation_service_ids(
+        self,
+        reservation_service_ids: list[UUID],
+        include_removed: bool = False,
+    ) -> list[Calendar]:
+        if not reservation_service_ids:
+            return []
+
+        stmt = select(self.model).where(
+            self.model.reservation_service_id.in_(reservation_service_ids)
+        )
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=include_removed)
+
+        result = await self.db.execute(stmt)
+        return [self.mapper.to_entity(obj) for obj in result.scalars().all()]
 
     async def _add_symmetric_collisions(
         self,

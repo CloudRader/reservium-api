@@ -11,14 +11,13 @@ from api.dependencies import (
 from api.permissions import abac_manage_rs_by_id, abac_manage_rs_from_body
 from application.schemas import (
     CalendarCreate,
-    CalendarDetail,
-    CalendarLite,
+    CalendarSchema,
     CalendarUpdate,
-    MiniServiceLite,
-    UserLite,
+    MiniServiceSchema,
+    UserSchema,
 )
-from application.schemas.calendar import CalendarDetailWithCollisions
-from application.services import CalendarService
+from application.schemas.calendar import CalendarWithCollisions
+from application.services import CalendarService, MiniServiceService
 from core.bootstrap.exceptions import ERROR_RESPONSES, Entity, PermissionDeniedError
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Path, Query, status
@@ -37,8 +36,7 @@ class CalendarRouter(
     BaseCRUDRouter[
         CalendarCreate,
         CalendarUpdate,
-        CalendarLite,
-        CalendarDetail,
+        CalendarSchema,
         CalendarService,
     ]
 ):
@@ -56,8 +54,7 @@ class CalendarRouter(
             service_dep=CalendarService,
             schema_create=CalendarCreate,
             schema_update=CalendarUpdate,
-            schema_lite=CalendarLite,
-            schema_detail=CalendarDetail,
+            schema_read=CalendarSchema,
             entity_name=Entity.CALENDAR,
             permissions_create=("calendars.create",),
             permissions_update=("calendars.update",),
@@ -65,33 +62,26 @@ class CalendarRouter(
             permissions_delete=("calendars.soft_delete",),
             permissions_hard_delete=("calendars.hard_delete",),
             abac_create=[abac_manage_rs_from_body(CalendarCreate)],
-            abac_update=[abac_manage_rs_by_id(CalendarService)],
-            abac_restore=[abac_manage_rs_by_id(CalendarService)],
-            abac_delete=[abac_manage_rs_by_id(CalendarService)],
+            abac_update=[abac_manage_rs_by_id()],
+            abac_restore=[abac_manage_rs_by_id()],
+            abac_delete=[abac_manage_rs_by_id()],
         )
 
         self.register_routes()
 
         @router.get(
             "/{id}/mini_services",
-            response_model=list[MiniServiceLite],
+            response_model=list[MiniServiceSchema],
             status_code=status.HTTP_200_OK,
         )
         @inject
         async def get_mini_services_by_calendar(
-            service: FromDishka[CalendarService],
+            mini_service_service: FromDishka[MiniServiceService],
             id_: Annotated[UUID, Path(alias="id")],
+            include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
-            """
-            Get all mini services linked to a calendar.
-
-            :param service: CalendarDetail service.
-            :param id_: id of the calendar.
-
-            :return: List mini services with type equal to service type
-                     or None if no such calendars exists.
-            """
-            return await service.get_mini_services_by_id(id_)
+            """Get all mini services linked to a calendar."""
+            return await mini_service_service.get_by_calendar_id(id_, include_removed)
 
         @router.get(
             "/google/importable",
@@ -101,7 +91,7 @@ class CalendarRouter(
         @inject
         async def google_calendars_available_for_import(
             service: FromDishka[CalendarService],
-            user: Annotated[UserLite, Depends(get_current_user)],
+            user: Annotated[UserSchema, Depends(get_current_user)],
         ) -> Any:
             """List Google calendars that the auth user owns but are not yet added to the system."""
             if not user.roles:
@@ -113,7 +103,7 @@ class CalendarRouter(
         async def google_subscribe_calendars(
             service: FromDishka[CalendarService],
             google_calendar_ids: GoogleCalendarImportRequest,
-            user: Annotated[UserLite, Depends(get_current_user)],
+            user: Annotated[UserSchema, Depends(get_current_user)],
         ) -> list[CalendarImportResult]:
             """Subscribe the service account to specified Google Calendars."""
             if not user.roles:
@@ -124,7 +114,7 @@ class CalendarRouter(
         @inject
         async def google_subscribe_existing_calendars(
             service: FromDishka[CalendarService],
-            user: Annotated[UserLite, Depends(get_current_user)],
+            user: Annotated[UserSchema, Depends(get_current_user)],
         ) -> list[CalendarImportResult]:
             """Ensure the service account is subscribed to all calendars stored in the system."""
             if not user.roles:
@@ -144,7 +134,7 @@ class CalendarRouter(
 
         @router.get(
             "/{id}/collisions",
-            response_model=CalendarDetailWithCollisions,
+            response_model=CalendarWithCollisions,
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )

@@ -10,14 +10,15 @@ from dataclasses import dataclass
 from typing import final
 
 from application.mappers.base import SchemaEntityMapper
-from application.schemas import CalendarCreate, CalendarLite, CalendarUpdate
+from application.schemas import CalendarCreate, CalendarSchema, CalendarUpdate
+from application.schemas import Rules as RulesSchema
 from domain.entities import Calendar
 from domain.value_objects import Rules
 
 
 @final
 @dataclass(frozen=True, slots=True)
-class CalendarMapper(SchemaEntityMapper[Calendar, CalendarCreate, CalendarUpdate, CalendarLite]):
+class CalendarMapper(SchemaEntityMapper[Calendar, CalendarCreate, CalendarUpdate, CalendarSchema]):
     """Mapper for converting between Calendar Domain Entities and Pydantic Schemas."""
 
     def to_entity(self, schema: CalendarCreate) -> Calendar:
@@ -32,8 +33,6 @@ class CalendarMapper(SchemaEntityMapper[Calendar, CalendarCreate, CalendarUpdate
             active_member_rules=Rules(**schema.active_member_rules.model_dump()),
             manager_rules=Rules(**schema.manager_rules.model_dump()),
             provider_id=schema.provider_id,
-            collision_ids=schema.collision_ids,
-            mini_service_ids=schema.mini_services,
         )
 
     def update_entity(self, entity: Calendar, schema: CalendarUpdate) -> Calendar:
@@ -50,12 +49,6 @@ class CalendarMapper(SchemaEntityMapper[Calendar, CalendarCreate, CalendarUpdate
             else entity.collision_with_itself
         )
         provider_id = schema.provider_id if schema.provider_id is not None else entity.provider_id
-        collision_ids = (
-            schema.collision_ids if schema.collision_ids is not None else entity.collision_ids
-        )
-        mini_service_ids = (
-            schema.mini_services if schema.mini_services is not None else entity.mini_service_ids
-        )
 
         club_member_rules = (
             schema.club_member_rules
@@ -81,17 +74,20 @@ class CalendarMapper(SchemaEntityMapper[Calendar, CalendarCreate, CalendarUpdate
             active_member_rules=active_member_rules,
             manager_rules=manager_rules,
             provider_id=provider_id,
-            collision_ids=collision_ids,
-            mini_service_ids=mini_service_ids,
         )
 
-    def to_schema(self, entity: Calendar) -> CalendarLite:
-        return CalendarLite(
+    def to_schema(self, entity: Calendar) -> CalendarSchema:
+        return CalendarSchema(
             id=entity.id,
+            deleted_at=entity.deleted_at,
             reservation_type=entity.reservation_type,
             color=entity.color,
             max_people=entity.max_people,
+            more_than_max_people_with_permission=entity.more_than_max_people_with_permission,
             collision_with_itself=entity.collision_with_itself,
             reservation_service_id=entity.reservation_service_id,
             provider_id=entity.provider_id,
+            club_member_rules=RulesSchema(**dataclasses.asdict(entity.club_member_rules)),
+            active_member_rules=RulesSchema(**dataclasses.asdict(entity.active_member_rules)),
+            manager_rules=RulesSchema(**dataclasses.asdict(entity.manager_rules)),
         )

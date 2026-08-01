@@ -6,9 +6,10 @@ and the database persistence layer, following the Single Responsibility Principl
 """
 
 from dataclasses import dataclass
-from typing import final
+from typing import Any, final
 
 from domain.entities import Calendar
+from domain.value_objects import Rules
 from infrastructure.database.sqlalchemy.models import CalendarModel
 
 
@@ -29,6 +30,16 @@ class CalendarDBMapper:
         :param model: The SQLAlchemy CalendarModel instance.
         :return: A Calendar instance.
         """
+
+        def _to_domain_rules(rules: Any) -> Rules:
+            if isinstance(rules, Rules):
+                return rules
+            if hasattr(rules, "model_dump"):
+                return Rules(**rules.model_dump())
+            if isinstance(rules, dict):
+                return Rules(**rules)
+            return rules
+
         return Calendar(
             id=model.id,
             created_at=model.created_at,
@@ -41,11 +52,9 @@ class CalendarDBMapper:
             max_people=model.max_people,
             more_than_max_people_with_permission=model.more_than_max_people_with_permission,
             collision_with_itself=model.collision_with_itself,
-            club_member_rules=model.club_member_rules,
-            active_member_rules=model.active_member_rules,
-            manager_rules=model.manager_rules,
-            collision_ids=model.collision_ids,
-            mini_service_ids=[c.id for c in model.mini_services or []],
+            club_member_rules=_to_domain_rules(model.club_member_rules),
+            active_member_rules=_to_domain_rules(model.active_member_rules),
+            manager_rules=_to_domain_rules(model.manager_rules),
         )
 
     def to_model(self, entity: Calendar, target: CalendarModel | None = None) -> CalendarModel:

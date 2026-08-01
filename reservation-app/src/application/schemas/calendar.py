@@ -21,14 +21,13 @@ class Rules(BaseModel):
 class CalendarBase(BaseModel):
     """Shared properties of Calendar."""
 
-    more_than_max_people_with_permission: bool | None = None
-    color: str | None = None
+    more_than_max_people_with_permission: bool = Field(default=True)
+    color: str
 
 
 class CalendarCreate(CalendarBase):
     """Properties to receive via API on creation."""
 
-    id: UUID | None = None
     reservation_service_id: UUID
     reservation_type: str
     max_people: int = Field(ge=1)
@@ -43,10 +42,13 @@ class CalendarCreate(CalendarBase):
     provider_id: str | None = None
 
 
-class CalendarUpdate(CalendarBase):
+class CalendarUpdate(BaseModel):
     """Properties to receive via API on update."""
 
+    provider_id: str | None = None
     reservation_type: str | None = None
+    more_than_max_people_with_permission: bool | None = None
+    color: str | None = None
     max_people: int | None = Field(default=None, ge=1)
     collision_with_itself: bool | None = None
     club_member_rules: Rules | None = None
@@ -57,7 +59,7 @@ class CalendarUpdate(CalendarBase):
     mini_services: list[UUID] = Field(default_factory=list)
 
 
-class CalendarLite(CalendarBase):
+class CalendarSchema(CalendarBase):
     """Base model for calendar in database."""
 
     id: UUID | None = None
@@ -66,35 +68,35 @@ class CalendarLite(CalendarBase):
     max_people: int
     collision_with_itself: bool
     reservation_service_id: UUID
+    club_member_rules: Rules
+    active_member_rules: Rules
+    manager_rules: Rules
 
     provider_id: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class CalendarWithReservationServiceInfo(CalendarLite):
+class CalendarWithReservationServiceInfo(CalendarSchema):
     """Additional properties of calendar to return via API."""
 
     reservation_service: "ReservationServiceLite"  # noqa
 
 
-class CalendarDetail(CalendarLite):
+class CalendarWithMiniServices(CalendarSchema):
     """Additional properties of calendar to return via API."""
 
-    club_member_rules: Rules
-    active_member_rules: Rules
-    manager_rules: Rules
-    mini_services: list["MiniServiceLite"] = Field(default_factory=list)  # noqa
+    mini_services: list["MiniServiceSchema"] = Field(default_factory=list)  # noqa
 
 
-class CalendarDetailWithCollisions(CalendarDetail):
+class CalendarWithCollisions(CalendarWithMiniServices):
     """Additional properties of calendar to return via API."""
 
     collision_ids: list[UUID] = Field(default_factory=list)
 
 
 from application.schemas.reservation_service import ReservationServiceLite  # noqa
-from application.schemas.mini_service import MiniServiceLite  # noqa
+from application.schemas.mini_service import MiniServiceSchema  # noqa
 
 CalendarWithReservationServiceInfo.model_rebuild()
-CalendarDetail.model_rebuild()
+CalendarWithMiniServices.model_rebuild()
