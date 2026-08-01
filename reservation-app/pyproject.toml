@@ -11,7 +11,7 @@ dependencies = [
     "pydantic-settings==2.14.2",
     "sqlalchemy[asyncio]==2.0.51",
     "asyncpg==0.31.0",
-    "pytz==2026.2",
+    "pytz==2026.3.post1",
     "alembic==1.18.5",
     "sqlalchemy-easy-softdelete==0.9.1",
     "fastapi-mail==1.6.5",
