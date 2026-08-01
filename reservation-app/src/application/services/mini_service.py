@@ -68,6 +68,20 @@ class AbstractMiniServiceService(
         :return: List of MiniServiceLite schemas linked to the reservation service.
         """
 
+    @abstractmethod
+    async def get_by_calendar_id(
+        self,
+        calendar_id: UUID,
+        include_removed: bool = False,
+    ) -> list[MiniServiceSchema]:
+        """
+        Retrieve mini services by calendar ID.
+
+        :param calendar_id: The ID of the calendar.
+        :param include_removed: Optional flag to include removed mini services.
+        :return: List of MiniServiceLite schemas linked to the calendar.
+        """
+
 
 class MiniServiceService(AbstractMiniServiceService):
     """Class MiniServiceService represent service that work with Mini Service."""
@@ -104,4 +118,12 @@ class MiniServiceService(AbstractMiniServiceService):
         mini_services = await self.repo.get_by_reservation_service_id(
             reservation_service_id, include_removed
         )
+        return [self.mapper.to_schema(mini_service) for mini_service in mini_services]
+
+    async def get_by_calendar_id(
+        self,
+        calendar_id: UUID,
+        include_removed: bool = False,
+    ) -> list[MiniServiceSchema]:
+        mini_services = await self.repo.get_by_calendar_id(calendar_id, include_removed)
         return [self.mapper.to_schema(mini_service) for mini_service in mini_services]

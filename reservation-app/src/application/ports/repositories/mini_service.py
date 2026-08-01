@@ -92,6 +92,21 @@ class MiniServiceRepository(BaseRepository[MiniService], ABC):
         """
 
     @abstractmethod
+    async def get_by_calendar_id(
+        self,
+        calendar_id: UUID,
+        include_removed: bool = False,
+    ) -> list[MiniService]:
+        """
+        Fetch related mini services for a specific reservation service.
+
+        :param calendar_id: ID of the Calendar.
+        :param include_removed: Include removed object or not.
+
+        :return: List of related mini services.
+        """
+
+    @abstractmethod
     async def get_by_calendar_ids(
         self,
         calendar_ids: list[UUID],

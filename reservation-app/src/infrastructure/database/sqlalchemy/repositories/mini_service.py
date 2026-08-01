@@ -87,6 +87,18 @@ class SQLAlchemyMiniServiceRepository(SQLAlchemyBaseRepository[MiniService], Min
         result = await self.db.execute(stmt)
         return [self.mapper.to_entity(obj) for obj in result.scalars().all()]
 
+    async def get_by_calendar_id(
+        self,
+        calendar_id: UUID,
+        include_removed: bool = False,
+    ) -> list[MiniService]:
+        stmt = select(self.model).where(self.model.calendar_id == calendar_id)
+        if include_removed:
+            stmt = stmt.execution_options(include_deleted=include_removed)
+
+        result = await self.db.execute(stmt)
+        return [self.mapper.to_entity(obj) for obj in result.scalars().all()]
+
     async def get_by_calendar_ids(
         self,
         calendar_ids: list[UUID],
