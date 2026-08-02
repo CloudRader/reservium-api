@@ -36,7 +36,6 @@ class MiniServiceDBMapper:
             deleted_at=model.deleted_at,
             name=model.name,
             reservation_service_id=model.reservation_service_id,
-            calendar_ids=[c.id for c in model.calendars or []],
         )
 
     def to_model(
