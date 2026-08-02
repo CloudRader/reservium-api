@@ -8,14 +8,20 @@ from api.api_base import BaseCRUDRouter
 from api.dependencies import get_current_user_from_token
 from api.schemas.current_user import CurrentUser
 from application.schemas import (
-    CalendarDetail,
-    MiniServiceDetail,
+    CalendarSchema,
+    MiniServiceSchema,
     ReservationServiceCreate,
-    ReservationServiceDetail,
+    ReservationServiceSchema,
     ReservationServiceUpdate,
+    ReservationServiceWithCalendarsAndMiniServices,
 )
 from application.schemas.event import EventDetail
-from application.services import ReservationServiceService
+from application.services import (
+    CalendarService,
+    EventService,
+    MiniServiceService,
+    ReservationServiceService,
+)
 from core.bootstrap.exceptions import (
     ERROR_RESPONSES,
     Entity,
@@ -33,8 +39,7 @@ class ReservationServiceRouter(
     BaseCRUDRouter[
         ReservationServiceCreate,
         ReservationServiceUpdate,
-        ReservationServiceDetail,
-        ReservationServiceDetail,
+        ReservationServiceSchema,
         ReservationServiceService,
     ]
 ):
@@ -52,8 +57,7 @@ class ReservationServiceRouter(
             service_dep=ReservationServiceService,
             schema_create=ReservationServiceCreate,
             schema_update=ReservationServiceUpdate,
-            schema_lite=ReservationServiceDetail,
-            schema_detail=ReservationServiceDetail,
+            schema_read=ReservationServiceSchema,
             entity_name=Entity.RESERVATION_SERVICE,
             enable_read_all=False,
             permissions_create=("reservation_services.create",),
@@ -65,7 +69,7 @@ class ReservationServiceRouter(
 
         @router.get(
             "/public",
-            response_model=list[ReservationServiceDetail],
+            response_model=list[ReservationServiceSchema],
             status_code=status.HTTP_200_OK,
         )
         @inject
@@ -80,7 +84,7 @@ class ReservationServiceRouter(
 
         @router.get(
             "/",
-            response_model=list[ReservationServiceDetail],
+            response_model=list[ReservationServiceWithCalendarsAndMiniServices],
             responses=ERROR_RESPONSES["401_403"],
             status_code=status.HTTP_200_OK,
         )
@@ -98,10 +102,7 @@ class ReservationServiceRouter(
             """
             logger.info("Fetching reservation services (include_removed=%s)", include_removed)
             if "Active Members" in user.groups:
-                if include_removed:
-                    reservation_services = await service.get_all_services_include_all_removed()
-                else:
-                    reservation_services = await service.get_all(include_removed)
+                reservation_services = await service.get_all(include_removed=include_removed)
             else:
                 reservation_services = await service.get_public_services()
             logger.debug("Fetched %d reservation services", len(reservation_services))
@@ -111,7 +112,7 @@ class ReservationServiceRouter(
 
         @router.get(
             "/name/{name}",
-            response_model=ReservationServiceDetail,
+            response_model=ReservationServiceSchema,
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
@@ -133,7 +134,7 @@ class ReservationServiceRouter(
 
         @router.get(
             "/alias/{alias}",
-            response_model=ReservationServiceDetail,
+            response_model=ReservationServiceSchema,
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
@@ -155,13 +156,13 @@ class ReservationServiceRouter(
 
         @router.get(
             "/{id}/calendars",
-            response_model=list[CalendarDetail],
+            response_model=list[CalendarSchema],
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
         @inject
         async def get_calendars_by_reservation_service(
-            service: FromDishka[ReservationServiceService],
+            calendar_service: FromDishka[CalendarService],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
@@ -171,19 +172,19 @@ class ReservationServiceRouter(
                 id_,
                 include_removed,
             )
-            calendars = await service.get_calendars_by_id(id_, include_removed)
+            calendars = await calendar_service.get_by_reservation_service_id(id_, include_removed)
             logger.debug("Fetched %d calendars", len(calendars))
             return calendars
 
         @router.get(
             "/{id}/mini-services",
-            response_model=list[MiniServiceDetail],
+            response_model=list[MiniServiceSchema],
             responses=ERROR_RESPONSES["404"],
             status_code=status.HTTP_200_OK,
         )
         @inject
         async def get_mini_services_by_reservation_service(
-            service: FromDishka[ReservationServiceService],
+            mini_service_service: FromDishka[MiniServiceService],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             include_removed: bool = Query(False, description="Include `removed object` or not."),
         ) -> Any:
@@ -193,7 +194,9 @@ class ReservationServiceRouter(
                 id_,
                 include_removed,
             )
-            mini_services = await service.get_mini_services_by_id(id_, include_removed)
+            mini_services = await mini_service_service.get_by_reservation_service_id(
+                id_, include_removed
+            )
             logger.debug("Fetched %d mini services", len(mini_services))
             return mini_services
 
@@ -205,7 +208,7 @@ class ReservationServiceRouter(
         )
         @inject
         async def get_events_by_reservation_service(
-            service: FromDishka[ReservationServiceService],
+            event_service: FromDishka[EventService],
             id_: Annotated[UUID, Path(alias="id", description="The ID of the object.")],
             event_state: Annotated[EventState | None, Query()] = None,
         ) -> Any:
@@ -215,7 +218,7 @@ class ReservationServiceRouter(
                 id_,
                 event_state,
             )
-            events = await service.get_events_by_id(id_, event_state)
+            events = await event_service.get_by_reservation_service_id(id_, event_state)
             logger.debug("Fetched %d events", len(events))
             return events
 

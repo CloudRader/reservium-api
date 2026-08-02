@@ -15,9 +15,9 @@ from .mini_service import (
 )
 from .reservation_service import (
     ReservationServiceCreate,
-    ReservationServiceDetail,
-    ReservationServiceLite,
+    ReservationServiceSchema,
     ReservationServiceUpdate,
+    ReservationServiceWithCalendarsAndMiniServices,
 )
 from .user import UserCreate, UserSchema, UserUpdate
 
@@ -34,9 +34,9 @@ __all__ = [
     "MiniServiceSchema",
     "MiniServiceUpdate",
     "ReservationServiceCreate",
-    "ReservationServiceDetail",
-    "ReservationServiceLite",
+    "ReservationServiceSchema",
     "ReservationServiceUpdate",
+    "ReservationServiceWithCalendarsAndMiniServices",
     "Rules",
     "UserCreate",
     "UserSchema",

@@ -12,7 +12,7 @@ from typing import final
 from application.mappers.base import SchemaEntityMapper
 from application.schemas import (
     ReservationServiceCreate,
-    ReservationServiceLite,
+    ReservationServiceSchema,
     ReservationServiceUpdate,
 )
 from domain.entities import ReservationService
@@ -25,7 +25,7 @@ class ReservationServiceMapper(
         ReservationService,
         ReservationServiceCreate,
         ReservationServiceUpdate,
-        ReservationServiceLite,
+        ReservationServiceSchema,
     ]
 ):
     """
@@ -65,9 +65,10 @@ class ReservationServiceMapper(
             web=web,
         )
 
-    def to_schema(self, entity: ReservationService) -> ReservationServiceLite:
-        return ReservationServiceLite(
+    def to_schema(self, entity: ReservationService) -> ReservationServiceSchema:
+        return ReservationServiceSchema(
             id=entity.id,
+            deleted_at=entity.deleted_at,
             name=entity.name,
             alias=entity.alias,
             contact_mail=entity.contact_mail,

@@ -10,8 +10,7 @@ from typing import Protocol, TypeVar, runtime_checkable
 from uuid import UUID
 
 from application.ports.repositories import BaseRepository
-from domain.entities import Event, ReservationService
-from domain.enums import EventState
+from domain.entities import ReservationService
 
 
 @runtime_checkable
@@ -81,36 +80,4 @@ class ReservationServiceRepository(BaseRepository[ReservationService,], ABC):
         :param include_removed: Include removed object or not.
 
         :return: The public ReservationService instance if found, None otherwise.
-        """
-
-    @abstractmethod
-    async def get_related_entities_by_reservation_service_id(
-        self,
-        model: type[T],
-        reservation_service_id: UUID,
-        include_removed: bool = False,
-    ) -> list[T]:
-        """
-        Fetch related entities by reservation_service_id.
-
-        :param model: The SQLAlchemy model class to query.
-        :param reservation_service_id: UUID of the ReservationService.
-        :param include_removed: Whether to include soft-deleted records.
-
-        :return: List of related entities.
-        """
-
-    @abstractmethod
-    async def get_events_by_reservation_service_id(
-        self,
-        reservation_service_id: UUID,
-        event_state: EventState | None = None,
-    ) -> list[Event]:
-        """
-        Fetch related events by reservation_service_id.
-
-        :param reservation_service_id: UUID of the ReservationService.
-        :param event_state: Event state of the event.
-
-        :return: List of related events.
         """

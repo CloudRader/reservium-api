@@ -9,8 +9,8 @@ from pydantic import BaseModel, ConfigDict, Field
 class ReservationServiceBase(BaseModel):
     """Shared properties of ReservationService."""
 
-    web: str | None = None
-    public: bool | None = None
+    web: str
+    public: bool = Field(default=False)
 
 
 class ReservationServiceCreate(ReservationServiceBase):
@@ -21,15 +21,17 @@ class ReservationServiceCreate(ReservationServiceBase):
     contact_mail: str
 
 
-class ReservationServiceUpdate(ReservationServiceBase):
+class ReservationServiceUpdate(BaseModel):
     """Properties to receive via API on update."""
 
+    web: str | None = None
+    public: bool | None = None
     name: str | None = None
     alias: str | None = Field(default=None, max_length=6)
     contact_mail: str | None = None
 
 
-class ReservationServiceLite(ReservationServiceBase):
+class ReservationServiceSchema(ReservationServiceBase):
     """Base model for reservation service in database."""
 
     id: UUID | None = None
@@ -41,14 +43,14 @@ class ReservationServiceLite(ReservationServiceBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ReservationServiceDetail(ReservationServiceLite):
+class ReservationServiceWithCalendarsAndMiniServices(ReservationServiceSchema):
     """Additional properties of reservation service to return via API."""
 
-    calendars: list["CalendarDetail"] = Field(default_factory=list)  # noqa
-    mini_services: list["MiniServiceLite"] = Field(default_factory=list)  # noqa
+    calendars: list["CalendarSchema"] = Field(default_factory=list)  # noqa
+    mini_services: list["MiniServiceSchema"] = Field(default_factory=list)  # noqa
 
 
-from application.schemas.calendar import CalendarDetail  # noqa
-from application.schemas.mini_service import MiniServiceLite  # noqa
+from application.schemas.calendar import CalendarSchema  # noqa
+from application.schemas.mini_service import MiniServiceSchema  # noqa
 
-ReservationServiceLite.model_rebuild()
+ReservationServiceSchema.model_rebuild()

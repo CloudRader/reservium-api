@@ -80,7 +80,7 @@ class CalendarSchema(CalendarBase):
 class CalendarWithReservationServiceInfo(CalendarSchema):
     """Additional properties of calendar to return via API."""
 
-    reservation_service: "ReservationServiceLite"  # noqa
+    reservation_service: "ReservationServiceSchema"  # noqa
 
 
 class CalendarWithMiniServices(CalendarSchema):
@@ -95,7 +95,7 @@ class CalendarWithCollisions(CalendarWithMiniServices):
     collision_ids: list[UUID] = Field(default_factory=list)
 
 
-from application.schemas.reservation_service import ReservationServiceLite  # noqa
+from application.schemas.reservation_service import ReservationServiceSchema  # noqa
 from application.schemas.mini_service import MiniServiceSchema  # noqa
 
 CalendarWithReservationServiceInfo.model_rebuild()
