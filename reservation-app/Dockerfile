@@ -1,10 +1,10 @@
 # ==========================================
 # Build Stage
 # ==========================================
-FROM python:3.14.6-slim-trixie AS build
+FROM python:3.14.7-slim-trixie AS build
 
 # Copy uv binary directly from official image
-COPY --from=ghcr.io/astral-sh/uv:0.11 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.12.17 /uv /uvx /bin/
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
     UV_PYTHON_DOWNLOADS=never \
@@ -23,7 +23,7 @@ RUN uv sync --no-dev --locked --no-editable --no-install-project
 # ==========================================
 # Runtime Stage
 # ==========================================
-FROM python:3.14.6-slim-trixie AS runtime
+FROM python:3.14.7-slim-trixie AS runtime
 
 ENV HOME=/app \
     PATH="/app/.venv/bin:$PATH" \
