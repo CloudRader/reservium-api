@@ -5,27 +5,27 @@ description = "Reservium: a ready to go reservation system"
 authors = [{ name = "Artem Kuznetsov", email = "artyom.20century@gmail.com" }]
 requires-python = "==3.14.7"
 dependencies = [
-    "fastapi==0.139.2",
-    "uvicorn[standard]==0.51.0",
+    "fastapi==0.141.1",
+    "uvicorn[standard]==0.52.4",
     "pydantic[email]==2.13.5",
-    "pydantic-settings==2.14.2",
+    "pydantic-settings==2.15.0",
     "sqlalchemy[asyncio]==2.0.52",
     "asyncpg==0.31.0",
-    "pytz==2026.2",
-    "alembic==1.18.5",
+    "pytz==2026.3.post1",
+    "alembic==1.20.0",
     "sqlalchemy-easy-softdelete==0.9.1",
     "fastapi-mail==1.6.8",
     "itsdangerous==2.2.0",
     "requests-oauthlib==2.0.0",
-    "pypdf==6.14.2",
+    "pypdf==6.16.1",
     "httpx==0.28.1",
     "google-auth-oauthlib==1.4.1",
-    "google-api-python-client==2.198.0",
+    "google-api-python-client==2.200.0",
     "python-dateutil==2.9.0.post0",
     "aiohttp==3.14.3",
-    "jwcrypto==1.5.9",
+    "jwcrypto==1.6.0",
     "authzed==1.25.0",
-    "authlib==1.7.2",
+    "authlib==1.8.0",
     "dishka==1.10.1",
 ]
 
@@ -34,12 +34,12 @@ dev = [
     "pytest==9.1.1",
     "pytest-asyncio==1.4.0",
     "pytest-cov==7.1.0",
-    "pytest-env==1.7.0",
+    "pytest-env==1.7.1",
     "mypy==2.3.1",
-    "testcontainers==4.14.2",
-    "types-pytz==2026.2.0.20260518",
+    "testcontainers==4.15.0",
+    "types-pytz==2026.3.1.20260727",
     "types-python-dateutil==2.9.0.20260807",
-    "ruff==0.15.22",
+    "ruff==0.16.7",
 ]
 
 [tool.uv]
